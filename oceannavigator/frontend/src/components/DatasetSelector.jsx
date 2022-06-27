@@ -370,8 +370,8 @@ class DatasetSelector extends React.Component {
     let quiverSelector = null;
     if (this.props.showQuiverSelector && !this.state.loading) {
       let quiverVariables = [];
-      const ListvalidQuivModelClass = ["Mercator"]    // List of Valid Model_Class for Quiver Plot. Need to update this List when Model_Class : "Nemo" and "Fvcom" working
-      if ((ListvalidQuivModelClass.includes(this.state.model_class)) && (this.state.datasetVariables)) {
+      const modelClassesWithQuiver = ["Mercator"]    // List of Valid Model_Class for Quiver Plot. Need to update this List when Model_Class : "Nemo" and "Fvcom" working
+      if (this.state.datasetVariables && modelClassesWithQuiver.includes(this.state.model_class)) {
         quiverVariables = this.state.datasetVariables.filter((variable) => {
           return variable.id.includes("mag") && variable.id.includes("vel");
         });
