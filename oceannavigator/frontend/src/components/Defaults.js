@@ -1,7 +1,6 @@
 
 const DATASET_DEFAULTS = Object.freeze({
   dataset: "giops_day",
-  model_class: "Mercator",
   attribution: "",
   quantum: "day",
   depth: 0,
