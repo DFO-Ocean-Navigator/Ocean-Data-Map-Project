@@ -110,8 +110,10 @@ class TimePicker extends React.Component {
 
   populate(props) {
     // eslint-disable-next-line max-len
+    console.log(`timepicker dataset_variable`,props.dataset, props.variable)
     GetTimestampsPromise(props.dataset, props.variable).then(timestampResult => {
       const data = timestampResult.data;
+      console.log(`timepicker data`, data)
 
       let map = {};
       let revmap = {};
