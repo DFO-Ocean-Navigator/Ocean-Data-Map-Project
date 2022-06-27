@@ -23,4 +23,3 @@ const DEFAULT_OPTIONS = Object.freeze({
 });
   
 export { DATASET_DEFAULTS, DEFAULT_OPTIONS };
-  
