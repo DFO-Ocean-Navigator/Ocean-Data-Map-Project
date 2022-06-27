@@ -470,10 +470,7 @@ def get_data_v1_0():
 
         bearings = None
         if "mag" in result["variable"]:
-            bearings_var = DatasetConfig(
-                result["dataset"]).variable[result["variable"]].bearing_component
-            if not bearings_var:
-                bearings_var = "bearing"            
+            bearings_var = config.variable[result["variable"]].bearing_component or "bearing"   
             with open_dataset(
                 config, variable=bearings_var, timestamp=result["time"]
             ) as ds_bearing:
