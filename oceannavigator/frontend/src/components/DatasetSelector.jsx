@@ -36,6 +36,8 @@ const PARENT_ATTRIBUTES_TO_UPDATE = Object.freeze([
   "quiverVariable",
 ]);
 
+const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
+
 class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
@@ -370,8 +372,7 @@ class DatasetSelector extends React.Component {
     let quiverSelector = null;
     if (this.props.showQuiverSelector && !this.state.loading) {
       let quiverVariables = [];
-      const modelClassesWithQuiver = ["Mercator"]    // List of Valid Model_Class for Quiver Plot. Need to update this List when Model_Class : "Nemo" and "Fvcom" working
-      if (this.state.datasetVariables && modelClassesWithQuiver.includes(this.state.model_class)) {
+      if (this.state.datasetVariables && MODEL_CLASSES_WITH_QUIVER.includes(this.state.model_class)) {
         quiverVariables = this.state.datasetVariables.filter((variable) => {
           return variable.id.includes("mag") && variable.id.includes("vel");
         });
