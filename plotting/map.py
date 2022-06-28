@@ -108,7 +108,7 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
-    def __apply_poly_mask(self, data) -> np.ma.MaskedArray:
+    def __apply_poly_mask(self, data: np.ma.MaskedArray) -> np.ma.MaskedArray:
         area = self.area[0]
         polys = []
         for co in area["polygons"] + area["innerrings"]:
@@ -1024,7 +1024,7 @@ class MapPlotter(Plotter):
         cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
         bar = plt.colorbar(c, cax=cax)
         bar.set_label(
-            "%s (%s)" % (self.variable_name.title(), var_unit),
+            f"{self.variable_name.title()} ({var_unit})",
             fontsize=14,
         )
 

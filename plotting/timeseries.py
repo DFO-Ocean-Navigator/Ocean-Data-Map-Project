@@ -424,7 +424,7 @@ class TimeseriesPlotter(PointPlotter):
                 divider = make_axes_locatable(ax[idx])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 bar = plt.colorbar(c, cax=cax)
-                bar.set_label("%s (%s)" % (self.variable_name.title(), var_unit))
+                bar.set_label(f"{self.variable_name.title()} ({var_unit})")
                 ax[idx].set_title(
                     "%s%s at %s"
                     % (self.variable_name.title(), self.depth_label, self.names[idx])

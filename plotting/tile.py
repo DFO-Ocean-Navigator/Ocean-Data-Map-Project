@@ -1,7 +1,5 @@
 import contextlib
 import math
-import os
-import re
 from io import BytesIO
 
 import matplotlib.cm
@@ -9,7 +7,6 @@ import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 from flask import current_app
-from flask_babel import gettext
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
@@ -22,7 +19,6 @@ from skimage import measure
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
-from data.sqlite_database import SQLiteDatabase
 from oceannavigator import DatasetConfig
 
 
@@ -202,7 +198,6 @@ def plot(projection, x, y, z, args):
 
         vc = config.variable[dataset.variables[variable[0]]]
         variable_name = vc.name
-        variable_unit = vc.unit
         cmap = colormap.find_colormap(variable_name)
 
         if depth != "bottom":

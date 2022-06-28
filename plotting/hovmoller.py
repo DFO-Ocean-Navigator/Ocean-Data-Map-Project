@@ -354,4 +354,4 @@ class HovmollerPlotter(LinePlotter):
         divider = make_axes_locatable(plt.gca())
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
-        bar.set_label("%s (%s)" % (name, math_unit))
+        bar.set_label(f"{name} ({math_unit})")
