@@ -89,7 +89,7 @@ class AreaWindow extends React.Component {
 
   componentDidMount() {
     this._mounted = true;
-}
+  }
 
   componentWillUnmount() {
     this._mounted = false;
@@ -156,7 +156,6 @@ class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
-    
     const mapSettings = (<Panel 
       defaultExpanded
       bsStyle='primary'
