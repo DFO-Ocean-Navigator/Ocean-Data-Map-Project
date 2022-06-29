@@ -87,19 +87,20 @@ def unstaggered_speed(u_vel, v_vel):
     see https://en.wikipedia.org/wiki/Arakawa_grids
 
     To correctly calculate the speed of the current, the velocity components have to be
-    "unstaggered" by interpolating their values to the T-grid points at the centres of the
-    grid cells. Here that is accomplished by averaging u(i-1) and u(i) values to get u values
-    at the T-points. Likewise, v(j-1) and v(j) values are averaged to get v values at the T-points.
+    "unstaggered" by interpolating their values to the T-grid points at the centres of
+    the grid cells. Here that is accomplished by averaging u(i-1) and u(i) values to get
+    u values at the T-points. Likewise, v(j-1) and v(j) values are averaged to get v
+    values at the T-points.
 
-    With those arrays of unstaggered values, the speed of the current is calculated as the
-    element-wise magnitude of u and v:
+    With those arrays of unstaggered values, the speed of the current is calculated as
+    the element-wise magnitude of u and v:
       np.sqrt(u ** 2 + v ** 2)
     See: https://en.wikipedia.org/wiki/Hadamard_product_(matrices)
 
-    We assume that the dimension order of the velocity component arrays is (t, depth, y, x)
-    or (t, y, x). So, we can pick out the dimensions that we need to shift along to average the
-    velocity components to the T-points by indexing to the appropriate one of the final two
-    dimensions to get its name.
+    We assume that the dimension order of the velocity component arrays is (t, depth,
+    y, x) or (t, y, x). So, we can pick out the dimensions that we need to shift along
+    to average the velocity components to the T-points by indexing to the appropriate
+    one of the final two dimensions to get its name.
 
     Paramters:
     u_vel: ndarray
@@ -371,13 +372,7 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
 
     min_indices = __find_depth_index_of_min_value(sound_speed)
 
-    data = depth[min_indices]
-
-    # Mask out depth values above 500 meters since deep sound
-    # channel cannot occour above this in general.
-    data[data < 500] = np.nan
-
-    return data
+    return depth[min_indices]
 
 
 def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
@@ -385,7 +380,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     Find and return the deep sound channel bottom (the second depth where
     the speed of sound is equal to the speed at the sonic layer depth).
 
-    Note: Nearest Neighbou interpolation is used to find the depth value
+    Note: Nearest Neighbour interpolation is used to find the depth value
           with closest sound speed value to the sonic layer depth.
 
     Required Arguments:
@@ -475,8 +470,10 @@ def calculate_del_C(
     Required Arguments:
        * depth: The depth(s) in meters
        * soundspeed: Speed of sound in m/s
-       * minima: Minima ndarray of Speed of sound, which contains the index where the minima occurs
-       * maxima: Maxima ndarray of Speed of sound,  which contains the index where the maxima occurs
+       * minima: Minima ndarray of Speed of sound, which contains the index where the
+                 minima occurs
+       * maxima: Maxima ndarray of Speed of sound,  which contains the index where the
+                 maxima occurs
        * freq_cutoff: Desired frequency cutoff in Hz
     Returns the value of ΔC, which will later be used inside the PSSC detection method
     """
@@ -531,7 +528,8 @@ def potentialsubsurfacechannel(
        * temperature: Temperatures in Celsius
        * salinity: Salinity
        * freq_cutoff: Desired frequency cutoff in Hz
-    Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have a sub-surface channel
+    Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have
+    a sub-surface channel
     """
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
         depth, latitude, temperature, salinity
