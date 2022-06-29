@@ -40,7 +40,9 @@ def list_class4_files():
                    Class 4 files on the fly.
                    """
             print(msg)
-            return _list_class4_files_slowly(current_app.config[path])
+            return _list_class4_files_slowly(
+                current_app.config[path], current_app.config["CLASS4_FNAME_PATTERN"]
+            )
 
         # We need to read from the cache file. To ensure another process is not
         # currently *writing* to the cache file, first acquire a shared lock (i.e.,
@@ -72,7 +74,9 @@ def list_class4_files():
                 Class 4 files on the fly.
                 """
             print(msg)
-            result = _list_class4_files_slowly(current_app.config[path])
+            result = _list_class4_files_slowly(
+                current_app.config[path], current_app.config["CLASS4_FNAME_PATTERN"]
+            )
         fp.close()
 
         data[class4_type] = result
@@ -80,8 +84,8 @@ def list_class4_files():
     return data
 
 
-def _list_class4_files_slowly(class4_path):
-    return generate_class4_list.list_class4_files(class4_path)
+def _list_class4_files_slowly(class4_path, pattern):
+    return generate_class4_list.list_class4_files(class4_path, pattern)
 
 
 def list_class4(id, class4_type):
