@@ -112,20 +112,15 @@ saveScript(key) {
 
 getSubsetVariables() {
   GetVariablesPromise(this.props.dataset.dataset).then(variableResult => {
-    const subsetVariables = variableResult.data.filter((variable) => {
-      return !variable.id.includes("psubsurfacechannel");
-    });
     this.setState({
-      subset_variables: subsetVariables       
+      subset_variables: variableResult.data, 
     });
   });
-  
   this.setState({
     output_starttime: this.props.dataset.starttime,
-    output_endtime: this.props.dataset.time
+    output_endtime: this.props.dataset.time    
   });
 }
-
 render() {
   const subsetPanel = (
     <Panel
@@ -143,11 +138,10 @@ render() {
                 multiple={true}
                 state={this.state.output_variables}
                 def={"defaults.dataset"}
-                onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}            
+                onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
                 data={this.state.subset_variables}            
                 title={("Variables")}
               />
-
               <SelectBox
                 id='time_range'
                 key='time_range'
@@ -155,7 +149,6 @@ render() {
                 onUpdate={(_, value) => {this.setState({output_timerange: value,});}}
                 title={_("Select Time Range")}
               />
-
               <TimePicker
                 id='starttime'
                 key='starttime'
@@ -168,7 +161,6 @@ render() {
                 onUpdate={ (key, value) => { this.setState({output_starttime: value}); }}
                 max={this.props.dataset.time + 1}
               />
-
               <div style={{display: this.state.output_timerange ? "block" : "none",}}>
                 <TimePicker
                   id='time'
@@ -183,7 +175,6 @@ render() {
                   min={this.props.dataset.time}               
                 />
               </div>
-
               <FormGroup controlId="output_format">
                 <ControlLabel>{_("Output Format")}</ControlLabel>
                 <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value}); }}>
@@ -199,7 +190,6 @@ render() {
                   <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
                 </FormControl>
               </FormGroup>
-
               <SelectBox 
                 id='zip'
                 key='zip'
@@ -207,15 +197,13 @@ render() {
                 onUpdate={ (_, checked) => { this.setState({zip: checked}); } }
                 title={_("Compress as *.zip")}
               />
-
               <Button 
                 bsStyle="default" 
                 key='save'
                 id='save'
                 onClick={this.subsetArea}
                 disabled={this.state.output_variables == ""}
-              ><Icon icon="save" /> {_("Save")}</Button> 
-            
+              ><Icon icon="save" /> {_("Save")}</Button>             
               <DropdownButton
                 id="script"
                 title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
@@ -227,11 +215,10 @@ render() {
                 <MenuItem
                   eventKey="python"
                 ><Icon icon="code" /> {_("Python 3")}</MenuItem>
-                {/* <MenuItem
+                 <MenuItem
                   eventKey="r"
-                ><Icon icon="code" /> {_("R")}</MenuItem> */}
+                ><Icon icon="code" /> {_("R")}</MenuItem> 
               </DropdownButton> 
-
             </form>
           </Panel.Body>
         </Panel.Collapse>
@@ -242,9 +229,8 @@ render() {
     <div>     
       {subsetPanel} 
     </div>
-  );
-}
-    
+    );
+  }   
 }
 
 //***********************************************************************
