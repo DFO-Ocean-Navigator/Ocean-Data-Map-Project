@@ -15,23 +15,23 @@ class SubsetPanel extends React.Component {
     this._mounted = false;
     this.state = {
       output_timerange: false,
-      output_variables: "",
+      output_variables: [],
       output_starttime: props.dataset.starttime,
       output_endtime: props.dataset.time,
       output_format: "NETCDF4", // Subset output format
       convertToUserGrid: false,
       zip: false, // Should subset file(s) be zipped
-      subset_variable: [],
+      subset_variables: [],
     }
   // Function bindings
   this.subsetArea = this.subsetArea.bind(this);
   this.saveScript = this.saveScript.bind(this);
-  this.getSubsetVariable = this.getSubsetVariable.bind(this);
+  this.getSubsetVariables = this.getSubsetVariables.bind(this);
   }
 
 componentDidMount() {
   this._mounted = true;
-  this.getSubsetVariable();
+  this.getSubsetVariables();
 }
   
 componentWillUnmount() {
@@ -40,7 +40,7 @@ componentWillUnmount() {
   
 componentDidUpdate(prevProps) {
   if (this.props.dataset.dataset !== prevProps.dataset.dataset) {
-    this.getSubsetVariable();
+    this.getSubsetVariables();
   }
 }
 
@@ -110,13 +110,13 @@ saveScript(key) {
                         "&scriptType=SUBSET";
 }
 
-getSubsetVariable() {
+getSubsetVariables() {
   GetVariablesPromise(this.props.dataset.dataset).then(variableResult => {
     const subsetVariables = variableResult.data.filter((variable) => {
       return !variable.id.includes("psubsurfacechannel");
     });
     this.setState({
-      subset_variable: subsetVariables       
+      subset_variables: subsetVariables       
     });
   });
   
@@ -144,7 +144,7 @@ render() {
                 state={this.state.output_variables}
                 def={"defaults.dataset"}
                 onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}            
-                data = {this.state.subset_variable}            
+                data={this.state.subset_variables}            
                 title={("Variables")}
               />
 
@@ -157,8 +157,8 @@ render() {
               />
 
               <TimePicker
-                id='subsetstarttime'
-                key='subsetstarttime' 
+                id='starttime'
+                key='starttime'
                 state={this.state.output_starttime}
                 def=''
                 quantum={this.props.dataset.quantum}
@@ -171,8 +171,8 @@ render() {
 
               <div style={{display: this.state.output_timerange ? "block" : "none",}}>
                 <TimePicker
-                  id='subsettime'
-                  key='subsettime'
+                  id='time'
+                  key='time'
                   state={this.state.output_endtime}
                   def=''
                   quantum={this.props.dataset.quantum}

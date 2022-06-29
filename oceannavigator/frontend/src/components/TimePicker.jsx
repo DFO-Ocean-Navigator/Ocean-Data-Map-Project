@@ -61,6 +61,12 @@ class TimePicker extends React.Component {
     this._mounted = false;
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.dataset !== prevProps.dataset) {
+      this.populate(this.props)
+    }
+  }
+
   getIndexFromTimestamp(timestamp) {
     const keys = Object.keys(this.state.map);
     return keys.indexOf(timestamp.toString());
@@ -110,10 +116,8 @@ class TimePicker extends React.Component {
 
   populate(props) {
     // eslint-disable-next-line max-len
-    console.log(`timepicker dataset_variable`,props.dataset, props.variable)
     GetTimestampsPromise(props.dataset, props.variable).then(timestampResult => {
       const data = timestampResult.data;
-      console.log(`timepicker data`, data)
 
       let map = {};
       let revmap = {};
