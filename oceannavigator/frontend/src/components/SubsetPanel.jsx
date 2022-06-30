@@ -22,7 +22,7 @@ class SubsetPanel extends React.Component {
       convertToUserGrid: false,
       zip: false, // Should subset file(s) be zipped
       subset_variables: [],
-    }
+    };
   // Function bindings
   this.subsetArea = this.subsetArea.bind(this);
   this.saveScript = this.saveScript.bind(this);
@@ -63,7 +63,7 @@ calculateAreaBoundingBox(area) {
 }
 
 subsetArea() {
-  var queryString = []
+  var queryString = [];
   // check if predefined area
   if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
     queryString = "&area=" + this.props.area[0];
@@ -74,7 +74,7 @@ subsetArea() {
     queryString = "&min_range=" + min_range +
                   "&max_range=" + max_range;
   }
-  const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime
+  const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime;
   window.location.href = "/api/v1.0/subset/?" +
      "&output_format=" + this.state.output_format +
      "&dataset_name=" + this.props.dataset.dataset +

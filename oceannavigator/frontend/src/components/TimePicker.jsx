@@ -63,7 +63,7 @@ class TimePicker extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.dataset !== prevProps.dataset) {
-      this.populate(this.props)
+      this.populate(this.props);
     }
   }
 
