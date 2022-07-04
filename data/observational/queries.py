@@ -1,50 +1,49 @@
 import datetime
-from enum import Enum
 import math
+from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, and_
 
-from . import DataType, Platform, PlatformMetadata, Sample, Station#, db
+from . import DataType, Platform, PlatformMetadata, Sample, Station, engine
 
 EARTH_RADIUS = 6371.01
 
-'''
+
 def __db_funcs() -> Dict[str, Callable]:
     """
     Mapping of dialect-specific database functions
     """
-    dialect = db.engine.dialect.name
+    dialect = engine.dialect.name
     funcs = {}
     if dialect == "sqlite":
         funcs = {
-            "year": lambda v: db.func.strftime("%Y", v),
-            "month": lambda v: db.func.strftime("%Y%m", v),
-            "week": lambda v: db.func.strftime("%Y%W", v),
-            "day": lambda v: db.func.strftime("%Y%j", v),
-            "hour": lambda v: db.func.strftime("%Y%j%H", v),
-            "minute": lambda v: db.func.strftime("%Y%j%H%M", v),
-            "avgtime": lambda v: db.func.datetime(
-                db.func.avg(db.func.strftime("%s", v)), "unixepoch"
+            "year": lambda v: func.strftime("%Y", v),
+            "month": lambda v: func.strftime("%Y%m", v),
+            "week": lambda v: func.strftime("%Y%W", v),
+            "day": lambda v: func.strftime("%Y%j", v),
+            "hour": lambda v: func.strftime("%Y%j%H", v),
+            "minute": lambda v: func.strftime("%Y%j%H%M", v),
+            "avgtime": lambda v: func.datetime(
+                func.avg(func.strftime("%s", v)), "unixepoch"
             ),
         }
     elif dialect == "mysql":
         funcs = {
-            "year": lambda v: db.func.date_format(v, "%Y"),
-            "month": lambda v: db.func.date_format(v, "%Y%m"),
-            "week": lambda v: db.func.date_format(v, "%Y%U"),
-            "day": lambda v: db.func.date_format(v, "%Y%j"),
-            "hour": lambda v: db.func.date_format(v, "%Y%j%H"),
-            "minute": lambda v: db.func.date_format(v, "%Y%j%H%M"),
-            "avgtime": lambda v: db.func.from_unixtime(
-                db.func.avg(db.func.unix_timestamp(v))
-            ),
+            "year": lambda v: func.date_format(v, "%Y"),
+            "month": lambda v: func.date_format(v, "%Y%m"),
+            "week": lambda v: func.date_format(v, "%Y%U"),
+            "day": lambda v: func.date_format(v, "%Y%j"),
+            "hour": lambda v: func.date_format(v, "%Y%j%H"),
+            "minute": lambda v: func.date_format(v, "%Y%j%H%M"),
+            "avgtime": lambda v: func.from_unixtime(func.avg(func.unix_timestamp(v))),
         }
     else:
-        raise RuntimeError(f"Dialect {db.engine.dialect} is unknown")
+        raise RuntimeError(f"Dialect {engine.dialect} is unknown")
 
     return funcs
-'''
+
 
 def get_platforms(
     session: Session,
@@ -90,8 +89,8 @@ def get_platforms(
         radLat = math.radians(latitude)
         radLon = math.radians(longitude)
 
-        if db.engine.dialect.name == "sqlite":
-            rc = db.engine.raw_connection()
+        if engine.dialect.name == "sqlite":
+            rc = engine.raw_connection()
 
             # SQLite doesn't do trig, so we'll add the functions via Python
             # It won't be as quick as doing the comparison in the database, but
@@ -102,12 +101,12 @@ def get_platforms(
             rc.create_function("acos", 1, math.acos)
 
         query = query.filter(
-            db.func.acos(
-                (math.sin(radLat) * db.func.sin(db.func.radians(Station.latitude)))
+            func.acos(
+                (math.sin(radLat) * func.sin(func.radians(Station.latitude)))
                 + (
                     math.cos(radLat)
-                    * db.func.cos(db.func.radians(Station.latitude))
-                    * db.func.cos(db.func.radians(Station.longitude) - radLon)
+                    * func.cos(func.radians(Station.latitude))
+                    * func.cos(func.radians(Station.longitude) - radLon)
                 )
             )
             <= radDist
@@ -115,9 +114,9 @@ def get_platforms(
 
     return query.distinct().all()
 
-'''
+
 def get_platform_tracks(
-    session: db.Session,
+    session: Session,
     quantum: str = "hour",
     minlat: Optional[float] = None,
     maxlat: Optional[float] = None,
@@ -138,8 +137,8 @@ def get_platform_tracks(
     query = session.query(
         Platform.id,
         Platform.type,
-        db.func.avg(Station.longitude),
-        db.func.avg(Station.latitude),
+        func.avg(Station.longitude),
+        func.avg(Station.latitude),
     ).join(Station)
     if quantum not in ["year", "month", "week", "day", "hour", "minute"]:
         raise ValueError(f"Quantum {quantum} is unknown")
@@ -166,7 +165,7 @@ def get_platform_tracks(
 
 
 def get_platform_track(
-    session: db.Session,
+    session: Session,
     platform: Platform,
     quantum: str = "hour",
     starttime: Optional[datetime.datetime] = None,
@@ -174,7 +173,7 @@ def get_platform_track(
 ) -> List[Tuple[float, float]]:
     """Gets the track traveled by an individual Platform
 
-    :param db.Session session: Database Session object
+    :param session: Database Session object
     :param platform Platform: The Platform
     :param str quantum: The quantum for the data, one of (year, month, week,
     day, hour, minute)
@@ -184,8 +183,8 @@ def get_platform_track(
     """
     funcs = __db_funcs()
     query = session.query(
-        db.func.avg(Station.longitude),
-        db.func.avg(Station.latitude),
+        func.avg(Station.longitude),
+        func.avg(Station.latitude),
     ).filter_by(platform=platform)
 
     if quantum not in ["year", "month", "week", "day", "hour", "minute"]:
@@ -203,7 +202,7 @@ def get_platform_track(
 
 
 def get_platform_variable_track(
-    session: db.Session,
+    session: Session,
     platform: Platform,
     variable: str,
     quantum: str = "hour",
@@ -216,10 +215,10 @@ def get_platform_variable_track(
     query = (
         session.query(
             funcs["avgtime"](Station.time),
-            db.func.avg(Station.latitude),
-            db.func.avg(Station.longitude),
-            db.func.round(Sample.depth / depth_quantum) * depth_quantum,
-            db.func.avg(Sample.value),
+            func.avg(Station.latitude),
+            func.avg(Station.longitude),
+            func.round(Sample.depth / depth_quantum) * depth_quantum,
+            func.avg(Sample.value),
         )
         .filter(Station.platform == platform, Sample.datatype_key == variable)
         .join(Station.samples)
@@ -230,7 +229,7 @@ def get_platform_variable_track(
 
     query = query.order_by(Station.time).group_by(
         funcs[quantum](Station.time),
-        db.func.round(Sample.depth / depth_quantum) * depth_quantum,
+        func.round(Sample.depth / depth_quantum) * depth_quantum,
     )
 
     if starttime:
@@ -258,7 +257,7 @@ def __add_sample_filters(
         query = query.filter(Sample.depth <= maxdepth)
 
     return query
-'''
+
 
 def __add_platform_filters(
     query,
@@ -272,7 +271,7 @@ def __add_platform_filters(
     # Joins to PlatformMetadata
     if meta_key is not None:
         query = query.join(PlatformMetadata).filter(
-            db.and_(
+            and_(
                 PlatformMetadata.key == meta_key,
                 PlatformMetadata.value.ilike(f"%{meta_value}%"),
             )
@@ -280,7 +279,7 @@ def __add_platform_filters(
 
     return query
 
-'''
+
 def __add_station_filters(
     query,
     minlat=None,
@@ -358,7 +357,7 @@ def __build_station_query(
 
 
 def get_stations(
-    session: db.Session,
+    session: Session,
     variable: Optional[str] = None,
     mindepth: Optional[float] = None,
     maxdepth: Optional[float] = None,
@@ -375,7 +374,10 @@ def get_stations(
     """
     Queries for stations, givent the optional query filters.
     """
-    return __build_station_query(**locals()).options(db.joinedload("platform")).all()
+    test = __build_station_query(**locals()).options(joinedload("platform")).all()
+    return (
+        test  # __build_station_query(**locals()).options(joinedload("platform")).all()
+    )
 
 
 def __get_bounding_latlon(lat, lon, distance):
@@ -414,7 +416,7 @@ def __get_bounding_latlon(lat, lon, distance):
 
 
 def get_stations_radius(
-    session: db.Session,
+    session: Session,
     latitude: float,
     longitude: float,
     radius: float,
@@ -452,8 +454,8 @@ def get_stations_radius(
     radLat = math.radians(latitude)
     radLon = math.radians(longitude)
 
-    if db.engine.dialect.name == "sqlite":
-        rc = db.engine.raw_connection()
+    if engine.dialect.name == "sqlite":
+        rc = engine.raw_connection()
 
         # SQLite doesn't do trig, so we'll add the functions via Python
         # It won't be as quick as doing the comparison in the database, but
@@ -464,19 +466,19 @@ def get_stations_radius(
         rc.create_function("acos", 1, math.acos)
 
     query = query.filter(
-        db.func.acos(
-            (math.sin(radLat) * db.func.sin(db.func.radians(Station.latitude)))
+        func.acos(
+            (math.sin(radLat) * func.sin(func.radians(Station.latitude)))
             + (
                 math.cos(radLat)
-                * db.func.cos(db.func.radians(Station.latitude))
-                * db.func.cos(db.func.radians(Station.longitude) - radLon)
+                * func.cos(func.radians(Station.latitude))
+                * func.cos(func.radians(Station.longitude) - radLon)
             )
         )
         <= radDist
     )
 
-    return query.options(db.joinedload("platform")).all()
-'''
+    return query.options(joinedload("platform")).all()
+
 
 def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
     """
@@ -494,9 +496,7 @@ def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
     return data
 
 
-def get_meta_values(
-    session: Session, platform_types: List[str], key: str
-) -> List[str]:
+def get_meta_values(session: Session, platform_types: List[str], key: str) -> List[str]:
     """
     Queries for Platform Metadata values, given a list of platform types and
     the key

@@ -1,14 +1,17 @@
 import datetime
+import json
 import os
 from io import BytesIO
-from typing import List
 
 import geojson
 import numpy as np
+import pandas as pd
+from dateutil.parser import parse as dateparse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
 from PIL import Image
+from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy.orm import Session
 
 import data.observational.queries as ob_queries
@@ -16,7 +19,7 @@ import plotting.colormap
 import routes.enums as e
 import utils.misc
 from data import open_dataset
-from data.observational import SessionLocal, engine
+from data.observational import SessionLocal
 from data.observational.orm.datatype import DataType
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
@@ -732,12 +735,14 @@ async def kml_point(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
         ...,
-        description="EPSG code for desired projection. Used to map resulting KML coords",
+        description="EPSG code for desired projection. Used to map resulting KML \
+            coords",
         example="EPSG:3857",
     ),
     view_bounds: str = Query(
         None,
-        description="Used to exclude KML points that aren't visible. Useful for filtering large KML groups.",
+        description="Used to exclude KML points that aren't visible. Useful for \
+            filtering large KML groups.",
     ),
 ):
     """
@@ -1119,8 +1124,8 @@ def observation_values_v1_0(platform_types: str, key: str, db: Session = Depends
     # resp.cache_control.max_age = max_age
     return data
 
-'''
-@bp_v1_0.route("/api/v1.0/observation/tracktimerange/<string:platform_id>.json")
+
+@router.get("/observation/tracktimerange/{platform_id}.json")
 def observation_tracktime_v1_0(platform_id: str):
     """
     API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
@@ -1151,8 +1156,8 @@ def observation_tracktime_v1_0(platform_id: str):
     return resp
 
 
-@bp_v1_0.route("/api/v1.0/observation/track/<string:query>.json")
-def observation_track_v1_0(query: str):
+@router.get("/observation/track/{query}.json")
+def observation_track_v1_0(query: str, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/track/<string:query>.json
 
@@ -1208,7 +1213,7 @@ def observation_track_v1_0(query: str):
             params["longitude"] = area[0][1]
             params["radius"] = float(query_dict.get("radius", 10))
 
-        platforms = ob_queries.get_platforms(DB.session, **params)
+        platforms = ob_queries.get_platforms(db, **params)
         for param in [
             "minlat",
             "maxlat",
@@ -1224,7 +1229,7 @@ def observation_track_v1_0(query: str):
         params["platforms"] = platforms
 
     coordinates = ob_queries.get_platform_tracks(
-        DB.session, query_dict.get("quantum", "day"), **params
+        db, query_dict.get("quantum", "day"), **params
     )
 
     if len(coordinates) > 1:
@@ -1252,13 +1257,14 @@ def observation_track_v1_0(query: str):
         "type": "FeatureCollection",
         "features": data,
     }
-    resp = jsonify(result)
-    resp.cache_control.max_age = max_age
-    return resp
+    # resp = jsonify(result)
+    # resp.cache_control.max_age = max_age
+    return result
 
 
-@bp_v1_0.route("/api/v1.0/observation/point/<string:query>.json")
-def observation_point_v1_0(query: str):
+ 
+@router.get("/observation/point/{query}.json")
+def observation_point_v1_0(query: str, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/point/<string:query>.json
 
@@ -1322,9 +1328,9 @@ def observation_point_v1_0(query: str):
             with_radius = True
 
     if with_radius:
-        stations = ob_queries.get_stations_radius(session=DB.session, **params)
+        stations = ob_queries.get_stations_radius(session=db, **params)
     else:
-        stations = ob_queries.get_stations(session=DB.session, **params)
+        stations = ob_queries.get_stations(session=db, **params)
 
     if len(stations) > 500:
         stations = stations[:: round(len(stations) / 500)]
@@ -1351,12 +1357,12 @@ def observation_point_v1_0(query: str):
         "type": "FeatureCollection",
         "features": data,
     }
-    resp = jsonify(result)
-    resp.cache_control.max_age = max_age
-    return resp
+    # resp = jsonify(result)
+    # resp.cache_control.max_age = max_age
+    return result
 
 
-@bp_v1_0.route("/api/v1.0/observation/meta.json")
+@router.get("/observation/meta.json")
 def observation_meta_v1_0():
     """
     API Format: /api/v1.0/observation/meta.json
@@ -1390,7 +1396,7 @@ def observation_meta_v1_0():
     return resp
 
 
-@bp_v1_0.route("/api/v1.0/observation/variables/<string:query>.json")
+@router.get("/observation/variables/{query}.json")
 def observation_variables_v1_0(query: str):
     """
     API Format: /api/v1.0/observation/variables/<string:query>.json
@@ -1439,7 +1445,7 @@ def observation_variables_v1_0(query: str):
     resp.cache_control.max_age = max_age
     return resp
 
-
+'''
 @bp_v1_0.after_request
 def after_request(response):
     # https://flask.palletsprojects.com/en/1.1.x/security/
@@ -1453,7 +1459,7 @@ def after_request(response):
     header["X-Frame-Options"] = "SAMEORIGIN"
 
     return response
-
+'''
 
 def _is_cache_valid(dataset: str, f: str) -> bool:
     """
@@ -1474,7 +1480,6 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
             return True
     else:
         return False
-'''
 
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
