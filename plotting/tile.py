@@ -6,7 +6,6 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import current_app
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
@@ -20,6 +19,8 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
 from oceannavigator import DatasetConfig
+from oceannavigator.log import log
+from oceannavigator.settings import get_settings
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -290,7 +291,9 @@ def topo(projection, x, y, z, shaded_relief):
     return buf
 
 
-def bathymetry(projection, x, y, z, args):
+def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
+    settings = get_settings()
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -298,7 +301,7 @@ def bathymetry(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
 
-    with Dataset(current_app.config["ETOPO_FILE"] % (projection, z), "r") as dataset:
+    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
         data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
         data = data[::-1, :]
 
@@ -339,5 +342,3 @@ def bathymetry(projection, x, y, z, args):
         buf2 = BytesIO()
         im.save(buf2, format="PNG", optimize=True)
         return buf2
-
-    return None

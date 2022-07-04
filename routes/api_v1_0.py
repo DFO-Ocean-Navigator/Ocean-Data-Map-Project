@@ -1,11 +1,13 @@
 import datetime
 import os
+from io import BytesIO
 
 import geojson
 import numpy as np
 from fastapi import APIRouter, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
+from PIL import Image
 
 import plotting.colormap
 import routes.enums as e
@@ -25,31 +27,13 @@ from plotting.tile import scale as plot_scale
 
 """
 import base64
-import datetime
 import gzip
 import json
-import os
 import shutil
 import sqlite3
-from io import BytesIO
 
-import geojson
-import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from flask import (
-    Blueprint,
-    Response,
-    abort,
-    current_app,
-    jsonify,
-    request,
-    send_file,
-    send_from_directory,
-)
-from flask_babel import gettext
-from marshmallow.exceptions import ValidationError
-from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 
 import data.class4 as class4
@@ -965,13 +949,17 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
 
     bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
     return _cache_and_send_img(bytesIOBuff, f)
+'''
 
-@router.get("/tiles/bath/{projection}/{zoom}/{x}/{y}")
+
+@router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_v1_0(
-    projection: str = Path(..., title="EPSG projection code.", example="EPSG:3857"),
     zoom: int = Path(..., example=4),
     x: int = Path(...),
     y: int = Path(...),
+    projection: str = Query(
+        "EPSG:3857", title="EPSG projection code.", example="EPSG:3857"
+    ),
 ):
     """
     Generates bathymetry tiles
@@ -986,7 +974,17 @@ async def bathymetry_v1_0(
             headers={"Cache-Control": f"max-age={MAX_CACHE}"},
         )
 
-    f = os.path.join(settings.cache_dir, request.path[1:])
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "tiles",
+        "bath",
+        projection,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
 
     if os.path.isfile(f):
         return FileResponse(
@@ -998,6 +996,8 @@ async def bathymetry_v1_0(
     img = plot_bathymetry(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
 
+
+'''
 @bp_v1_0.route(
     "/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>"
 )
@@ -1453,6 +1453,7 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
             return True
     else:
         return False
+'''
 
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
@@ -1466,13 +1467,13 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     if not os.path.isdir(p):
         os.makedirs(p)
 
-    # This seems excessive
     bytesIOBuff.seek(0)
-    dataIO = BytesIO(bytesIOBuff.read())
-    im = Image.open(dataIO)
+    im = Image.open(bytesIOBuff.read())
     im.save(f, format="PNG", optimize=True)  # For cache
-
     bytesIOBuff.seek(0)
-    return send_file(bytesIOBuff, mimetype="image/png", cache_timeout=MAX_CACHE)
 
-'''
+    return StreamingResponse(
+        bytesIOBuff,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename=#{os.path.basename(f)}"},
+    )

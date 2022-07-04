@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     class Config:
         case_sentive: bool = False
         env_prefix: str = "onav_"
-        env_file: str = os.environ.get("ONAV_ENV_FILE", "configs/default.env")
+        env_file: str = os.environ.get("ONAV_ENV_FILE", "config/default.env")
         env_file_encoding: str = "utf-8"
 
 
