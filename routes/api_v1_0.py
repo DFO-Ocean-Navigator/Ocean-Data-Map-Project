@@ -221,6 +221,7 @@ def datasets_query_v1_0():
                     "quantum": config.quantum,
                     "help": config.help,
                     "attribution": config.attribution,
+                    "model_class": config.model_class,
                 }
             )
     data = sorted(data, key=lambda k: k["value"])

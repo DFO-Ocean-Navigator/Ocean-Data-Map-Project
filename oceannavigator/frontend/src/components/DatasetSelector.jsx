@@ -36,6 +36,8 @@ const PARENT_ATTRIBUTES_TO_UPDATE = Object.freeze([
   "quiverVariable",
 ]);
 
+const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
+
 class DatasetSelector extends React.Component {
   constructor(props) {
     super(props);
@@ -75,6 +77,7 @@ class DatasetSelector extends React.Component {
     });
 
     const quantum = currentDataset.quantum;
+    const model_class = currentDataset.model_class;
 
     GetVariablesPromise(newDataset).then(variableResult => {
       this.setState({ loadingPercent: 33 });
@@ -122,7 +125,7 @@ class DatasetSelector extends React.Component {
             loadingPercent: 0,
 
             dataset: newDataset,
-
+            model_class: model_class,
             quantum: quantum,
 
             datasetVariables: variableResult.data,
@@ -370,7 +373,7 @@ class DatasetSelector extends React.Component {
     let quiverSelector = null;
     if (this.props.showQuiverSelector && !this.state.loading) {
       let quiverVariables = [];
-      if (this.state.datasetVariables) {
+      if (this.state.datasetVariables && MODEL_CLASSES_WITH_QUIVER.includes(this.state.model_class)) {
         quiverVariables = this.state.datasetVariables.filter((variable) => {
           return variable.id.includes("mag") && variable.id.includes("vel");
         });
