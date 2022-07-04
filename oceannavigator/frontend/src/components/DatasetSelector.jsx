@@ -77,7 +77,7 @@ class DatasetSelector extends React.Component {
     });
 
     const quantum = currentDataset.quantum;
-    const model_class= currentDataset.model_class;
+    const model_class = currentDataset.model_class;
 
     GetVariablesPromise(newDataset).then(variableResult => {
       this.setState({ loadingPercent: 33 });
