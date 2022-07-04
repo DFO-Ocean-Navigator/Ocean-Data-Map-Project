@@ -7,7 +7,7 @@ import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
 from PIL import Image
@@ -21,7 +21,6 @@ import routes.enums as e
 import utils.misc
 from data import open_dataset
 from data.observational import SessionLocal, DataType, Platform, Sample, Station
-from data.observational.orm.datatype import DataType
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
@@ -33,6 +32,7 @@ from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.tile import bathymetry as plot_bathymetry
 from plotting.tile import scale as plot_scale
+from utils.errors import ClientError
 
 """
 import base64
@@ -76,6 +76,8 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import APIError, ClientError, ErrorBase
 """
+
+FAILURE = ClientError("Bad API usage")
 
 
 def get_db():
@@ -1363,7 +1365,7 @@ def observation_point_v1_0(query: str, db: Session = Depends(get_db)):
 
 
 @router.get("/observation/meta.json")
-def observation_meta_v1_0(db: Session = Depends(get_db)):
+def observation_meta_v1_0(request: Request, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/meta.json
 
@@ -1371,8 +1373,8 @@ def observation_meta_v1_0(db: Session = Depends(get_db)):
 
     **Used in Map for the observational tooltip**
     """
-    key = request.args.get("type", "platform")
-    identifier = request.args.get("id", "0")
+    key = request.query_params.get('type', 'platform')
+    identifier = request.query_params.get("id", "0")
     max_age = 86400
     data = {}
     if key == "station":
