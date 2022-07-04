@@ -23,6 +23,7 @@ from plotting.colormap import plot_colormaps
 from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.tile import bathymetry as plot_bathymetry
+from plotting.tile import topo as plot_topography
 from plotting.tile import scale as plot_scale
 
 """
@@ -925,40 +926,62 @@ def tile_v1_0(
 
     return _cache_and_send_img(img, f)
 
+'''
 
-@bp_v1_0.route(
-    "/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
-)
-def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
+
+@router.get("/tiles/topo/{zoom}/{x}/{y}")
+async def topography_tiles(
+    zoom: int = Path(..., example=4),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
+    shaded_relief: bool = Query(default=False),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+):
     """
     Generates topographical tiles
     """
 
-    bShaded_relief = shaded_relief == "true"
-
-    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
+    settings = get_settings()
 
     if zoom > 7:
-        return send_file(shape_file_dir + "/blank.png")
+        return FileResponse(
+            os.path.join(settings.shape_file_dir, "blank.png"),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "tiles",
+        "topo",
+        projection,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
 
     if os.path.isfile(f):
-        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
-    return _cache_and_send_img(bytesIOBuff, f)
-'''
+    img = plot_topography(projection, x, y, zoom, shaded_relief)
+    return _cache_and_send_img(img, f)
 
 
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
-async def bathymetry_v1_0(
+async def bathymetry_tiles(
     zoom: int = Path(..., example=4),
-    x: int = Path(...),
-    y: int = Path(...),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
     projection: str = Query(
-        "EPSG:3857", title="EPSG projection code.", example="EPSG:3857"
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
 ):
     """
@@ -1468,7 +1491,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
         os.makedirs(p)
 
     bytesIOBuff.seek(0)
-    im = Image.open(bytesIOBuff.read())
+    im = Image.open(bytesIOBuff)
     im.save(f, format="PNG", optimize=True)  # For cache
     bytesIOBuff.seek(0)
 
