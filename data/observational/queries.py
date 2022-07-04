@@ -1,13 +1,14 @@
 import datetime
 import math
 from enum import Enum
+from sqlalchemy.orm import Session
 from typing import Callable, Dict, List, Optional, Tuple
 
-from . import DataType, Platform, PlatformMetadata, Sample, Station, db
+from . import DataType#, Platform, PlatformMetadata, Sample, Station, db
 
 EARTH_RADIUS = 6371.01
 
-
+'''
 def __db_funcs() -> Dict[str, Callable]:
     """
     Mapping of dialect-specific database functions
@@ -508,9 +509,9 @@ def get_meta_values(
     )
     data = [item[0] for item in data]
     return data
+'''
 
-
-def get_datatypes(session: db.Session) -> List[DataType]:
+def get_datatypes(session: Session) -> List[DataType]:
     """
     Queries all DataTypes in the database
     """

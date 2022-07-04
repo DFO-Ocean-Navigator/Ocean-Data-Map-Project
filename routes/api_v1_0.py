@@ -1,18 +1,23 @@
 import datetime
 import os
 from io import BytesIO
+from typing import List
 
 import geojson
 import numpy as np
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
 from PIL import Image
+from sqlalchemy.orm import Session
 
+import data.observational.queries as ob_queries
 import plotting.colormap
 import routes.enums as e
 import utils.misc
 from data import open_dataset
+from data.observational import SessionLocal, engine
+from data.observational.orm.datatype import DataType
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
@@ -67,6 +72,16 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import APIError, ClientError, ErrorBase
 """
+
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
+
+
 router = APIRouter(
     prefix="/api/v1.0",
     responses={404: {"message": "Not found"}},
@@ -1039,27 +1054,31 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
+'''
+
 
 @router.get("/observation/datatypes")
-async def observation_datatypes():
+async def observation_datatypes(db: Session = Depends(get_db)):
     """
     Returns the list of observational data types
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
+    #max_age = 86400
+
     data = [
         {
             "id": dt.key,
             "value": dt.name,
         }
-        for dt in ob_queries.get_datatypes(DB.session)
+        for dt in ob_queries.get_datatypes(db)
     ]
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    # resp = jsonify(data)
+    # resp.cache_control.max_age = max_age
+    return data
+    
 
-
+'''
 @bp_v1_0.route("/api/v1.0/observation/meta_keys/<string:platform_types>.json")
 def observation_keys_v1_0(platform_types: str):
     """
