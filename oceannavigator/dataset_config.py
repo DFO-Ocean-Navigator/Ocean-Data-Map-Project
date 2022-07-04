@@ -438,7 +438,7 @@ class VectorVariableConfig(VariableConfig):
             north_vector_component = None
 
         return north_vector_component
-    
+
     @property
     def bearing_component(self) -> str:
         """
