@@ -12,6 +12,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
 from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 import data.observational.queries as ob_queries
@@ -19,7 +20,7 @@ import plotting.colormap
 import routes.enums as e
 import utils.misc
 from data import open_dataset
-from data.observational import SessionLocal
+from data.observational import SessionLocal, DataType, Platform, Sample, Station
 from data.observational.orm.datatype import DataType
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
@@ -1126,7 +1127,7 @@ def observation_values_v1_0(platform_types: str, key: str, db: Session = Depends
 
 
 @router.get("/observation/tracktimerange/{platform_id}.json")
-def observation_tracktime_v1_0(platform_id: str):
+def observation_tracktime_v1_0(platform_id: str, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
 
@@ -1137,22 +1138,21 @@ def observation_tracktime_v1_0(platform_id: str):
     **Used in TrackWindow**
     """
     max_age = 86400
-    platform = DB.session.query(Platform).get(platform_id)
+    platform = db.query(Platform).get(platform_id)
     data = (
-        DB.session.query(
-            DB.func.min(Station.time),
-            DB.func.max(Station.time),
+        db.query(
+            func.min(Station.time),
+            func.max(Station.time),
         )
         .filter(Station.platform == platform)
         .one()
     )
-    resp = jsonify(
-        {
+    resp = {
             "min": data[0].isoformat(),
             "max": data[1].isoformat(),
         }
-    )
-    resp.cache_control.max_age = max_age
+    
+    #resp.cache_control.max_age = max_age
     return resp
 
 
@@ -1363,7 +1363,7 @@ def observation_point_v1_0(query: str, db: Session = Depends(get_db)):
 
 
 @router.get("/observation/meta.json")
-def observation_meta_v1_0():
+def observation_meta_v1_0(db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/meta.json
 
@@ -1376,7 +1376,7 @@ def observation_meta_v1_0():
     max_age = 86400
     data = {}
     if key == "station":
-        station = DB.session.query(Station).get(identifier)
+        station = db.query(Station).get(identifier)
         data["Time"] = station.time.isoformat(" ")
         if station.name:
             data["Station Name"] = station.name
@@ -1384,20 +1384,20 @@ def observation_meta_v1_0():
         platform = station.platform
 
     elif key == "platform":
-        platform = DB.session.query(Platform).get(identifier)
+        platform = db.query(Platform).get(identifier)
     else:
         raise FAILURE
 
     data.update(platform.attrs)
     data["Platform Type"] = platform.type.name
     data = {k: data[k] for k in sorted(data)}
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    # resp = jsonify(data)
+    # resp.cache_control.max_age = max_age
+    return data
 
 
 @router.get("/observation/variables/{query}.json")
-def observation_variables_v1_0(query: str):
+def observation_variables_v1_0(query: str, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/variables/<string:query>.json
 
@@ -1412,22 +1412,22 @@ def observation_variables_v1_0(query: str):
     data = []
     max_age = 86400
     if key == "station":
-        station = DB.session.query(Station).get(identifier)
+        station = db.query(Station).get(identifier)
     elif key == "platform":
-        platform = DB.session.query(Platform).get(identifier)
-        station = DB.session.query(Station).filter(Station.platform == platform).first()
+        platform = db.query(Platform).get(identifier)
+        station = db.query(Station).filter(Station.platform == platform).first()
     else:
         raise FAILURE
 
     datatype_keys = [
         k[0]
-        for k in DB.session.query(DB.func.distinct(Sample.datatype_key))
+        for k in db.query(func.distinct(Sample.datatype_key))
         .filter(Sample.station == station)
         .all()
     ]
 
     datatypes = (
-        DB.session.query(DataType)
+        db.query(DataType)
         .filter(DataType.key.in_(datatype_keys))
         .order_by(DataType.key)
         .all()
@@ -1441,9 +1441,9 @@ def observation_variables_v1_0(query: str):
         for idx, dt in enumerate(datatypes)
     ]
 
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    # resp = jsonify(data)
+    # resp.cache_control.max_age = max_age
+    return data
 
 '''
 @bp_v1_0.after_request
