@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String
 
-from data.database import Base
+from data.observational import Base
 
 
 class DataType(Base):

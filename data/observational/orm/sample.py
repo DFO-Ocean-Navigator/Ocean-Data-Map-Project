@@ -1,21 +1,25 @@
-from data.observational import db
+from sqlalchemy import Column, Float, Integer, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import ForeignKey, Index
+
+from data.observational import Base
 
 
-class Sample(db.Model):
+class Sample(Base):
     __tablename__ = "samples"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    datatype_key = db.Column(db.String(64), db.ForeignKey("datatypes.key"))
-    value = db.Column(db.Float)
-    depth = db.Column(db.Float)
-    station_id = db.Column(db.Integer, db.ForeignKey("stations.id"))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    datatype_key = Column(String(64), ForeignKey("datatypes.key"))
+    value = Column(Float)
+    depth = Column(Float)
+    station_id = Column(Integer, ForeignKey("stations.id"))
 
-    station = db.relationship(
+    station = relationship(
         "Station",
         back_populates="samples",
         cascade="all, delete-orphan",
         single_parent=True,
     )
-    datatype = db.relationship("DataType")
+    datatype = relationship("DataType")
 
     def __repr__(self):
         return (
@@ -25,4 +29,4 @@ class Sample(db.Model):
         )
 
 
-db.Index("idx_dt_st", Sample.datatype_key, Sample.station_id)
+Index("idx_dt_st", Sample.datatype_key, Sample.station_id)

@@ -1076,11 +1076,15 @@ async def observation_datatypes(db: Session = Depends(get_db)):
     # resp = jsonify(data)
     # resp.cache_control.max_age = max_age
     return data
-    
 
-'''
-@bp_v1_0.route("/api/v1.0/observation/meta_keys/<string:platform_types>.json")
-def observation_keys_v1_0(platform_types: str):
+
+@router.get("/observation/meta_keys/{platform_types}.json")
+async def observation_keys(platform_types, db: Session = Depends(get_db)):#platform_types: str = Path(
+#         None,
+#         title="List of platform types (comma seperated).",
+#         example="argo,drifter,animal,mission,glider",
+#     )
+# ):
     """
     API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
 
@@ -1091,12 +1095,12 @@ def observation_keys_v1_0(platform_types: str):
     **Used in ObservationSelector**
     """
     max_age = 86400
-    data = ob_queries.get_meta_keys(DB.session, platform_types.split(","))
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    data = ob_queries.get_meta_keys(db, platform_types.split(","))
+    # resp = jsonify(data)
+    # resp.cache_control.max_age = max_age
+    return data
 
-
+'''
 @bp_v1_0.route(
     "/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json"
 )

@@ -1,10 +1,11 @@
 import datetime
-import math
 from enum import Enum
-from sqlalchemy.orm import Session
+import math
 from typing import Callable, Dict, List, Optional, Tuple
 
-from . import DataType#, Platform, PlatformMetadata, Sample, Station, db
+from sqlalchemy.orm import Session
+
+from . import DataType, Platform, PlatformMetadata, Sample, Station#, db
 
 EARTH_RADIUS = 6371.01
 
@@ -43,10 +44,10 @@ def __db_funcs() -> Dict[str, Callable]:
         raise RuntimeError(f"Dialect {db.engine.dialect} is unknown")
 
     return funcs
-
+'''
 
 def get_platforms(
-    session: db.Session,
+    session: Session,
     minlat: Optional[float] = None,
     maxlat: Optional[float] = None,
     minlon: Optional[float] = None,
@@ -114,7 +115,7 @@ def get_platforms(
 
     return query.distinct().all()
 
-
+'''
 def get_platform_tracks(
     session: db.Session,
     quantum: str = "hour",
@@ -257,7 +258,7 @@ def __add_sample_filters(
         query = query.filter(Sample.depth <= maxdepth)
 
     return query
-
+'''
 
 def __add_platform_filters(
     query,
@@ -279,7 +280,7 @@ def __add_platform_filters(
 
     return query
 
-
+'''
 def __add_station_filters(
     query,
     minlat=None,
@@ -475,14 +476,15 @@ def get_stations_radius(
     )
 
     return query.options(db.joinedload("platform")).all()
+'''
 
-
-def get_meta_keys(session: db.Session, platform_types: List[str]) -> List[str]:
+def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
     """
     Queries for Platform Metadata keys, given a list of platform types
     """
     data = (
-        session.query(db.distinct(PlatformMetadata.key))
+        session.query(PlatformMetadata.key)
+        .distinct()
         .join(Platform)
         .filter(Platform.type.in_(platform_types))
         .order_by(PlatformMetadata.key)
@@ -491,7 +493,7 @@ def get_meta_keys(session: db.Session, platform_types: List[str]) -> List[str]:
     data = [item[0] for item in data]
     return data
 
-
+'''
 def get_meta_values(
     session: db.Session, platform_types: List[str], key: str
 ) -> List[str]:

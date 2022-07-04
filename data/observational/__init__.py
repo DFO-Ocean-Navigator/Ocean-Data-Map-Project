@@ -10,6 +10,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 from .orm.datatype import DataType
-# from .orm.platform import Platform, PlatformMetadata
-# from .orm.sample import Sample
-# from .orm.station import Station
+from .orm.platform import Platform, PlatformMetadata
+from .orm.sample import Sample
+from .orm.station import Station
