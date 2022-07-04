@@ -1100,11 +1100,9 @@ async def observation_keys(platform_types, db: Session = Depends(get_db)):#platf
     # resp.cache_control.max_age = max_age
     return data
 
-'''
-@bp_v1_0.route(
-    "/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json"
-)
-def observation_values_v1_0(platform_types: str, key: str):
+
+@router.get("/observation/meta_values/{platform_types}/{key}.json")
+def observation_values_v1_0(platform_types: str, key: str, db: Session = Depends(get_db)):
     """
     API Format: /api/v1.0/observation/meta_values/<string:platform_types>.json
 
@@ -1116,12 +1114,12 @@ def observation_values_v1_0(platform_types: str, key: str):
     **Used in ObservationSelector**
     """
     max_age = 86400
-    data = ob_queries.get_meta_values(DB.session, platform_types.split(","), key)
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    data = ob_queries.get_meta_values(db, platform_types.split(","), key)
+    # resp = jsonify(data)
+    # resp.cache_control.max_age = max_age
+    return data
 
-
+'''
 @bp_v1_0.route("/api/v1.0/observation/tracktimerange/<string:platform_id>.json")
 def observation_tracktime_v1_0(platform_id: str):
     """

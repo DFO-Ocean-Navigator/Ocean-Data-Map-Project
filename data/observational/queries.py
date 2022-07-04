@@ -493,16 +493,17 @@ def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
     data = [item[0] for item in data]
     return data
 
-'''
+
 def get_meta_values(
-    session: db.Session, platform_types: List[str], key: str
+    session: Session, platform_types: List[str], key: str
 ) -> List[str]:
     """
     Queries for Platform Metadata values, given a list of platform types and
     the key
     """
     data = (
-        session.query(db.distinct(PlatformMetadata.value))
+        session.query(PlatformMetadata.value)
+        .distinct()
         .join(Platform)
         .filter(Platform.type.in_(platform_types))
         .filter(PlatformMetadata.key == key)
@@ -511,7 +512,7 @@ def get_meta_values(
     )
     data = [item[0] for item in data]
     return data
-'''
+
 
 def get_datatypes(session: Session) -> List[DataType]:
     """
