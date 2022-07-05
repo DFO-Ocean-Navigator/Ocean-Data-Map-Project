@@ -31,6 +31,7 @@ from plotting.colormap import plot_colormaps
 from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.tile import bathymetry as plot_bathymetry
+from plotting.tile import topo as plot_topography
 from plotting.tile import scale as plot_scale
 from utils.errors import ClientError
 
@@ -896,35 +897,58 @@ async def timestamps(
     return jsonable_encoder(result)
 
 
-'''
-@bp_v1_0.route(
-    "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
-)
-def tile_v1_0(
-    projection: str,
-    interp: str,
-    radius: int,
-    neighbours: int,
-    dataset: str,
-    variable: str,
-    time: int,
-    depth: str,
-    scale: str,
-    zoom: int,
-    x: int,
-    y: int,
+@router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
+async def data_tile(
+    dataset: str = Path(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Path(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    time: int = Path(..., description="NetCDF timestamp"),
+    depth: str = Path(..., description="Depth index", example=0),
+    zoom: int = Path(..., example=4),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+    interp: e.InterpolationType = Query(default="gaussian"),
+    radius: int = Query(default=25, example=25),
+    neighbours: int = Query(default=10, example=10),
+    scale: str = Query(..., example="-5,30"),
 ):
     """
     Produces the map data tiles
     """
 
-    cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    settings = get_settings()
 
-    # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
-    # Render a new tile/image, then cache and send it
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "tiles",
+        str(interp),
+        str(radius),
+        str(neighbours),
+        projection,
+        dataset,
+        variable,
+        str(time),
+        depth,
+        scale,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
+
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
@@ -949,39 +973,59 @@ def tile_v1_0(
     return _cache_and_send_img(img, f)
 
 
-@bp_v1_0.route(
-    "/api/v1.0/tiles/topo/<string:shaded_relief>/<string:projection>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
-)
-def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
+@router.get("/tiles/topo/{zoom}/{x}/{y}")
+async def topography_tiles(
+    zoom: int = Path(..., example=4),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
+    shaded_relief: bool = Query(default=False),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+):
     """
     Generates topographical tiles
     """
 
-    bShaded_relief = shaded_relief == "true"
-
-    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
+    settings = get_settings()
 
     if zoom > 7:
-        return send_file(shape_file_dir + "/blank.png")
+        return FileResponse(
+            os.path.join(settings.shape_file_dir, "blank.png"),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "tiles",
+        "topo",
+        projection,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
 
     if os.path.isfile(f):
-        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
-    bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
-    return _cache_and_send_img(bytesIOBuff, f)
-'''
+    img = plot_topography(projection, x, y, zoom, shaded_relief)
+    return _cache_and_send_img(img, f)
 
 
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
-async def bathymetry_v1_0(
+async def bathymetry_tiles(
     zoom: int = Path(..., example=4),
-    x: int = Path(...),
-    y: int = Path(...),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
     projection: str = Query(
-        "EPSG:3857", title="EPSG projection code.", example="EPSG:3857"
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
 ):
     """
@@ -1463,26 +1507,6 @@ def after_request(response):
     return response
 '''
 
-def _is_cache_valid(dataset: str, f: str) -> bool:
-    """
-    Returns True if dataset cache is valid
-    """
-
-    config = DatasetConfig(dataset)
-    if os.path.isfile(f):
-        cache_time = config.cache
-        if cache_time is not None:
-            modtime = datetime.datetime.fromtimestamp(os.path.getmtime(f))
-            age_hours = (datetime.datetime.now() - modtime).total_seconds() / 3600
-            if age_hours > cache_time:
-                os.remove(f)
-                return False
-            return True
-        else:
-            return True
-    else:
-        return False
-
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
@@ -1496,8 +1520,8 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
         os.makedirs(p)
 
     bytesIOBuff.seek(0)
-    im = Image.open(bytesIOBuff.read())
-    im.save(f, format="PNG", optimize=True)  # For cache
+    im = Image.open(bytesIOBuff)
+    im.save(f, format="PNG", optimize=True)
     bytesIOBuff.seek(0)
 
     return StreamingResponse(
