@@ -874,35 +874,58 @@ async def timestamps(
     return jsonable_encoder(result)
 
 
-'''
-@bp_v1_0.route(
-    "/api/v1.0/tiles/<string:interp>/<int:radius>/<int:neighbours>/<string:projection>/<string:dataset>/<string:variable>/<int:time>/<string:depth>/<string:scale>/<int:zoom>/<int:x>/<int:y>.png"  # noqa: E501
-)
-def tile_v1_0(
-    projection: str,
-    interp: str,
-    radius: int,
-    neighbours: int,
-    dataset: str,
-    variable: str,
-    time: int,
-    depth: str,
-    scale: str,
-    zoom: int,
-    x: int,
-    y: int,
+@router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
+async def data_tile(
+    dataset: str = Path(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Path(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    time: int = Path(..., description="NetCDF timestamp"),
+    depth: str = Path(..., description="Depth index", example=0),
+    zoom: int = Path(..., example=4),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+    interp: e.InterpolationType = Query(default="gaussian"),
+    radius: int = Query(default=25, example=25),
+    neighbours: int = Query(default=10, example=10),
+    scale: str = Query(..., example="-5,30"),
 ):
     """
     Produces the map data tiles
     """
 
-    cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    settings = get_settings()
 
-    # Check if the tile/image is cached and send it
-    if _is_cache_valid(dataset, f):
-        return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
-    # Render a new tile/image, then cache and send it
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "tiles",
+        str(interp),
+        str(radius),
+        str(neighbours),
+        projection,
+        dataset,
+        variable,
+        str(time),
+        depth,
+        scale,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
+
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
@@ -925,8 +948,6 @@ def tile_v1_0(
     )
 
     return _cache_and_send_img(img, f)
-
-'''
 
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
@@ -1455,27 +1476,6 @@ def after_request(response):
     header["X-Frame-Options"] = "SAMEORIGIN"
 
     return response
-
-
-def _is_cache_valid(dataset: str, f: str) -> bool:
-    """
-    Returns True if dataset cache is valid
-    """
-
-    config = DatasetConfig(dataset)
-    if os.path.isfile(f):
-        cache_time = config.cache
-        if cache_time is not None:
-            modtime = datetime.datetime.fromtimestamp(os.path.getmtime(f))
-            age_hours = (datetime.datetime.now() - modtime).total_seconds() / 3600
-            if age_hours > cache_time:
-                os.remove(f)
-                return False
-            return True
-        else:
-            return True
-    else:
-        return False
 '''
 
 
@@ -1492,7 +1492,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
 
     bytesIOBuff.seek(0)
     im = Image.open(bytesIOBuff)
-    im.save(f, format="PNG", optimize=True)  # For cache
+    im.save(f, format="PNG", optimize=True)
     bytesIOBuff.seek(0)
 
     return StreamingResponse(

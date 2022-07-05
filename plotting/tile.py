@@ -13,6 +13,7 @@ from pyproj import Proj
 from pyproj.transformer import Transformer
 from scipy.ndimage.filters import gaussian_filter
 from skimage import measure
+from oceannavigator import settings
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -161,7 +162,9 @@ def scale(args):
     return buf
 
 
-def plot(projection, x, y, z, args):
+def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
+    settings = get_settings()
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -217,9 +220,7 @@ def plot(projection, x, y, z, args):
 
     # Mask out any topography if we're below the vector-tile threshold
     if z < 8:
-        with Dataset(
-            current_app.config["ETOPO_FILE"] % (projection, z), "r"
-        ) as dataset:
+        with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
             bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
         bathymetry = gaussian_filter(bathymetry, 0.5)
@@ -235,6 +236,8 @@ def plot(projection, x, y, z, args):
 
     buf = BytesIO()
     im.save(buf, format="PNG", optimize=True)
+    buf.seek(0)
+
     return buf
 
 
