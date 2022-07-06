@@ -125,7 +125,7 @@ getSubsetVariables() {
       subset_variables: variableResult.data,
     });
   });
-  this.setNewState()
+  this.setNewState();
 }
 
 setNewState() {
