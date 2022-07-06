@@ -7,7 +7,6 @@ import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
 import { withTranslation } from "react-i18next";
 import {GetVariablesPromise} from "../remote/OceanNavigator.js";
-const stringify = require("fast-stable-stringify");
 
 class SubsetPanel extends React.Component {
   constructor(props) {
