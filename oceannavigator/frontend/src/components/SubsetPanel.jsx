@@ -14,10 +14,14 @@ class SubsetPanel extends React.Component {
     super(props);
     this._mounted = false;
     this.state = {
+      loading: false,
       output_timerange: false,
       output_variables: [],
       output_starttime: props.dataset.starttime,
       output_endtime: props.dataset.time,
+      quantum: props.dataset.quantum,
+      dataset: props.dataset.dataset,
+      variable: props.dataset.variable,
       output_format: "NETCDF4", // Subset output format
       convertToUserGrid: false,
       zip: false, // Should subset file(s) be zipped
@@ -27,6 +31,7 @@ class SubsetPanel extends React.Component {
   this.subsetArea = this.subsetArea.bind(this);
   this.saveScript = this.saveScript.bind(this);
   this.getSubsetVariables = this.getSubsetVariables.bind(this);
+  this.setNewState = this.setNewState.bind(this);
   }
 
 componentDidMount() {
@@ -74,7 +79,8 @@ subsetArea() {
     queryString = "&min_range=" + min_range +
                   "&max_range=" + max_range;
   }
-  const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime;
+  const output_endtime = this.state.output_timerange ? 
+    this.state.output_endtime : this.state.output_starttime;
   window.location.href = "/api/v1.0/subset/?" +
      "&output_format=" + this.state.output_format +
      "&dataset_name=" + this.props.dataset.dataset +
@@ -111,123 +117,134 @@ saveScript(key) {
 }
 
 getSubsetVariables() {
+  this.setState({loading: true,});
   GetVariablesPromise(this.props.dataset.dataset).then(variableResult => {
     this.setState({
-      subset_variables: variableResult.data, 
+      loading: false,
+      subset_variables: variableResult.data,
     });
   });
-  this.setState({
+  this.setNewState()
+}
+
+setNewState() {
+  let newState = {};
+  newState = {
     output_starttime: this.props.dataset.starttime,
-    output_endtime: this.props.dataset.time    
-  });
+    output_endtime: this.props.dataset.time,
+    quantum: this.props.dataset.quantum,
+    dataset: this.props.dataset.dataset,
+    variable: this.props.dataset.variable,
+  };
+  this.setState(newState);
 }
 render() {
-  const subsetPanel = (
-    <Panel
-      key='subset'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>{_("Subset")}</Panel.Heading>
-        <Panel.Collapse>
-          <Panel.Body>
-            <form>   
-              <ComboBox
-                id='variable'
-                key='variable'
-                multiple={true}
-                state={this.state.output_variables}
-                def={"defaults.dataset"}
-                onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
-                data={this.state.subset_variables}            
-                title={("Variables")}
-              />
-              <SelectBox
-                id='time_range'
-                key='time_range'
-                state={this.state.output_timerange}
-                onUpdate={(_, value) => {this.setState({output_timerange: value,});}}
-                title={_("Select Time Range")}
-              />
-              <TimePicker
-                id='starttime'
-                key='starttime'
-                state={this.state.output_starttime}
-                def=''
-                quantum={this.props.dataset.quantum}
-                dataset={this.props.dataset.dataset}
-                variable={this.props.dataset.variable}
-                title={this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")}
-                onUpdate={ (key, value) => { this.setState({output_starttime: value}); }}
-                max={this.props.dataset.time + 1}
-              />
-              <div style={{display: this.state.output_timerange ? "block" : "none",}}>
-                <TimePicker
-                  id='time'
-                  key='time'
-                  state={this.state.output_endtime}
-                  def=''
-                  quantum={this.props.dataset.quantum}
-                  dataset={this.props.dataset.dataset}
-                  variable={this.props.dataset.variable}         
-                  title={this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")}
-                  onUpdate={ (key, value) => { this.setState({output_endtime: value}); }}
-                  min={this.props.dataset.time}               
-                />
-              </div>
-              <FormGroup controlId="output_format">
-                <ControlLabel>{_("Output Format")}</ControlLabel>
-                <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value}); }}>
-                  <option value="NETCDF4">{_("NetCDF-4")}</option>
-                  <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
-                  <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
-                  <option value="NETCDF3_NC" disabled={
-                    this.props.dataset.dataset.indexOf("giops") === -1 &&
-                    this.props.dataset.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
-                  }>
-                    {("NetCDF-3 NC")}
-                  </option>
-                  <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
-                </FormControl>
-              </FormGroup>
-              <SelectBox 
-                id='zip'
-                key='zip'
-                state={this.state.zip} 
-                onUpdate={ (_, checked) => { this.setState({zip: checked}); } }
-                title={_("Compress as *.zip")}
-              />
-              <Button 
-                bsStyle="default" 
-                key='save'
-                id='save'
-                onClick={this.subsetArea}
-                disabled={this.state.output_variables == ""}
-              ><Icon icon="save" /> {_("Save")}</Button>             
-              <DropdownButton
-                id="script"
-                title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
-                bsStyle={"default"}
-                disabled={this.state.output_variables == ""}
-                onSelect={this.saveScript}
-                dropup
-              >
-                <MenuItem
-                  eventKey="python"
-                ><Icon icon="code" /> {_("Python 3")}</MenuItem>
-                 <MenuItem
-                  eventKey="r"
-                ><Icon icon="code" /> {_("R")}</MenuItem> 
-              </DropdownButton> 
-            </form>
-          </Panel.Body>
-        </Panel.Collapse>
-    </Panel>
-    );
+  const subsetPanel = this.state.loading ? null : (
+      <form>   
+        <ComboBox
+          id='variable'
+          key='variable'
+          multiple={true}
+          state={this.state.output_variables}
+          def={"defaults.dataset"}
+          onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
+          data={this.state.subset_variables}            
+          title={("Variables")}
+        />
+        <SelectBox
+          id='time_range'
+          key='time_range'
+          state={this.state.output_timerange}
+          onUpdate={(_, value) => {this.setState({output_timerange: value,});}}
+          title={_("Select Time Range")}
+        />
+        <TimePicker
+          id='starttime'
+          key='starttime'
+          state={this.state.output_starttime}
+          def=''
+          quantum={this.state.quantum}
+          dataset={this.state.dataset}
+          variable={this.state.variable}
+          title={this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")}
+          onUpdate={ (_, value) => { this.setState({output_starttime: value}); }}
+          max={this.state.dataset.time + 1}
+        />
+        <div style={{display: this.state.output_timerange ? "block" : "none",}}>
+          <TimePicker
+            id='time'
+            key='time'
+            state={this.state.output_endtime}
+            def=''
+            quantum={this.state.quantum}
+            dataset={this.state.dataset}
+            variable={this.state.variable}         
+            title={this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")}
+            onUpdate={ (_, value) => { this.setState({output_endtime: value}); }}
+            min={this.state.dataset.time}               
+          />
+        </div>
+        <FormGroup controlId="output_format">
+          <ControlLabel>{_("Output Format")}</ControlLabel>
+          <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value}); }}>
+            <option value="NETCDF4">{_("NetCDF-4")}</option>
+            <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
+            <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
+            <option value="NETCDF3_NC" disabled={
+              this.props.dataset.dataset.indexOf("giops") === -1 &&
+              this.props.dataset.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
+            }>
+              {("NetCDF-3 NC")}
+            </option>
+            <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
+          </FormControl>
+        </FormGroup>
+        <SelectBox 
+          id='zip'
+          key='zip'
+          state={this.state.zip} 
+          onUpdate={ (_, checked) => { this.setState({zip: checked}); } }
+          title={_("Compress as *.zip")}
+        />
+        <Button 
+          bsStyle="default" 
+          key='save'
+          id='save'
+          onClick={this.subsetArea}
+          disabled={this.state.output_variables == ""}
+        ><Icon icon="save" /> {_("Save")}</Button>             
+        <DropdownButton
+          id="script"
+          title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
+          bsStyle={"default"}
+          disabled={this.state.output_variables == ""}
+          onSelect={this.saveScript}
+          dropup
+        >
+          <MenuItem
+            eventKey="python"
+          ><Icon icon="code" /> {_("Python 3")}</MenuItem>
+            <MenuItem
+            eventKey="r"
+          ><Icon icon="code" /> {_("R")}</MenuItem> 
+        </DropdownButton> 
+      </form> 
+  );
 
   return (
-    <div>     
-      {subsetPanel} 
+    <div>
+      <Panel
+        key='subset'
+        defaultExpanded
+        bsStyle='primary'
+      >
+        <Panel.Heading>{_("Subset")}</Panel.Heading>
+        <Panel.Collapse>
+          <Panel.Body>    
+            {subsetPanel} 
+          </Panel.Body>
+        </Panel.Collapse>
+      </Panel>
     </div>
     );
   }   
@@ -235,6 +252,8 @@ render() {
 
 //***********************************************************************
 SubsetPanel.propTypes = {
+  id: PropTypes.string,
+  key: PropTypes.string,
   dataset: PropTypes.object.isRequired,
   area: PropTypes.array.isRequired,
 };
