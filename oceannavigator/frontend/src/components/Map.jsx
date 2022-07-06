@@ -1024,7 +1024,7 @@ export default class Map extends React.PureComponent {
         return new ollayer.Tile({
           preload: 1,
           source: new olsource.XYZ({
-            url: `/api/v1.0/tiles/topo/${shadedRelief}/${projection}/{z}/{x}/{y}.png`,
+            url: `/api/v1.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
             projection: projection,
             attributions: [
               new olcontrol.Attribution({
@@ -1418,11 +1418,10 @@ export default class Map extends React.PureComponent {
       default:
         source = new olsource.XYZ({
           url: (
-            `/api/v1.0/tiles/bath/${currentProj}` +
-            "/{z}/{x}/{y}.png"
+            `/api/v1.0/tiles/bath/{z}/{x}/{y}?projection=${currentProj}`
           ),
           projection: currentProj,
-        })
+        });
         break;
     }
 
@@ -1476,16 +1475,17 @@ export default class Map extends React.PureComponent {
     }
 
     props.url = "/api/v1.0/tiles" +
-      `/${this.props.options.interpType}` +
-      `/${this.props.options.interpRadius}` +
-      `/${this.props.options.interpNeighbours}` +
-      `/${this.props.state.projection}` +
       `/${this.props.state.dataset}` +
       `/${this.props.state.variable}` +
       `/${this.props.state.time}` +
       `/${this.props.state.depth}` +
-      `/${scale}` +
-      "/{z}/{x}/{y}.png";
+      "/{z}/{x}/{y}" + 
+      `?projection=${this.props.state.projection}` +
+      `&scale=${scale}` +
+      `&interp=${this.props.options.interpType}` +
+      `&radius=${this.props.options.interpRadius}` +
+      `&neighbours=${this.props.options.interpNeighbours}`;
+
     props.projection = this.props.state.projection;
     props.attributions = [
       new olcontrol.Attribution({
