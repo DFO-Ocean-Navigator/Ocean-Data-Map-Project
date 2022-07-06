@@ -70,7 +70,8 @@ calculateAreaBoundingBox(area) {
 subsetArea() {
   var queryString = [];
   // check if predefined area
-  if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
+  if (typeof this.props.area[0] === 'string' || 
+    this.props.area[0] instanceof String) { 
     queryString = "&area=" + this.props.area[0];
   } else {
     const AABB = this.calculateAreaBoundingBox(this.props.area[0]);

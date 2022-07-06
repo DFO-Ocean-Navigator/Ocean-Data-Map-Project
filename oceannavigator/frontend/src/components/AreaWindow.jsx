@@ -21,7 +21,6 @@ import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
-const stringify = require("fast-stable-stringify");
 
 class AreaWindow extends React.Component {
   constructor(props) {
