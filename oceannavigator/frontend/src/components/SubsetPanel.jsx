@@ -139,6 +139,7 @@ setNewState() {
   };
   this.setState(newState);
 }
+
 render() {
   const subsetPanel = this.state.loading ? null : (
       <form>   
@@ -167,7 +168,9 @@ render() {
           quantum={this.state.quantum}
           dataset={this.state.dataset}
           variable={this.state.variable}
-          title={this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")}
+          title={
+            this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")
+          }
           onUpdate={ (_, value) => { this.setState({output_starttime: value}); }}
           max={this.state.dataset.time + 1}
         />
@@ -180,7 +183,9 @@ render() {
             quantum={this.state.quantum}
             dataset={this.state.dataset}
             variable={this.state.variable}         
-            title={this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")}
+            title={
+              this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")
+            }
             onUpdate={ (_, value) => { this.setState({output_endtime: value}); }}
             min={this.state.dataset.time}               
           />
