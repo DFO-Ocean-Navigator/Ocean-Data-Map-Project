@@ -2,14 +2,15 @@ import datetime
 import json
 import os
 from io import BytesIO
+from typing import Union
 
 import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import func
@@ -20,7 +21,18 @@ import plotting.colormap
 import routes.enums as e
 import utils.misc
 from data import open_dataset
-from data.observational import SessionLocal, DataType, Platform, Sample, Station
+from data.observational import (
+    Base,
+    DataType,
+    DataTypeSchema,
+    engine,
+    Platform,
+    PlatformSchema,
+    Sample,
+    SessionLocal,
+    Station,
+    StationSchema,
+)
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
@@ -31,8 +43,8 @@ from plotting.colormap import plot_colormaps
 from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.tile import bathymetry as plot_bathymetry
-from plotting.tile import topo as plot_topography
 from plotting.tile import scale as plot_scale
+from plotting.tile import topo as plot_topography
 from utils.errors import ClientError
 
 """
@@ -80,14 +92,7 @@ from utils.errors import APIError, ClientError, ErrorBase
 
 FAILURE = ClientError("Bad API usage")
 
-
-def get_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
-
+Base.metadata.create_all(bind=engine)
 
 router = APIRouter(
     prefix="/api/v1.0",
@@ -95,6 +100,14 @@ router = APIRouter(
 )
 
 MAX_CACHE = 315360000
+
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
 
 
 @router.get("/git_info")
@@ -1109,8 +1122,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
 '''
 
 
-@router.get("/observation/datatypes.json")
-def observation_datatypes(db: Session = Depends(get_db)):
+@router.get("/observation/datatypes.json", response_model=DataTypeSchema)
+async def observation_datatypes(db: Session = Depends(get_db)):
     """
     Returns the list of observational data types
 
@@ -1131,7 +1144,10 @@ def observation_datatypes(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/observation/meta_keys/{platform_types}.json")
+@router.get(
+    "/observation/meta_keys/{platform_types}.json",
+    response_model=PlatformSchema
+)
 async def observation_keys(
     platform_types: str = Path(
         ...,
@@ -1158,8 +1174,11 @@ async def observation_keys(
     )
 
 
-@router.get("/observation/meta_values/{platform_types}/{key}.json")
-def observation_values_v1_0(
+@router.get(
+    "/observation/meta_values/{platform_types}/{key}.json",
+    response_model=PlatformSchema
+)
+async def observation_values_v1_0(
     platform_types: str = Path(
         ...,
         title="List of platform types (comma seperated).",
@@ -1192,8 +1211,11 @@ def observation_values_v1_0(
     )
 
 
-@router.get("/observation/tracktimerange/{platform_id}.json")
-def observation_tracktime_v1_0(
+@router.get(
+    "/observation/tracktimerange/{platform_id}.json",
+    response_model=PlatformSchema
+)
+async def observation_tracktime_v1_0(
     platform_id: str = Path(
         ...,
         title="Platform ID.",
@@ -1231,8 +1253,8 @@ def observation_tracktime_v1_0(
     )
 
 
-@router.get("/observation/track/{query}.json")
-def observation_track_v1_0(
+@router.get("/observation/track/{query}.json", response_model=PlatformSchema)
+async def observation_track_v1_0(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1345,8 +1367,11 @@ def observation_track_v1_0(
     )
 
 
-@router.get("/observation/point/{query}.json")
-def observation_point_v1_0(
+@router.get(
+    "/observation/point/{query}.json",
+    response_model=StationSchema
+)
+async def observation_point_v1_0(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1452,8 +1477,11 @@ def observation_point_v1_0(
     )
 
 
-@router.get("/observation/meta/{key}/{id}.json")
-def observation_meta_v1_0(
+@router.get(
+    "/observation/meta/{key}/{id}.json",
+    response_model=Union[PlatformSchema, StationSchema]
+)
+async def observation_meta_v1_0(
     key: str = Path(
         ...,
         title="Type/Platform of observation.",
@@ -1498,7 +1526,10 @@ def observation_meta_v1_0(
     )
 
 
-@router.get("/observation/variables/{query}.json")
+@router.get(
+    "/observation/variables/{query}.json",
+    response_model=Union[DataTypeSchema, PlatformSchema, StationSchema]
+)
 def observation_variables_v1_0(
     query: str = Path(
         ...,

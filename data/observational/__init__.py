@@ -13,3 +13,7 @@ from .orm.datatype import DataType
 from .orm.platform import Platform, PlatformMetadata
 from .orm.sample import Sample
 from .orm.station import Station
+from .schemas.datatype_schema import DataTypeSchema
+from .schemas.platform_schema import PlatformMetadataSchema, PlatformSchema
+from .schemas.sample_schema import SampleSchema
+from .schemas.station_schema import StationSchema
