@@ -112,7 +112,7 @@ class ObservationSelector extends React.Component {
   }
 
   fetchDataTypes() {
-    const url = `/api/v1.0/observation/datatypes`;
+    const url = `/api/v1.0/observation/datatypes.json`;
     $.ajax({
       url: url,
       dataType: "json",
