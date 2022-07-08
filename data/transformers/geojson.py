@@ -36,7 +36,7 @@ def data_array_to_geojson(
         * lon_key -- Key of the longitude coordinate (e.g. "longitude").
 
     Returns:
-        FeatureCollection -- the subclassed `dict` with transformed collection of 
+        FeatureCollection -- the subclassed `dict` with transformed collection of
         geojson features.
     """
 
@@ -48,10 +48,9 @@ def data_array_to_geojson(
     # serializer. Floats from netCDF4 datasets are often 32-bit.
     data = trunc(data_array).astype(float).values
     quiver_scale = (
-        0.8 * (data - np.nanmin(data))
-        / (np.nanmax(data) - np.nanmin(data)) + 0.2
+        0.8 * (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data)) + 0.2
     )
-    quiver_img_src = np.floor(10*quiver_scale).astype(int)
+    quiver_img_src = np.floor(10 * quiver_scale).astype(int)
 
     if bearings is not None:
         bearings = trunc(bearings).astype(float).values
@@ -62,10 +61,7 @@ def data_array_to_geojson(
     if "long_name" not in data_array.attrs.keys():
         name_key = next((s for s in data_array.attrs.keys() if "name" in s), None)
 
-    attribs = {
-        "units": data_array.attrs[units_key],
-        "name": data_array.attrs[name_key]
-    }
+    attribs = {"units": data_array.attrs[units_key], "name": data_array.attrs[name_key]}
 
     def enumerate_nd_array(array: np.ndarray):
         it = np.nditer(array, flags=["multi_index"], op_flags=["readonly"])
@@ -92,8 +88,8 @@ def data_array_to_geojson(
                 continue
             props["bearing"] = bearings[multi_idx].item()
 
-        props['quiver_scale'] = quiver_scale[multi_idx].item()
-        props['quiver_src'] = quiver_img_src[multi_idx].item()
+        props["quiver_scale"] = quiver_scale[multi_idx].item()
+        props["quiver_src"] = quiver_img_src[multi_idx].item()
 
         features.append(Feature(geometry=p, properties=props))
 
