@@ -24,16 +24,18 @@ const SmartPhone = require("detect-mobile-browser")(false);
 const X_IMAGE = require("../images/x.png").default;
 
 // CHS S111 standard arrows for quiver layer
-const I0 = require("../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
-const I1 = require("../images/s111/I1.svg").default;
-const I2 = require("../images/s111/I2.svg").default;
-const I3 = require("../images/s111/I3.svg").default;
-const I4 = require("../images/s111/I4.svg").default;
-const I5 = require("../images/s111/I5.svg").default;
-const I6 = require("../images/s111/I6.svg").default;
-const I7 = require("../images/s111/I7.svg").default;
-const I8 = require("../images/s111/I8.svg").default;
-const I9 = require("../images/s111/I9.svg").default;
+const arrowIms = [
+  require("../images/s111/I0.svg").default,
+  require("../images/s111/I1.svg").default,
+  require("../images/s111/I2.svg").default,
+  require("../images/s111/I3.svg").default,
+  require("../images/s111/I4.svg").default,
+  require("../images/s111/I5.svg").default,
+  require("../images/s111/I6.svg").default,
+  require("../images/s111/I7.svg").default,
+  require("../images/s111/I8.svg").default,
+  require("../images/s111/I9.svg").default
+]
 
 function knotsToMetersPerSecond(knots) {
   return knots * 0.514444;
@@ -567,7 +569,7 @@ export default class Map extends React.PureComponent {
           return new olstyle.Style({
             image: new olstyle.Icon({
               scale: feature.get("quiver_scale"),
-              src: I1,
+              src: arrowIms[feature.get("quiver_src")],
               opacity: 1,
               anchor: anchor,
               rotation: rotationRads
