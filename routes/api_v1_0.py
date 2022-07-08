@@ -91,6 +91,7 @@ from utils.errors import APIError, ClientError, ErrorBase
 """
 
 FAILURE = ClientError("Bad API usage")
+MAX_CACHE = 315360000
 
 Base.metadata.create_all(bind=engine)
 
@@ -98,8 +99,6 @@ router = APIRouter(
     prefix="/api/v1.0",
     responses={404: {"message": "Not found"}},
 )
-
-MAX_CACHE = 315360000
 
 
 def get_db():
@@ -1375,7 +1374,10 @@ async def observation_point_v1_0(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
-        example="start_date=2019-01-01;end_date=2019-06-01;datatype=sea_water_temperature",
+        example=(
+            "start_date=2019-01-01;end_date=2019-06-01;" +
+            "datatype=sea_water_temperature"
+        ),
     ),
     db: Session = Depends(get_db)
 ):
