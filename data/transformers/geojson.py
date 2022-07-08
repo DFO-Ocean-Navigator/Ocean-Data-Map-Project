@@ -87,6 +87,8 @@ def data_array_to_geojson(
         props = {**attribs, "data": elem.item()}
 
         if bearings is not None:
+            if np.isnan(bearings[multi_idx].item()):
+                continue
             props["bearing"] = bearings[multi_idx].item()
 
         props['quiver_scale'] = quiver_scale[multi_idx].item()
