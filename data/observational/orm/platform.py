@@ -1,14 +1,18 @@
 import enum
 from types import MappingProxyType
-from typing import Dict, List
+from typing import Dict
 
-from data.observational import db
+from sqlalchemy import Column, Enum, Integer, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import ForeignKey
+
+from data.observational import Base
 
 
-class Platform(db.Model):
+class Platform(Base):
     __tablename__ = "platforms"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     class Type(enum.Enum):
         drifter = 0
@@ -17,12 +21,12 @@ class Platform(db.Model):
         mission = 3
         animal = 4
 
-    type = db.Column(db.Enum(Type), nullable=False)
-    unique_id = db.Column(db.String(128), unique=True)
-    _meta = db.relationship(
+    type = Column(Enum(Type), nullable=False)
+    unique_id = Column(String(128), unique=True)
+    _meta = relationship(
         "PlatformMetadata", back_populates="platform", cascade="all, delete-orphan"
     )
-    stations = db.relationship(
+    stations = relationship(
         "Station", back_populates="platform", cascade="all, delete-orphan"
     )
 
@@ -38,14 +42,14 @@ class Platform(db.Model):
         return f"Platform(id={self.id})"
 
 
-class PlatformMetadata(db.Model):
+class PlatformMetadata(Base):
     __tablename__ = "platform_metadata"
 
-    platform_id = db.Column(db.Integer, db.ForeignKey("platforms.id"), primary_key=True)
-    key = db.Column(db.String(64), primary_key=True)
-    value = db.Column(db.String(256))
+    platform_id = Column(Integer, ForeignKey("platforms.id"), primary_key=True)
+    key = Column(String(64), primary_key=True)
+    value = Column(String(256))
 
-    platform = db.relationship(
+    platform = relationship(
         "Platform",
         back_populates="_meta",
         cascade="all, delete-orphan",

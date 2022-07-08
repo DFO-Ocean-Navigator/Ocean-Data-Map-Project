@@ -802,8 +802,7 @@ export default class Map extends React.PureComponent {
             type = 'platform';
           }
           $.ajax({
-            url: '/api/v1.0/observation/meta.json',
-            data: { type: type, id: feature.get("id") },
+            url: `/api/v1.0/observation/meta/${type}/${feature.get("id")}}.json`,
             success: function (response) {
               this.overlay.setPosition(e.coordinate);
               feature.set("meta", ReactDOMServer.renderToString(

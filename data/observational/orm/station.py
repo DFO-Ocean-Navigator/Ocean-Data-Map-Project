@@ -1,26 +1,30 @@
-from data.observational import db
+from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import ForeignKey, Index
+
+from data.observational import Base
 
 
-class Station(db.Model):
+class Station(Base):
     __tablename__ = "stations"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(256), nullable=True)
-    platform_id = db.Column(
-        db.Integer, db.ForeignKey("platforms.id"), nullable=False, index=True
+    id = Column(Integer, primary_key=True)
+    name = Column(String(256), nullable=True)
+    platform_id = Column(
+        Integer, ForeignKey("platforms.id"), nullable=False, index=True
     )
-    platform = db.relationship(
+    platform = relationship(
         "Platform",
         back_populates="stations",
         cascade="all, delete-orphan",
         single_parent=True,
     )
-    samples = db.relationship(
+    samples = relationship(
         "Sample", back_populates="station", cascade="all, delete-orphan"
     )
-    time = db.Column(db.DateTime, nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
+    time = Column(DateTime, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
 
     def __init__(self, **kwargs):
         super(Station, self).__init__(**kwargs)
@@ -38,4 +42,4 @@ class Station(db.Model):
         )
 
 
-db.Index("idx_t_lat_lon", Station.time, Station.latitude, Station.longitude)
+Index("idx_t_lat_lon", Station.time, Station.latitude, Station.longitude)

@@ -1,18 +1,38 @@
 import datetime
+import json
 import os
 from io import BytesIO
+from typing import Union
 
 import geojson
 import numpy as np
-from fastapi import APIRouter, HTTPException, Path, Query
+import pandas as pd
+from dateutil.parser import parse as dateparse
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from PIL import Image
+from shapely.geometry import LinearRing, Point, Polygon
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+import data.observational.queries as ob_queries
 import plotting.colormap
 import routes.enums as e
 import utils.misc
 from data import open_dataset
+from data.observational import (
+    Base,
+    DataType,
+    DataTypeSchema,
+    engine,
+    Platform,
+    PlatformSchema,
+    Sample,
+    SessionLocal,
+    Station,
+    StationSchema,
+)
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
@@ -23,8 +43,9 @@ from plotting.colormap import plot_colormaps
 from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.tile import bathymetry as plot_bathymetry
-from plotting.tile import topo as plot_topography
 from plotting.tile import scale as plot_scale
+from plotting.tile import topo as plot_topography
+from utils.errors import ClientError
 
 """
 import base64
@@ -68,12 +89,24 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import APIError, ClientError, ErrorBase
 """
+
+FAILURE = ClientError("Bad API usage")
+MAX_CACHE = 315360000
+
+Base.metadata.create_all(bind=engine)
+
 router = APIRouter(
     prefix="/api/v1.0",
     responses={404: {"message": "Not found"}},
 )
 
-MAX_CACHE = 315360000
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
 
 
 @router.get("/git_info")
@@ -718,12 +751,14 @@ async def kml_point(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
         ...,
-        description="EPSG code for desired projection. Used to map resulting KML coords",
+        description="EPSG code for desired projection. Used to map resulting KML \
+            coords",
         example="EPSG:3857",
     ),
     view_bounds: str = Query(
         None,
-        description="Used to exclude KML points that aren't visible. Useful for filtering large KML groups.",
+        description="Used to exclude KML points that aren't visible. Useful for \
+            filtering large KML groups.",
     ),
 ):
     """
@@ -1083,103 +1118,153 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
+'''
 
-@router.get("/observation/datatypes")
-async def observation_datatypes():
+
+@router.get("/observation/datatypes.json", response_model=DataTypeSchema)
+async def observation_datatypes(db: Session = Depends(get_db)):
     """
     Returns the list of observational data types
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
+
     data = [
         {
             "id": dt.key,
             "value": dt.name,
         }
-        for dt in ob_queries.get_datatypes(DB.session)
+        for dt in ob_queries.get_datatypes(db)
     ]
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/observation/meta_keys/<string:platform_types>.json")
-def observation_keys_v1_0(platform_types: str):
+@router.get(
+    "/observation/meta_keys/{platform_types}.json",
+    response_model=PlatformSchema
+)
+async def observation_keys(
+    platform_types: str = Path(
+        ...,
+        title="List of platform types (comma seperated).",
+        example="argo,drifter,animal,mission,glider",
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
 
-    <string:platform_types> : Comma seperated list of platform types
+    platform_types : Comma seperated list of platform types
 
     Gets the set of metadata keys for a list of platform types
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
-    data = ob_queries.get_meta_keys(DB.session, platform_types.split(","))
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    data = ob_queries.get_meta_keys(db, platform_types.split(","))
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route(
-    "/api/v1.0/observation/meta_values/<string:platform_types>/<string:key>.json"
+@router.get(
+    "/observation/meta_values/{platform_types}/{key}.json",
+    response_model=PlatformSchema
 )
-def observation_values_v1_0(platform_types: str, key: str):
+async def observation_values_v1_0(
+    platform_types: str = Path(
+        ...,
+        title="List of platform types (comma seperated).",
+        example="argo",
+    ),
+    key: str = Path(
+        ...,
+        title="Metadata key",
+        example="Float unique identifier",
+    ),
+    db: Session = Depends(get_db)
+):
     """
-    API Format: /api/v1.0/observation/meta_values/<string:platform_types>.json
+    API Format: /api/v1.0/observation/meta_values/
+        <string:platform_types>/<string:key>.json
 
-    <string:platform_types> : Comma seperated list of platform types
-    <string:key> : Metadata key
+    platform_types : Comma seperated list of platform types
+    key : Metadata key
 
     Gets the set of metadata values for a list of platform types and key
 
     **Used in ObservationSelector**
     """
-    max_age = 86400
-    data = ob_queries.get_meta_values(DB.session, platform_types.split(","), key)
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    data = ob_queries.get_meta_values(db, platform_types.split(","), key)
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/observation/tracktimerange/<string:platform_id>.json")
-def observation_tracktime_v1_0(platform_id: str):
+@router.get(
+    "/observation/tracktimerange/{platform_id}.json",
+    response_model=PlatformSchema
+)
+async def observation_tracktime_v1_0(
+    platform_id: str = Path(
+        ...,
+        title="Platform ID.",
+        example="1344",
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
 
-    <string:platform_id> : Platform ID
+    platform_id : Platform ID
 
     Queries the min and max times for the track
 
     **Used in TrackWindow**
     """
-    max_age = 86400
-    platform = DB.session.query(Platform).get(platform_id)
+
+    platform = db.query(Platform).get(platform_id)
     data = (
-        DB.session.query(
-            DB.func.min(Station.time),
-            DB.func.max(Station.time),
+        db.query(
+            func.min(Station.time),
+            func.max(Station.time),
         )
         .filter(Station.platform == platform)
         .one()
     )
-    resp = jsonify(
-        {
+    resp = {
             "min": data[0].isoformat(),
             "max": data[1].isoformat(),
         }
+
+    return JSONResponse(
+        resp,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
-    resp.cache_control.max_age = max_age
-    return resp
 
 
-@bp_v1_0.route("/api/v1.0/observation/track/<string:query>.json")
-def observation_track_v1_0(query: str):
+@router.get("/observation/track/{query}.json", response_model=PlatformSchema)
+async def observation_track_v1_0(
+    query: str = Path(
+        ...,
+        title="List of key=value pairs, seperated by ;",
+        example="start_date=2019-01-01;end_date=2019-06-01;quantum=year",
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/track/<string:query>.json
 
-    <string:query> : List of key=value pairs, seperated by ;
+    query : List of key=value pairs, seperated by ;
         valid query keys are: start_date, end_date, datatype, platform_type,
             meta_key, meta_value, mindepth, maxdepth, area, radius, quantum
 
@@ -1189,7 +1274,6 @@ def observation_track_v1_0(query: str):
     """
     query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
-    max_age = 86400
     params = {}
 
     MAPPING = {
@@ -1231,7 +1315,7 @@ def observation_track_v1_0(query: str):
             params["longitude"] = area[0][1]
             params["radius"] = float(query_dict.get("radius", 10))
 
-        platforms = ob_queries.get_platforms(DB.session, **params)
+        platforms = ob_queries.get_platforms(db, **params)
         for param in [
             "minlat",
             "maxlat",
@@ -1247,7 +1331,7 @@ def observation_track_v1_0(query: str):
         params["platforms"] = platforms
 
     coordinates = ob_queries.get_platform_tracks(
-        DB.session, query_dict.get("quantum", "day"), **params
+        db, query_dict.get("quantum", "day"), **params
     )
 
     if len(coordinates) > 1:
@@ -1275,13 +1359,28 @@ def observation_track_v1_0(query: str):
         "type": "FeatureCollection",
         "features": data,
     }
-    resp = jsonify(result)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    return JSONResponse(
+        result,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/observation/point/<string:query>.json")
-def observation_point_v1_0(query: str):
+@router.get(
+    "/observation/point/{query}.json",
+    response_model=StationSchema
+)
+async def observation_point_v1_0(
+    query: str = Path(
+        ...,
+        title="List of key=value pairs, seperated by ;",
+        example=(
+            "start_date=2019-01-01;end_date=2019-06-01;" +
+            "datatype=sea_water_temperature"
+        ),
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/point/<string:query>.json
 
@@ -1295,7 +1394,6 @@ def observation_point_v1_0(query: str):
     """
     query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
-    max_age = 86400
     params = {}
     MAPPING = {
         "start_date": "starttime",
@@ -1345,9 +1443,9 @@ def observation_point_v1_0(query: str):
             with_radius = True
 
     if with_radius:
-        stations = ob_queries.get_stations_radius(session=DB.session, **params)
+        stations = ob_queries.get_stations_radius(session=db, **params)
     else:
-        stations = ob_queries.get_stations(session=DB.session, **params)
+        stations = ob_queries.get_stations(session=db, **params)
 
     if len(stations) > 500:
         stations = stations[:: round(len(stations) / 500)]
@@ -1374,13 +1472,30 @@ def observation_point_v1_0(query: str):
         "type": "FeatureCollection",
         "features": data,
     }
-    resp = jsonify(result)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    return JSONResponse(
+        result,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/observation/meta.json")
-def observation_meta_v1_0():
+@router.get(
+    "/observation/meta/{key}/{id}.json",
+    response_model=Union[PlatformSchema, StationSchema]
+)
+async def observation_meta_v1_0(
+    key: str = Path(
+        ...,
+        title="Type/Platform of observation.",
+        example="station",
+    ),
+    id: str = Path(
+        ...,
+        title="id of observation.",
+        example="21831",
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/meta.json
 
@@ -1388,12 +1503,10 @@ def observation_meta_v1_0():
 
     **Used in Map for the observational tooltip**
     """
-    key = request.args.get("type", "platform")
-    identifier = request.args.get("id", "0")
-    max_age = 86400
+
     data = {}
     if key == "station":
-        station = DB.session.query(Station).get(identifier)
+        station = db.query(Station).get(id)
         data["Time"] = station.time.isoformat(" ")
         if station.name:
             data["Station Name"] = station.name
@@ -1401,24 +1514,37 @@ def observation_meta_v1_0():
         platform = station.platform
 
     elif key == "platform":
-        platform = DB.session.query(Platform).get(identifier)
+        platform = db.query(Platform).get(id)
     else:
         raise FAILURE
 
     data.update(platform.attrs)
     data["Platform Type"] = platform.type.name
     data = {k: data[k] for k in sorted(data)}
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-@bp_v1_0.route("/api/v1.0/observation/variables/<string:query>.json")
-def observation_variables_v1_0(query: str):
+@router.get(
+    "/observation/variables/{query}.json",
+    response_model=Union[DataTypeSchema, PlatformSchema, StationSchema]
+)
+def observation_variables_v1_0(
+    query: str = Path(
+        ...,
+        title=" A key=value pair, where key is either station \
+            or platform and value is the id.",
+        example="station=356768",
+    ),
+    db: Session = Depends(get_db)
+):
     """
     API Format: /api/v1.0/observation/variables/<string:query>.json
 
-    <string:query> : A key=value pair, where key is either station or platform
+    query : A key=value pair, where key is either station or platform
     and value is the id
 
     Observational query for variables for a platform or station
@@ -1427,24 +1553,24 @@ def observation_variables_v1_0(query: str):
     """
     key, identifier = query.split("=")
     data = []
-    max_age = 86400
+
     if key == "station":
-        station = DB.session.query(Station).get(identifier)
+        station = db.query(Station).get(identifier)
     elif key == "platform":
-        platform = DB.session.query(Platform).get(identifier)
-        station = DB.session.query(Station).filter(Station.platform == platform).first()
+        platform = db.query(Platform).get(identifier)
+        station = db.query(Station).filter(Station.platform == platform).first()
     else:
         raise FAILURE
 
     datatype_keys = [
         k[0]
-        for k in DB.session.query(DB.func.distinct(Sample.datatype_key))
+        for k in db.query(func.distinct(Sample.datatype_key))
         .filter(Sample.station == station)
         .all()
     ]
 
     datatypes = (
-        DB.session.query(DataType)
+        db.query(DataType)
         .filter(DataType.key.in_(datatype_keys))
         .order_by(DataType.key)
         .all()
@@ -1458,11 +1584,13 @@ def observation_variables_v1_0(query: str):
         for idx, dt in enumerate(datatypes)
     ]
 
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
+'''
 @bp_v1_0.after_request
 def after_request(response):
     # https://flask.palletsprojects.com/en/1.1.x/security/
