@@ -63,7 +63,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                         [x[1] for x in self.points],
                     ]
                 ),
-                gs[0, 0]
+                gs[0, 0],
             )  # Longitudes
 
         # Plot Sound Speed profile
@@ -110,8 +110,16 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
 
-        # This is a little strange where we want to skip calling the TSP.plot and go straigh
-        # to Point.plot
+        ax.text(
+            0,
+            -0.05,
+            self.get_stats_str(self.sspeed, "m/s"),
+            fontsize=14,
+            transform=ax.transAxes,
+        )
+
+        # This is a little strange where we want to skip calling the TSP.plot and go
+        # straight to Point.plot
         return super(TemperatureSalinityPlotter, self).plot(fig)
 
     def csv(self):
@@ -145,5 +153,28 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                         "%0.1f" % self.sspeed[idx][idx2],
                     ]
                 )
+
+        return super(TemperatureSalinityPlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        header = [["Dataset", self.dataset_name], ["Timestamp", self.iso_timestamp]]
+
+        columns = ["Statistic", "Pressure", "Salinity", "Temperature", "Sound Speed"]
+
+        data = [["Min", "Max", "Mean", "Standard Deviation"]]
+
+        variables = [self.pressure, self.salinity, self.temperature, self.sspeed]
+
+        for var in variables:
+            data.append(
+                [
+                    np.nanmin(var),
+                    np.nanmax(var),
+                    np.nanmean(var),
+                    np.nanstd(var),
+                ]
+            )
+
+        data = np.array(data).T.tolist()
 
         return super(TemperatureSalinityPlotter, self).csv(header, columns, data)

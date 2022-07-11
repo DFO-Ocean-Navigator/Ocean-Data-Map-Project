@@ -1,13 +1,11 @@
 import contextlib
 import datetime
-import re
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pint
 from flask_babel import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -58,6 +56,8 @@ class Plotter(metaclass=ABCMeta):
             return self.csv()
         elif self.filetype == "txt":
             return self.odv_ascii()
+        elif self.filetype == "stats":
+            return self.stats_csv()
         else:
             return self.plot()
 
@@ -257,11 +257,11 @@ class Plotter(metaclass=ABCMeta):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
-            buf.write(", ".join(columns))
+            buf.write(", ".join(columns))   
             buf.write("\n")
 
-            for l in data:
-                buf.write(", ".join(map(str, l)))
+            for line in data:
+                buf.write(", ".join(map(str, line)))
                 buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
@@ -393,6 +393,15 @@ class Plotter(metaclass=ABCMeta):
         """
         v = ",".join(variables)
         return self.dataset_config.variable[v].unit
+
+    def get_stats_str(self, data, unit) -> str:
+        stats = (
+            f"Min: {np.nanmin(data):.2f}, "
+            f"Max: {np.nanmax(data):.2f}, "
+            f"Mean: {np.nanmean(data):.2f}, "
+            f"STD: {np.nanstd(data):.2f} ({unit})"
+        )
+        return stats
 
     def clip_value(self, input_value, variable):
         output = input_value
