@@ -96,7 +96,7 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         maxlat = 90
 
     plot_projection = ccrs.Mercator(
-        central_longitude=np.median(points[1, :]),
+        central_longitude=np.mean([minlon, maxlon]),
         min_latitude=minlat,
         max_latitude=maxlat,
     )
