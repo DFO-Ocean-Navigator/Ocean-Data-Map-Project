@@ -67,8 +67,9 @@ class NetCDFData(Data):
                             decode_times=decode_times,
                         )
                 except xarray.core.variable.MissingDimensionsError:
-                    # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                    # duplication issue, so fall back to using netCDF4.Dataset()
+                    # xarray won't open FVCOM files due to dimension/coordinate/
+                    # variable label duplication issue, so fall back to using
+                    # netCDF4.Dataset()
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 self.dataset = xarray.Dataset()
@@ -83,11 +84,12 @@ class NetCDFData(Data):
                 url = self.url if isinstance(self.url, list) else [self.url]
                 # This will raise a FutureWarning for xarray>=0.12.2.
                 # That warning should be resolvable by changing to:
-                # fields = xarray.open_mfdataset(self.url, combine="by_coords", decode_times=decode_times)
+                # fields = xarray.open_mfdataset(self.url, combine="by_coords",
+                # decode_times=decode_times)
                 fields = xarray.open_mfdataset(url, decode_times=decode_times)
             except xarray.core.variable.MissingDimensionsError:
-                # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                # duplication issue, so fall back to using netCDF4.Dataset()
+                # xarray won't open FVCOM files due to dimension/coordinate/variable
+                # label duplication issue, so fall back to using netCDF4.Dataset()
                 fields = netCDF4.Dataset(self.url)
             if getattr(self._dataset_config, "geo_ref", {}):
                 drop_variables = self._dataset_config.geo_ref.get("drop_variables", [])
@@ -291,9 +293,10 @@ class NetCDFData(Data):
         if time_range[0] != time_range[1]:
             apply_time_range = True
 
-        # Finds a variable in a dictionary given a substring containing common characters.
-        # Don't use regex here since compiling a new pattern every call WILL add huge overhead.
-        # This is guaranteed to be the fastest method.
+        # Finds a variable in a dictionary given a substring containing common
+        # characters. Don't use regex here since compiling a new pattern every
+        # call WILL add huge overhead. This is guaranteed to be the fastest
+        # method.
         def find_variable(substring: str, variables: list):
             for key in variables:
                 if substring in key:
@@ -400,10 +403,10 @@ class NetCDFData(Data):
                         )
                     }
                 )
-                # Convert 'dims' attr to string (allows exporting to NC3 formats)
-                subset[variable].attrs["dims"] = (
-                    "(" + ",".join(subset[variable].attrs["dims"]) + ")"
-                )
+                # Cast each attribute to str (allows exporting to all NC formats)
+                subset[variable].attrs = {
+                    key: str(value) for key, value in subset[variable].attrs.items()
+                }
 
         output_format = query.get("output_format")
         filename = (
@@ -417,7 +420,8 @@ class NetCDFData(Data):
             + output_format
         )
 
-        # Workaround for https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
+        # Workaround for 
+        # https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
         if "_NCProperties" in subset.attrs.keys():
             del subset.attrs["_NCProperties"]
 
@@ -447,7 +451,8 @@ class NetCDFData(Data):
                 )
                 # Move merged axis back to front
                 regridded = np.moveaxis(regridded, -1, 0)
-                # Match target output grid (netcdf4 used to do this automatically but now it doesn't >.>)
+                # Match target output grid (netcdf4 used to do this automatically but
+                # now it doesn't >.>)
                 return np.reshape(
                     regridded,
                     (orig_shape[0], orig_shape[1], GRID_RESOLUTION, GRID_RESOLUTION),
@@ -530,7 +535,6 @@ class NetCDFData(Data):
             longitudes.units = "degrees_east"
             longitudes.NAVO_code = 2
 
-            # LOL I had CreateDimension vs createDimension here >.< Stumped Clyde too hehe :P
             ds.createDimension("depth", len(subset[depth_var][:]))
             levels = ds.createVariable("depth", "i", ("depth",))
             levels[:] = subset[depth_var][:]
@@ -552,7 +556,7 @@ class NetCDFData(Data):
                 ureg = pint.UnitRegistry()
                 try:
                     u = ureg.parse_units(subset[temp_var].units.lower())
-                except:
+                except (AttributeError, ValueError):
                     u = ureg.dimensionless
 
                 if u == ureg.boltzmann_constant:
@@ -743,7 +747,8 @@ class NetCDFData(Data):
         try:
             return list(self.dataset.dims)
         except AttributeError:
-            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions property
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions 
+            # property
             return [dim for dim in self.dataset.dimensions]
 
     @property
@@ -782,7 +787,8 @@ class NetCDFData(Data):
             y_dim = y_dim.pop()
         except KeyError:
             raise ValueError(
-                f"None of {self.y_dimensions} were found in dataset's dimensions {dims}."
+                f"None of {self.y_dimensions} were found in dataset's \
+                    dimensions {dims}."
             ) from KeyError
 
         x_dim = self.x_dimensions.intersection(dims)
@@ -790,7 +796,8 @@ class NetCDFData(Data):
             x_dim = x_dim.pop()
         except KeyError:
             raise ValueError(
-                f"None of {self.x_dimensions} were found in dataset's dimensions {dims}."
+                f"None of {self.x_dimensions} were found in dataset's \
+                    dimensions {dims}."
             ) from KeyError
 
         return y_dim, x_dim
@@ -866,19 +873,21 @@ class NetCDFData(Data):
 
         else:
             try:
-                # Handle possible list of URLs for staggered grid velocity field datasets
+                # Handle possible list of URLs for staggered grid velocity field
+                # datasets
                 url = self.url if isinstance(self.url, list) else [self.url]
                 # This will raise a FutureWarning for xarray>=0.12.2.
                 # That warning should be resolvable by changing to:
-                # with xarray.open_mfdataset(url, combine="by_coords", decode_times=False) as ds:
+                # with xarray.open_mfdataset(url, combine="by_coords",
+                # decode_times=False) as ds:
                 with xarray.open_mfdataset(url, decode_times=False) as ds:
                     self._variable_list = self._get_xarray_data_variables(
                         ds
                     )  # Cache the list for later
 
             except xarray.core.variable.MissingDimensionsError:
-                # xarray won't open FVCOM files due to dimension/coordinate/variable label
-                # duplication issue, so fall back to using netCDF4.Dataset()
+                # xarray won't open FVCOM files due to dimension/coordinate/variable
+                # label duplication issue, so fall back to using netCDF4.Dataset()
                 with netCDF4.Dataset(self.url) as ds:
                     self._variable_list = self._get_netcdf4_data_variables(
                         ds
@@ -966,7 +975,8 @@ class NetCDFData(Data):
                 # This method is only applicable to SQLite-indexed datasets
                 return
         except AttributeError:
-            # Probably a file path dataset config for which this method is also not applicable
+            # Probably a file path dataset config for which this method is also not
+            # applicable
             return
 
         try:
