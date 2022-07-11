@@ -96,14 +96,16 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         maxlat = 90
 
     plot_projection = ccrs.Mercator(
-        central_longitude=np.mean(points[1, :]),
+        central_longitude=np.median(points[1, :]),
         min_latitude=minlat,
         max_latitude=maxlat,
     )
     pc_projection = ccrs.PlateCarree()
 
+    extent = [minlon, maxlon, minlat, maxlat]
+
     m = plt.subplot(grid_loc, projection=plot_projection)
-    m.set_extent([minlon, maxlon, minlat, maxlat])
+    m.set_extent(extent)
     m.coastlines()
 
     if path:
