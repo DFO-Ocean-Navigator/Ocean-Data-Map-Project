@@ -5,8 +5,6 @@ from flask_babel import gettext
 
 import plotting.utils as utils
 from data import open_dataset
-from data.sqlite_database import SQLiteDatabase
-from oceannavigator.dataset_config import DatasetConfig
 from plotting.point import PointPlotter
 from utils.errors import ClientError
 
@@ -28,8 +26,8 @@ class ProfilePlotter(PointPlotter):
                 raise ClientError(
                     gettext(
                         "The selected variable(s) were not found in the dataset. \
-                Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable. "
+                        Most likely, this variable is a derived product from \
+                        existing dataset variables. Please select another variable. "
                     )
                     + str(e)
                 )
@@ -92,6 +90,32 @@ class ProfilePlotter(PointPlotter):
 
         return super(ProfilePlotter, self).csv(header, columns, data)
 
+    def stats_csv(self):
+        header = [
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.iso_timestamp.isoformat()],
+        ]
+
+        columns = [
+            "Statistic",
+        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
+
+        data = [["Min", "Max", "Mean", "Standard Deviation"]]
+
+        for idx, _ in enumerate(self.variables):
+            data.append(
+                [
+                    np.nanmin(self.data[:, idx, :]),
+                    np.nanmax(self.data[:, idx, :]),
+                    np.nanmean(self.data[:, idx, :]),
+                    np.nanstd(self.data[:, idx, :]),
+                ]
+            )
+
+        data = np.array(data).T.tolist()
+
+        return super(ProfilePlotter, self).csv(header, columns, data)
+
     def plot(self):
         # Create base figure
         fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
@@ -134,15 +158,25 @@ class ProfilePlotter(PointPlotter):
                 self.data[:, idx, :].transpose(), self.depths[:, idx, :].transpose()
             )
 
+            var_unit = utils.mathtext(self.variable_units[idx])
             current_axis = plt.gca()
             current_axis.xaxis.set_label_position("top")
             current_axis.xaxis.set_ticks_position("top")
             current_axis.invert_yaxis()
             current_axis.grid(True)
             current_axis.set_xlabel(
-                "%s (%s)"
-                % (self.variable_names[idx], utils.mathtext(self.variable_units[idx])),
+                "%s (%s)" % (self.variable_names[idx], var_unit),
                 fontsize=14,
+            )
+
+            stats_str = self.get_stats_str(self.data[:, idx, :], var_unit)
+            y_offset = -0.05
+            if len(self.variables) > 2:
+                stats_str = stats_str.replace(", ", ",\n")
+                y_offset = -0.15
+
+            current_axis.text(
+                0, y_offset, stats_str, fontsize=14, transform=current_axis.transAxes
             )
 
             # Put y-axis label on left-most graph (but after the point location)
