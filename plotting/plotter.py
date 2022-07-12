@@ -395,13 +395,15 @@ class Plotter(metaclass=ABCMeta):
         return self.dataset_config.variable[v].unit
 
     def get_stats_str(self, data, unit) -> str:
-        stats = (
-            f"Min: {np.nanmin(data):.2f}, "
-            f"Max: {np.nanmax(data):.2f}, "
-            f"Mean: {np.nanmean(data):.2f}, "
-            f"STD: {np.nanstd(data):.2f} ({unit})"
-        )
-        return stats
+        if data.any():
+            return (
+                f"Min: {np.nanmin(data):.2f}, "
+                f"Max: {np.nanmax(data):.2f}, "
+                f"Mean: {np.nanmean(data):.2f}, "
+                f"STD: {np.nanstd(data):.2f} ({unit})"
+            )
+        else:
+            return ""
 
     def clip_value(self, input_value, variable):
         output = input_value
