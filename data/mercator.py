@@ -28,7 +28,8 @@ class Mercator(Model):
                 self.latvar, self.lonvar = self.nc_data.latlon_variables
             except KeyError:
                 print(
-                    "Warning: No variables with latitude or longitude are loaded in this NetCDF dataset."
+                    "Warning: No variables with latitude or longitude are loaded \
+                        in this NetCDF dataset."
                 )
 
         return self
@@ -249,15 +250,6 @@ class Mercator(Model):
                     np.unravel_index(indices, depth_values.shape)
                 ] = self.depths[depths]
 
-                dep = self.__resample(
-                    self.latvar[miny:maxy],
-                    self.lonvar[minx:maxx],
-                    latitude,
-                    longitude,
-                    np.reshape(depth_values, data.shape),
-                    radius,
-                )
-
         else:
             if len(var.shape) == 4:
                 data = var[time_slice, int(depth), miny:maxy, minx:maxx]
@@ -285,10 +277,10 @@ class Mercator(Model):
 
     def get_profile(self, latitude, longitude, variable, starttime, endtime=None):
         var = self.nc_data.get_dataset_variable(variable)
-        # We expect the following shape (time, depth, lat, lon)
-        if len(var.shape) != 4:
+        if not self.__has_depth(var):
             raise APIError(
-                f"This plot requires a depth dimension. This variable ({variable}) doesn't have a depth dimension."
+                f"This plot requires a depth dimension. This variable ({variable}) \
+                    doesn't have a depth dimension."
             )
 
         time_slice = self.nc_data.make_time_slice(starttime, endtime)
@@ -309,3 +301,17 @@ class Mercator(Model):
         )
 
         return res, np.squeeze([self.depths] * len(latitude))
+
+    def __has_depth(self, var):
+        '''
+        Check that the variable has four dimensions (time, depth, lat, lon),
+        and that the depth dimension has more than one element.
+        '''
+
+        depth_index = [
+            i for i, dim in enumerate(var.dims) if dim in self.nc_data.depth_dimensions
+        ]
+
+        return (
+            len(var.shape) == 4 and depth_index and var.shape[depth_index[0]] > 1
+        )
