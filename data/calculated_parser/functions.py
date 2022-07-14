@@ -375,7 +375,7 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
     return depth[min_indices]
 
 
-def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
+def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     """
     Find and return the deep sound channel bottom (the second depth where
     the speed of sound is equal to the speed at the sonic layer depth).
@@ -423,16 +423,30 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
     # layer depth.
     sound_speed.mask = ~sound_speed.mask
 
-    # Nearest neighbour
-    # numpy broadcasting handles subtraction between 3D and 2D arrays
-    min_difference = np.abs(
-        sound_speed - sound_speed_values_at_sonic_layer_depth
-    ).argmin(
-        axis=0
-    )  # We can use argmin here because the fill_value of the masked arrays is np.nan
+    # Use linear interpolation along axis 0 to compute DSCB. We find the two
+    # points where sound_speed is closest to sound_speed_values_at_sonic_layer_depth
+    # and interpolate between them.
 
-    # Finito...LOOK MOM! NO LOOPS!!!
-    return depth[min_difference]
+    # Find closest sound speed values
+    diff = np.abs(sound_speed - sound_speed_values_at_sonic_layer_depth)
+    shp = diff.shape
+    i, j = np.ogrid[:shp[-2], :shp[-1]]
+    min_diff_0 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
+    diff[..., min_diff_0, i, j] = np.nan
+    min_diff_1 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
+
+    # Set up and perform linear interpolation
+    x = sound_speed_values_at_sonic_layer_depth
+    x0 = np.take_along_axis(sound_speed, min_diff_0[np.newaxis], axis=0)
+    x1 = np.take_along_axis(sound_speed, min_diff_1[np.newaxis], axis=0)
+    y0 = depth[min_diff_0]
+    y1 = depth[min_diff_1]
+
+    dscb = (y0*(x1-x) + y1*(x-x0))/(x1-x0)
+    dscb[dscb > bathy.data] = np.nan
+    dscb[dscb < 0] = np.nan
+
+    return dscb
 
 
 def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
@@ -452,10 +466,10 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
         * bathy:
     """
 
-    dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity)
+    dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy)
 
     # Actually do the math.
-    return dscb - bathy.data
+    return np.abs(dscb - bathy.data)
 
 
 def calculate_del_C(
