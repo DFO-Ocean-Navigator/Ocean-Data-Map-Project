@@ -293,7 +293,7 @@ def __get_soniclayerdepth_mask(
     Create mask which masks out values BELOW deep sound channel.
     """
 
-    mask = min_depth_indices.ravel()[..., np.newaxis] < np.arange(soundspeed.shape[0])
+    mask = min_depth_indices.ravel()[..., np.newaxis] <= np.arange(soundspeed.shape[0])
 
     return mask.T.reshape(soundspeed.shape)
 
@@ -426,7 +426,6 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
     # Use linear interpolation along axis 0 to compute DSCB. We find the two
     # points where sound_speed is closest to sound_speed_values_at_sonic_layer_depth
     # and interpolate between them.
-
     var_shape = sound_speed.shape
     if len(var_shape) == 3:
         grid = np.ogrid[: var_shape[-2], : var_shape[-1]]
@@ -450,7 +449,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
     dscb[dscb > bathy.data] = np.nan
     dscb[dscb < 0] = np.nan
 
-    return dscb
+    return np.squeeze(dscb)
 
 
 def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
