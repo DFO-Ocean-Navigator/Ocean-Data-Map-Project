@@ -427,12 +427,16 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
     # points where sound_speed is closest to sound_speed_values_at_sonic_layer_depth
     # and interpolate between them.
 
+    var_shape = sound_speed.shape
+    if len(var_shape) == 3:
+        grid = np.ogrid[: var_shape[-2], : var_shape[-1]]
+    else:
+        grid = np.ogrid[: var_shape[-3], : var_shape[-2], : var_shape[-1]]
+
     # Find closest sound speed values
     diff = np.abs(sound_speed - sound_speed_values_at_sonic_layer_depth)
-    shp = diff.shape
-    i, j = np.ogrid[:shp[-2], :shp[-1]]
     min_diff_0 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
-    diff[..., min_diff_0, i, j] = np.nan
+    diff[tuple([min_diff_0, *grid])] = np.nan
     min_diff_1 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
 
     # Set up and perform linear interpolation
@@ -442,7 +446,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
     y0 = depth[min_diff_0]
     y1 = depth[min_diff_1]
 
-    dscb = (y0*(x1-x) + y1*(x-x0))/(x1-x0)
+    dscb = (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0)
     dscb[dscb > bathy.data] = np.nan
     dscb[dscb < 0] = np.nan
 
