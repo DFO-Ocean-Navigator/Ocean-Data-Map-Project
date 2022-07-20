@@ -316,7 +316,7 @@ class VariableConfig:
         """
 
         try:
-            unit = self.__get_attribute("unit")
+            unit = self.__get_attribute("units")
         except KeyError:
             unit = None
 

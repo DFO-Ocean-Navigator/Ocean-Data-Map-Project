@@ -12,14 +12,17 @@ def data_array_to_geojson(
     lon_var: xr.DataArray,
 ) -> FeatureCollection:
     """
-    Converts a given xarray.DataArray, along with lat and lon keys to a geojson.FeatureCollection (subclass of dict).
+    Converts a given xarray.DataArray, along with lat and lon keys to a
+    geojson.FeatureCollection (subclass of dict).
 
     A FeatureCollection is really just a list of geojson.Feature classes.
-    Each Feature contains a geojson.Point, and a `properties` dict which holds arbitrary attributes
-    of interest for a Point. In the case of this function, each Feature has the following properties:
+    Each Feature contains a geojson.Point, and a `properties` dict which holds
+    arbitrary attributes of interest for a Point. In the case of this function,
+    each Feature has the following properties:
 
     * The data value corresponding to a lat/lon pair (e.g. salinity or temperature)
-    * A copy of the `attribs` field held in the data_array (yes there's lots of duplication...blame the geojson spec).
+    * A copy of the `attribs` field held in the data_array (yes there's lots of
+    duplication...blame the geojson spec).
 
     Important notes:
 
@@ -27,26 +30,28 @@ def data_array_to_geojson(
     * NaN values are not added to the returned FeatureCollection...they are skipped.
 
     Parameters:
-        * data_array -- A 2D field (i.e. lat/lon only...time and depth dims should be sliced out).
+        * data_array -- A 2D field (i.e. lat/lon only...time and depth dims should be
+                        sliced out).
         * lat_key -- Key of the latitude coordinate (e.g. "latitude").
         * lon_key -- Key of the longitude coordinate (e.g. "longitude").
 
     Returns:
-        FeatureCollection -- the subclassed `dict` with transformed collection of geojson features.
+        FeatureCollection -- the subclassed `dict` with transformed collection of
+        geojson features.
     """
 
     if data_array.ndim != 2:
         raise ValueError(f"Data is not a 2D field: {data_array.shape}")
 
-    # Need to ensure that data values are 64-bit floats (i.e. Python builtin float) because
-    # that's the only type of float that json will serialize without a custom serializer.
-    # Floats from netCDF4 datasets are often 32-bit.
+    # Need to ensure that data values are 64-bit floats (i.e. Python builtin float)
+    # because that's the only type of float that json will serialize without a custom
+    # serializer. Floats from netCDF4 datasets are often 32-bit.
     data = trunc(data_array).astype(float).values
 
     if bearings is not None:
         bearings = trunc(bearings).astype(float).values
 
-    units_key = next((s for s in data_array.attrs.keys() if "unit" in s), None)
+    units_key = next((s for s in data_array.attrs.keys() if "units" in s), None)
 
     name_key = "long_name"
     if "long_name" not in data_array.attrs.keys():

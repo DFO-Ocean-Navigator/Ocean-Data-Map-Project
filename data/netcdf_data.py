@@ -420,7 +420,7 @@ class NetCDFData(Data):
             + output_format
         )
 
-        # Workaround for 
+        # Workaround for
         # https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
         if "_NCProperties" in subset.attrs.keys():
             del subset.attrs["_NCProperties"]
@@ -747,7 +747,7 @@ class NetCDFData(Data):
         try:
             return list(self.dataset.dims)
         except AttributeError:
-            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions 
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions
             # property
             return [dim for dim in self.dataset.dimensions]
 

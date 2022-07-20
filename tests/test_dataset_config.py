@@ -185,7 +185,7 @@ class TestUtil(unittest.TestCase):
                 "variables": {
                     "var": {
                         "name": "the_name",
-                        "unit": "My Unit",
+                        "units": "My Unit",
                         "scale": [0, 10],
                     },
                     "var2": {
