@@ -418,6 +418,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
             0,  # apply along depth axis
         )
     )
+    sound_speed_values_at_sonic_layer_depth[np.where(max_indices == 0)] = np.nan
 
     # Flip the mask since we actually want to examine the values BELOW the sonic
     # layer depth.
