@@ -255,7 +255,8 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
             />
           </div>
-          <Accordion title={"Plot Options"} content={plotOptions} />
+          <Accordion id='point_accordion' title={"Plot Options"} content={plotOptions} />
+          
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

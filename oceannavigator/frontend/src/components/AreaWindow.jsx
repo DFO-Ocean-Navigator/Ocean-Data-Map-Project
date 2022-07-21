@@ -287,7 +287,7 @@ class AreaWindow extends React.Component {
           >
             {_("contour_help")}
           </ContourSelector>
-          <Accordion title={"Plot Options"} content={plotOptions} />
+          <Accordion id='area_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

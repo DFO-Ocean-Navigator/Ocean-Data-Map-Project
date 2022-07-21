@@ -225,7 +225,7 @@ class LineWindow extends React.Component {
             {_("showmap_help")}
           </SelectBox>
             
-          <Accordion title={"Plot Options"} content={plotOptions} />
+          <Accordion id='line_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

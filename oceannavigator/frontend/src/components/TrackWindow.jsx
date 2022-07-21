@@ -182,6 +182,7 @@ class TrackWindow extends React.Component {
       title={_("Saved Image Size")}
     />;
     var accordion = <Accordion 
+      id='track_accordion'
       title={"Plot Options"}
       content={size}
     />

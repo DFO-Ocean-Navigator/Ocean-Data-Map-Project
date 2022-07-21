@@ -151,7 +151,7 @@ class Class4Window extends React.Component {
                     data={error_options}
                     title={_("Show Error")}
                     onUpdate={this.onLocalUpdate} />
-                  <Accordion title={"Plot Options"} content={plotOptions} />
+                  <Accordion id='class4_accordion' title={"Plot Options"} content={plotOptions} />
                 </Panel.Body>
               </Panel.Collapse>
             </Panel>
