@@ -4,6 +4,7 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ImageSize from "./ImageSize.jsx";
+import Accordion from "./lib/Accordion.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -86,6 +87,13 @@ class Class4Window extends React.Component {
       },
     ];
 
+    const plotOptions = <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")} />;
+
     _("Forecast");
     _("Show Location");
     _("Show Climatology");
@@ -143,12 +151,7 @@ class Class4Window extends React.Component {
                     data={error_options}
                     title={_("Show Error")}
                     onUpdate={this.onLocalUpdate} />
-                  <ImageSize
-                    key='size'
-                    id='size'
-                    state={this.state.size}
-                    onUpdate={this.onLocalUpdate}
-                    title={_("Saved Image Size")} />
+                  <Accordion title={"Plot Options"} content={plotOptions} />
                 </Panel.Body>
               </Panel.Collapse>
             </Panel>

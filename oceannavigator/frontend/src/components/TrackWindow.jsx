@@ -4,9 +4,11 @@ import ComboBox from "./ComboBox.jsx";
 import SelectBox from "./SelectBox.jsx";
 import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
+import Accordion from "./lib/Accordion.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
+
 
 class TrackWindow extends React.Component {
   constructor(props) {
@@ -179,6 +181,10 @@ class TrackWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")}
     />;
+    var accordion = <Accordion 
+      title={"Plot Options"}
+      content={size}
+    />
     var depth = <ComboBox
       key='depth'
       id='depth'
@@ -221,7 +227,7 @@ class TrackWindow extends React.Component {
     }
     inputs = [
       dataset, showmap, latlon, starttime, endtime, track_quantum,
-      trackvariable, variable, depth, size
+      trackvariable, variable, depth, accordion
     ];
 
     return (
