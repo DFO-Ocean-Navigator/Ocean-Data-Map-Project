@@ -16,11 +16,11 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
+import Accordion from "./lib/Accordion.jsx";
 
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
-import Accordion from "./lib/Accordion.jsx";
 
 const TabEnum = {
   PROFILE: 1,
@@ -191,8 +191,7 @@ class PointWindow extends React.Component {
                                   this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
 
-    const plotOptions = (
-    <div>
+    const plotOptions = (<div>
       <ImageSize
         key='size'
         id='size'

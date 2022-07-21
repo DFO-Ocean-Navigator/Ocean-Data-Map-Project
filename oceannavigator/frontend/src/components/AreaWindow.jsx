@@ -19,6 +19,7 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
+import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -155,6 +156,26 @@ class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
+    const plotOptions = (<div>
+      {/* Image Size Selection */}
+      <ImageSize 
+        key='size' 
+        id='size' 
+        state={this.state.size} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Saved Image Size")} 
+      ></ImageSize>
+
+      {/* Plot Title */}
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
+      />
+    </div>);
+
     const mapSettings = (<Panel 
       defaultExpanded
       bsStyle='primary'
@@ -266,24 +287,7 @@ class AreaWindow extends React.Component {
           >
             {_("contour_help")}
           </ContourSelector>
-
-          {/* Image Size Selection */}
-          <ImageSize 
-            key='size' 
-            id='size' 
-            state={this.state.size} 
-            onUpdate={this.onLocalUpdate} 
-            title={_("Saved Image Size")} 
-          ></ImageSize>
-
-          {/* Plot Title */}
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitle}
-          ></CustomPlotLabels>
+          <Accordion title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

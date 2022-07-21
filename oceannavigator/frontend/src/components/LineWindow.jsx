@@ -141,6 +141,23 @@ class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
+    const plotOptions = (<div>
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      />
+    </div>);
+
     const global = (<Panel 
       key='global_settings'
       id='global_settings'
@@ -208,20 +225,7 @@ class LineWindow extends React.Component {
             {_("showmap_help")}
           </SelectBox>
             
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          ></CustomPlotLabels>
+          <Accordion title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);
