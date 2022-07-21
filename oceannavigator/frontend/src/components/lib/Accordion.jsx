@@ -30,26 +30,4 @@ export class Accordion extends React.Component {
   }
 };
 
-//***********************************************************************
-// Accordion.propTypes = {
-// id: PropTypes.string.isRequired,
-// };
-
-// Accordion.defaultProps = {
-
-// };
-
 export default withTranslation()(Accordion);
-
-
-// const [isActive, setIsActive] = useState(false);
-
-// return (
-//   <div className="accordion-item">
-//     <div className="accordion-title" onClick={() => setIsActive(!isActive)}>
-//       <div>{title}</div>
-//       <div>{isActive ? '-' : '+'}</div>
-//     </div>
-//     {isActive && <div className="accordion-content">{content}</div>}
-//   </div>
-// );
