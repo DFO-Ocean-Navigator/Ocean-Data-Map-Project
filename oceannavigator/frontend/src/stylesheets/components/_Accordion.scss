@@ -1,0 +1,21 @@
+div div.accordion {
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+div div.accordion-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  color: #fff;
+  background-color: #008cba;
+}
+
+div div.accordion-title,
+div div.accordion-content {
+  padding: 1rem;
+}
+
+div div.accordion-content {
+  background-color: #fff;
+}

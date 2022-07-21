@@ -10,6 +10,7 @@ import {
 
 import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
+import Accordion from "./lib/Accordion.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 
 import {
@@ -453,7 +454,7 @@ class DatasetSelector extends React.Component {
       variableRange = <Range
         id='variable_scale'
         state={this.state.variable_scale}
-        title={_("Variable Range")}
+        title={_("Colormap Range")}
         onUpdate={this.onUpdate}
         default_scale={this.state.datasetVariables
           .find(v => v.id === this.state.variable).scale
@@ -471,6 +472,8 @@ class DatasetSelector extends React.Component {
         }
       />;
     }
+
+    const variableOptions = this.props.showVariableRange ? <Accordion title={"Variable Options"} content={variableRange}/> : null
 
     const goButtonTooltip = (
       <Tooltip id="goButtonTooltip">
@@ -491,7 +494,7 @@ class DatasetSelector extends React.Component {
         
         {timeSelector}
 
-        {variableRange}
+        {variableOptions}
 
         <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
           <Button
