@@ -14,13 +14,14 @@ export class Accordion extends React.Component {
 
   render() {
     return (
-      <div className="accordion-item">
-        <div className="accordion-title" onClick={() => this.setState(prevState => ({isActive: !prevState.isActive}))}>
-          <div>{this.props.title}</div>
-          <div>{this.state.isActive ? '˄' : '˅'}</div>
+      <div className="accordion">
+        <div className="accordion-item">
+          <div className="accordion-title" onClick={() => this.setState(prevState => ({isActive: !prevState.isActive}))}>
+            <div>{this.props.title}</div>
+            <div>{this.state.isActive ? '˄' : '˅'}</div>
+          </div>
+          {this.state.isActive && <div className="accordion-content">{this.props.content}</div>}
         </div>
-        {this.state.isActive && <div className="accordion-content">{this.props.content}</div>}
-        {/* {this.state.isActive && <div className="accordion-content"><h1>Test</h1></div>} */}
       </div>
     );    
   }
