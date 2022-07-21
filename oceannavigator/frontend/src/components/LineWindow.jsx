@@ -16,7 +16,7 @@ import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-
+import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
 

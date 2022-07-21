@@ -185,7 +185,7 @@ class TrackWindow extends React.Component {
       id='track_accordion'
       title={"Plot Options"}
       content={size}
-    />
+    />;
     var depth = <ComboBox
       key='depth'
       id='depth'

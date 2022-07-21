@@ -9,7 +9,10 @@ export class Accordion extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {open: false};
+    this.state = {
+      open: false,
+      panelIcon: "angle-down"
+    };
   };
 
   render() {
@@ -23,12 +26,12 @@ export class Accordion extends React.Component {
         <Panel.Heading onClick={() => this.setState({open: !this.state.open})}>
           <div style={{ display: "flex", justifyContent: "space-between" }}> 
             <Panel.Title>{this.props.title}</Panel.Title>
-            <Icon icon={this.state.buttonIcon}/>  
+            <Icon icon={this.state.panelIcon}/>  
           </div>
         </Panel.Heading>
         <Panel.Collapse 
-          onEntering={() => {this.setState({buttonIcon: "angle-up"})}}
-          onExiting={() => {this.setState({buttonIcon: "angle-down"})}}
+          onEntering={() => {this.setState({panelIcon: "angle-up"})}}
+          onExiting={() => {this.setState({panelIcon: "angle-down"})}}
         >
           <Panel.Body>
             {this.props.content}
