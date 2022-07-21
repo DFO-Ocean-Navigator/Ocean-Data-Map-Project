@@ -30,4 +30,10 @@ export class Accordion extends React.Component {
   }
 };
 
+//***********************************************************************
+Accordion.propTypes = {
+  title: PropTypes.string.isRequired,
+  content: PropTypes.node.isRequired,
+};
+
 export default withTranslation()(Accordion);
