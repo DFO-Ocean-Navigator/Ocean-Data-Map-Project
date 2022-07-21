@@ -20,6 +20,7 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
+import Accordion from "./lib/Accordion.jsx";
 
 const TabEnum = {
   PROFILE: 1,
@@ -174,6 +175,7 @@ class PointWindow extends React.Component {
     });
   }
 
+
   render() {
     _("Location");
     _("Colourmap");
@@ -188,6 +190,25 @@ class PointWindow extends React.Component {
     const showVariableSelector =  this.state.selected === TabEnum.PROFILE ||
                                   this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
+
+    const plotOptions = (
+    <div>
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      />
+    </div>);
 
     // Rendered across all tabs
     const global = (<Panel
@@ -235,22 +256,7 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
             />
           </div>
-
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          />
+          <Accordion title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

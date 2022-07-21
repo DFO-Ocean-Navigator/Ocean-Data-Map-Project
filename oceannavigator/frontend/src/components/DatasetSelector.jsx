@@ -10,7 +10,6 @@ import {
 
 import TimePicker from "./TimePicker.jsx";
 import Range from "./Range.jsx";
-import Accordion from "./lib/Accordion.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 
 import {
@@ -473,8 +472,6 @@ class DatasetSelector extends React.Component {
       />;
     }
 
-    const variableOptions = this.props.showVariableRange ? <Accordion title={"Variable Options"} content={variableRange}/> : null
-
     const goButtonTooltip = (
       <Tooltip id="goButtonTooltip">
         {_("Click to apply selections")}
@@ -494,7 +491,7 @@ class DatasetSelector extends React.Component {
         
         {timeSelector}
 
-        {variableOptions}
+        {variableRange}
 
         <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
           <Button
