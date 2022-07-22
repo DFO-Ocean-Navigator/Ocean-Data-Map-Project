@@ -453,7 +453,7 @@ class DatasetSelector extends React.Component {
       variableRange = <Range
         id='variable_scale'
         state={this.state.variable_scale}
-        title={_("Variable Range")}
+        title={_("Colormap Range")}
         onUpdate={this.onUpdate}
         default_scale={this.state.datasetVariables
           .find(v => v.id === this.state.variable).scale
