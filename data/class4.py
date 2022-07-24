@@ -1,8 +1,7 @@
 import fcntl
-import os
 import pickle as pickle
 import time
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import List
 
 import cftime
@@ -30,7 +29,7 @@ def list_class4_files():
     data = {"ocean_predict": None, "riops_obs": None}
 
     for file, path, class4_type in zip(pickle_files, class4_path, data.keys()):
-        cache_file_name = os.path.join(current_app.config["CACHE_DIR"], file)
+        cache_file_name = PurePath(current_app.config["CACHE_DIR"]).joinpath(file)
 
         try:
             fp = open(cache_file_name, "rb")

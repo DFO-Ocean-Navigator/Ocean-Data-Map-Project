@@ -1,6 +1,6 @@
 import json
-import os
 import re
+from pathlib import Path, PurePath
 from typing import Union
 
 from flask import current_app
@@ -28,8 +28,8 @@ class DatasetConfig:
     @staticmethod
     def _get_dataset_config() -> dict:
         if DatasetConfig.__config is None:
-            cwd = os.path.dirname(os.path.realpath(__file__))
-            with open(os.path.join(cwd, current_app.config["datasetConfig"]), "r") as f:
+            cwd = PurePath(__file__).parent
+            with open(cwd.joinpath(current_app.config["datasetConfig"]), "r") as f:
                 DatasetConfig.__config = json.load(f)
 
         return DatasetConfig.__config
