@@ -1,5 +1,4 @@
 import datetime
-import re
 from textwrap import wrap
 
 import matplotlib
@@ -75,7 +74,8 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 self.depth_label = ""
 
-            # Override depth request if requested variable has no depth (i.e. surface only)
+            # Override depth request if requested variable has no depth
+            # (i.e. surface only)
             if not (
                 set(dataset.variables[variable].dimensions)
                 & set(dataset.nc_data.depth_dimensions)
@@ -172,8 +172,8 @@ class TimeseriesPlotter(PointPlotter):
         ]
 
         # Check to see if the quiver attribute is present. If so the CSV export will
-        # also include X and Y velocity components (pulled from the quiver_data attribute)
-        # and bearing information (to be calculated below).
+        # also include X and Y velocity components (pulled from the quiver_data
+        # attribute) and bearing information (to be calculated below).
         has_quiver = hasattr(self, "quiver_data")
 
         if self.depth != "all":
@@ -292,6 +292,71 @@ class TimeseriesPlotter(PointPlotter):
 
         return super(TimeseriesPlotter, self).csv(header, columns, data)
 
+    def stats_csv(self):
+        header = [
+            ["Dataset", self.dataset_config.name],
+            ["Attribution", self.dataset_config.attribution],
+        ]
+
+        columns = ["Statistics"]
+
+        # Check to see if the quiver attribute is present. If so the CSV export will
+        # also include X and Y velocity components (pulled from the quiver_data
+        # attribute) and bearing information (to be calculated below).
+        has_quiver = hasattr(self, "quiver_data")
+
+        columns.append("%s (%s)" % (self.variable_name, self.variable_unit))
+
+        if has_quiver:
+            columns.extend(
+                [
+                    "%s (%s)"
+                    % (
+                        self.vector_variable_names[0],
+                        self.vector_variable_units[0],
+                    ),
+                    "%s (%s)"
+                    % (
+                        self.vector_variable_names[1],
+                        self.vector_variable_units[1],
+                    ),
+                    "Bearing (degrees clockwise positive from North)",
+                ]
+            )
+
+            # Calculate bearings.
+            bearing = np.arctan2(self.quiver_data[1][:], self.quiver_data[0][:])
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
+            # Deal with undefined angles (where velocity is 0 or very close)
+            inds = np.where(
+                np.logical_and(
+                    np.abs(self.quiver_data[1]) < 10e-6,
+                    np.abs(self.quiver_data[0]) < 10e-6,
+                )
+            )
+            bearing[inds] = np.nan
+            stats_data = np.stack(
+                (
+                    self.data.ravel(),
+                    self.quiver_data[0].ravel(),
+                    self.quiver_data[1].ravel(),
+                    bearing.ravel(),
+                )
+            ).T
+        else:
+            stats_data = np.expand_dims(self.data, 1)
+
+        data = [
+            ["Min"] + np.array(np.nanmin(stats_data, axis=0)).tolist(),
+            ["Max"] + np.array(np.nanmax(stats_data, axis=0)).tolist(),
+            ["Mean"] + np.array(np.nanmean(stats_data, axis=0)).tolist(),
+            ["Standard Deviation"] + np.array(np.nanstd(stats_data, axis=0)).tolist(),
+        ]
+
+        return super(TimeseriesPlotter, self).csv(header, columns, data)
+
     def plot(self):
         if self.scale:
             vmin = self.scale[0]
@@ -305,6 +370,7 @@ class TimeseriesPlotter(PointPlotter):
             self.cmap = colormap.find_colormap(self.variable_name)
 
         datenum = matplotlib.dates.date2num(self.times)
+        var_unit = utils.mathtext(self.variable_unit)
         if self.depth == "all":
             size = list(map(float, self.size.split("x")))
             numpoints = len(self.points)
@@ -337,8 +403,8 @@ class TimeseriesPlotter(PointPlotter):
                 ax[idx].yaxis.set_major_formatter(ScalarFormatter())
 
                 if maxdepth > LINEAR:
-                    l = 10 ** np.floor(np.log10(maxdepth))
-                    ax[idx].set_ylim(np.ceil(maxdepth / l) * l, mindepth)
+                    lim = 10 ** np.floor(np.log10(maxdepth))
+                    ax[idx].set_ylim(np.ceil(maxdepth / lim) * lim, mindepth)
                     ax[idx].set_yticks(list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
                 else:
                     ax[idx].set_ylim(maxdepth, mindepth)
@@ -347,13 +413,18 @@ class TimeseriesPlotter(PointPlotter):
                 ax[idx].xaxis_date()
                 ax[idx].set_xlim(datenum[0], datenum[-1])
 
+                ax[idx].text(
+                    0,
+                    -0.25,
+                    self.get_stats_str(self.data[idx, 0, :], var_unit),
+                    fontsize=14,
+                    transform=ax[idx].transAxes,
+                )
+
                 divider = make_axes_locatable(ax[idx])
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 bar = plt.colorbar(c, cax=cax)
-                bar.set_label(
-                    "%s (%s)"
-                    % (self.variable_name.title(), utils.mathtext(self.variable_unit))
-                )
+                bar.set_label(f"{self.variable_name.title()} ({var_unit})")
                 ax[idx].set_title(
                     "%s%s at %s"
                     % (self.variable_name.title(), self.depth_label, self.names[idx])
@@ -403,7 +474,7 @@ class TimeseriesPlotter(PointPlotter):
                     xdate=True,
                 )
             plt.ylabel(
-                f"{self.variable_name.title()} ({utils.mathtext(self.variable_unit)})",
+                f"{self.variable_name.title()} ({var_unit})",
                 fontsize=14,
             )
             plt.ylim(vmin, vmax)
@@ -423,10 +494,19 @@ class TimeseriesPlotter(PointPlotter):
             else:
                 plt.title(self.plotTitle, fontsize=15)
 
-            plt.gca().grid(True)
+            ax = plt.gca()
+            ax.grid(True)
 
             fig.autofmt_xdate()
 
             self.plot_legend(fig, self.names)
+
+            ax.text(
+                0,
+                -0.25,
+                self.get_stats_str(self.data, var_unit),
+                fontsize=14,
+                transform=ax.transAxes,
+            )
 
         return super(TimeseriesPlotter, self).plot(fig)

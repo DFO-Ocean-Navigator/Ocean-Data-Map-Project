@@ -452,9 +452,12 @@ async def data(
         data = data[data_slice]
 
         bearings = None
-        if "mag" in variable:
-            with open_dataset(config, variable="bearing", timestamp=time) as ds_bearing:
-                bearings = ds_bearing.nc_data.get_dataset_variable("bearing")[
+        if "mag" in result["variable"]:
+            bearings_var = config.variable[result["variable"]].bearing_component or "bearing"   
+            with open_dataset(
+                config, variable=bearings_var, timestamp=result["time"]
+            ) as ds_bearing:
+                bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
                     data_slice
                 ].squeeze(drop=True)
 
@@ -471,14 +474,16 @@ async def data(
 
         return d
 
-
 '''
-@bp_v1_0.route("/api/v1.0/class4/<string:q>/<string:class4_id>/")
-def class4_query_v1_0(q: str, class4_id: str):
+@bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_type>/<string:class4_id>/')
+def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
+
     """
     API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
 
     <string:q>         : forecasts / models (Data Request)
+    <string:class4_type> : type of the desired class4 - Can be ocean_predict or 
+                           riops_obs
     <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
 
     Returns a list of class4 datapoints for a given day
@@ -487,10 +492,12 @@ def class4_query_v1_0(q: str, class4_id: str):
     if not class4_id:
         raise APIError("Please Specify an ID ")
 
-    if q == "forecasts":
-        pts = class4.list_class4_forecasts(class4_id)
-    elif q == "models":
-        pts = class4.list_class4_models(class4_id)
+
+    if q == 'forecasts':
+        pts = class4.list_class4_forecasts(class4_id, class4_type)
+    elif q == 'models':
+        pts = class4.list_class4_models(class4_id, class4_type)
+
     else:
         raise APIError(
             gettext(
@@ -817,18 +824,19 @@ async def kml_area():
 
 '''
 @bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")
-def query_id_v1_0(q: str, q_id: str):
+def query_id_v1_0(q: str, q_id: str, q_type: str = None):
     """
     API Format: /api/v1.0/<string:q>/<string:q_id>.json'
 
     <string:q>    : Type of Data (areas, class4)
     <string:q_id> :
+    <string:q_type> : Type of class4 data (optional)
 
     """
     if q == "areas":
         data = utils.misc.list_areas(q_id)
     elif q == "class4":
-        data = class4.list_class4(q_id)
+        data = class4.list_class4(q_id, q_type)
     else:
         raise APIError(
             "The Specified Parameter is Invalid - Must be one of (areas, class4)"
@@ -846,8 +854,11 @@ def query_file_v1_0(
     q: str, projection: str, resolution: int, extent: str, file_id: str
 ):
     """
-    <string:q>          : Type of data (points, lines, areas, class4)
-    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)  # noqa: E501
+    API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
+
+    <string:q>          : Type of data (points, lines, areas, class4 Ocean Predict/RIOPS Assimilated Observations)
+    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
+
     <int:resolution>    : Current zoom level of the map
     <string:extent>     : The current bounds of the map view
     <string:file_id>    :
@@ -859,14 +870,21 @@ def query_file_v1_0(
     data = []
     max_age = 86400
 
-    if q == "points":
-        data = utils.misc.points(file_id, projection, resolution, extent)
-    elif q == "lines":
-        data = utils.misc.lines(file_id, projection, resolution, extent)
-    elif q == "areas":
-        data = utils.misc.areas(file_id, projection, resolution, extent)
-    elif q == "class4":
-        data = class4.class4(file_id, projection, resolution, extent)
+    if q == 'points':
+        data = utils.misc.points(
+            file_id, projection, resolution, extent)
+    elif q == 'lines':
+        data = utils.misc.lines(
+            file_id, projection, resolution, extent)
+    elif q == 'areas':
+        data = utils.misc.areas(
+            file_id, projection, resolution, extent)
+    elif q == 'ocean_predict':
+        data = class4.class4(
+            q, file_id, projection, resolution, extent)
+    elif q == 'riops_obs':
+        data = class4.class4(
+            q, file_id, projection, resolution, extent)            
     else:
         raise FAILURE
 

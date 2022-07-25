@@ -34,7 +34,8 @@ class CalculatedData(NetCDFData):
             return self._calculated[variable_key]["dims"]
         except KeyError:
             raise KeyError(
-                f"{variable_key} does not have a dims attribute defined in datasetconfig.json. "
+                f"{variable_key} does not have a dims attribute \
+                    defined in datasetconfig.json. "
                 f"This is required for all calculated variables."
             )
 

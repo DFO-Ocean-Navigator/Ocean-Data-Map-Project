@@ -9,6 +9,9 @@ from flask import current_app
 
 
 def get_filename(plot_type, dataset_name, extension):
+    if extension == "stats":
+        plot_type += "_statistics"
+        extension = "csv"
     outname = [plot_type, dataset_name, datetime.datetime.now().isoformat()]
 
     return "%s.%s" % ("_".join(map(str, outname)), extension)
@@ -39,6 +42,8 @@ def get_mimetype(filetype: str):
     elif filetype == "odv":
         mime = "text/plain"
         filetype = "txt"
+    elif filetype == "stats":
+        mime = "text/csv"
     else:
         filetype = "png"
         mime = "image/png"
@@ -96,14 +101,16 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         maxlat = 90
 
     plot_projection = ccrs.Mercator(
-        central_longitude=np.mean(points[1, :]),
+        central_longitude=np.mean([minlon, maxlon]),
         min_latitude=minlat,
         max_latitude=maxlat,
     )
     pc_projection = ccrs.PlateCarree()
 
+    extent = [minlon, maxlon, minlat, maxlat]
+
     m = plt.subplot(grid_loc, projection=plot_projection)
-    m.set_extent([minlon, maxlon, minlat, maxlat])
+    m.set_extent(extent)
     m.coastlines()
 
     if path:

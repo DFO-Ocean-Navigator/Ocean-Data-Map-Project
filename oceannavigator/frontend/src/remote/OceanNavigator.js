@@ -55,3 +55,9 @@ export function GetPresetAreasPromise() {
     "/api/v1.0/kml/areas"
   );
 }
+
+export function GetClass4Promise() {
+  return instance.get(
+    "/api/v1.0/class4/"
+  );
+}

@@ -108,6 +108,25 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
+    def __apply_poly_mask(self, data: np.ma.MaskedArray) -> np.ma.MaskedArray:
+        area = self.area[0]
+        polys = []
+        for co in area["polygons"] + area["innerrings"]:
+            polys.append(np.array(co))
+
+        area_poly = Poly(polys[0])
+        path = Path(area_poly.boundary)
+
+        points = [
+            (lat, lon)
+            for lat, lon in zip(np.ravel(self.latitude), np.ravel(self.longitude))
+        ]
+        inside_points = path.contains_points(points)
+        inside_points = np.reshape(inside_points, data.shape)
+
+        mask = data.mask + ~inside_points
+        return data.data[~mask]
+
     def load_data(self):
 
         width_scale = 1.25
@@ -269,7 +288,6 @@ class MapPlotter(Plotter):
             if self.__load_quiver():
                 var = dataset.variables[self.quiver["variable"]]
                 quiver_unit = self.dataset_config.variable[var].unit
-                quiver_name = self.dataset_config.variable[var].name
                 quiver_x_var = self.dataset_config.variable[var].east_vector_component
                 quiver_y_var = self.dataset_config.variable[var].north_vector_component
                 quiver_x, quiver_y, _ = cimg_transform.mesh_projection(
@@ -548,6 +566,65 @@ class MapPlotter(Plotter):
                     ]
                 )
             data.append(entry)
+
+        return super(MapPlotter, self).csv(header, columns, data)
+
+    def stats_csv(self):
+        # If the user has selected the display of quiver data in the browser,
+        # then also export that data in the CSV file.
+        have_quiver = self.__load_quiver()
+
+        header = [
+            ["Dataset", self.dataset_name],
+            ["Timestamp", self.timestamp.isoformat()],
+        ]
+
+        columns = [
+            "Statistic",
+            "%s (%s)" % (self.variable_name, self.variable_unit),
+        ]
+
+        masked_data = self.__apply_poly_mask(self.data)
+
+        if have_quiver:
+            # Include bearing information in the exported data, as per user
+            # requests.
+            columns.extend(
+                [
+                    "%s X (%s)" % (self.quiver_name, self.quiver_unit),
+                    "%s Y (%s)" % (self.quiver_name, self.quiver_unit),
+                    "Bearing (degrees clockwise positive from North)",
+                ]
+            )
+
+            masked_quiver_ew = self.__apply_poly_mask(self.quiver_data_fullgrid[0])
+            masked_quiver_ns = self.__apply_poly_mask(self.quiver_data_fullgrid[1])
+
+            bearing = np.arctan2(
+                masked_quiver_ew.ravel(),
+                masked_quiver_ns.ravel(),
+            )
+            bearing = np.pi / 2.0 - bearing
+            bearing[bearing < 0] += 2 * np.pi
+            bearing *= 180.0 / np.pi
+
+            stats_data = np.stack(
+                (
+                    masked_data.ravel(),
+                    masked_quiver_ew.ravel(),
+                    masked_quiver_ns.ravel(),
+                    bearing.ravel(),
+                )
+            ).T
+        else:
+            stats_data = np.expand_dims(masked_data, 1)
+
+        data = [
+            ["Min"] + np.nanmin(stats_data, axis=0).tolist(),
+            ["Max"] + np.nanmax(stats_data, axis=0).tolist(),
+            ["Mean"] + np.nanmean(stats_data, axis=0).tolist(),
+            ["Standard Deviation"] + np.nanstd(stats_data, axis=0).tolist(),
+        ]
 
         return super(MapPlotter, self).csv(header, columns, data)
 
@@ -864,9 +941,9 @@ class MapPlotter(Plotter):
                     )
 
                 if self.contour["legend"]:
-                    handles, l = contours.legend_elements()
+                    handles, lab = contours.legend_elements()
                     labels = []
-                    for i, lab in enumerate(l):
+                    for i, _ in enumerate(lab):
                         if self.contour.get("hatch"):
                             if self.contour_unit == "fraction":
                                 if i == 0:
@@ -930,6 +1007,7 @@ class MapPlotter(Plotter):
 
         title = self.plotTitle
 
+        var_unit = utils.mathtext(self.variable_unit)
         if self.plotTitle is None or self.plotTitle == "":
             area_title = "\n".join(wrap(", ".join(self.names), 60)) + "\n"
 
@@ -946,8 +1024,7 @@ class MapPlotter(Plotter):
         cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
         bar = plt.colorbar(c, cax=cax)
         bar.set_label(
-            "%s (%s)"
-            % (self.variable_name.title(), utils.mathtext(self.variable_unit)),
+            f"{self.variable_name.title()} ({var_unit})",
             fontsize=14,
         )
 
@@ -965,5 +1042,18 @@ class MapPlotter(Plotter):
                 self.quiver_name.title() + " " + utils.mathtext(self.quiver_unit),
                 fontsize=14,
             )
+            y_offset = -0.25
+        else:
+            y_offset = -0.1
+
+        masked_data = self.__apply_poly_mask(self.data)
+
+        ax.text(
+            0,
+            y_offset,
+            self.get_stats_str(masked_data, var_unit),
+            fontsize=14,
+            transform=map_plot.transAxes,
+        )
 
         return super(MapPlotter, self).plot(fig)

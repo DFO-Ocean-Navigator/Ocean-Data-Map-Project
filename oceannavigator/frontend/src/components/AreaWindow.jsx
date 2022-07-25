@@ -6,8 +6,7 @@
 */
 
 import React from "react";
-import {Nav, NavItem, Panel, Row,  Col, Button, 
-  FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
+import {Nav, NavItem, Panel, Row,  Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
@@ -18,12 +17,11 @@ import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import Icon from "./lib/Icon.jsx";
-import TimePicker from "./TimePicker.jsx";
+import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
+import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
-const stringify = require("fast-stable-stringify");
 
 class AreaWindow extends React.Component {
   constructor(props) {
@@ -77,13 +75,6 @@ class AreaWindow extends React.Component {
       },
       size: "10x7", // Plot dimensions
       dpi: 144, // Plot DPI
-      output_timerange: false,
-      output_variables: "",
-      output_starttime: props.dataset_0.time,
-      output_endtime: props.dataset_0.time,
-      output_format: "NETCDF4", // Subset output format
-      convertToUserGrid: false,
-      zip: false, // Should subset file(s) be zipped
     };
 
     if (props.init !== null) {
@@ -92,10 +83,8 @@ class AreaWindow extends React.Component {
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
-    this.subsetArea = this.subsetArea.bind(this);
     this.onTabChange = this.onTabChange.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
-    this.saveScript = this.saveScript.bind(this);
   }
 
   componentDidMount() {
@@ -121,10 +110,10 @@ class AreaWindow extends React.Component {
             ...prevState.dataset_0,
             ...value
           }
-        }));
+        }));      
         return;
       }
-
+      
       if (key === "dataset_1") {
         this.setState(prevState => ({
           dataset_1: {
@@ -147,72 +136,6 @@ class AreaWindow extends React.Component {
     }
   }
 
-  // Find max extents of drawn area
-  calculateAreaBoundingBox(area) {
-    let lat_min = area.polygons[0][0][0];
-    let lat_max = area.polygons[0][0][1];
-    let long_min = area.polygons[0][0][0];
-    let long_max = area.polygons[0][0][1];
-
-    for (let i = 0; i < area.polygons[0].length; ++i) {
-      lat_min = Math.min(lat_min, area.polygons[0][i][0]);
-      long_min = Math.min(long_min, area.polygons[0][i][1]);
-
-      lat_max = Math.max(lat_max, area.polygons[0][i][0]);
-      long_max = Math.max(long_max, area.polygons[0][i][1]);
-    }
-
-    return [lat_min, lat_max, long_min, long_max];
-  }
-
-  subsetArea() {
-    var queryString = []
-    // check if predefined area
-    if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
-      queryString = "&area=" + this.props.area[0];
-    } else {
-      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-      const min_range = [AABB[0], AABB[2]].join();
-      const max_range = [AABB[1], AABB[3]].join(); 
-      queryString = "&min_range=" + min_range +
-                      "&max_range=" + max_range;
-    }
-    const output_endtime = this.state.output_timerange ? this.state.output_endtime : this.state.output_starttime
-    window.location.href = "/api/v1.0/subset/?" +
-       "&output_format=" + this.state.output_format +
-       "&dataset_name=" + this.state.dataset_0.dataset +
-       "&variables=" + this.state.output_variables.join() +
-        queryString +
-       "&time=" + [this.state.output_starttime, output_endtime].join() +
-       "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
-       "&should_zip=" + (this.state.zip ? 1 : 0);
-  }
-
-  saveScript(key) {
-    let query = {
-      "output_format": this.state.output_format,
-      "dataset_name": this.state.dataset_0.dataset,
-      "variables": this.state.output_variables.join(),
-      "time": [this.state.output_starttime, this.state.output_endtime].join(),
-      "user_grid": (this.state.convertToUserGrid ? 1:0),
-      "should_zip": (this.state.zip ? 1:0)
-    };
-    // check if predefined area
-    if (typeof this.props.area[0] === 'string' || this.props.area[0] instanceof String) { 
-      query['area'] = this.props.area[0];
-    } else {
-      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
-      query['min_range'] = [AABB[0], AABB[2]].join();
-      query['max_range'] = [AABB[1], AABB[3]].join() ;
-    }
-
-    window.location.href = window.location.origin + 
-                          "/api/v1.0/generatescript/?query=" + 
-                          stringify(query) + 
-                          "&lang=" + key + 
-                          "&scriptType=SUBSET";
-  }
-
   onTabChange(index) {
     this.setState({
       currentTab: index,
@@ -233,7 +156,27 @@ class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
-    const mapSettings = (<Panel
+    const plotOptions = (<div>
+      {/* Image Size Selection */}
+      <ImageSize 
+        key='size' 
+        id='size' 
+        state={this.state.size} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Saved Image Size")} 
+      ></ImageSize>
+
+      {/* Plot Title */}
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
+      />
+    </div>);
+
+    const mapSettings = (<Panel 
       defaultExpanded
       bsStyle='primary'
       key='map_settings'
@@ -275,7 +218,7 @@ class AreaWindow extends React.Component {
 
           <div
             style={{display: this.state.dataset_compare &&
-                            this.state.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+                    this.state.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
           >
             <Range
               auto
@@ -344,146 +287,17 @@ class AreaWindow extends React.Component {
           >
             {_("contour_help")}
           </ContourSelector>
-
-          {/* Image Size Selection */}
-          <ImageSize 
-            key='size' 
-            id='size' 
-            state={this.state.size} 
-            onUpdate={this.onLocalUpdate} 
-            title={_("Saved Image Size")} 
-          ></ImageSize>
-
-          {/* Plot Title */}
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitle}
-          ></CustomPlotLabels>
+          <Accordion id='area_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);
 
-    const subsetPanel = (<Panel
-      key='subset'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>{_("Subset")}</Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
-          <form>
-            <ComboBox
-              id='variable'
-              key='variable'
-              multiple={true}
-              state={this.state.output_variables}
-              def={"defaults.dataset"}
-              onUpdate={(keys, values) => { this.setState({output_variables: values[0],}); }}
-              url={"/api/v1.0/variables/?dataset=" + this.state.dataset_0.dataset
-              }
-              title={_("Variables")}
-            />
-
-            <SelectBox
-              id='time_range'
-              key='time_range'
-              state={this.state.output_timerange}
-              onUpdate={(_, value) => {this.setState({output_timerange: value,});}}
-              title={_("Select Time Range")}
-            />
-
-            <TimePicker
-              id='starttime'
-              key='starttime'
-              state={this.state.output_starttime}
-              def=''
-              quantum={this.state.dataset_0.quantum}
-              dataset={this.state.dataset_0.dataset}
-              variable={this.state.dataset_0.variable}
-              title={this.state.output_timerange ? _("Start Time (UTC)") : _("Time (UTC)")}
-              onUpdate={ (_, value) => { this.setState({output_starttime: value}); }}
-              max={this.state.dataset_0.time + 1}
-            />
-
-            <div style={{display: this.state.output_timerange ? "block" : "none",}}>
-              <TimePicker
-                id='time'
-                key='time'
-                state={this.state.output_endtime}
-                def=''
-                quantum={this.state.dataset_0.quantum}
-                dataset={this.state.dataset_0.dataset}
-                variable={this.state.dataset_0.variable}
-                title={this.state.output_timerange ? _("End Time (UTC)") : _("Time (UTC)")}
-                onUpdate={ (_, value) => { this.setState({output_endtime: value}); }}
-                min={this.state.dataset_0.time}
-              />
-            </div>
-
-            <FormGroup controlId="output_format">
-              <ControlLabel>{_("Output Format")}</ControlLabel>
-              <FormControl componentClass="select" onChange={e => { this.setState({output_format: e.target.value}); }}>
-                <option value="NETCDF4">{_("NetCDF-4")}</option>
-                <option value="NETCDF3_CLASSIC">{_("NetCDF-3 Classic")}</option>
-                <option value="NETCDF3_64BIT">{_("NetCDF-3 64-bit")}</option>
-                <option value="NETCDF3_NC" disabled={
-                  this.state.dataset_0.dataset.indexOf("giops") === -1 &&
-                  this.state.dataset_0.dataset.indexOf("riops") === -1 // Disable if not a giops or riops dataset
-                }>
-                  {_("NetCDF-3 NC")}
-                </option>
-                <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
-              </FormControl>
-            </FormGroup>
-
-            {/*
-            <SelectBox
-              id='convertToUserGrid'
-              key='convertToUserGrid'
-              state={this.state.convertToUserGrid}
-              onUpdate={this.onLocalUpdate}
-              title={_("Convert to User Grid")}
-            />
-            */}        
-            <SelectBox 
-              id='zip'
-              key='zip'
-              state={this.state.zip} 
-              onUpdate={ (_, checked) => { this.setState({zip: checked}); } }
-              title={_("Compress as *.zip")}
-            />
-
-            <Button 
-              bsStyle="default" 
-              key='save'
-              id='save'
-              onClick={this.subsetArea}
-              disabled={this.state.output_variables == ""}
-            ><Icon icon="save" /> {_("Save")}</Button>
-            
-            <DropdownButton
-              id="script"
-              title={<span><Icon icon="file-code-o" /> {_("API Scripts")}</span>}
-              bsStyle={"default"}
-              disabled={this.state.output_variables == ""}
-              onSelect={this.saveScript}
-              dropup
-            >
-              <MenuItem
-                eventKey="python"
-              ><Icon icon="code" /> {_("Python 3")}</MenuItem>
-              <MenuItem
-                eventKey="r"
-              ><Icon icon="code" /> {_("R")}</MenuItem>
-            </DropdownButton>
-          </form>
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>
-    );
+    const subsetPanel = <SubsetPanel 
+      id='SubsetPanel'
+      key='SubsetPanel'
+      dataset={this.props.dataset_0}
+      area={this.props.area}
+    />
 
     const dataset = (<Panel
       key='left_map'
@@ -660,7 +474,7 @@ class AreaWindow extends React.Component {
 
 //***********************************************************************
 AreaWindow.propTypes = {
-  area: PropTypes.array,
+  area: PropTypes.array.isRequired,
   eneratePermLink: PropTypes.func,
   dataset_1: PropTypes.object.isRequired,
   dataset_compare: PropTypes.bool,
