@@ -1,6 +1,9 @@
 import datetime
+import gzip
 import json
 import os
+import shutil
+import sqlite3
 from io import BytesIO
 from typing import Union
 
@@ -1076,29 +1079,34 @@ async def bathymetry_tiles(
     return _cache_and_send_img(img, f)
 
 
-'''
-@bp_v1_0.route(
-    "/api/v1.0/mbt/<string:projection>/<string:tiletype>/<int:zoom>/<int:x>/<int:y>"
-)
-def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
+@router.get("/mbt/{projection}/{tiletype}/{zoom}/{x}/{y}")
+def mbt(
+    projection: str = Path(..., example='EPSG:3857'),
+    tiletype: str = Path(..., example='bath'),
+    zoom: int = Path(..., example=8),
+    x: int = Path(..., example=88),
+    y: int = Path(..., example=85)
+):
     """
     Serves mbt files
     """
-    cache_dir = current_app.config["CACHE_DIR"]
-    shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
-    requestf = str(os.path.join(cache_dir, request.path[1:]))
+
+    settings = get_settings()
+
+    shape_file_dir = settings.shape_file_dir
+    requestf = str(os.path.join(settings.cache_dir, request.path[1:]))
     basedir = requestf.rsplit("/", 1)[0]
 
     # Send blank tile if conditions aren't met
     if (zoom < 7) or (projection != "EPSG:3857"):
-        return send_file(shape_file_dir + "/blank.mbt")
+        return FileResponse(shape_file_dir + "/blank.mbt")
 
     if (zoom > 11) and (tiletype == "bath"):
-        return send_file(shape_file_dir + "/blank.mbt")
+        return FileResponse(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
     if os.path.isfile(requestf):
-        return send_file(requestf)
+        return FileResponse(requestf)
 
     y = (2**zoom - 1) - y
     connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
@@ -1107,7 +1115,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     selector.execute(sqlite)
     tile = selector.fetchone()
     if tile is None:
-        return send_file(shape_file_dir + "/blank.mbt")
+        return FileResponse(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
     if not os.path.isdir(basedir):
@@ -1117,8 +1125,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     with gzip.open(requestf + ".pbf", "rb") as gzipped:
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
-    return send_file(requestf)
-'''
+    return FileResponse(requestf)
+
 
 
 @router.get("/observation/datatypes.json", response_model=DataTypeSchema)
