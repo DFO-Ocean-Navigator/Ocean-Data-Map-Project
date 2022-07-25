@@ -2,16 +2,18 @@ import datetime
 import gzip
 import json
 import os
+import pathlib
 import shutil
 import sqlite3
 from io import BytesIO
 from typing import Union
+from urllib.request import Request
 
 import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from PIL import Image
@@ -1081,6 +1083,7 @@ async def bathymetry_tiles(
 
 @router.get("/mbt/{projection}/{tiletype}/{zoom}/{x}/{y}")
 def mbt(
+    request: Request,
     projection: str = Path(..., example='EPSG:3857'),
     tiletype: str = Path(..., example='bath'),
     zoom: int = Path(..., example=8),
@@ -1094,8 +1097,9 @@ def mbt(
     settings = get_settings()
 
     shape_file_dir = settings.shape_file_dir
-    requestf = str(os.path.join(settings.cache_dir, request.path[1:]))
-    basedir = requestf.rsplit("/", 1)[0]
+    requestf = (pathlib.Path(settings.cache_dir)
+                .joinpath(Request(request).url.path[1:]))
+    basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
     if (zoom < 7) or (projection != "EPSG:3857"):
@@ -1105,8 +1109,8 @@ def mbt(
         return FileResponse(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
-    if os.path.isfile(requestf):
-        return FileResponse(requestf)
+    if requestf.is_file():
+        return FileResponse(requestf.as_posix())
 
     y = (2**zoom - 1) - y
     connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
@@ -1118,15 +1122,13 @@ def mbt(
         return FileResponse(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
-    if not os.path.isdir(basedir):
-        os.makedirs(basedir)
-    with open(requestf + ".pbf", "wb") as f:
+    basedir.mkdir(parents=True, exist_ok=True)
+    with open(requestf.as_posix() + ".pbf", "wb") as f:
         f.write(tile[0])
-    with gzip.open(requestf + ".pbf", "rb") as gzipped:
+    with gzip.open(requestf.as_posix() + ".pbf", "rb") as gzipped:
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return FileResponse(requestf)
-
 
 
 @router.get("/observation/datatypes.json", response_model=DataTypeSchema)
