@@ -13,7 +13,14 @@ import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    Request
+)
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from PIL import Image
@@ -21,6 +28,7 @@ from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
 import routes.enums as e
@@ -63,7 +71,6 @@ import pandas as pd
 from dateutil.parser import parse as dateparse
 from shapely.geometry import LinearRing, Point, Polygon
 
-import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
 import plotting.scale
@@ -1081,14 +1088,15 @@ async def bathymetry_tiles(
     return _cache_and_send_img(img, f)
 
 
-@router.get("/mbt/{projection}/{tiletype}/{zoom}/{x}/{y}")
+@router.get("/mbt/{tiletype}/{zoom}/{x}/{y}")
 def mbt(
-    request: Request,
-    projection: str = Path(..., example='EPSG:3857'),
     tiletype: str = Path(..., example='bath'),
     zoom: int = Path(..., example=8),
     x: int = Path(..., example=88),
-    y: int = Path(..., example=85)
+    y: int = Path(..., example=85),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
 ):
     """
     Serves mbt files
@@ -1097,20 +1105,39 @@ def mbt(
     settings = get_settings()
 
     shape_file_dir = settings.shape_file_dir
-    requestf = (pathlib.Path(settings.cache_dir)
-                .joinpath(Request(request).url.path[1:]))
+    requestf = pathlib.Path(
+        settings.cache_dir,
+        "api",
+        "v1.0",
+        "mbt",
+        projection,
+        tiletype,
+        str(zoom),
+        str(x),
+        str(y)
+    )
     basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
+    blank_response = FileResponse(
+        shape_file_dir + "/blank.mbt",
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
     if (zoom < 7) or (projection != "EPSG:3857"):
-        return FileResponse(shape_file_dir + "/blank.mbt")
+        return blank_response
 
     if (zoom > 11) and (tiletype == "bath"):
-        return FileResponse(shape_file_dir + "/blank.mbt")
+        return blank_response
 
     # Send file if cached or select data in SQLite file
     if requestf.is_file():
-        return FileResponse(requestf.as_posix())
+        return FileResponse(
+            requestf.as_posix(),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     y = (2**zoom - 1) - y
     connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
@@ -1119,7 +1146,7 @@ def mbt(
     selector.execute(sqlite)
     tile = selector.fetchone()
     if tile is None:
-        return FileResponse(shape_file_dir + "/blank.mbt")
+        return blank_response
 
     # Write tile to cache and send file
     basedir.mkdir(parents=True, exist_ok=True)
@@ -1128,7 +1155,11 @@ def mbt(
     with gzip.open(requestf.as_posix() + ".pbf", "rb") as gzipped:
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
-    return FileResponse(requestf)
+    return FileResponse(
+        requestf,
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @router.get("/observation/datatypes.json", response_model=DataTypeSchema)

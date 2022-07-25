@@ -296,7 +296,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection,
         }),
     });
@@ -315,7 +315,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
         }),
     });
 
@@ -1558,7 +1558,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+          url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection
         })
       );
@@ -1569,7 +1569,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection,
         })
       );
@@ -1604,7 +1604,7 @@ export default class Map extends React.PureComponent {
             format: new olformat.MVT(),
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/${this.props.state.projection}/bath/{z}/{x}/{y}`,
+            url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
             projection: this.props.state.projection
           })
         );
@@ -1615,7 +1615,7 @@ export default class Map extends React.PureComponent {
             format: new olformat.MVT(),
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/${this.props.state.projection}/lands/{z}/{x}/{y}`,
+            url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
             projection: this.props.state.projection,
           })
         );
