@@ -8,7 +8,7 @@ import shutil
 import sqlite3
 import sys
 import tempfile
-from pathlib import Path, PurePath
+from pathlib import Path
 from io import BytesIO
 
 import geojson
@@ -434,13 +434,12 @@ def get_data_v1_0():
     except ValidationError as e:
         abort(400, str(e))
 
-    cached_file_name = PurePath(
+    cached_file_name = Path(
         current_app.config["CACHE_DIR"]).joinpath(
-        "data", 
-        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",  # noqa: E501
-    )
+        "data",
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson", )   # noqa: E501
 
-    if Path(cached_file_name).is_file():
+    if cached_file_name.is_file():
         print(f"Using cached {cached_file_name}")
         return send_file(cached_file_name, "application/json")
 
@@ -485,8 +484,8 @@ def get_data_v1_0():
             lon_var[lon_slice],
         )
 
-        path = PurePath(cached_file_name).parent
-        Path(path).mkdir(parents=True, exist_ok=True)
+        path = Path(cached_file_name).parent
+        path.mkdir(parents=True, exist_ok=True)
         with open(cached_file_name, "w", encoding="utf-8") as f:
             geojson.dump(d, f)
 
@@ -509,7 +508,6 @@ def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
 
     if not class4_id:
         raise APIError("Please Specify an ID ")
-
 
     if q == 'forecasts':
         pts = class4.list_class4_forecasts(class4_id, class4_type)
@@ -1002,7 +1000,7 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
     cache_dir = current_app.config["CACHE_DIR"]
     f = Path(cache_dir).joinpath(request.path[1:])
 
-    if Path(f).is_file():
+    if f.is_file():
         return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
@@ -1025,7 +1023,7 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
     cache_dir = current_app.config["CACHE_DIR"]
     f = Path(cache_dir).joinpath(request.path[1:])
 
-    if Path(f).is_file():
+    if f.is_file():
         return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     img = plotting.tile.bathymetry(projection, x, y, zoom, {})
@@ -1499,8 +1497,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     f: filename of image to be cached
     """
     p = Path(f).parent
-    if not p.is_dir():
-        p.mkdir(parents=True, exist_ok=True)
+    p.mkdir(parents=True, exist_ok=True)
 
     # This seems excessive
     bytesIOBuff.seek(0)
