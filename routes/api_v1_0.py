@@ -1498,9 +1498,9 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff: BytesIO object containing image data
     f: filename of image to be cached
     """
-    p = PurePath(f).parent
-    if not Path(p).is_dir():
-        Path(p).mkdir(parents=True, exist_ok=True)
+    p = Path(f).parent
+    if not p.is_dir():
+        p.mkdir(parents=True, exist_ok=True)
 
     # This seems excessive
     bytesIOBuff.seek(0)
