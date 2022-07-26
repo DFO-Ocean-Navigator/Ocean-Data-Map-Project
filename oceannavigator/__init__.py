@@ -89,7 +89,7 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
 
     if app.config.get("WSGI_PROFILING"):
         path = Path("./profiler_results")
-        Path(path).mkdir(parents=True, exist_ok=True)
+        path.mkdir(parents=True, exist_ok=True)
         app.wsgi_app = ProfilerMiddleware(
             app.wsgi_app,
             stream=None,
