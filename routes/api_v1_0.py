@@ -1041,8 +1041,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     """
     cache_dir = current_app.config["CACHE_DIR"]
     shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
-    requestf = str(Path(cache_dir).joinpath(request.path[1:]))
-    basedir = requestf.rsplit("/", 1)[0]
+    requestf = Path(cache_dir).joinpath(request.path[1:])
+    basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
     if (zoom < 7) or (projection != "EPSG:3857"):
