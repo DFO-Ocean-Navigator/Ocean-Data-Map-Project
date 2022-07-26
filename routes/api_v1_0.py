@@ -1052,7 +1052,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
-    if Path(requestf).is_file():
+    if requestf.is_file():
         return send_file(requestf)
 
     y = (2**zoom - 1) - y
