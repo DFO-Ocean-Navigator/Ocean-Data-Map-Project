@@ -1065,8 +1065,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
-    if not Path(basedir).is_dir():
-        Path(basedir).mkdir(parents=True, exist_ok=True)
+    basedir.mkdir(parents=True, exist_ok=True)
     with open(requestf + ".pbf", "wb") as f:
         f.write(tile[0])
     with gzip.open(requestf + ".pbf", "rb") as gzipped:
