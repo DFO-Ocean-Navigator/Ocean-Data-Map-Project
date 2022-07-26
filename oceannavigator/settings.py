@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     bathymetry_file: str = ""
     cache_dir: str = ""
     class4_fname_pattern: str = ""
-    class4_path: str = ""
+    class4_op_path: str = ""
+    class4_rao_path: str = ""
     dask_multiprocessing_context: str = ""
     dask_num_workers: int = 4
     dask_scheduler: str = ""

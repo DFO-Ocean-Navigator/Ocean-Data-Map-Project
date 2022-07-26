@@ -172,7 +172,7 @@ export default class Map extends React.PureComponent {
     };
 
     this.scaleViewer = new app.ScaleViewer({
-      image: "/api/v1.0/scale/giops_day/votemper/-5,30.png",
+      image: "/api/v1.0/scale/giops_day/votemper/-5,30",
     });
 
     this.loader = function (extent, resolution, projection) {
@@ -188,12 +188,12 @@ export default class Map extends React.PureComponent {
               `${this.props.state.vectorid}.json`;
             break;
           case "class4":
-            url = `/api/v1.0` +
+            url = `/api/v1.0/class4` +
               `/${this.props.state.class4type}` +
-              `/${projection.getCode()}` +
-              `/${Math.round(resolution)}` +
-              `/${extent.map(function (i) { return Math.round(i); })}` +
-              `/${this.props.state.vectorid}.json`;
+              `?projection=${projection.getCode()}` +
+              `&resolution=${Math.round(resolution)}` +
+              `&extent=${extent.map(function (i) { return Math.round(i); })}` +
+              `&id=${this.props.state.vectorid}`;
             break;                       
           default:
             url = `/api/v1.0/${this.props.state.vectortype}` +
@@ -1406,7 +1406,7 @@ export default class Map extends React.PureComponent {
       image: (
         `/api/v1.0/scale/${currentDataset}` +
         `/${currentVariable}` +
-        `/${scale}.png`
+        `/${scale}`
       )
     });
     this.map.addControl(this.scaleViewer);

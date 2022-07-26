@@ -13,14 +13,7 @@ import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Path,
-    Query,
-    Request
-)
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from PIL import Image
@@ -38,13 +31,13 @@ from data.observational import (
     Base,
     DataType,
     DataTypeSchema,
-    engine,
     Platform,
     PlatformSchema,
     Sample,
     SessionLocal,
     Station,
     StationSchema,
+    engine,
 )
 from data.sqlite_database import SQLiteDatabase
 from data.transformers.geojson import data_array_to_geojson
@@ -309,7 +302,7 @@ async def depths(
     return data
 
 
-@router.get("/scale")
+@router.get("/scale/{dataset}/{variable}/{scale}")
 async def scale(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
@@ -333,12 +326,8 @@ async def scale(
         }
     )
 
-    filename = f"{dataset}_{variable}_scale_{scale}.png"
-
     return StreamingResponse(
-        bytes,
-        media_type="image/png",
-        headers={"Content-Disposition": f"attachment; filename=#{filename}"},
+        bytes, media_type="blob", headers={"Cache-Control": f"max-age={MAX_CACHE}"}
     )
 
 
@@ -453,7 +442,9 @@ async def data(
 
         bearings = None
         if "mag" in result["variable"]:
-            bearings_var = config.variable[result["variable"]].bearing_component or "bearing"   
+            bearings_var = (
+                config.variable[result["variable"]].bearing_component or "bearing"
+            )
             with open_dataset(
                 config, variable=bearings_var, timestamp=result["time"]
             ) as ds_bearing:
@@ -474,82 +465,86 @@ async def data(
 
         return d
 
+
+@router.get("/class4/")
+async def class4_files():
+    """
+    Returns a list of available class4 files.
+    """
+    data = class4.list_class4_files()
+
+    return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
+
+
+@router.get("/class4/{data_type}/{class4_type}")
+async def class4_data(
+    data_type: str = Path(..., title="The type of data requested.", example="models"),
+    class4_type: str = Path(
+        ..., title="The type of the desired class4 product.", example="ocean_predict"
+    ),
+    id: str = Query(
+        ...,
+        description="The ID of the desired class4 data.",
+        example="class4_20220513_GIOPS_CONCEPTS_3.3_profile_231",
+    ),
+):
+    """
+    Returns the available models or forecasts for the selected class4 data.
+    """
+
+    if data_type == "forecasts":
+        data = class4.list_class4_forecasts(id, class4_type)
+    elif data_type == "models":
+        data = class4.list_class4_models(id, class4_type)
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+
+@router.get("/class4/{class4_type}")
+async def class4_file(
+    class4_type: str = Path(
+        ..., title="The type of the desired class4 product.", example="ocean_predict"
+    ),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+    resolution: int = Query(..., description="The map resolution.", example="9784"),
+    extent: str = Query(
+        ...,
+        description="The extent of the area bounding the data.",
+        example="-15936951,1411044,4805001,12554952",
+    ),
+    id: str = Query(
+        ...,
+        description="The ID of the desired class4 data.",
+        example="class4_20220513_GIOPS_CONCEPTS_3.3_profile_231",
+    ),
+):
+    """
+    Returns a FeatureCollection of class4 data points for the selected parameters.
+    """
+
+    data = class4.class4(class4_type, id, projection, resolution, extent)
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+
 '''
-@bp_v1_0.route('/api/v1.0/class4/<string:q>/<string:class4_type>/<string:class4_id>/')
-def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
+@router.get("/class4/{q_id}/{q_type}.json")
+async def class4_list(q_id: str, q_type: str = None):
+    """ """
+    data = class4.list_class4(q_id, q_type)
 
-    """
-    API Format: /api/v1.0/class4/<string:q>/<string:class4_id>/
-
-    <string:q>         : forecasts / models (Data Request)
-    <string:class4_type> : type of the desired class4 - Can be ocean_predict or 
-                           riops_obs
-    <string:class4_id> : ID of the desired class4 - Can be found using /api/class4/
-
-    Returns a list of class4 datapoints for a given day
-    """
-
-    if not class4_id:
-        raise APIError("Please Specify an ID ")
-
-
-    if q == 'forecasts':
-        pts = class4.list_class4_forecasts(class4_id, class4_type)
-    elif q == 'models':
-        pts = class4.list_class4_models(class4_id, class4_type)
-
-    else:
-        raise APIError(
-            gettext(
-                "Please specify either forecasts or models using /models/ or /forecasts/"  # noqa: E501
-            )
-        )
-
-    resp = jsonify(pts)
-    resp.cache_control.max_age = 86400
-    return resp
-
-
-@bp_v1_0.route("/api/v1.0/stats/", methods=["GET", "POST"])
-def stats_v1_0():
-    """
-    API Format: /api/v1.0/stats/?query='...'
-
-    query = {
-        dataset  : Dataset to extract data
-        variable : variable key (e.g. votemper)
-        time     : Time retrieved data was gathered/modeled
-        depth    : Water Depth - found using /api/depth/?dataset='...'
-        area     : Selected Area
-    }
-    **Query must be written in JSON and converted to encodedURI**
-    **Not all components of query are required
-    """
-
-    if request.method == "GET":
-        args = request.args
-    else:
-        args = request.form
-    query = json.loads(args.get("query"))
-
-    config = DatasetConfig(query.get("dataset"))
-    with open_dataset(config) as dataset:
-        date = dataset.convert_to_timestamp(query.get("time"))
-        date = {"time": date}
-        query.update(date)
-        if not query:
-            # Invalid API Check
-            if "query" not in args:  # Invalid API Check
-                raise APIError(
-                    "A Query must be specified in the form /stats/?query='...' "
-                )
-            # Retrieves Query as JSON based on Request Method
-            query = json.loads(args.get("query"))
-
-        dataset = query.get("dataset")  # Retrieves dataset from query
-
-        data = areastats(dataset, query)
-        return Response(data, status=200, mimetype="application/json")
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @bp_v1_0.route("/api/v1.0/subset/", methods=["GET", "POST"])
@@ -884,7 +879,7 @@ def query_file_v1_0(
             q, file_id, projection, resolution, extent)
     elif q == 'riops_obs':
         data = class4.class4(
-            q, file_id, projection, resolution, extent)            
+            q, file_id, projection, resolution, extent) 
     else:
         raise FAILURE
 
@@ -1108,7 +1103,7 @@ async def bathymetry_tiles(
 
 @router.get("/mbt/{tiletype}/{zoom}/{x}/{y}")
 def mbt(
-    tiletype: str = Path(..., example='bath'),
+    tiletype: str = Path(..., example="bath"),
     zoom: int = Path(..., example=8),
     x: int = Path(..., example=88),
     y: int = Path(..., example=85),
@@ -1132,7 +1127,7 @@ def mbt(
         tiletype,
         str(zoom),
         str(x),
-        str(y)
+        str(y),
     )
     basedir = requestf.parents[0]
 
@@ -1203,8 +1198,7 @@ async def observation_datatypes(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/observation/meta_keys/{platform_types}.json",
-    response_model=PlatformSchema
+    "/observation/meta_keys/{platform_types}.json", response_model=PlatformSchema
 )
 async def observation_keys(
     platform_types: str = Path(
@@ -1212,7 +1206,7 @@ async def observation_keys(
         title="List of platform types (comma seperated).",
         example="argo,drifter,animal,mission,glider",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
@@ -1234,7 +1228,7 @@ async def observation_keys(
 
 @router.get(
     "/observation/meta_values/{platform_types}/{key}.json",
-    response_model=PlatformSchema
+    response_model=PlatformSchema,
 )
 async def observation_values_v1_0(
     platform_types: str = Path(
@@ -1247,7 +1241,7 @@ async def observation_values_v1_0(
         title="Metadata key",
         example="Float unique identifier",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/meta_values/
@@ -1270,8 +1264,7 @@ async def observation_values_v1_0(
 
 
 @router.get(
-    "/observation/tracktimerange/{platform_id}.json",
-    response_model=PlatformSchema
+    "/observation/tracktimerange/{platform_id}.json", response_model=PlatformSchema
 )
 async def observation_tracktime_v1_0(
     platform_id: str = Path(
@@ -1279,7 +1272,7 @@ async def observation_tracktime_v1_0(
         title="Platform ID.",
         example="1344",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
@@ -1301,9 +1294,9 @@ async def observation_tracktime_v1_0(
         .one()
     )
     resp = {
-            "min": data[0].isoformat(),
-            "max": data[1].isoformat(),
-        }
+        "min": data[0].isoformat(),
+        "max": data[1].isoformat(),
+    }
 
     return JSONResponse(
         resp,
@@ -1318,7 +1311,7 @@ async def observation_track_v1_0(
         title="List of key=value pairs, seperated by ;",
         example="start_date=2019-01-01;end_date=2019-06-01;quantum=year",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/track/<string:query>.json
@@ -1425,20 +1418,17 @@ async def observation_track_v1_0(
     )
 
 
-@router.get(
-    "/observation/point/{query}.json",
-    response_model=StationSchema
-)
+@router.get("/observation/point/{query}.json", response_model=StationSchema)
 async def observation_point_v1_0(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
         example=(
-            "start_date=2019-01-01;end_date=2019-06-01;" +
-            "datatype=sea_water_temperature"
+            "start_date=2019-01-01;end_date=2019-06-01;"
+            + "datatype=sea_water_temperature"
         ),
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/point/<string:query>.json
@@ -1540,7 +1530,7 @@ async def observation_point_v1_0(
 
 @router.get(
     "/observation/meta/{key}/{id}.json",
-    response_model=Union[PlatformSchema, StationSchema]
+    response_model=Union[PlatformSchema, StationSchema],
 )
 async def observation_meta_v1_0(
     key: str = Path(
@@ -1553,7 +1543,7 @@ async def observation_meta_v1_0(
         title="id of observation.",
         example="21831",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/meta.json
@@ -1589,7 +1579,7 @@ async def observation_meta_v1_0(
 
 @router.get(
     "/observation/variables/{query}.json",
-    response_model=Union[DataTypeSchema, PlatformSchema, StationSchema]
+    response_model=Union[DataTypeSchema, PlatformSchema, StationSchema],
 )
 def observation_variables_v1_0(
     query: str = Path(
@@ -1598,7 +1588,7 @@ def observation_variables_v1_0(
             or platform and value is the id.",
         example="station=356768",
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     API Format: /api/v1.0/observation/variables/<string:query>.json
@@ -1649,7 +1639,7 @@ def observation_variables_v1_0(
     )
 
 
-'''
+"""
 @bp_v1_0.after_request
 def after_request(response):
     # https://flask.palletsprojects.com/en/1.1.x/security/
@@ -1663,7 +1653,7 @@ def after_request(response):
     header["X-Frame-Options"] = "SAMEORIGIN"
 
     return response
-'''
+"""
 
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
