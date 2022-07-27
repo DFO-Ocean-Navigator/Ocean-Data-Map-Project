@@ -52,7 +52,7 @@ def _get_view(extent):
 
 def _get_kml(subdir, file_id):
     DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath(subdir)
-    f = Path(DIR).joinpath("%s.kml" % file_id)
+    f = DIR.joinpath("%s.kml" % file_id)
     folder = None
     root = ET.parse(f.as_posix()).getroot()
     for doc in root:
@@ -152,7 +152,7 @@ def list_areas(file_id, simplify=True):
     AREA_DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath("area")
 
     areas = []
-    f = Path(AREA_DIR).joinpath("%s.kml" % file_id)
+    f = AREA_DIR.joinpath("%s.kml" % file_id)
     folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
@@ -201,7 +201,7 @@ def list_areas(file_id, simplify=True):
 
 def areas(area_id, projection, resolution, extent):
     AREA_DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath("area")
-    f = Path(AREA_DIR).joinpath("%s.kml" % area_id)
+    f = AREA_DIR.joinpath("%s.kml" % area_id)
     folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
