@@ -2,7 +2,7 @@ import datetime
 import uuid
 import warnings
 import zipfile
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import Dict, List, Set, Tuple, Union
 
 import dateutil.parser
@@ -232,7 +232,7 @@ class NetCDFData(Data):
         """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
         path = Path("/tmp/subset")
-        Path(path).mkdir(parents=True, exist_ok=True)
+        path.mkdir(parents=True, exist_ok=True)
         working_dir = "/tmp/subset/"
 
         entire_globe = True  # subset the globe?
@@ -633,7 +633,7 @@ class NetCDFData(Data):
             myzip = zipfile.ZipFile("%s%s.zip" % (working_dir, filename), mode="w")
             myzip.write(
                 "%s%s.nc" % (working_dir, filename),
-                PurePath("%s%s.nc" % (working_dir, filename)).name,
+                Path("%s%s.nc" % (working_dir, filename)).name,
             )
             myzip.comment = b"Generated from www.navigator.oceansdata.ca"
             myzip.close()  # Must be called to actually create zip
