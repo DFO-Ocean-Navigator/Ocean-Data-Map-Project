@@ -62,7 +62,7 @@ def load_map(
         pc_extent[1, 1] + 5,
     ]
 
-    if not Path(filename).exists():
+    if not filename.exists():
         fig = plt.figure(figsize=figuresize, dpi=dpi)
         ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
         ax.set_extent(extent, crs=plot_proj)
