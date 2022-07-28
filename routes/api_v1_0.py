@@ -1468,7 +1468,7 @@ def after_request(response):
     return response
 
 
-def _is_cache_valid(dataset: str, f: str) -> bool:
+def _is_cache_valid(dataset: str, f: Path) -> bool:
     """
     Returns True if dataset cache is valid
     """
