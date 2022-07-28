@@ -1474,13 +1474,13 @@ def _is_cache_valid(dataset: str, f: str) -> bool:
     """
 
     config = DatasetConfig(dataset)
-    if Path(f).is_file():
+    if f.is_file():
         cache_time = config.cache
         if cache_time is not None:
             modtime = datetime.datetime.fromtimestamp(f.stat().st_mtime)
             age_hours = (datetime.datetime.now() - modtime).total_seconds() / 3600
             if age_hours > cache_time:
-                Path(f).unlink()
+                f.unlink()
                 return False
             return True
         else:
