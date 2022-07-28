@@ -1,3 +1,4 @@
+import base64
 import datetime
 import gzip
 import json
@@ -15,7 +16,7 @@ import pandas as pd
 from dateutil.parser import parse as dateparse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse, Response
 from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import func
@@ -45,12 +46,23 @@ from data.utils import get_data_vars_from_equation, time_index_to_datetime
 from oceannavigator.dataset_config import DatasetConfig
 from oceannavigator.log import log
 from oceannavigator.settings import get_settings
+from plotting.class4 import Class4Plotter
 from plotting.colormap import plot_colormaps
+from plotting.hovmoller import HovmollerPlotter
+from plotting.map import MapPlotter
+from plotting.observation import ObservationPlotter
+from plotting.profile import ProfilePlotter
 from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
+from plotting.sound import SoundSpeedPlotter
+from plotting.stick import StickPlotter
 from plotting.tile import bathymetry as plot_bathymetry
 from plotting.tile import scale as plot_scale
 from plotting.tile import topo as plot_topography
+from plotting.timeseries import TimeseriesPlotter
+from plotting.track import TrackPlotter
+from plotting.transect import TransectPlotter
+from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
 
 """
@@ -158,7 +170,6 @@ async def datasets():
     """
     List of available datasets w/ some metadata.
     """
-
     data = []
     for key in DatasetConfig.get_datasets():
         config = DatasetConfig(key)
@@ -169,6 +180,7 @@ async def datasets():
                 "quantum": config.quantum,
                 "help": config.help,
                 "attribution": config.attribution,
+                "model_class": config.model_class,
             }
         )
     data = sorted(data, key=lambda k: k["value"])
@@ -441,12 +453,10 @@ async def data(
         data = data[data_slice]
 
         bearings = None
-        if "mag" in result["variable"]:
-            bearings_var = (
-                config.variable[result["variable"]].bearing_component or "bearing"
-            )
+        if "mag" in variable:
+            bearings_var = config.variable[variable].bearing_component or "bearing"
             with open_dataset(
-                config, variable=bearings_var, timestamp=result["time"]
+                config, variable=bearings_var, timestamp=time
             ) as ds_bearing:
                 bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
                     data_slice
@@ -497,10 +507,7 @@ async def class4_data(
     elif data_type == "models":
         data = class4.list_class4_models(id, class4_type)
 
-    return JSONResponse(
-        data,
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
+    return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
 
 
 @router.get("/class4/{class4_type}")
@@ -582,61 +589,61 @@ def subset_query_v1_0():
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return send_from_directory(working_dir, subset_filename, as_attachment=True)
+'''
 
 
-@bp_v1_0.route("/api/v1.0/plot/", methods=["GET", "POST"])
-def plot_v1_0():
+@router.get("/plot/{plottype}/{dataset}/")
+async def plot(
+    plottype: str = Path(..., title="The key of the dataset.", example="profile"),
+    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
+    query: str = Query(
+        ...,
+        description="Collection of plot arguments.",
+        example=(
+            '{"names":[],"plotTitle":"","showmap":false,"station":[[45,-45]],'
+            + '"time":2284761600,"variable":["votemper"]}'
+        ),
+    ),
+    save: bool = Query(False, description="Wether or not to save the plot. "),
+    format: str = Query(
+        default="json",
+        description="Plot format.",
+        example="png",
+    ),
+    size: str = Query(
+        default="15x9",
+        description="The size of the plot.",
+        example="15x9",
+    ),
+    dpi: int = Query(72, description="The resoltuion of the plot (dpi).", example=72),
+):
     """
-    API Format: /api/v1.0/plot/?query='...'&format
-
-    query = {
-        dataset   : Dataset to extract data
-        names     :
-        plottitle : Title of Plot (Default if blank)
-        showmap   : Include a map of the plots location on the map
-        station   : Coordinates of the point/line/area/etc
-        time      : Time retrieved data was gathered/modeled
-        type      : File / Plot Type (Check Navigator for Possible options)
-        variable  : Variable key (e.g. votemper)
-    }
-    **Query must be written in JSON and converted to encodedURI**
-    **Not all components of query are required
+        Interface for all plotting operations.
     """
 
-    if request.method == "GET":
-        args = request.args
-    else:
-        args = request.form
-
-    if "query" not in args:
-        raise APIError("Please provide a query.")
-
-    query = json.loads(args.get("query"))
-
-    fmt = args.get("format")
-    if fmt == "json":
+    if format == "json":
 
         def make_response(data, mime):
             b64 = base64.encodebytes(data).decode()
 
             return Response(
                 json.dumps("data:%s;base64,%s" % (mime, b64)),
-                status=200,
-                mimetype="application/json",
+                media_type=mime,
+                headers={"Cache-Control": "max-age=300"},
             )
 
     else:
 
         def make_response(data, mime):
-            return Response(data, status=200, mimetype=mime)
+            return Response(
+                data, media_type=mime, headers={"Cache-Control": "max-age=300"}
+            )
 
-    dataset = query.get("dataset")
-    plottype = query.get("type")
-
+    query = json.loads(query)
     options = {
-        "format": fmt,
-        "size": args.get("size", "15x9"),
-        "dpi": args.get("dpi", 72),
+        "format": format,
+        "size": size,
+        "dpi": dpi,
     }
 
     # Determine which plotter we need.
@@ -663,36 +670,25 @@ def plot_v1_0():
     elif plottype == "stick":
         plotter = StickPlotter(dataset, query, **options)
     else:
-        raise APIError("You Have Not Selected a Plot Type - Please Review your Query")
-
-    if "data" in request.args:
-        data = plotter.prepare_plot()
-        return data
+        raise HTTPException(
+            status_code=404, detail=f"Incorrect plot type ({plottype}) provided."
+        )
 
     img, mime, filename = plotter.run()
 
     if img:
         response = make_response(img, mime)
+
     else:
         raise FAILURE
 
-    if "save" in args:
-        response.headers["Content-Disposition"] = 'attachment; filename="%s"' % filename
-
-    response.cache_control.max_age = 300
-
-    if "data" in args:
-        plotData = {
-            "data": str(resp),  # noqa: F821
-            "shape": resp.shape,  # noqa: F821
-            "mask": str(resp.mask),  # noqa: F821
-        }
-        plotData = json.dumps(plotData)
-        return Response(plotData, status=200, mimetype="application/json")
+    if save:
+        response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
 
 
+'''
 @bp_v1_0.route("/api/v1.0/colors/")
 def colors_v1_0():
     """
@@ -879,7 +875,7 @@ def query_file_v1_0(
             q, file_id, projection, resolution, extent)
     elif q == 'riops_obs':
         data = class4.class4(
-            q, file_id, projection, resolution, extent) 
+            q, file_id, projection, resolution, extent)
     else:
         raise FAILURE
 

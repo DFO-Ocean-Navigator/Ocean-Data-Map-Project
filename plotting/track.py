@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 import visvalingamwyatt as vw
-from flask_babel import gettext
 from geopy.distance import distance
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import interp1d
@@ -15,10 +14,24 @@ from scipy.interpolate import interp1d
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
-from data.observational import DataType, Platform, Sample, Station, db
+from data.observational import (
+    DataType,
+    Platform,
+    Sample,
+    SessionLocal,
+    Station,
+)
 from data.observational.queries import get_platform_variable_track
 from data.utils import datetime_to_timestamp
 from plotting.plotter import Plotter
+
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
 
 
 class TrackPlotter(Plotter):
@@ -53,6 +66,7 @@ class TrackPlotter(Plotter):
         self.track_quantum = query.get("track_quantum", "hour")
 
     def load_data(self):
+        db = get_db
         platform = db.session.query(Platform).get(self.platform)
         self.name = platform.unique_id
 
@@ -400,7 +414,7 @@ class TrackPlotter(Plotter):
         # latlon
         if self.latlon:
             for j, label in enumerate(
-                [gettext("Latitude (degrees)"), gettext("Longitude (degrees)")]
+                ["Latitude (degrees)", "Longitude (degrees)"] #[gettext("Latitude (degrees)"), gettext("Longitude (degrees)")]
             ):
                 plt.subplot(gs[subplot])
                 subplot += subplot_inc
@@ -411,7 +425,7 @@ class TrackPlotter(Plotter):
                 plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
         fig.suptitle(
-            gettext("Track Plot (Observed %s - %s, Modelled %s - %s)")
+            "Track Plot (Observed %s - %s, Modelled %s - %s)" # gettext("Track Plot (Observed %s - %s, Modelled %s - %s)")
             % (
                 self.times[0].strftime("%Y-%m-%d"),
                 self.times[-1].strftime("%Y-%m-%d"),

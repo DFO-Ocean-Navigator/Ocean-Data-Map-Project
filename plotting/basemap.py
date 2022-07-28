@@ -2,6 +2,7 @@ import hashlib
 import os
 import pickle
 import threading
+from typing import Union
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -9,8 +10,10 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
-from flask import current_app
-from typing import Union
+
+from oceannavigator.settings import get_settings
+
+settings = get_settings()
 
 
 def get_resolution(height: float, width: float) -> str:
@@ -30,7 +33,7 @@ def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
 
     try:
         land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + shp_file
+            settings.shape_file_dir + shp_file
         )
     except shpreader.shapefile.ShapefileException:
         print(f"Could not open {shp_file}, using Cartopy feature interface.")
@@ -47,7 +50,7 @@ def load_map(
     plot_proj: ccrs, extent: list, figuresize: list, dpi: int, plot_resolution: str
 ) -> Union[plt.figure, plt.axes]:
 
-    CACHE_DIR = current_app.config["CACHE_DIR"]
+    CACHE_DIR = settings.cache_dir
     filename = _get_filename(plot_proj.proj4_params["proj"], extent)
     filename = "".join([CACHE_DIR, "/", filename])
 

@@ -104,7 +104,7 @@ class PlotImage extends React.PureComponent {
       });
 
       const promise = $.ajax({
-        url: "/api/v1.0/plot/",
+        url: `/api/v1.0/plot/${this.props.query.type}/${this.props.query.dataset}/`,
         cache: true,
         data: paramString,
         dataType: "json",
@@ -139,11 +139,7 @@ class PlotImage extends React.PureComponent {
   }
 
   generateQuery(q) {
-    const query = {
-      type: q.type,
-      dataset: q.dataset,
-      names: q.names,
-    };
+    const query = {names: q.names};
 
     if (q.plotTitle !== null) {
       query.plotTitle = q.plotTitle;
@@ -298,11 +294,11 @@ class PlotImage extends React.PureComponent {
 
   urlFromQuery(q) {
     const query = this.generateQuery(q);
-    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
+    return `/api/v1.0/plot/${this.props.query.type}/${this.props.query.dataset}/?query=` + encodeURIComponent(stringify(query));
   }
 
   saveImage(format) {
-    let url = `${this.urlFromQuery(this.props.query)}` + `&save&format=${format}`;
+    let url = `${this.urlFromQuery(this.props.query)}` + `&save=True&format=${format}`;
       
     if (format !== "odv" || format !== "csv") {
       url += `&size=${this.props.query.size}` + `&dpi=${this.props.query.dpi}`;

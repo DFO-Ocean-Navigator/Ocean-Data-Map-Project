@@ -15,7 +15,7 @@ import pyresample
 import xarray
 import xarray.core.variable
 from cachetools import TTLCache
-from flask_babel import format_date
+from babel.dates import format_date
 
 import data.calculated
 import data.utils

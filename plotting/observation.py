@@ -7,14 +7,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import pytz
-from flask_babel import format_datetime, gettext
+from babel.dates import format_datetime
 
 from data import open_dataset
-from data.observational import DataType, Sample, Station, db
+from data.observational import (
+    DataType,
+    Sample,
+    SessionLocal,
+    Station,
+)
 from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 from plotting.utils import mathtext
 from utils.errors import ClientError
+
+
+def get_db():
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        db.close()
 
 
 class ObservationPlotter(PointPlotter):
@@ -31,6 +44,7 @@ class ObservationPlotter(PointPlotter):
             self.timestamps = []
             self.observation_times = []
             self.names = []
+            db = get_db
             for idx, o in enumerate(self.observation):
                 station = db.session.query(Station).get(o)
                 observation = {
@@ -112,7 +126,7 @@ class ObservationPlotter(PointPlotter):
                 self.load_misc(dataset, self.variables)
             except IndexError as e:
                 raise ClientError(
-                    gettext(
+                    ( #gettext(
                         "The selected variable(s) were not found in the dataset. \
                 Most likely, this variable is a derived product from existing dataset variables. \
                 Please select another variable."
@@ -258,8 +272,8 @@ class ObservationPlotter(PointPlotter):
             else:
                 l = []
                 for j in [
-                    (gettext("Observed"), self.observation_times),
-                    (gettext("Modelled"), self.timestamps),
+                    ("Observed", self.observation_times), # (gettext("Observed"), self.observation_times),
+                    ("Modelled", self.timestamps), # (gettext("Modelled"), self.timestamps),
                 ]:
                     for i, name in enumerate(self.names):
                         if len(self.names) == 1:
@@ -275,14 +289,14 @@ class ObservationPlotter(PointPlotter):
                     legobj.set_linewidth(4.0)
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (m)"))
+        ax[0].set_ylabel("Depth (m)") # ax[0].set_ylabel(gettext("Depth (m)"))
 
         if not self.plotTitle:
             if len(self.variables) > 0:
                 plt.suptitle(
                     "\n".join(
                         wrap(
-                            gettext("Profile for %s, Observed at %s, Modelled at %s")
+                            "Profile for %s, Observed at %s, Modelled at %s" # gettext("Profile for %s, Observed at %s, Modelled at %s")
                             % (
                                 ", ".join(self.names),
                                 format_datetime(self.observation_time),
@@ -296,7 +310,7 @@ class ObservationPlotter(PointPlotter):
                 plt.suptitle(
                     "\n".join(
                         wrap(
-                            gettext("Profile for %s (%s)")
+                            "Profile for %s (%s)" # gettext("Profile for %s (%s)")
                             % (
                                 ", ".join(self.names),
                                 format_datetime(self.observation_time),
