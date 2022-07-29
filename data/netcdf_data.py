@@ -368,7 +368,7 @@ class NetCDFData(Data):
                 )
             )
 
-        dataset_name = query.get("dataset_name")
+        dataset_name = query.get("dataset")
         y_coord, x_coord = self.yx_dimensions
 
         # Do subset along coordinates

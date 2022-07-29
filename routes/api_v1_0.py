@@ -4,17 +4,18 @@ import gzip
 import json
 import os
 import pathlib
+from re import M
 import shutil
 import sqlite3
 from io import BytesIO
 from typing import Union
-from urllib.request import Request
+#from urllib.request import Request
 
 import geojson
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse as dateparse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse, Response
 from PIL import Image
@@ -553,33 +554,40 @@ async def class4_list(q_id: str, q_type: str = None):
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
+'''
 
-@bp_v1_0.route("/api/v1.0/subset/", methods=["GET", "POST"])
-def subset_query_v1_0():
 
-    args = None
-    if request.method == "GET":
-        args = request.args
-    else:
-        args = request.form
+@router.get("/subset/{dataset}/{variables}/")
+async def subset_query(
+    request: Request,
+    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
+    variables: str = Path(..., title="The variables keys.", example="votemper"),
+    output_format: str = Query("NETCDF4", description="", example="NETCDF4"),
+    min_range: str = Query(..., description="The lower bound of the plot extent.", example="45.318100000000015,-59.3802"),
+    max_range: str = Query(..., description="The upper bound of the plot extent.", example="45.994500000000016,-56.9418"),
+    time: str = Query(..., description="", example="2283984000,2283984000"),
+    should_zip: str = Query("1", description="", example="1")
+):
 
     working_dir = None
     subset_filename = None
 
-    if "area" in args.keys():
-        # Predefined area selected
-        area = args.get("area")
-        sp = area.split("/", 1)
+    # if "area" in args.keys():
+    #     # Predefined area selected
+    #     area = args.get("area")
+    #     sp = area.split("/", 1)
 
-        data = utils.misc.list_areas(sp[0], simplify=False)
+    #     data = utils.misc.list_areas(sp[0], simplify=False)
 
-        b = [x for x in data if x.get("key") == area]
-        args = args.to_dict()
-        args["polygons"] = b[0]["polygons"]
+    #     b = [x for x in data if x.get("key") == area]
+    #     args = args.to_dict()
+    #     args["polygons"] = b[0]["polygons"]
 
-    config = DatasetConfig(args.get("dataset_name"))
-    time_range = args["time"].split(",")
-    variables = args["variables"].split(",")
+    args = {**request.path_params, **request.query_params}
+
+    config = DatasetConfig(dataset)
+    time_range = time.split(",")
+    variables = variables.split(",")
     with open_dataset(
         config,
         variable=variables,
@@ -588,8 +596,14 @@ def subset_query_v1_0():
     ) as dataset:
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
-    return send_from_directory(working_dir, subset_filename, as_attachment=True)
-'''
+    return FileResponse(
+        pathlib.Path(working_dir, subset_filename),
+        headers={
+            "Cache-Control": "max-age=300",
+            "Content-Disposition": f'attachment; filename="{subset_filename}"'
+        }
+    )
+
 
 
 @router.get("/plot/{plottype}/{dataset}/")
@@ -618,7 +632,7 @@ async def plot(
     dpi: int = Query(72, description="The resoltuion of the plot (dpi).", example=72),
 ):
     """
-        Interface for all plotting operations.
+    Interface for all plotting operations.
     """
 
     if format == "json":
@@ -687,34 +701,30 @@ async def plot(
 
     return response
 
-
 '''
-@bp_v1_0.route("/api/v1.0/colors/")
-def colors_v1_0():
+@router.get("/api/v1.0/colors/")
+def colors(request: Request):
     """
-    API Format: /api/v1.0/colors/
-
-    Returns a list of colours for use in colour maps
+    Returns a list of colours for use in colour maps.
     """
 
     args = request.args
     data = [
-        {"id": "k", "value": gettext("Black")},
-        {"id": "b", "value": gettext("Blue")},
-        {"id": "g", "value": gettext("Green")},
-        {"id": "r", "value": gettext("Red")},
-        {"id": "c", "value": gettext("Cyan")},
-        {"id": "m", "value": gettext("Magenta")},
-        {"id": "y", "value": gettext("Yellow")},
-        {"id": "w", "value": gettext("White")},
+        {"id": "k", "value": "Black"},  # gettext("Black")},
+        {"id": "b", "value": "Blue"},  # gettext("Blue")},
+        {"id": "g", "value": "Green"},  # gettext("Green")},
+        {"id": "r", "value": "Red"},  # gettext("Red")},
+        {"id": "c", "value": "Cyan"},  # gettext("Cyan")},
+        {"id": "m", "value": "Magenta"},  # gettext("Magenta")},
+        {"id": "y", "value": "Yellow"},  # gettext("Yellow")},
+        {"id": "w", "value": "White"},  #gettext("White")},
     ]
     if args.get("random"):
-        data.insert(0, {"id": "rnd", "value": gettext("Randomize")})
+        data.insert(0, {"id": "rnd", "value": "Randomize"})  # gettext("Randomize")})
     if args.get("none"):
-        data.insert(0, {"id": "none", "value": gettext("None")})
+        data.insert(0, {"id": "none", "value": "None"})  # gettext("None")})
 
-    resp = jsonify(data)
-    return resp
+    return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
 '''
 
 
