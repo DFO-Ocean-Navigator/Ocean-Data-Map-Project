@@ -56,6 +56,8 @@ def generateR(url, scriptType: str) -> BytesIO:
 
         if scriptType == "PLOT":
             template = template.format(q=query, var=var)
+        elif scriptType == "SUBSET":
+            template = template.format(q=query, init='{', end='}')
         else:
             template = template.format(q=query)
 
