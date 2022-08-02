@@ -728,7 +728,7 @@ def colors(request: Request):
 '''
 
 
-@router.get("/plot/colormaps.json")
+@router.get("/plot/colormaps/")
 async def colormaps_json():
     """
     Returns list of available colormaps

@@ -407,11 +407,11 @@ class PointWindow extends React.Component {
               state={this.state.colormap}
               def='default'
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
+              url='/api/v1.0/plot/colormaps/'
               title={_("Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/colormaps.png" />
+              <img src="/plot/colormaps.png" />
             </ComboBox>);
         }
 
