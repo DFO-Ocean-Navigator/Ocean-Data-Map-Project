@@ -4,12 +4,10 @@ import gzip
 import json
 import os
 import pathlib
-from re import M
 import shutil
 import sqlite3
 from io import BytesIO
 from typing import Union
-#from urllib.request import Request
 
 import geojson
 import numpy as np
@@ -17,7 +15,7 @@ import pandas as pd
 from dateutil.parser import parse as dateparse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import func
@@ -563,27 +561,35 @@ async def subset_query(
     dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
     variables: str = Path(..., title="The variables keys.", example="votemper"),
     output_format: str = Query("NETCDF4", description="", example="NETCDF4"),
-    min_range: str = Query(..., description="The lower bound of the plot extent.", example="45.318100000000015,-59.3802"),
-    max_range: str = Query(..., description="The upper bound of the plot extent.", example="45.994500000000016,-56.9418"),
+    min_range: str = Query(
+        ...,
+        description="The lower bound of the plot extent.",
+        example="45.318100000000015,-59.3802",
+    ),
+    max_range: str = Query(
+        ...,
+        description="The upper bound of the plot extent.",
+        example="45.994500000000016,-56.9418",
+    ),
     time: str = Query(..., description="", example="2283984000,2283984000"),
-    should_zip: str = Query("1", description="", example="1")
+    should_zip: str = Query("1", description="", example="1"),
 ):
 
     working_dir = None
     subset_filename = None
 
-    # if "area" in args.keys():
-    #     # Predefined area selected
-    #     area = args.get("area")
-    #     sp = area.split("/", 1)
-
-    #     data = utils.misc.list_areas(sp[0], simplify=False)
-
-    #     b = [x for x in data if x.get("key") == area]
-    #     args = args.to_dict()
-    #     args["polygons"] = b[0]["polygons"]
-
     args = {**request.path_params, **request.query_params}
+
+    if "area" in args.keys():
+        # Predefined area selected
+        area = args.get("area")
+        sp = area.split("/", 1)
+
+        data = utils.misc.list_areas(sp[0], simplify=False)
+
+        b = [x for x in data if x.get("key") == area]
+        args = args.to_dict()
+        args["polygons"] = b[0]["polygons"]
 
     config = DatasetConfig(dataset)
     time_range = time.split(",")
@@ -600,10 +606,9 @@ async def subset_query(
         pathlib.Path(working_dir, subset_filename),
         headers={
             "Cache-Control": "max-age=300",
-            "Content-Disposition": f'attachment; filename="{subset_filename}"'
-        }
+            "Content-Disposition": f'attachment; filename="{subset_filename}"',
+        },
     )
-
 
 
 @router.get("/plot/{plottype}/{dataset}/")
@@ -701,6 +706,7 @@ async def plot(
 
     return response
 
+
 '''
 @router.get("/api/v1.0/colors/")
 def colors(request: Request):
@@ -729,7 +735,7 @@ def colors(request: Request):
 
 
 @router.get("/plot/colormaps/")
-async def colormaps_json():
+async def colormaps():
     """
     Returns list of available colormaps
     """
@@ -740,7 +746,10 @@ async def colormaps_json():
     )
     data.insert(0, {"id": "default", "value": "Default for Variable"})
 
-    return data
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @router.get("/plot/colormaps.png")
@@ -763,7 +772,10 @@ async def kml_points():
     """
     Returns the KML groups containing of interest from hard-coded KML files
     """
-    return utils.misc.list_kml_files("point")
+    return JSONResponse(
+        utils.misc.list_kml_files("point"),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @router.get("/kml/points/{id}")
@@ -785,7 +797,10 @@ async def kml_point(
     Returns the GeoJSON representation of the features contained in the KML file id.
     """
 
-    return utils.misc.points(id, projection, view_bounds)
+    return JSONResponse(
+        utils.misc.points(id, projection, view_bounds),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @router.get("/kml/lines")
@@ -793,17 +808,34 @@ async def kml_lines():
     """
     Returns the KML groups containing of interest from hard-coded KML files
     """
-    return utils.misc.list_kml_files("line")
+    return JSONResponse(
+        utils.misc.list_kml_files("line"),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-'''
-TODO: IMPLEMENT THIS BASED ON kml_point
 @router.get("/kml/lines/{id}")
-async def kml_line():
+async def kml_line(
+    id: str = Path(..., example="NL-AZMP_Stations"),
+    projection: str = Query(
+        ...,
+        description="EPSG code for desired projection. Used to map resulting KML \
+            coords",
+        example="EPSG:3857",
+    ),
+    view_bounds: str = Query(
+        None,
+        description="Used to exclude KML points that aren't visible. Useful for \
+            filtering large KML groups.",
+    ),
+):
     """
+    Returns the GeoJSON representation of the features contained in the KML file id.
     """
-    return {}
-'''
+    return JSONResponse(
+        utils.misc.lines(id, projection, view_bounds),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
 @router.get("/kml/areas")
@@ -811,17 +843,40 @@ async def kml_areas():
     """
     Returns the KML groups containing of interest from hard-coded KML files
     """
-    return utils.misc.list_kml_files("area")
+    return JSONResponse(
+        utils.misc.list_kml_files("area"),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
 
 
-'''
-TODO: IMPLEMENT THIS BASED ON kml_point
 @router.get("/kml/areas/{id}")
-async def kml_area():
+async def kml_area(
+    id: str = Path(..., example="NL-AZMP_Stations"),
+    projection: str = Query(
+        ...,
+        description="EPSG code for desired projection. Used to map resulting KML \
+            coords",
+        example="EPSG:3857",
+    ),
+    resolution: str = Query(
+        ...,
+        description="Used to exclude KML points that aren't visible. Useful for \
+            filtering large KML groups.",
+    ),
+    view_bounds: str = Query(
+        None,
+        description="Used to exclude KML points that aren't visible. Useful for \
+            filtering large KML groups.",
+    ),
+):
     """
+    Returns the GeoJSON representation of the features contained in the KML file id.
     """
-    return {}
-'''
+    return JSONResponse(
+        utils.misc.areas(id, projection, resolution, view_bounds),
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
 
 '''
 @bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")

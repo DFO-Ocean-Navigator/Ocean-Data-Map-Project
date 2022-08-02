@@ -195,6 +195,20 @@ export default class Map extends React.PureComponent {
               `&extent=${extent.map(function (i) { return Math.round(i); })}` +
               `&id=${this.props.state.vectorid}`;
             break;                       
+          case "points":
+          case "lines":
+            url = `/api/v1.0/kml/${this.props.state.vectortype}` +
+              `/${this.props.state.vectorid}` +
+              `?projection=${projection.getCode()}` +
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+            break;
+          case "areas":
+            url = `/api/v1.0/kml/${this.props.state.vectortype}` +
+              `/${this.props.state.vectorid}` +
+              `?projection=${projection.getCode()}` +
+              `&resolution=${Math.round(resolution)}` +
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+            break;
           default:
             url = `/api/v1.0/${this.props.state.vectortype}` +
               `/${projection.getCode()}` +

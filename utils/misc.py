@@ -13,10 +13,10 @@ from data import open_dataset
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
 
+settings = get_settings()
+
 
 def list_kml_files(subdir: str) -> List[dict]:
-    settings = get_settings()
-
     kml_dir = os.path.join(settings.overlay_kml_dir, subdir)
 
     files = []
@@ -57,8 +57,6 @@ def _get_view(extent: Union[str, None]) -> Union[LinearRing, None]:
 
 
 def _get_kml(subdir: str, file_id: str):
-    settings = get_settings()
-
     DIR = os.path.join(settings.overlay_kml_dir, subdir)
     f = os.path.join(DIR, "%s.kml" % file_id)
     folder = None
@@ -160,7 +158,6 @@ def lines(file_id, projection, extent) -> dict:
 
 
 def list_areas(file_id, simplify=True) -> List[dict]:
-    settings = get_settings()
     AREA_DIR = os.path.join(settings.overlay_kml_dir, "area")
 
     areas = []
@@ -210,7 +207,7 @@ def list_areas(file_id, simplify=True) -> List[dict]:
 
 
 def areas(area_id, projection, resolution, extent):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
+    AREA_DIR = os.path.join(settings.overlay_kml_dir, "area")
     folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
