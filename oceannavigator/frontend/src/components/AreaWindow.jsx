@@ -239,7 +239,7 @@ class AreaWindow extends React.Component {
               title={_("Diff. Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/plot/colormaps.png" />
+              <img src="/api/v1.0/plot/colormaps.png" />
             </ComboBox>
           </div>
           {/* End of Compare Datasets options */}
@@ -332,7 +332,7 @@ class AreaWindow extends React.Component {
               title={_("Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/plot/colormaps.png" />
+              <img src="/api/v1.0/plot/colormaps.png" />
             </ComboBox>
           </div>
         </Panel.Body>
@@ -372,7 +372,7 @@ class AreaWindow extends React.Component {
                   title={_("Colourmap")}
                 >
                   {_("colourmap_help")}
-                  <img src="/plot/colormaps.png" />
+                  <img src="/api/v1.0/plot/colormaps.png" />
                 </ComboBox>
               </div>
             </Panel.Body>
