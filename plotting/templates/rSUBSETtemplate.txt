@@ -10,7 +10,7 @@ url <- base_url
 
 for (key in names(queryObj))
 {{
- url <- paste(url,"&", key, "=", queryObj[key], sep="")
+   url <- paste(url, "&", key, "=", queryObj[key], sep="")
 }}
 
 url  <- gsub(",[\r\n]", "", url)
