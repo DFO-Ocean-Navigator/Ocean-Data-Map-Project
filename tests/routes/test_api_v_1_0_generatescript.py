@@ -17,7 +17,7 @@ class TestApiv10GenerateScript(unittest.TestCase):
 
         for l in self.langs:
             res = self.app.get(
-                "/api/v1.0/generatescript/",
+                "/api/v1.0/generate_script/",
                 query_string={
                     "query": {
                         "dataset": "giops_day",
@@ -41,7 +41,7 @@ class TestApiv10GenerateScript(unittest.TestCase):
 
         for l in self.langs:
             res = self.app.get(
-                "/api/v1.0/generatescript/",
+                "/api/v1.0/generate_script/",
                 query_string={
                     "query": {
                         "dataset": "giops_day",

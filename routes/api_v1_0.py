@@ -611,16 +611,15 @@ async def subset_query(
     )
 
 
-@router.get("/plot/{plottype}/{dataset}/")
+@router.get("/plot/{plottype}")
 async def plot(
     plottype: str = Path(..., title="The key of the dataset.", example="profile"),
-    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
     query: str = Query(
         ...,
         description="Collection of plot arguments.",
         example=(
-            '{"names":[],"plotTitle":"","showmap":false,"station":[[45,-45]],'
-            + '"time":2284761600,"variable":["votemper"]}'
+            '{"dataset":"giops_day","names":[],"plotTitle":"","showmap":false,'
+            + '"station":[[45,-45]],"time":2284761600,"variable":["votemper"]}'
         ),
     ),
     save: bool = Query(False, description="Wether or not to save the plot. "),
@@ -659,6 +658,7 @@ async def plot(
             )
 
     query = json.loads(query)
+    dataset = query.get("dataset")
     options = {
         "format": format,
         "size": size,

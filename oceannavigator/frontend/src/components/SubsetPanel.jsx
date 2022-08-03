@@ -106,7 +106,7 @@ saveScript(key) {
   }
 
   window.location.href = window.location.origin + 
-                        "/api/v1.0/generatescript/?query=" + 
+                        "/api/v1.0/generate_script/?query=" + 
                         stringify(query) + 
                         "&lang=" + key + 
                         "&scriptType=SUBSET";

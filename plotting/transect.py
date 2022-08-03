@@ -1,7 +1,6 @@
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import current_app
 from geopy.distance import GeodesicDistance
 from matplotlib.ticker import ScalarFormatter, StrMethodFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -12,8 +11,11 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 from data import geo, open_dataset
 from oceannavigator import DatasetConfig
+from oceannavigator.settings import get_settings
 from plotting.grid import bathymetry
 from plotting.line import LinePlotter
+
+settings = get_settings()
 
 
 class TransectPlotter(LinePlotter):
@@ -283,7 +285,7 @@ class TransectPlotter(LinePlotter):
                     """
 
         # Bathymetry
-        with Dataset(current_app.config["BATHYMETRY_FILE"], "r") as dataset:
+        with Dataset(settings.bathymetry_file, "r") as dataset:
             bath_x, bath_y = bathymetry(
                 dataset.variables["y"],
                 dataset.variables["x"],
