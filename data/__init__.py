@@ -2,7 +2,7 @@ from data.calculated import CalculatedData
 from data.fvcom import Fvcom
 from data.mercator import Mercator
 from data.nemo import Nemo
-
+from data.sqlite_database import SQLiteDatabase
 
 def open_dataset(dataset, **kwargs):
     """Open a dataset.
@@ -65,6 +65,11 @@ def open_dataset(dataset, **kwargs):
             "dataset_key": getattr(dataset, "key", ""),
         }
     )
-
+    input_valid = validate_import(url, **kwargs)
     nc_data = CalculatedData(url, **kwargs)
     return model_class(nc_data)
+
+def validate_import(url, **kwargs):
+    with SQLiteDatabase(url) as db:
+        timestamps = db.get_timestamps(kwargs.get('variable')[0])
+    return kwargs.get('timestamp') in timestamps
