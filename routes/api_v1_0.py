@@ -144,23 +144,24 @@ async def git_info():
 @router.get("/generate_script")
 async def generate_script(
     query: str = Query(..., description="string-ified JSON"),
+    plot_type: str = Query(None, description="Type of requested data product."),
     lang: e.ScriptLang = Query(..., description="Language of the requested API script"),
     script_type: e.ScriptType = Query(..., description="Type of requested script"),
 ):
     if lang == e.ScriptLang.python:
-        b = generatePython(query, script_type)
+        b = generatePython(query, plot_type, script_type)
         media_type = "application/x-python"
         filename = f"ocean_navigator_api_script_{script_type}.py"
 
     elif lang == e.ScriptLang.r:
-        b = generateR(query, script_type)
+        b = generateR(query, plot_type, script_type)
         media_type = "text/plain"
         filename = f"ocean_navigator_api_script_{script_type}.r"
 
     return StreamingResponse(
         b,
         media_type=media_type,
-        headers={"Content-Disposition": f"attachment; filename=#{filename}"},
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 
@@ -611,9 +612,9 @@ async def subset_query(
     )
 
 
-@router.get("/plot/{plottype}")
+@router.get("/plot/{plot_type}")
 async def plot(
-    plottype: str = Path(..., title="The key of the dataset.", example="profile"),
+    plot_type: str = Path(..., title="The key of the dataset.", example="profile"),
     query: str = Query(
         ...,
         description="Collection of plot arguments.",
@@ -666,31 +667,31 @@ async def plot(
     }
 
     # Determine which plotter we need.
-    if plottype == "map":
+    if plot_type == "map":
         plotter = MapPlotter(dataset, query, **options)
-    elif plottype == "transect":
+    elif plot_type == "transect":
         plotter = TransectPlotter(dataset, query, **options)
-    elif plottype == "timeseries":
+    elif plot_type == "timeseries":
         plotter = TimeseriesPlotter(dataset, query, **options)
-    elif plottype == "ts":
+    elif plot_type == "ts":
         plotter = TemperatureSalinityPlotter(dataset, query, **options)
-    elif plottype == "sound":
+    elif plot_type == "sound":
         plotter = SoundSpeedPlotter(dataset, query, **options)
-    elif plottype == "profile":
+    elif plot_type == "profile":
         plotter = ProfilePlotter(dataset, query, **options)
-    elif plottype == "hovmoller":
+    elif plot_type == "hovmoller":
         plotter = HovmollerPlotter(dataset, query, **options)
-    elif plottype == "observation":
+    elif plot_type == "observation":
         plotter = ObservationPlotter(dataset, query, **options)
-    elif plottype == "track":
+    elif plot_type == "track":
         plotter = TrackPlotter(dataset, query, **options)
-    elif plottype == "class4":
+    elif plot_type == "class4":
         plotter = Class4Plotter(dataset, query, **options)
-    elif plottype == "stick":
+    elif plot_type == "stick":
         plotter = StickPlotter(dataset, query, **options)
     else:
         raise HTTPException(
-            status_code=404, detail=f"Incorrect plot type ({plottype}) provided."
+            status_code=404, detail=f"Incorrect plot type ({plot_type}) provided."
         )
 
     img, mime, filename = plotter.run()
@@ -770,7 +771,7 @@ async def colormaps_png():
 @router.get("/kml/points")
 async def kml_points():
     """
-    Returns the KML groups containing of interest from hard-coded KML files
+    Returns the KML groups containing points of interest from hard-coded KML files
     """
     return JSONResponse(
         utils.misc.list_kml_files("point"),
@@ -806,7 +807,7 @@ async def kml_point(
 @router.get("/kml/lines")
 async def kml_lines():
     """
-    Returns the KML groups containing of interest from hard-coded KML files
+    Returns the KML groups containing lines of interest from hard-coded KML files
     """
     return JSONResponse(
         utils.misc.list_kml_files("line"),
@@ -841,7 +842,7 @@ async def kml_line(
 @router.get("/kml/areas")
 async def kml_areas():
     """
-    Returns the KML groups containing of interest from hard-coded KML files
+    Returns the KML groups containing areas of interest from hard-coded KML files
     """
     return JSONResponse(
         utils.misc.list_kml_files("area"),
@@ -1642,7 +1643,7 @@ async def observation_meta_v1_0(
     "/observation/variables/{query}.json",
     response_model=Union[DataTypeSchema, PlatformSchema, StationSchema],
 )
-def observation_variables_v1_0(
+async def observation_variables_v1_0(
     query: str = Path(
         ...,
         title=" A key=value pair, where key is either station \
@@ -1717,7 +1718,7 @@ def after_request(response):
 """
 
 
-def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
+async def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
     Caches a rendered image buffer on disk and sends it to the browser
 

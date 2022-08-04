@@ -109,7 +109,7 @@ saveScript(key) {
                         "/api/v1.0/generate_script/?query=" + 
                         stringify(query) + 
                         "&lang=" + key + 
-                        "&scriptType=SUBSET";
+                        "&scriptType=subset";
 }
 
 getSubsetVariables() {
