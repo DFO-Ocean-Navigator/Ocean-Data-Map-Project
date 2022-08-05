@@ -245,7 +245,7 @@ class LineWindow extends React.Component {
             state={this.state.surfacevariable}
             onUpdate={this.onLocalUpdate}
             title={_("Surface Variable")}
-            url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
+            url={`/api/v1.0/dataset/${this.props.dataset_0.dataset}/variables`}
           >{_("surfacevariable_help")}</ComboBox>
 
           <NumberBox

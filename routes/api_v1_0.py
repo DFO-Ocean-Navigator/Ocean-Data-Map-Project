@@ -1718,7 +1718,7 @@ def after_request(response):
 """
 
 
-async def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
+def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     """
     Caches a rendered image buffer on disk and sends it to the browser
 
