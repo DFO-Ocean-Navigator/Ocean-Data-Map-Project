@@ -7,7 +7,6 @@ import pathlib
 import shutil
 import sqlite3
 from io import BytesIO
-from typing import Union
 
 import geojson
 import numpy as np
@@ -30,13 +29,10 @@ from data import open_dataset
 from data.observational import (
     Base,
     DataType,
-    DataTypeSchema,
     Platform,
-    PlatformSchema,
     Sample,
     SessionLocal,
     Station,
-    StationSchema,
     engine,
 )
 from data.sqlite_database import SQLiteDatabase
@@ -63,7 +59,6 @@ from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
-
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
@@ -1083,12 +1078,10 @@ def mbt(
     )
 
 
-@router.get("/observation/datatypes.json", response_model=DataTypeSchema)
+@router.get("/observation/datatypes.json")
 async def observation_datatypes(db: Session = Depends(get_db)):
     """
-    Returns the list of observational data types
-
-    **Used in ObservationSelector**
+    Returns the list of observational data types. Used in ObservationSelector.
     """
 
     data = [
@@ -1105,9 +1098,7 @@ async def observation_datatypes(db: Session = Depends(get_db)):
     )
 
 
-@router.get(
-    "/observation/meta_keys/{platform_types}.json", response_model=PlatformSchema
-)
+@router.get("/observation/meta_keys/{platform_types}.json")
 async def observation_keys(
     platform_types: str = Path(
         ...,
@@ -1117,13 +1108,8 @@ async def observation_keys(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/meta_keys/<string:platform_types>.json
-
-    platform_types : Comma seperated list of platform types
-
-    Gets the set of metadata keys for a list of platform types
-
-    **Used in ObservationSelector**
+    Gets the set of metadata keys for a list of platform types. Used in
+    ObservationSelector.
     """
 
     data = ob_queries.get_meta_keys(db, platform_types.split(","))
@@ -1134,10 +1120,7 @@ async def observation_keys(
     )
 
 
-@router.get(
-    "/observation/meta_values/{platform_types}/{key}.json",
-    response_model=PlatformSchema,
-)
+@router.get("/observation/meta_values/{platform_types}/{key}.json")
 async def observation_values_v1_0(
     platform_types: str = Path(
         ...,
@@ -1152,15 +1135,8 @@ async def observation_values_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/meta_values/
-        <string:platform_types>/<string:key>.json
-
-    platform_types : Comma seperated list of platform types
-    key : Metadata key
-
-    Gets the set of metadata values for a list of platform types and key
-
-    **Used in ObservationSelector**
+    Gets the set of metadata values for a list of platform types and key. Used in
+    ObservationSelector.
     """
 
     data = ob_queries.get_meta_values(db, platform_types.split(","), key)
@@ -1171,9 +1147,7 @@ async def observation_values_v1_0(
     )
 
 
-@router.get(
-    "/observation/tracktimerange/{platform_id}.json", response_model=PlatformSchema
-)
+@router.get("/observation/tracktimerange/{platform_id}.json")
 async def observation_tracktime_v1_0(
     platform_id: str = Path(
         ...,
@@ -1183,13 +1157,7 @@ async def observation_tracktime_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/tracktimerange/<string:platform_id>.json
-
-    platform_id : Platform ID
-
-    Queries the min and max times for the track
-
-    **Used in TrackWindow**
+    Queries the min and max times for the track. Used in TrackWindow.
     """
 
     platform = db.query(Platform).get(platform_id)
@@ -1212,8 +1180,8 @@ async def observation_tracktime_v1_0(
     )
 
 
-@router.get("/observation/track/{query}.json", response_model=PlatformSchema)
-async def observation_track_v1_0(
+@router.get("/observation/track/{query}.json")
+async def observation_track(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1222,15 +1190,7 @@ async def observation_track_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/track/<string:query>.json
-
-    query : List of key=value pairs, seperated by ;
-        valid query keys are: start_date, end_date, datatype, platform_type,
-            meta_key, meta_value, mindepth, maxdepth, area, radius, quantum
-
-    Observational query for tracks
-
-    **Used in ObservationSelector**
+    Observational query for tracks. Used in ObservationSelector.
     """
     query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
@@ -1326,8 +1286,8 @@ async def observation_track_v1_0(
     )
 
 
-@router.get("/observation/point/{query}.json", response_model=StationSchema)
-async def observation_point_v1_0(
+@router.get("/observation/point/{query}.json")
+async def observation_point(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1339,15 +1299,7 @@ async def observation_point_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/point/<string:query>.json
-
-    <string:query> : List of key=value pairs, seperated by ;
-        valid query keys are: start_date, end_date, datatype, platform_type,
-            meta_key, meta_value, mindepth, maxdepth, area, radius
-
-    Observational query for points
-
-    **Used in ObservationSelector**
+    Observational query for points. Used in ObservationSelector.
     """
     query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
     data = []
@@ -1436,11 +1388,8 @@ async def observation_point_v1_0(
     )
 
 
-@router.get(
-    "/observation/meta/{key}/{id}.json",
-    response_model=Union[PlatformSchema, StationSchema],
-)
-async def observation_meta_v1_0(
+@router.get("/observation/meta/{key}/{id}.json")
+async def observation_meta(
     key: str = Path(
         ...,
         title="Type/Platform of observation.",
@@ -1454,11 +1403,8 @@ async def observation_meta_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/meta.json
-
-    Observational query for all the metadata for a platform or station
-
-    **Used in Map for the observational tooltip**
+    Observational query for all the metadata for a platform or station. Used in Map for
+    the observational tooltip.
     """
 
     data = {}
@@ -1485,10 +1431,7 @@ async def observation_meta_v1_0(
     )
 
 
-@router.get(
-    "/observation/variables/{query}.json",
-    response_model=Union[DataTypeSchema, PlatformSchema, StationSchema],
-)
+@router.get("/observation/variables/{query}.json")
 async def observation_variables_v1_0(
     query: str = Path(
         ...,
@@ -1499,14 +1442,8 @@ async def observation_variables_v1_0(
     db: Session = Depends(get_db),
 ):
     """
-    API Format: /api/v1.0/observation/variables/<string:query>.json
-
-    query : A key=value pair, where key is either station or platform
-    and value is the id
-
-    Observational query for variables for a platform or station
-
-    **Used in PointWindow for the observational variable selection**
+    Observational query for variables for a platform or station. Used in PointWindow
+    for the observational variable selection.
     """
     key, identifier = query.split("=")
     data = []
