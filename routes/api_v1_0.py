@@ -64,47 +64,6 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
 
-"""
-import base64
-import gzip
-import json
-import shutil
-import sqlite3
-
-import pandas as pd
-from dateutil.parser import parse as dateparse
-from shapely.geometry import LinearRing, Point, Polygon
-
-import data.observational.queries as ob_queries
-import plotting.colormap
-import plotting.scale
-import plotting.tile
-import utils.misc
-from data import open_dataset
-from data.observational import DataType, Platform, Sample, Station
-from data.observational import db as DB
-from data.sqlite_database import SQLiteDatabase
-from data.transformers.geojson import data_array_to_geojson
-from data.utils import (
-    DateTimeEncoder,
-    get_data_vars_from_equation,
-    time_index_to_datetime,
-)
-from oceannavigator.dataset_config import get_dataset_config
-from plotting.class4 import Class4Plotter
-from plotting.hovmoller import HovmollerPlotter
-from plotting.map import MapPlotter
-from plotting.observation import ObservationPlotter
-from plotting.profile import ProfilePlotter
-from plotting.sound import SoundSpeedPlotter
-from plotting.stats import stats as areastats
-from plotting.stick import StickPlotter
-from plotting.timeseries import TimeseriesPlotter
-from plotting.track import TrackPlotter
-from plotting.transect import TransectPlotter
-from plotting.ts import TemperatureSalinityPlotter
-from utils.errors import APIError, ClientError, ErrorBase
-"""
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
@@ -542,20 +501,6 @@ async def class4_file(
     )
 
 
-'''
-@router.get("/class4/{q_id}/{q_type}.json")
-async def class4_list(q_id: str, q_type: str = None):
-    """ """
-    data = class4.list_class4(q_id, q_type)
-
-    return JSONResponse(
-        data,
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
-
-'''
-
-
 @router.get("/subset/{dataset}/{variables}/")
 async def subset_query(
     request: Request,
@@ -708,33 +653,6 @@ async def plot(
     return response
 
 
-'''
-@router.get("/api/v1.0/colors/")
-def colors(request: Request):
-    """
-    Returns a list of colours for use in colour maps.
-    """
-
-    args = request.args
-    data = [
-        {"id": "k", "value": "Black"},  # gettext("Black")},
-        {"id": "b", "value": "Blue"},  # gettext("Blue")},
-        {"id": "g", "value": "Green"},  # gettext("Green")},
-        {"id": "r", "value": "Red"},  # gettext("Red")},
-        {"id": "c", "value": "Cyan"},  # gettext("Cyan")},
-        {"id": "m", "value": "Magenta"},  # gettext("Magenta")},
-        {"id": "y", "value": "Yellow"},  # gettext("Yellow")},
-        {"id": "w", "value": "White"},  #gettext("White")},
-    ]
-    if args.get("random"):
-        data.insert(0, {"id": "rnd", "value": "Randomize"})  # gettext("Randomize")})
-    if args.get("none"):
-        data.insert(0, {"id": "none", "value": "None"})  # gettext("None")})
-
-    return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
-'''
-
-
 @router.get("/plot/colormaps/")
 async def colormaps():
     """
@@ -877,78 +795,6 @@ async def kml_area(
         utils.misc.areas(id, projection, resolution, view_bounds),
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
-
-
-'''
-@bp_v1_0.route("/api/v1.0/<string:q>/<string:q_id>.json")
-def query_id_v1_0(q: str, q_id: str, q_type: str = None):
-    """
-    API Format: /api/v1.0/<string:q>/<string:q_id>.json'
-
-    <string:q>    : Type of Data (areas, class4)
-    <string:q_id> :
-    <string:q_type> : Type of class4 data (optional)
-
-    """
-    if q == "areas":
-        data = utils.misc.list_areas(q_id)
-    elif q == "class4":
-        data = class4.list_class4(q_id, q_type)
-    else:
-        raise APIError(
-            "The Specified Parameter is Invalid - Must be one of (areas, class4)"
-        )
-
-    resp = jsonify(data)
-    resp.cache_control.max_age = 86400
-    return resp
-
-
-@bp_v1_0.route(
-    "/api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json"  # noqa: E501
-)
-def query_file_v1_0(
-    q: str, projection: str, resolution: int, extent: str, file_id: str
-):
-    """
-    API Format: /api/v1.0/<string:q>/<string:projection>/<int:resolution>/<string:extent>/<string:file_id>.json
-
-    <string:q>          : Type of data (points, lines, areas, class4 Ocean Predict/RIOPS Assimilated Observations)
-    <string:projection> : Current projection of the map (EPSG:3857, EPSG:32661, EPSG:3031)
-
-    <int:resolution>    : Current zoom level of the map
-    <string:extent>     : The current bounds of the map view
-    <string:file_id>    :
-
-    **All components must be included**
-    **Used Primarily by WebPage**
-    """
-
-    data = []
-    max_age = 86400
-
-    if q == 'points':
-        data = utils.misc.points(
-            file_id, projection, resolution, extent)
-    elif q == 'lines':
-        data = utils.misc.lines(
-            file_id, projection, resolution, extent)
-    elif q == 'areas':
-        data = utils.misc.areas(
-            file_id, projection, resolution, extent)
-    elif q == 'ocean_predict':
-        data = class4.class4(
-            q, file_id, projection, resolution, extent)
-    elif q == 'riops_obs':
-        data = class4.class4(
-            q, file_id, projection, resolution, extent)
-    else:
-        raise FAILURE
-
-    resp = jsonify(data)
-    resp.cache_control.max_age = max_age
-    return resp
-'''
 
 
 @router.get("/dataset/{dataset}/{variable}/timestamps")
@@ -1699,23 +1545,6 @@ async def observation_variables_v1_0(
         data,
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
-
-
-"""
-@bp_v1_0.after_request
-def after_request(response):
-    # https://flask.palletsprojects.com/en/1.1.x/security/
-
-    header = response.headers
-    # Relying on iptables to keep this safe
-    header["Access-Control-Allow-Origin"] = "*"
-    header["X-ONav-Git-Hash"] = current_app.git_hash
-    header["X-ONav-Git-Tag"] = current_app.git_tag
-    header["X-XSS-Protection"] = "1; mode=block"
-    header["X-Frame-Options"] = "SAMEORIGIN"
-
-    return response
-"""
 
 
 def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
