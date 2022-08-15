@@ -106,6 +106,13 @@ class MapPlotter(Plotter):
             and self.quiver["variable"]
             and self.quiver["variable"] != "none"
         )
+ 
+    def __load_contour(self) -> bool:
+        return (
+            self.contour is not None
+            and self.contour["variable"]
+            and self.contour["variable"] != "none"
+        )
 
     def __apply_poly_mask(self, data: np.ma.MaskedArray) -> np.ma.MaskedArray:
         area = self.area[0]
@@ -222,6 +229,10 @@ class MapPlotter(Plotter):
         variables_to_load = self.variables[
             :
         ]  # we don't want to change self,variables so copy it
+        
+        if self.__load_contour():
+            variables_to_load.append(self.contour["variable"])
+        
         if self.__load_quiver():
             variables_to_load.append(self.quiver["variable"])
 
@@ -390,6 +401,7 @@ class MapPlotter(Plotter):
                 contour_unit = vc.unit
                 contour_name = vc.name
                 contour_data.append(d)
+                self.contour_data = contour_data
                 self.contour_unit = contour_unit
                 self.contour_name = contour_name
 
