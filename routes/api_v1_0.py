@@ -222,6 +222,8 @@ def datasets_query_v1_0():
                     "help": config.help,
                     "attribution": config.attribution,
                     "model_class": config.model_class,
+                    "group": config.group,
+                    "subgroup": config.subgroup
                 }
             )
     data = sorted(data, key=lambda k: k["value"])

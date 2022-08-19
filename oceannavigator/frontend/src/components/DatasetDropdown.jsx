@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 import React from "react";
 import FontAwesome from "react-fontawesome";
-import { MenuItem } from "react-bootstrap";
+import { Button, ControlLabel, MenuItem } from "react-bootstrap";
 import Accordion from "./lib/Accordion";
 
 const utilizeFocus = () => {
@@ -9,7 +9,6 @@ const utilizeFocus = () => {
   const setFocus = () => {
     ref.current && ref.current.focus();
   };
-
   return { setFocus, ref };
 };
 
@@ -20,44 +19,50 @@ class DatasetDropdown extends React.Component {
     this.inputFocus = utilizeFocus();
 
     this.state = {
-      title: "",
       isListOpen: false,
       options: [],
     };
 
-    this.toggleList = this.toggleList.bind(this);
+    this.createMenus = this.createMenus.bind(this);
     this.selectHandler = this.selectHandler.bind(this);
+    this.toggleList = this.toggleList.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.props.datasets !== prevProps.datasets) {
-      console.log("Datasets updated");
-      console.log(this.props.datasets);
+  componentDidMount() {
+    this.createMenus();
+  }
 
-      let content = [];
-      for (let group in this.props.datasets) {
-        let subcontent = [];
-        for (let subgroup in this.props.datasets[group]) {
-          let items = this.props.datasets[group][subgroup].map((dataset) => (
-            <MenuItem eventKey={dataset} onSelect={this.selectHandler}>
-              {dataset.value}
+  createMenus() {
+    let content = [];
+    let menus = this.props.datasets.map((d) => d.group);
+    menus = [...new Set(menus)];
+
+    for (let menu of menus) {
+      let datasets = this.props.datasets.filter((d) => {
+        return d.group === menu;
+      });
+      let submenus = datasets.map((d) => d.subgroup);
+      submenus = [...new Set(submenus)];
+
+      let options = [];
+      for (let submenu of submenus) {
+        let subDatasets = datasets.filter((d) => {
+          return d.subgroup === submenu;
+        });
+        options.push(<MenuItem header>{submenu}</MenuItem>);
+        options.push(
+          ...subDatasets.map((sd) => (
+            <MenuItem id={sd.id} key={sd.id} eventKey={sd.id} onSelect={this.selectHandler}>
+              {sd.value}
             </MenuItem>
-          ));
-          subcontent.push(<MenuItem header>{subgroup}</MenuItem>);
-          subcontent.push(...items);
-        }
-
-        content.push(
-          <Accordion
-            id={`accordion_${group}`}
-            title={group}
-            content={subcontent}
-          />
+          ))
         );
       }
-
-      this.setState({ options: content });
+      content.push(
+        <Accordion id={`accordion_${menu}`} key={`accordion_${menu}`} title={menu} content={options} />
+      );
     }
+    this.setState({ options: content });
   }
 
   toggleList() {
@@ -68,26 +73,44 @@ class DatasetDropdown extends React.Component {
   }
 
   selectHandler(dataset) {
-    this.setState({ title: dataset.value });
-    this.toggleList();
+    this.props.onChange("dataset", dataset);
+    this.toggleList()
   }
 
   render() {
+    const title = this.props.datasets.filter((d) => {
+      return d.id === this.props.selected;
+    })[0].value;
+
     return (
-      <div className="dd-wrapper">
-        <button type="button" className="dd-header" onClick={this.toggleList}>
-          <div className="dd-header-title">{this.state.title}</div>
-          <FontAwesome
-            className="dd-header-icon"
-            name="fa-solid fa-angle-down"
-          />
-        </button>
-        {this.state.isListOpen && (
-          <div role="list" className="dd-list">
-            {this.state.options}
-          </div>
-        )}
-      </div>
+      <>
+        <ControlLabel>Dataset</ControlLabel>
+        <Button
+          onClick={this.toggleShowHelp}
+          bsStyle="default"
+          bsSize="xsmall"
+          style={{
+            display: this.props.helpContent ? "block" : "none",
+            float: "right",
+          }}
+        >
+          ?
+        </Button>
+        <div className="dd-wrapper">
+          <button type="button" className="dd-header" onClick={this.toggleList}>
+            <div className="dd-header-title">{title}</div>
+            <FontAwesome
+              className="dd-header-icon"
+              name="fa-solid fa-angle-down"
+            />
+          </button>
+          {this.state.isListOpen && (
+            <div role="list" className="dd-list">
+              {this.state.options}
+            </div>
+          )}
+        </div>
+      </>
     );
   }
 }
