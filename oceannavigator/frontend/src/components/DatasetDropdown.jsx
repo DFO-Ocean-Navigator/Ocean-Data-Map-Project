@@ -49,12 +49,12 @@ class DatasetDropdown extends React.Component {
         let subDatasets = datasets.filter((d) => {
           return d.subgroup === submenu;
         });
-        options.push(<MenuItem header>{submenu}</MenuItem>);
+        options.push(<label className="dd-option-label">{submenu}</label>)
         options.push(
           ...subDatasets.map((sd) => (
-            <MenuItem id={sd.id} key={sd.id} eventKey={sd.id} onSelect={this.selectHandler}>
+            <button className="dd-option-button" id={sd.id} key={sd.id} onClick={()=>this.selectHandler(sd.id)}>
               {sd.value}
-            </MenuItem>
+            </button>
           ))
         );
       }

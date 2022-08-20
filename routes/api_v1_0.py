@@ -226,7 +226,6 @@ def datasets_query_v1_0():
                     "subgroup": config.subgroup
                 }
             )
-    data = sorted(data, key=lambda k: k["value"])
     resp = jsonify(data)
     return resp
 
