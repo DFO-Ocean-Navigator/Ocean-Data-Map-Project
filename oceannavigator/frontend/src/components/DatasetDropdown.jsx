@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 import React from "react";
 import FontAwesome from "react-fontawesome";
-import { Button, ControlLabel, MenuItem } from "react-bootstrap";
+import { Button, ControlLabel } from "react-bootstrap";
 import Accordion from "./lib/Accordion";
 
 const utilizeFocus = () => {
@@ -49,17 +49,27 @@ class DatasetDropdown extends React.Component {
         let subDatasets = datasets.filter((d) => {
           return d.subgroup === submenu;
         });
-        options.push(<label className="dd-option-label">{submenu}</label>)
+        options.push(<label className="dd-option-label">{submenu}</label>);
         options.push(
           ...subDatasets.map((sd) => (
-            <button className="dd-option-button" id={sd.id} key={sd.id} onClick={()=>this.selectHandler(sd.id)}>
+            <button
+              className="dd-option-button"
+              id={sd.id}
+              key={sd.id}
+              onClick={() => this.selectHandler(sd.id)}
+            >
               {sd.value}
             </button>
           ))
         );
       }
       content.push(
-        <Accordion id={`accordion_${menu}`} key={`accordion_${menu}`} title={menu} content={options} />
+        <Accordion
+          id={`accordion_${menu}`}
+          key={`accordion_${menu}`}
+          title={menu}
+          content={options}
+        />
       );
     }
     this.setState({ options: content });
@@ -74,7 +84,7 @@ class DatasetDropdown extends React.Component {
 
   selectHandler(dataset) {
     this.props.onChange("dataset", dataset);
-    this.toggleList()
+    this.toggleList();
   }
 
   render() {
@@ -114,5 +124,15 @@ class DatasetDropdown extends React.Component {
     );
   }
 }
+
+//***********************************************************************
+DatasetSelector.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selected: PropTypes.string.isRequired,
+  helpContent: PropTypes.arrayOf(PropTypes.object),
+};
 
 export default DatasetDropdown;

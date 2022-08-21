@@ -343,24 +343,10 @@ class DatasetSelector extends React.Component {
         );
       });
 
-      // datasetSelector = (
-      //   <SelectBox
-      //     id={`dataset-selector-dataset-selector-${this.props.id}`}
-      //     name="dataset"
-      //     label={_("Dataset")}
-      //     placeholder={_("Dataset")}
-      //     options={this.state.availableDatasets.map((d) => {
-      //       return { id: d.id, value: d.value };
-      //     })}
-      //     onChange={this.onUpdate}
-      //     selected={this.state.dataset}
-      //     helpContent={helpContent}
-      //   />
-      // );
-
       datasetSelector = (
         <DatasetDropdown
           id={`dataset-selector-dataset-selector-${this.props.id}`}
+          key={`dataset-selector-dataset-selector-${this.props.id}`}
           datasets={this.state.availableDatasets.map((d) => {
             return { id: d.id, value: d.value, group: d.group, subgroup: d.subgroup};
           })}
