@@ -558,8 +558,6 @@ class DatasetSelector extends React.Component {
       <div id={`dataset-selector-${this.props.id}`} className="DatasetSelector">
         {datasetSelector}
 
-        {/* {datasetSelector2} */}
-
         {variableSelector}
 
         {quiverSelector}

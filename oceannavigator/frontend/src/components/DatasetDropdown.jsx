@@ -1,8 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import FontAwesome from "react-fontawesome";
-import { Button, ControlLabel } from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
+
 import Accordion from "./lib/Accordion";
+import Icon from "./lib/Icon";
+
+import { withTranslation } from "react-i18next";
 
 const utilizeFocus = () => {
   const ref = React.createRef();
@@ -12,7 +16,7 @@ const utilizeFocus = () => {
   return { setFocus, ref };
 };
 
-class DatasetDropdown extends React.Component {
+export class DatasetDropdown extends React.Component {
   constructor(props) {
     super(props);
 
@@ -20,11 +24,13 @@ class DatasetDropdown extends React.Component {
 
     this.state = {
       isListOpen: false,
+      showHelp: false,
       options: [],
     };
 
     this.selectHandler = this.selectHandler.bind(this);
     this.toggleList = this.toggleList.bind(this);
+    this.toggleShowHelp = this.toggleShowHelp.bind(this);
   }
 
   componentDidMount() {
@@ -78,6 +84,12 @@ class DatasetDropdown extends React.Component {
     }));
   }
 
+  toggleShowHelp() {
+    this.setState(prevState => ({
+      showHelp: !prevState.showHelp,
+    }));
+  }   
+
   selectHandler(dataset) {
     this.props.onChange("dataset", dataset);
     this.toggleList();
@@ -90,7 +102,7 @@ class DatasetDropdown extends React.Component {
 
     return (
       <>
-        <ControlLabel>Dataset</ControlLabel>
+        <label>Dataset</label>
         <Button
           onClick={this.toggleShowHelp}
           bsStyle="default"
@@ -116,6 +128,26 @@ class DatasetDropdown extends React.Component {
             </div>
           )}
         </div>
+
+        <Modal
+          show={this.state.showHelp}
+          onHide={this.toggleShowHelp}
+          bsSize="large"
+          dialogClassName="helpdialog"
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{_("Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {this.props.helpContent}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.toggleShowHelp}>
+              <Icon icon="close"/> {_("Close")}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }
@@ -131,4 +163,4 @@ DatasetDropdown.propTypes = {
   helpContent: PropTypes.arrayOf(PropTypes.object),
 };
 
-export default DatasetDropdown;
+export default withTranslation()(DatasetDropdown);
