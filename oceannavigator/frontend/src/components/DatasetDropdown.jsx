@@ -1,5 +1,5 @@
-/* eslint-disable react/destructuring-assignment */
 import React from "react";
+import PropTypes from "prop-types";
 import FontAwesome from "react-fontawesome";
 import { Button, ControlLabel } from "react-bootstrap";
 import Accordion from "./lib/Accordion";
@@ -23,17 +23,12 @@ class DatasetDropdown extends React.Component {
       options: [],
     };
 
-    this.createMenus = this.createMenus.bind(this);
     this.selectHandler = this.selectHandler.bind(this);
     this.toggleList = this.toggleList.bind(this);
   }
 
   componentDidMount() {
-    this.createMenus();
-  }
-
-  createMenus() {
-    let content = [];
+    let dropdownItems = [];
     let menus = this.props.datasets.map((d) => d.group);
     menus = [...new Set(menus)];
 
@@ -63,7 +58,7 @@ class DatasetDropdown extends React.Component {
           ))
         );
       }
-      content.push(
+      dropdownItems.push(
         <Accordion
           id={`accordion_${menu}`}
           key={`accordion_${menu}`}
@@ -72,14 +67,13 @@ class DatasetDropdown extends React.Component {
         />
       );
     }
-    this.setState({ options: content });
+    this.setState({ options: dropdownItems });
   }
 
   toggleList() {
     this.setState((prevState) => ({
       isListOpen: !prevState.isListOpen,
     }));
-    this.inputFocus.setFocus;
   }
 
   selectHandler(dataset) {
@@ -126,7 +120,7 @@ class DatasetDropdown extends React.Component {
 }
 
 //***********************************************************************
-DatasetSelector.propTypes = {
+DatasetDropdown.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,

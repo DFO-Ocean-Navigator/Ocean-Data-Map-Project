@@ -327,7 +327,6 @@ class DatasetSelector extends React.Component {
     _("Variable Range");
 
     let datasetSelector = null;
-    // let datasetSelector2 = null;
     // eslint-disable-next-line max-len
     if (
       this.state.availableDatasets &&
@@ -353,7 +352,7 @@ class DatasetSelector extends React.Component {
           label={_("Dataset")}
           onChange={this.onUpdate}
           selected={this.state.dataset}
-          helpContent={'test'}
+          helpContent={helpContent}
         />
       );
     }
