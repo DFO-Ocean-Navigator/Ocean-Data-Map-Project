@@ -11,7 +11,10 @@ parser.add_argument(
     "--url",
     type=str,
     required=True,
-    help="Root URL to Navigator instance. Ex: https://navigator.oceansdata.ca or http://10.5.166.251:5000",
+    help=(
+        "Root URL to Navigator instance. Ex: "
+        + "https://navigator.oceansdata.ca or http://10.5.166.251:5000"
+    ),
 )
 args = parser.parse_args()
 
@@ -31,6 +34,7 @@ def get_tile(
     res = requests.get(
         f"{base_url}/tiles/gaussian/25/10/EPSG:3857/{dataset}/{variable}/{time}/{depth}/{scale}/{z}/{x}/{y}.png",
         timeout=25,
+        verify=False,
     )
 
     if res.status_code != 200:
@@ -45,7 +49,11 @@ if __name__ == "__main__":
     datasets = list(
         filter(
             lambda d: "riops" in d or "giops" in d,
-            map(lambda d: d["id"], requests.get(f"{base_url}/datasets").json()),
+            map(
+                lambda d: d["id"],
+                requests.get(f"{base_url}/datasets").json(),
+                verify=False,
+            ),
         )
     )
 
@@ -53,7 +61,8 @@ if __name__ == "__main__":
         map(
             lambda t: int(t["id"]),
             requests.get(
-                f"{base_url}/timestamps/?dataset=giops_day&variable=votemper"
+                f"{base_url}/timestamps/?dataset=giops_day&variable=votemper",
+                verify=False,
             ).json(),
         )
     )
