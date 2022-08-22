@@ -1,6 +1,6 @@
-import os
 import xml.etree.ElementTree as ET
 from operator import itemgetter
+from pathlib import Path
 
 import numpy as np
 import pyproj
@@ -14,15 +14,15 @@ from oceannavigator import DatasetConfig
 
 
 def list_kml_files(subdir):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
+    DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath(subdir)
 
     files = []
-    for f in os.listdir(DIR):
+    for f in DIR.iterdir():
         name = None
-        if not f.endswith(".kml"):
+        if ".kml" not in f.suffix:
             continue
         try:
-            root = ET.parse(DIR + "/" + f).getroot()
+            root = ET.parse(f.as_posix()).getroot()
         except ET.ParseError:
             continue
         nsmap = root.tag.split("}", 1)[0] + "}"
@@ -30,7 +30,7 @@ def list_kml_files(subdir):
             for filename in folder.iter(nsmap + "name"):
                 name = filename.text
                 break
-        entry = {"name": name, "id": f[:-4]}
+        entry = {"name": name, "id": f.name[:-4]}
 
         files.append(entry)
 
@@ -51,10 +51,10 @@ def _get_view(extent):
 
 
 def _get_kml(subdir, file_id):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
-    f = os.path.join(DIR, "%s.kml" % file_id)
+    DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath(subdir)
+    f = DIR.joinpath("%s.kml" % file_id)
     folder = None
-    root = ET.parse(f).getroot()
+    root = ET.parse(f.as_posix()).getroot()
     for doc in root:
         if "Document" in doc.tag:
             for folder in doc:
@@ -149,11 +149,11 @@ def lines(file_id, projection, resolution, extent):
 
 
 def list_areas(file_id, simplify=True):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
+    AREA_DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath("area")
 
     areas = []
-    f = os.path.join(AREA_DIR, "%s.kml" % file_id)
-    folder = ET.parse(f).getroot()
+    f = AREA_DIR.joinpath("%s.kml" % file_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     def get_coords(path):
@@ -200,8 +200,9 @@ def list_areas(file_id, simplify=True):
 
 
 def areas(area_id, projection, resolution, extent):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
-    folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
+    AREA_DIR = Path(current_app.config["OVERLAY_KML_DIR"]).joinpath("area")
+    f = AREA_DIR.joinpath("%s.kml" % area_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     proj = pyproj.Proj(projection)

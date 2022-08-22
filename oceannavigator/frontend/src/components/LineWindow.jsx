@@ -9,14 +9,14 @@ import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-
+import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -141,6 +141,23 @@ class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
+    const plotOptions = (<div>
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      />
+    </div>);
+
     const global = (<Panel 
       key='global_settings'
       id='global_settings'
@@ -152,10 +169,10 @@ class LineWindow extends React.Component {
         <Panel.Body>
           <Row>
             <Col xs={9}>
-              <SelectBox
+              <CheckBox
                 id='dataset_compare'
                 key='dataset_compare'
-                state={this.props.dataset_compare}
+                checked={this.props.dataset_compare}
                 onUpdate={this.props.onUpdate}
                 title={_("Compare Datasets")}
               />
@@ -198,30 +215,17 @@ class LineWindow extends React.Component {
             />
           </div>
 
-          <SelectBox
+          <CheckBox
             key='showmap'
             id='showmap'
-            state={this.state.showmap}
+            checked={this.state.showmap}
             onUpdate={this.onLocalUpdate}
             title={_("Show Map Location")}
           >
             {_("showmap_help")}
-          </SelectBox>
+          </CheckBox>
             
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          ></CustomPlotLabels>
+          <Accordion id='line_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

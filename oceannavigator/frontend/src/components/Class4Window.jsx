@@ -2,8 +2,9 @@ import React from "react";
 import {Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ImageSize from "./ImageSize.jsx";
+import Accordion from "./lib/Accordion.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -86,6 +87,13 @@ class Class4Window extends React.Component {
       },
     ];
 
+    const plotOptions = <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")} />;
+
     _("Forecast");
     _("Show Location");
     _("Show Climatology");
@@ -115,18 +123,18 @@ class Class4Window extends React.Component {
                     title={_("Forecast")}
                     onUpdate={this.onLocalUpdate}
                   />
-                  <SelectBox
+                  <CheckBox
                     key='showmap'
                     id='showmap'
-                    state={this.state.showmap}
+                    checked={this.state.showmap}
                     onUpdate={this.onLocalUpdate}
-                    title={_("Show Location")}>{_("showmap_help")}</SelectBox>
-                  <SelectBox
+                    title={_("Show Location")}>{_("showmap_help")}</CheckBox>
+                  <CheckBox
                     key='climatology'
                     id='climatology'
-                    state={this.state.climatology}
+                    checked={this.state.climatology}
                     onUpdate={this.onLocalUpdate}
-                    title={_("Show Climatology")}>{_("climatology_help")}</SelectBox>
+                    title={_("Show Climatology")}>{_("climatology_help")}</CheckBox>
                   <ComboBox
                     key='models'
                     id='models'
@@ -143,12 +151,7 @@ class Class4Window extends React.Component {
                     data={error_options}
                     title={_("Show Error")}
                     onUpdate={this.onLocalUpdate} />
-                  <ImageSize
-                    key='size'
-                    id='size'
-                    state={this.state.size}
-                    onUpdate={this.onLocalUpdate}
-                    title={_("Saved Image Size")} />
+                  <Accordion id='class4_accordion' title={"Plot Options"} content={plotOptions} />
                 </Panel.Body>
               </Panel.Collapse>
             </Panel>

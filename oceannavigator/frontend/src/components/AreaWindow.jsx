@@ -10,7 +10,7 @@ import {Nav, NavItem, Panel, Row,  Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ContourSelector from "./ContourSelector.jsx";
 import QuiverSelector from "./QuiverSelector.jsx";
 import StatsTable from "./StatsTable.jsx";
@@ -19,6 +19,7 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
+import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -155,6 +156,26 @@ class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
+    const plotOptions = (<div>
+      {/* Image Size Selection */}
+      <ImageSize 
+        key='size' 
+        id='size' 
+        state={this.state.size} 
+        onUpdate={this.onLocalUpdate} 
+        title={_("Saved Image Size")} 
+      ></ImageSize>
+
+      {/* Plot Title */}
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitle}
+      />
+    </div>);
+
     const mapSettings = (<Panel 
       defaultExpanded
       bsStyle='primary'
@@ -165,10 +186,10 @@ class AreaWindow extends React.Component {
         <Panel.Body>
           <Row>
             <Col xs={9}> 
-              <SelectBox
+              <CheckBox
                 id='dataset_compare'
                 key='dataset_compare'
-                state={this.state.dataset_compare}
+                checked={this.state.dataset_compare}
                 onUpdate={(_, checked) => { this.setState({dataset_compare: checked}); }}
                 title={_("Compare Datasets")}
               />
@@ -223,23 +244,23 @@ class AreaWindow extends React.Component {
           </div>
           {/* End of Compare Datasets options */}
 
-          <SelectBox 
+          <CheckBox 
             key='bathymetry' 
             id='bathymetry' 
-            state={this.state.bathymetry} 
+            checked={this.state.bathymetry} 
             onUpdate={this.onLocalUpdate} 
             title={_("Show Bathymetry Contours")}
           />
 
-          <SelectBox 
+          <CheckBox 
             key='showarea' 
             id='showarea' 
-            state={this.state.showarea} 
+            checked={this.state.showarea} 
             onUpdate={this.onLocalUpdate} 
             title={_("Show Selected Area(s)")}
           >
             {_("showarea_help")}
-          </SelectBox>
+          </CheckBox>
 
           {/* Arror Selector Drop Down menu */}
           <QuiverSelector 
@@ -266,24 +287,7 @@ class AreaWindow extends React.Component {
           >
             {_("contour_help")}
           </ContourSelector>
-
-          {/* Image Size Selection */}
-          <ImageSize 
-            key='size' 
-            id='size' 
-            state={this.state.size} 
-            onUpdate={this.onLocalUpdate} 
-            title={_("Saved Image Size")} 
-          ></ImageSize>
-
-          {/* Plot Title */}
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitle}
-          ></CustomPlotLabels>
+          <Accordion id='area_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);

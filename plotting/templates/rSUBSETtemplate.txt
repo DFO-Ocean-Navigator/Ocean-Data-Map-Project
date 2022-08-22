@@ -1,0 +1,20 @@
+library(jsonlite)
+
+query <- '{q}'
+
+queryObj <- fromJSON(query)
+fname <- "script_output.nc"
+
+base_url <- "http://navigator.oceansdata.ca/api/v1.0/subset/?"
+url <- base_url
+
+for (key in names(queryObj))
+{{
+   url <- paste(url, "&", key, "=", queryObj[key], sep="")
+}}
+
+url  <- gsub(",[\r\n]", "", url)
+print(url)
+
+print(paste("Downloading file in location ",getwd(), " and exiting..."))
+download.file(url, fname, method="auto", mode="wb")

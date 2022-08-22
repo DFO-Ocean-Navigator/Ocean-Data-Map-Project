@@ -9,13 +9,14 @@
 import React from "react";
 import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ComboBox from "./ComboBox.jsx";
 import LocationInput from "./LocationInput.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
+import Accordion from "./lib/Accordion.jsx";
 
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 
@@ -174,6 +175,7 @@ class PointWindow extends React.Component {
     });
   }
 
+
   render() {
     _("Location");
     _("Colourmap");
@@ -188,6 +190,24 @@ class PointWindow extends React.Component {
     const showVariableSelector =  this.state.selected === TabEnum.PROFILE ||
                                   this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
+
+    const plotOptions = (<div>
+      <ImageSize
+        key='size'
+        id='size'
+        state={this.state.size}
+        onUpdate={this.onLocalUpdate}
+        title={_("Saved Image Size")}
+      />
+
+      <CustomPlotLabels
+        key='title'
+        id='title'
+        title={_("Plot Title")}
+        updatePlotTitle={this.updatePlotTitle}
+        plotTitle={this.state.plotTitles[this.state.selected - 1]}
+      />
+    </div>);
 
     // Rendered across all tabs
     const global = (<Panel
@@ -216,15 +236,15 @@ class PointWindow extends React.Component {
             mountedVariable={this.props.dataset_0.variable}
           />
 
-          <SelectBox
+          <CheckBox
             key='showmap'
             id='showmap'
-            state={this.state.showmap}
+            checked={this.state.showmap}
             onUpdate={this.onLocalUpdate}
             title={_("Show Location")}
           >
             {_("showmap_help")}
-          </SelectBox>
+          </CheckBox>
 
           <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
             <LocationInput
@@ -235,22 +255,8 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
             />
           </div>
-
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          />
+          <Accordion id='point_accordion' title={"Plot Options"} content={plotOptions} />
+          
         </Panel.Body>
       </Panel.Collapse>
     </Panel>);
