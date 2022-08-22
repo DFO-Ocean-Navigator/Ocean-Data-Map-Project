@@ -44,8 +44,10 @@ class DatasetDropdown extends React.Component {
         let subDatasets = datasets.filter((d) => {
           return d.subgroup === submenu;
         });
-        options.push(<label className="dd-option-label">{submenu}</label>);
-        options.push(
+        options.push([
+          <label key={`label_${submenu}`} className="dd-option-label">
+            {submenu}
+          </label>,
           ...subDatasets.map((sd) => (
             <button
               className="dd-option-button"
@@ -56,7 +58,7 @@ class DatasetDropdown extends React.Component {
               {sd.value}
             </button>
           ))
-        );
+        ]);
       }
       dropdownItems.push(
         <Accordion
