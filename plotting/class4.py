@@ -32,7 +32,7 @@ class Class4Plotter(Plotter):
         self.error = query.get("error")
         self.class4Type = query.get("class4type")
 
-        if self.class4Type == "ocean_predict":
+        if self.class4_type == "ocean_predict":
             self.fname_pattern = current_app.config["CLASS4_OP_PATH"]
         else:
             self.fname_pattern = current_app.config["CLASS4_RAO_PATH"]
@@ -157,7 +157,7 @@ class Class4Plotter(Plotter):
             if len(self.ids) > 1:
                 plt.legend(self.ids, loc="best")
 
-        if self.class4Type == "ocean_predict":
+        if self.class4_type == "ocean_predict":
             model_label = "GIOPS"
             plot_label = "Class4 GIOPS OceanPredict"
         else:
