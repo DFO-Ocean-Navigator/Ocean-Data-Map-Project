@@ -14,7 +14,7 @@ from plotting.plotter import Plotter
 class Class4Plotter(Plotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "class4"
-        self.class4Type: str = None
+        self.class4_type: str = None
         super(Class4Plotter, self).__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
