@@ -20,7 +20,7 @@ def list_kml_files(subdir: str) -> List[dict]:
     kml_dir = Path(settings.overlay_kml_dir).joinpath(subdir)
 
     files = []
-    for f in DIR.iterdir():
+    for f in kml_dir.iterdir():
         name = None
         if ".kml" not in f.suffix:
             continue

@@ -30,7 +30,7 @@ def list_class4_files():
     data = {"ocean_predict": None, "riops_obs": None}
 
     for file, path, class4_type in zip(pickle_files, class4_path, data.keys()):
-        cache_file_name = os.path.join(settings.cache_dir, file)
+        cache_file_name = Path(settings.cache_dir).joinpath(file)
 
         try:
             fp = open(cache_file_name, "rb")

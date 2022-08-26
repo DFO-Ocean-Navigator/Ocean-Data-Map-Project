@@ -142,18 +142,6 @@ async def datasets():
         )
     return data
 
-@bp_v1_0.route("/api/v1.0/timeunit/")
-def timedimension_query_v1_0():
-    try:
-        result = TimedimensionSchema().load(request.args)
-    except ValidationError as e:
-        abort(400, str(e))
-
-    config = DatasetConfig(result["dataset"])
-
-    timedimension = config.time_dim_units
-
-    return jsonify(timedimension)
 
 @router.get("/dataset/{dataset}")
 async def dataset(
@@ -172,6 +160,19 @@ async def dataset(
         "help": config.help,
         "attribution": config.attribution,
     }
+
+
+@router.get("/api/v1.0/{dataset}/timeunit")
+def time_dimension(
+    dataset: str = Path(
+        None,
+        title="The key of the dataset.",
+        example="giops_day",
+    ) 
+):
+    config = DatasetConfig(dataset)
+
+    return config.time_dim_units
 
 
 @router.get("/dataset/{dataset}/quantum")
@@ -1505,7 +1506,7 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff: BytesIO object containing image data
     f: filename of image to be cached
     """
-    p = Path(f).parent
+    p = pathlib.Path(f).parent
     p.mkdir(parents=True, exist_ok=True)
 
     bytesIOBuff.seek(0)
