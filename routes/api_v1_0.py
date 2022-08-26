@@ -67,6 +67,7 @@ from .schemas import (
     GenerateScriptSchema,
     GetDataSchema,
     QuantumSchema,
+    TimedimensionSchema,
     TimestampsSchema,
 )
 
@@ -223,12 +224,25 @@ def datasets_query_v1_0():
                     "attribution": config.attribution,
                     "model_class": config.model_class,
                     "group": config.group,
-                    "subgroup": config.subgroup
+                    "subgroup": config.subgroup,
+                    "time_dim_units": config.time_dim_units
                 }
             )
     resp = jsonify(data)
     return resp
 
+@bp_v1_0.route("/api/v1.0/timeunit/")
+def timedimension_query_v1_0():
+    try:
+        result = TimedimensionSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    config = DatasetConfig(result["dataset"])
+
+    timedimension = config.time_dim_units
+
+    return jsonify(timedimension)
 
 @bp_v1_0.route("/api/v1.0/quantum/")
 def quantum_query_v1_0():
