@@ -135,11 +135,25 @@ async def datasets():
                 "help": config.help,
                 "attribution": config.attribution,
                 "model_class": config.model_class,
+                "group": config.group,
+                "subgroup": config.subgroup,
+                "time_dim_units": config.time_dim_units
             }
         )
-    data = sorted(data, key=lambda k: k["value"])
     return data
 
+@bp_v1_0.route("/api/v1.0/timeunit/")
+def timedimension_query_v1_0():
+    try:
+        result = TimedimensionSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    config = DatasetConfig(result["dataset"])
+
+    timedimension = config.time_dim_units
+
+    return jsonify(timedimension)
 
 @router.get("/dataset/{dataset}")
 async def dataset(
@@ -423,7 +437,8 @@ async def data(
             lon_var[lon_slice],
         )
 
-        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
+        path = Path(cached_file_name).parent
+        path.mkdir(parents=True, exist_ok=True)
         with open(cached_file_name, "w", encoding="utf-8") as f:
             geojson.dump(d, f)
 
@@ -438,7 +453,6 @@ async def class4_files():
     data = class4.list_class4_files()
 
     return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
-
 
 @router.get("/class4/{data_type}/{class4_type}")
 async def class4_data(
@@ -1491,9 +1505,8 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff: BytesIO object containing image data
     f: filename of image to be cached
     """
-    p = os.path.dirname(f)
-    if not os.path.isdir(p):
-        os.makedirs(p)
+    p = Path(f).parent
+    p.mkdir(parents=True, exist_ok=True)
 
     bytesIOBuff.seek(0)
     im = Image.open(bytesIOBuff)

@@ -1,5 +1,4 @@
 import fcntl
-import os
 import pickle as pickle
 import time
 from pathlib import Path

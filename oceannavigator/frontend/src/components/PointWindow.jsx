@@ -8,7 +8,7 @@
 import React from "react";
 import { Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ComboBox from "./ComboBox.jsx";
 import LocationInput from "./LocationInput.jsx";
 import ImageSize from "./ImageSize.jsx";
@@ -249,15 +249,15 @@ class PointWindow extends React.Component {
               mountedVariable={this.props.dataset_0.variable}
             />
 
-            <SelectBox
-              key="showmap"
-              id="showmap"
-              state={this.state.showmap}
-              onUpdate={this.onLocalUpdate}
-              title={_("Show Location")}
-            >
-              {_("showmap_help")}
-            </SelectBox>
+          <CheckBox
+            key='showmap'
+            id='showmap'
+            checked={this.state.showmap}
+            onUpdate={this.onLocalUpdate}
+            title={_("Show Location")}
+          >
+            {_("showmap_help")}
+          </CheckBox>
 
             <div
               style={{

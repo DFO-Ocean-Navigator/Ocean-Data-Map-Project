@@ -139,6 +139,22 @@ class DatasetConfig:
         return self._get_attribute("lon_var_key")
 
     @property
+    def group(self) -> str:
+        try:
+            name = self._get_attribute("group")
+        except KeyError:
+            name = None
+        return name
+
+    @property
+    def subgroup(self) -> str:
+        try:
+            header = self._get_attribute("subgroup")
+        except KeyError:
+            header = None
+        return header
+
+    @property
     def quantum(self) -> str:
         """
         Returns the "quantum" (aka "time scale") of a dataset

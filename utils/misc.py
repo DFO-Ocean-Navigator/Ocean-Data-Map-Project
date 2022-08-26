@@ -1,7 +1,7 @@
-import os
 import xml.etree.ElementTree as ET
 from operator import itemgetter
 from typing import List, Union
+from pathlib import Path
 
 import numpy as np
 import pyproj
@@ -17,15 +17,15 @@ settings = get_settings()
 
 
 def list_kml_files(subdir: str) -> List[dict]:
-    kml_dir = os.path.join(settings.overlay_kml_dir, subdir)
+    kml_dir = Path(settings.overlay_kml_dir).joinpath(subdir)
 
     files = []
-    for f in os.listdir(kml_dir):
+    for f in DIR.iterdir():
         name = None
-        if not f.endswith(".kml"):
+        if ".kml" not in f.suffix:
             continue
         try:
-            root = ET.parse(kml_dir + "/" + f).getroot()
+            root = ET.parse(f.as_posix()).getroot()
         except ET.ParseError:
             continue
         nsmap = root.tag.split("}", 1)[0] + "}"
@@ -33,7 +33,7 @@ def list_kml_files(subdir: str) -> List[dict]:
             for filename in folder.iter(nsmap + "name"):
                 name = filename.text
                 break
-        entry = {"name": name, "id": f[:-4]}
+        entry = {"name": name, "id": f.name[:-4]}
 
         files.append(entry)
 
@@ -56,11 +56,11 @@ def _get_view(extent: Union[str, None]) -> Union[LinearRing, None]:
     return view
 
 
-def _get_kml(subdir: str, file_id: str):
-    DIR = os.path.join(settings.overlay_kml_dir, subdir)
-    f = os.path.join(DIR, "%s.kml" % file_id)
+def _get_kml(subdir, file_id):
+    DIR = Path(settings.overlay_kml_dir).joinpath(subdir)
+    f = DIR.joinpath("%s.kml" % file_id)
     folder = None
-    root = ET.parse(f).getroot()
+    root = ET.parse(f.as_posix()).getroot()
     for doc in root:
         if "Document" in doc.tag:
             for folder in doc:
@@ -158,11 +158,11 @@ def lines(file_id, projection, extent) -> dict:
 
 
 def list_areas(file_id, simplify=True) -> List[dict]:
-    AREA_DIR = os.path.join(settings.overlay_kml_dir, "area")
+    AREA_DIR = Path(settings.overlay_kml_dir).joinpath("area")
 
     areas = []
-    f = os.path.join(AREA_DIR, "%s.kml" % file_id)
-    folder = ET.parse(f).getroot()
+    f = AREA_DIR.joinpath("%s.kml" % file_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     def get_coords(path):
@@ -207,8 +207,9 @@ def list_areas(file_id, simplify=True) -> List[dict]:
 
 
 def areas(area_id, projection, resolution, extent):
-    AREA_DIR = os.path.join(settings.overlay_kml_dir, "area")
-    folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
+    AREA_DIR = Path(settings.overlay_kml_dir).joinpath("area")
+    f = AREA_DIR.joinpath("%s.kml" % area_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     proj = pyproj.Proj(projection)
