@@ -106,7 +106,7 @@ class ContourSelector extends React.Component {
               appropriate default based on the variable type (Default For
               Variable). If you want to use any of the others, they are all
               selectable.
-              <img src="/colormaps.png" />
+              <img src="/colormaps.png/" />
             </ComboBox>
           </div>
           <CheckBox

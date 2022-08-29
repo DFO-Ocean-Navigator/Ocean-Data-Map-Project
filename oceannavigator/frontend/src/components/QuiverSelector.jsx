@@ -84,7 +84,7 @@ class QuiverSelector extends React.Component {
               appropriate default based on the variable type (Default For
               Variable). If you want to use any of the others, they are all
               selectable.
-              <img src="/plot/colormaps.png" />
+              <img src="/plot/colormaps.png/" />
             </ComboBox>
           </div>
         </div>

@@ -681,7 +681,7 @@ async def colormaps():
     )
 
 
-@router.get("/plot/colormaps.png")
+@router.get("/plot/colormaps.png/")
 async def colormaps_png():
     """
     Returns image of available colourmaps

@@ -111,8 +111,8 @@ def roll_time(requested_index: int, len_timestamp_dim: int):
 
 
 def trunc(
-    values: Union[np.float, np.ndarray], num_decimals: int = 3
-) -> Union[np.float, np.ndarray]:
+    values: Union[float, np.ndarray], num_decimals: int = 3
+) -> Union[float, np.ndarray]:
     """
     Truncates the floating-point value(s) to `num_decimals` places.
 

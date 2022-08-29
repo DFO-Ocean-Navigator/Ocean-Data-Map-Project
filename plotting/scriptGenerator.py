@@ -35,7 +35,7 @@ def generatePython(url: str, plot_type: str, script_Type: str) -> BytesIO:
         return finalScript
 
 
-def generateR(url, script_Type: str) -> BytesIO:
+def generateR(url, plot_type: str, script_Type: str) -> BytesIO:
 
     if "class4id" in url:
         var = "class4id"
@@ -57,7 +57,9 @@ def generateR(url, script_Type: str) -> BytesIO:
         template = str(f.read())
 
         if script_Type == "plot":
-            template = template.format(q=query, var=var)
+            template = template.format(q=query, p=plot_type, var=var)
+        elif script_Type == "csv":
+            template = template.format(q=query, p=plot_type, var=var)
         else:
             template = template.format(q=query)
 

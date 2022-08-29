@@ -451,7 +451,7 @@ class PointWindow extends React.Component {
               title={_("Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/plot/colormaps.png" />
+              <img src="/plot/colormaps.png/" />
             </ComboBox>
           );
         }
