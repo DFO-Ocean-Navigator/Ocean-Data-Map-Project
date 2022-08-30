@@ -24,6 +24,10 @@ import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
 const stringify = require("fast-stable-stringify");
 
 function formatLatLon(latitude, longitude) {
+  latitude = (latitude >90) ? 90: latitude;
+  latitude = (latitude <-90) ? -90: latitude;
+  longitude = (longitude >180) ? longitude -360: longitude;
+  longitude = (longitude <-180) ? 360+longitude: longitude;
   let formatted = "";
   formatted += Math.abs(latitude).toFixed(4) + " ";
   formatted += (latitude >= 0) ? "N" : "S";
