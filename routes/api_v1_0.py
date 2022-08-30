@@ -1081,8 +1081,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     basedir.mkdir(parents=True, exist_ok=True)
     with open(requestf + ".pbf", "wb") as f:
         f.write(tile[0])
-    with gzip.open(requestf + ".pbf", "rb") as gzipped:
-        with open(requestf, "wb") as tileout:
+    with gzip.open(requestf.with_suffix(".pbf"), "rb") as gzipped:
+        with open(requestf.with_suffix(".pbf"), "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return send_file(requestf)
 
