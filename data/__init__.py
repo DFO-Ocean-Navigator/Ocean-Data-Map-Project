@@ -65,11 +65,11 @@ def open_dataset(dataset, **kwargs):
             "dataset_key": getattr(dataset, "key", ""),
         }
     )
-    input_valid = validate_import(url, **kwargs)
+    timestamp_valid = validate_timestamp(url, **kwargs)
     nc_data = CalculatedData(url, **kwargs)
     return model_class(nc_data)
 
-def validate_import(url, **kwargs):
+def validate_timestamp(url, **kwargs):
     with SQLiteDatabase(url) as db:
         timestamps = db.get_timestamps(kwargs.get('variable')[0])
     return kwargs.get('timestamp') in timestamps
