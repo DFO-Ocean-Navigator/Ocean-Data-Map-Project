@@ -34,7 +34,6 @@ function formatLatLon(latitude, longitude) {
   formatted += ", ";
   formatted += Math.abs(longitude).toFixed(4) + " ";
   formatted += (longitude >= 0) ? "E" : "W";
-  
   return formatted;
 }
 
