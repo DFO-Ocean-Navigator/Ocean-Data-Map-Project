@@ -14,6 +14,8 @@ from oceannavigator.settings import get_settings
 
 client = TestClient(create_app(testing=True))
 settings = get_settings()
+with open("tests/testdata/endpoints.json") as endpoints:
+    api_links = json.load(endpoints)
 
 
 def test_git_info() -> None:
@@ -193,7 +195,7 @@ def test_timestamps_endpoint_xarray():
 
 
 def test_colormaps_endpoint():
-    response = client.get("/api/v1.0/plot/colormaps/")
+    response = client.get("/api/v1.0/plot/colormaps")
     data = json.loads(response.content)
 
     assert response.status_code == 200
@@ -201,7 +203,7 @@ def test_colormaps_endpoint():
 
 
 def test_colormaps_image_endpoint():
-    response = client.get("/api/v1.0/plot/colormaps.png/")
+    response = client.get("/api/v1.0/plot/colormaps.png")
 
     assert response.status_code == 200
 
@@ -209,109 +211,99 @@ def test_colormaps_image_endpoint():
 def test_class4_models_endpoint():
     response = client.get(
         "/api/v1.0/class4/models/ocean_predict"
-        "?id=class4_20190102_GIOPS_CONCEPTS_2.3_profile/"
+        "?id=class4_20190102_GIOPS_CONCEPTS_2.3_profile"
     )
 
     assert response.status_code == 200
 
-"""
+
 def test_subset_endpoint():
 
-    response = client.get(self.apiLinks["subset"])
+    response = client.get(api_links["subset"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
 
-@unittest.skip("Failing")
+
 def test_plot_map_endpoint():
 
-    # map (area)
-    response = client.get(self.apiLinks["plot_map"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_map"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_map_csv"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_map_csv"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_map_quiver_len_mag"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_map_quiver_len_mag"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_map_quiver_no_mag"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_map_quiver_no_mag"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_map_quiver_color_mag"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_map_quiver_color_mag"])
+    assert response.status_code == 200
 
-@unittest.skip("Failing")
+
 def test_plot_transect_endpoint():
 
-    # transect (line)
-    response = client.get(self.apiLinks["plot_transect"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_transect"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_transect_depth_limit"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_transect_depth_limit"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_transect_csv"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_transect_csv"])
+    assert response.status_code == 200
+
 
 def test_plot_timeseries_endpoint():
-    # timeseries (point, virtual mooring)
-    response = client.get(self.apiLinks["plot_timeseries"])
 
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_timeseries"])
+    assert response.status_code == 200
 
-def test_plot_timeseries_endpoint_all_depths():
-    # timeseries (point, virtual mooring)
-    response = client.get(self.apiLinks["plot_timeseries_all_depths"])
+    response = client.get(api_links["plot_timeseries_all_depths"])
+    assert response.status_code == 200
 
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_timeseries_bottom"])
+    assert response.status_code == 200
 
-def test_plot_timeseries_endpoint_bottom_depth():
-    # timeseries (point, virtual mooring)
-    response = client.get(self.apiLinks["plot_timeseries_bottom"])
-
-    assert res.status_code, 200)
 
 def test_plot_ts_endpoint():
-    # ts (point, T/S Plot)
-    response = client.get(self.apiLinks["plot_ts"])
-    assert res.status_code, 200)
 
-@unittest.skip("Skipping api/plot/sound.. returning error")
+    response = client.get(api_links["plot_ts"])
+    assert response.status_code == 200
+
+
 def test_plot_sound_endpoint():
     # sound (point, Speed of Sound)
     # IndexError: list index out of range
-    response = client.get(self.apiLinks["plot_sound"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_sound"])
+    assert response.status_code == 200
+
 
 def test_plot_profile_endpoint():
     # profile (point, profile)
-    response = client.get(self.apiLinks["plot_profile"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_profile"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_profile_multi_variable"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_profile_multi_variable"])
+    assert response.status_code == 200
+
 
 def test_plot_hovmoller_endpoint():
     # hovmoller (line, Hovmöller Diagram)
-    response = client.get(self.apiLinks["plot_hovmoller"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_hovmoller"])
+    assert response.status_code == 200
 
-    response = client.get(self.apiLinks["plot_hovmoller_bottom"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_hovmoller_bottom"])
+    assert response.status_code == 200
 
-@unittest.skip("Skipping api/plot/observation.. returning error")
+
+# @unittest.skip("Skipping api/plot/observation.. returning error")
 def test_plot_observation_endpoint():
-    # observation (point, Observation)
-    # returns RuntimeError: Opening a dataset via sqlite requires the 'timestamp' keyword argument.
-    response = client.get(self.apiLinks["plot_observation"])
-    assert res.status_code, 200)
+    response = client.get(api_links["plot_observation"])
+    assert response.status_code == 200
 
-@unittest.skip("Skipping api/plot/stickplot.. explaination in definition..")
-def test_plot_stick_endpoint():
-    # stick (point, Stick Plot) returns NameError: name 'timestamp' is not defined
-    # or RuntimeError: Error finding timestamp(s) in database.
-    response = client.get(self.apiLinks["plot_stick"])
-    assert res.status_code, 200)
+
+"""
 
 @unittest.skip("Failing")
 def test_query_endpoint():
@@ -378,33 +370,33 @@ def test_tile_endpoint():
         "/api/v1.0/tiles/gaussian/25/10/EPSG:3857/giops_real/votemper/2212704000/0/-5,30/6/50/40.png"
     )
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
 
 @unittest.skip("Failing")
 def test_topo_endpoint():
     response = client.get("/api/v1.0/tiles/topo/false/EPSG:3857/6/52/41.png")
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
 
 @unittest.skip("Failing")
 def test_bath_endpoint():
     response = client.get("/api/v1.0/tiles/bath/EPSG:3857/6/56/41.png")
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
 
 @unittest.skip("Failing")
 def test_mbt_endpoint():
     response = client.get("/api/v1.0/mbt/EPSG:3857/lands/7/105/77")
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
 
 @patch("data.observational.queries.get_datatypes")
 def test_observation_datatypes(self, patch_get_datatypes):
     patch_get_datatypes.return_value = [PropertyMock(key="mykey")]
     patch_get_datatypes.return_value[0].name = "myname"
-    response = client.get(self.apiLinks["observation_datatypes"])
+    response = client.get(api_links["observation_datatypes"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
     data = self.__get_response_data(res)
     self.assertDictEqual(data[0], {"id": "mykey", "value": "myname"})
 
@@ -412,9 +404,9 @@ def test_observation_datatypes(self, patch_get_datatypes):
 @patch("data.observational.queries.get_meta_keys")
 def test_observation_meta_keys(self, patch_get_meta_keys, patch_session):
     patch_get_meta_keys.return_value = ["this is a test"]
-    response = client.get(self.apiLinks["observation_meta_keys"])
+    response = client.get(api_links["observation_meta_keys"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
     patch_get_meta_keys.assert_called_with(patch_session, ["platform_type"])
     data = self.__get_response_data(res)
     assert data[0], "this is a test")
@@ -423,9 +415,9 @@ def test_observation_meta_keys(self, patch_get_meta_keys, patch_session):
 @patch("data.observational.queries.get_meta_values")
 def test_observation_meta_values(self, patch_get_meta_values, patch_session):
     patch_get_meta_values.return_value = ["this is a test"]
-    response = client.get(self.apiLinks["observation_meta_values"])
+    response = client.get(api_links["observation_meta_values"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
     patch_get_meta_values.assert_called_with(
         patch_session, ["platform_type"], "key"
     )
@@ -442,9 +434,9 @@ def test_observation_track(self, patch_get_platform_tracks, patch_session):
         [0, typ, 1, 1],
         [1, typ, 0, 0],
     ]
-    response = client.get(self.apiLinks["observation_track"])
+    response = client.get(api_links["observation_track"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
     patch_get_platform_tracks.assert_called_with(
         patch_session, "day", platform_types=["none"]
     )
@@ -465,9 +457,9 @@ def test_observation_track(self, patch_get_stations, patch_session):
     )
     station.name = "myname"
     patch_get_stations.return_value = [station]
-    response = client.get(self.apiLinks["observation_point"])
+    response = client.get(api_links["observation_point"])
 
-    assert res.status_code, 200)
+    assert response.status_code == 200
     patch_get_stations.assert_called_with(
         session=patch_session, platform_types=["none"]
     )
@@ -490,8 +482,8 @@ def test_observation_variables(self, patch_query):
     variable1.name = "variable1"
     order_return.all = MagicMock(return_value=[variable0, variable1])
 
-    response = client.get(self.apiLinks["observation_variables"])
-    assert res.status_code, 200)
+    response = client.get(api_links["observation_variables"])
+    assert response.status_code == 200
     data = self.__get_response_data(res)
     assert len(data), 2)
     self.assertDictEqual(data[0], {"id": 0, "value": "variable0"})
@@ -510,8 +502,8 @@ def test_observation_tracktimerange(self, patch_query):
         ]
     )
 
-    response = client.get(self.apiLinks["observation_tracktimerange"])
-    assert res.status_code, 200)
+    response = client.get(api_links["observation_tracktimerange"])
+    assert response.status_code == 200
     data = self.__get_response_data(res)
     assert data["min"], "2010-01-01T00:00:00")
     assert data["max"], "2020-01-01T00:00:00")
@@ -532,7 +524,7 @@ def test_observation_meta(self, patch_query):
     query_return.get.return_value = platform
 
     response = client.get(
-        self.apiLinks["observation_meta"],
+        api_links["observation_meta"],
         query_string={
             "type": "platform",
             "id": 123,
