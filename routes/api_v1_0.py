@@ -137,7 +137,7 @@ async def datasets():
                 "model_class": config.model_class,
                 "group": config.group,
                 "subgroup": config.subgroup,
-                "time_dim_units": config.time_dim_units
+                "time_dim_units": config.time_dim_units,
             }
         )
     return data
@@ -168,7 +168,7 @@ def time_dimension(
         None,
         title="The key of the dataset.",
         example="giops_day",
-    ) 
+    )
 ):
     config = DatasetConfig(dataset)
 
@@ -446,7 +446,7 @@ async def data(
         return d
 
 
-@router.get("/class4/")
+@router.get("/class4")
 async def class4_files():
     """
     Returns a list of available class4 files.
@@ -454,6 +454,7 @@ async def class4_files():
     data = class4.list_class4_files()
 
     return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
+
 
 @router.get("/class4/{data_type}/{class4_type}")
 async def class4_data(
@@ -511,7 +512,7 @@ async def class4_file(
     )
 
 
-@router.get("/subset/{dataset}/{variables}/")
+@router.get("/subset/{dataset}/{variables}")
 async def subset_query(
     request: Request,
     dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
@@ -567,6 +568,39 @@ async def subset_query(
     )
 
 
+@router.get("/plot/colormaps")
+async def colormaps():
+    """
+    Returns list of available colormaps
+    """
+
+    data = sorted(
+        [{"id": i, "value": n} for i, n in plotting.colormap.colormap_names.items()],
+        key=lambda k: k["value"],
+    )
+    data.insert(0, {"id": "default", "value": "Default for Variable"})
+
+    return JSONResponse(
+        data,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+
+@router.get("/plot/colormaps.png")
+async def colormaps_png():
+    """
+    Returns image of available colourmaps
+    """
+
+    img = plot_colormaps()
+
+    return StreamingResponse(
+        img,
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+
 @router.get("/plot/{plot_type}")
 async def plot(
     plot_type: str = Path(..., title="The key of the dataset.", example="profile"),
@@ -590,6 +624,7 @@ async def plot(
         example="15x9",
     ),
     dpi: int = Query(72, description="The resoltuion of the plot (dpi).", example=72),
+    db: Session = Depends(get_db),
 ):
     """
     Interface for all plotting operations.
@@ -637,7 +672,7 @@ async def plot(
     elif plot_type == "hovmoller":
         plotter = HovmollerPlotter(dataset, query, **options)
     elif plot_type == "observation":
-        plotter = ObservationPlotter(dataset, query, **options)
+        plotter = ObservationPlotter(dataset, query, db, **options)
     elif plot_type == "track":
         plotter = TrackPlotter(dataset, query, **options)
     elif plot_type == "class4":
@@ -661,39 +696,6 @@ async def plot(
         response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
-
-
-@router.get("/plot/colormaps/")
-async def colormaps():
-    """
-    Returns list of available colormaps
-    """
-
-    data = sorted(
-        [{"id": i, "value": n} for i, n in plotting.colormap.colormap_names.items()],
-        key=lambda k: k["value"],
-    )
-    data.insert(0, {"id": "default", "value": "Default for Variable"})
-
-    return JSONResponse(
-        data,
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
-
-
-@router.get("/plot/colormaps.png/")
-async def colormaps_png():
-    """
-    Returns image of available colourmaps
-    """
-
-    img = plot_colormaps()
-
-    return StreamingResponse(
-        img,
-        media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
 
 
 @router.get("/kml/points")
@@ -1163,7 +1165,7 @@ async def observation_values_v1_0(
 
 
 @router.get("/observation/tracktimerange/{platform_id}.json")
-async def observation_tracktime_v1_0(
+async def observation_tracktime(
     platform_id: str = Path(
         ...,
         title="Platform ID.",
@@ -1447,7 +1449,7 @@ async def observation_meta(
 
 
 @router.get("/observation/variables/{query}.json")
-async def observation_variables_v1_0(
+async def observation_variables(
     query: str = Path(
         ...,
         title=" A key=value pair, where key is either station \

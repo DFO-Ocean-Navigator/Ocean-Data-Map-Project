@@ -58,6 +58,6 @@ export function GetPresetAreasPromise() {
 
 export function GetClass4Promise() {
   return instance.get(
-    "/api/v1.0/class4/"
+    "/api/v1.0/class4"
   );
 }
