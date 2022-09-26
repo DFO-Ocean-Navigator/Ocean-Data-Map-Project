@@ -66,15 +66,9 @@ def configure_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=404, content={"message": str(exception)})
 
 
-def create_app(testing: bool = False) -> FastAPI:
+def create_app() -> FastAPI:
     get_settings.cache_clear()
     settings = get_settings()
-
-    if testing:
-        settings.dataset_config_file = (
-            "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project"
-            "/tests/testdata/datasetconfigpatch.json"
-        )
 
     configure_logger(settings.log_level)
 

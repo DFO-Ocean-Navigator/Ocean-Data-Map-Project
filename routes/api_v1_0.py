@@ -438,7 +438,7 @@ async def data(
             lon_var[lon_slice],
         )
 
-        path = Path(cached_file_name).parent
+        path = pathlib.Path(cached_file_name).parent
         path.mkdir(parents=True, exist_ok=True)
         with open(cached_file_name, "w", encoding="utf-8") as f:
             geojson.dump(d, f)
@@ -789,7 +789,7 @@ async def kml_area(
             coords",
         example="EPSG:3857",
     ),
-    resolution: str = Query(
+    resolution: int = Query(
         ...,
         description="Used to exclude KML points that aren't visible. Useful for \
             filtering large KML groups.",
