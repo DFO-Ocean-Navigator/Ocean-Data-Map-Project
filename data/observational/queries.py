@@ -3,8 +3,8 @@ import math
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, and_
 
 from . import DataType, Platform, PlatformMetadata, Sample, Station, engine
 
@@ -374,10 +374,8 @@ def get_stations(
     """
     Queries for stations, givent the optional query filters.
     """
-    test = __build_station_query(**locals()).options(joinedload("platform")).all()
-    return (
-        test  # __build_station_query(**locals()).options(joinedload("platform")).all()
-    )
+
+    return __build_station_query(**locals()).options(joinedload("platform")).all()
 
 
 def __get_bounding_latlon(lat, lon, distance):

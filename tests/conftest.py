@@ -3,7 +3,7 @@ import os
 import pytest
 
 try:
-    from .temp_env_var import ENV_VARS_TO_SUSPEND, TEMP_ENV_VARS
+    from .temp_env_vars import ENV_VARS_TO_SUSPEND, TEMP_ENV_VARS
 except ImportError:
     TEMP_ENV_VARS = {}
     ENV_VARS_TO_SUSPEND = []
