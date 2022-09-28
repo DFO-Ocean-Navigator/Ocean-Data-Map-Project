@@ -49,6 +49,9 @@ class NetCDFData(Data):
         self._nc_files: Union[List, None] = self.get_nc_file_list(
             self._dataset_config, **kwargs
         )
+        self.interp: str = kwargs.get("interp", "gaussian")
+        self.radius: int = kwargs.get("radius", 25000)
+        self.neighbours: int = kwargs.get("neighbours", 10)
 
     def __enter__(self):
         # Don't decode times since we do it anyways.
