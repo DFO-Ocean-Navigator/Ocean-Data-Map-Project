@@ -35,6 +35,7 @@ const PARENT_ATTRIBUTES_TO_UPDATE = Object.freeze([
   "time",
   "starttime",
   "quiverVariable",
+  "options",
 ]);
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
