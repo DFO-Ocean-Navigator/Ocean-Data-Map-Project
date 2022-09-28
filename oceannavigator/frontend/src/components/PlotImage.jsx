@@ -175,6 +175,9 @@ class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         query.scale = q.scale;
         query.colormap = q.colormap;
+        query.interp = q.interp;
+        query.radius = q.radius;
+        query.neighbours = q.neighbours;
         break;
       case "transect":
         query.variable = q.variable;
