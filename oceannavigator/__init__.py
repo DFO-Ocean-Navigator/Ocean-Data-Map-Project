@@ -1,4 +1,5 @@
 import logging
+import pathlib
 
 import dask
 import sentry_sdk
@@ -13,8 +14,6 @@ from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from oceannavigator.dataset_config import DatasetConfig
 
 from .settings import get_settings
-
-# from data.observational import db
 
 
 def configure_logger(log_level: str) -> None:
@@ -77,6 +76,8 @@ def create_app() -> FastAPI:
     DatasetConfig._get_dataset_config.cache_clear()
     DatasetConfig._get_dataset_config()
 
+    pathlib.Path('oceannavigator/frontend/public').mkdir(parents=True, exist_ok=True)
+
     routes = [
         Mount(
             "/public",
@@ -88,8 +89,6 @@ def create_app() -> FastAPI:
     app = FastAPI(debug=settings.debug, routes=routes)
 
     app.add_middleware(GZipMiddleware)
-
-    # db.init_app(app)
 
     configure_sentry(app)
     configure_opentelemetry(app)

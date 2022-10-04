@@ -13,7 +13,6 @@ from pyproj import Proj
 from pyproj.transformer import Transformer
 from scipy.ndimage.filters import gaussian_filter
 from skimage import measure
-from oceannavigator import settings
 
 import plotting.colormap as colormap
 import plotting.utils as utils
