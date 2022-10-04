@@ -47,6 +47,7 @@ dependencies:
   - dbus=1.13.6=h5008d03_3
   - distributed=2021.11.2=py38h578d9bd_0
   - expat=2.4.6=h27087fc_0
+  - fastapi=pyhd8ed1ab_0
   - fasteners=0.17.3=pyhd8ed1ab_0
   - flake8=3.9.2=pyhd8ed1ab_0
   - flake8-black=0.3.0=pyhd8ed1ab_0
@@ -82,6 +83,7 @@ dependencies:
   - hdf4=4.2.15=h10796ff_3
   - hdf5=1.12.1=nompi_h2750804_103
   - heapdict=1.0.1=py_0
+  - hypercorn=py38h578d9bd_0
   - icu=68.2=h9c3ff4c_0
   - idna=3.3=pyhd8ed1ab_0
   - imagecodecs=2021.8.26=py38hb5ce8f7_1
@@ -201,6 +203,7 @@ dependencies:
   - pyresample=1.22.3=py38h43a58ef_0
   - pyshp=2.2.0=pyhd8ed1ab_0
   - pysocks=1.7.1=py38h578d9bd_4
+  - pytest=py38h06a4308_0
   - python=3.8.12=hb7a2778_2_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0
   - python_abi=3.8=2_cp38
