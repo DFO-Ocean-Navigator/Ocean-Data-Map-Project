@@ -103,7 +103,7 @@ class TrackWindow extends React.Component {
       id='dataset'
       state={this.props.dataset}
       def=''
-      url='/api/v1.0/datasets/'
+      url='/api/v1.0/datasets'
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;

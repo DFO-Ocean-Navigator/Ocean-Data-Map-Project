@@ -11,7 +11,6 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
 from oceannavigator.dataset_config import DatasetConfig
-from routes.api_v1_0 import router as v1_router
 
 from .settings import get_settings
 
@@ -23,7 +22,8 @@ def configure_logger(log_level: str) -> None:
     logger.setLevel(log_level)
 
     formatter = logging.Formatter(
-        "[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s (%(filename)s:%(lineno)d)"
+        "[%(asctime)s] [%(process)d] [%(levelname)s] "
+        "%(message)s (%(filename)s:%(lineno)d)"
     )
 
     ch = logging.StreamHandler()
@@ -57,6 +57,8 @@ def configure_opentelemetry(app: FastAPI) -> None:
 
 
 def add_routes(app: FastAPI) -> None:
+    from routes.api_v1_0 import router as v1_router
+
     app.include_router(v1_router)
 
 
