@@ -99,7 +99,7 @@ class ContourSelector extends React.Component {
               state={this.props.state.colormap}
               def=""
               onUpdate={this.onUpdate}
-              url="/api/v1.0/colormaps/"
+              url="/api/v1.0/colormaps"
               title={_("Colourmap")}
             >
               There are several colourmaps available. This tool tries to pick an

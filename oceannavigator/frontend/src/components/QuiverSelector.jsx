@@ -77,7 +77,7 @@ class QuiverSelector extends React.Component {
               state={this.props.state.colormap}
               def="default"
               onUpdate={this.onUpdate.bind(this)}
-              url="/api/v1.0/plot/colormaps/"
+              url="/api/v1.0/plot/colormaps"
               title={_("Colourmap")}
             >
               There are several colourmaps available. This tool tries to pick an

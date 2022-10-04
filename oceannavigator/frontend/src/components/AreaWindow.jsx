@@ -235,7 +235,7 @@ class AreaWindow extends React.Component {
               state={this.state.colormap_diff} 
               def='default' 
               onUpdate={this.onLocalUpdate} 
-              url='/api/v1.0/plot/colormaps/' 
+              url='/api/v1.0/plot/colormaps' 
               title={_("Diff. Colourmap")}
             >
               {_("colourmap_help")}
@@ -328,7 +328,7 @@ class AreaWindow extends React.Component {
               state={this.state.leftColormap} 
               def='default' 
               onUpdate={this.onLocalUpdate} 
-              url='/api/v1.0/plot/colormaps/' 
+              url='/api/v1.0/plot/colormaps' 
               title={_("Colourmap")}
             >
               {_("colourmap_help")}
@@ -368,7 +368,7 @@ class AreaWindow extends React.Component {
                   state={this.state.rightColormap} 
                   def='default' 
                   onUpdate={this.onLocalUpdate} 
-                  url='/api/v1.0/plot/colormaps/' 
+                  url='/api/v1.0/plot/colormaps' 
                   title={_("Colourmap")}
                 >
                   {_("colourmap_help")}

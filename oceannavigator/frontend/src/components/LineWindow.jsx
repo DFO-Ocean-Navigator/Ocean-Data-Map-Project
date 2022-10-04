@@ -272,7 +272,7 @@ class LineWindow extends React.Component {
               state={this.state.colormap_diff}
               def='default'
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/plot/colormaps/'
+              url='/api/v1.0/plot/colormaps'
               title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/plot/colormaps.png/" />
             </ComboBox>
           </div>
@@ -311,7 +311,7 @@ class LineWindow extends React.Component {
             state={this.state.colormap}
             def='default'
             onUpdate={this.onLocalUpdate}
-            url='/api/v1.0/plot/colormaps/'
+            url='/api/v1.0/plot/colormaps'
             title={_("Colour Map")}>{_("colourmap_help")}<img src="/plot/colormaps.png/" />
           </ComboBox>
         </Panel.Body>
@@ -350,7 +350,7 @@ class LineWindow extends React.Component {
               state={this.state.colormap_right}
               def='default'
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/plot/colormaps/'
+              url='/api/v1.0/plot/colormaps'
               title={_("Colour Map")}>{_("colourmap_help")}<img src="/plot/colormaps.png/" />
             </ComboBox>
           </Panel.Body>
