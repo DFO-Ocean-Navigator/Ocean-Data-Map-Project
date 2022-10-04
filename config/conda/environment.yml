@@ -219,7 +219,7 @@ dependencies:
   - sentry-sdk=1.5.0=pyhd8ed1ab_0
   - setuptools=59.8.0=py38h578d9bd_0
   - shapely=1.8.0=py38hb7fe4a8_0
-six=1.16.0=pyh6c4a22f_0
+  - six=1.16.0=pyh6c4a22f_0
   - snappy=1.1.8=he1b5a44_3
   - sortedcontainers=2.4.0=pyhd8ed1ab_0
   - sqlalchemy=1.4.27=py38h497a2fe_0
