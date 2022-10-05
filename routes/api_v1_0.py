@@ -17,7 +17,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
-from sqlalchemy import func
+from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
 
 import data.class4 as class4
@@ -63,7 +63,10 @@ from utils.errors import ClientError
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except exc.OperationalError:
+    log().error("Unable to connect to MySQL database.")
 
 router = APIRouter(
     prefix="/api/v1.0",
