@@ -218,8 +218,7 @@ class TestAPIv2:
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_plot_map_endpoint(self, patch_plotter):
-        patch_plotter.return_value = None
+    def test_plot_map_endpoint(self):
 
         response = self.client.get(self.api_links["plot_map"])
         assert response.status_code == 200
@@ -237,8 +236,7 @@ class TestAPIv2:
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_plot_transect_endpoint(self, patch_plotter):
-        patch_plotter.return_value = None
+    def test_plot_transect_endpoint(self):
 
         response = self.client.get(self.api_links["plot_transect"])
         assert response.status_code == 200
@@ -305,8 +303,7 @@ class TestAPIv2:
             assert resp.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_kml_file_endpoint(self, patch_kml):
-        patch_kml.return_value = MagicMock(), None
+    def test_kml_file_endpoint(self):
         response = []
 
         # points
@@ -347,7 +344,7 @@ class TestAPIv2:
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_topo_endpoint(self, patch_tile, patch_cache_img):
+    def test_topo_endpoint(self):
         response = self.client.get(
             "/api/v1.0/tiles/topo/6/52/41?shaded_relief=false&projection=EPSG:3857"
         )
@@ -355,7 +352,7 @@ class TestAPIv2:
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_bath_endpoint(self, patch_tile, patch_cache_img):
+    def test_bath_endpoint(self):
         response = self.client.get("api/v1.0/tiles/bath/6/56/41?projection=EPSG:3857")
 
         assert response.status_code == 200
