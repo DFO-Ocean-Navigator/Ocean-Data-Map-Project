@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import datetime
 import json
+import unittest
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from fastapi.testclient import TestClient
+from pytest import approx
 
 import routes.enums as e
 from oceannavigator import create_app
@@ -153,7 +155,7 @@ class TestAPIv2:
         expected = {"min": -1.169886341970023, "max": 9.347870007228384}
 
         assert response.status_code == 200
-        assert response.json() == expected
+        assert response.json() == approx(expected)
 
     def test_timestamps_endpoint_sqlite(self):
         response = self.client.get("/api/v1.0/dataset/nemo_sqlite3/votemper/timestamps")
@@ -204,7 +206,7 @@ class TestAPIv2:
             "/api/v1.0/class4/ocean_predict?projection=EPSG:3857"
             "&resolution=9784"
             "&extent=-15936951,1567587,4805001,12398409"
-            "&id=class4_20200101_GIOPS_CONCEPTS_3.0_profile"
+            "&id=class4_20200101_GIOPS_TEST_profile"
         )
 
         assert response.status_code == 200
@@ -215,7 +217,9 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    def test_plot_map_endpoint(self):
+    @patch('plotting.map')
+    def test_plot_map_endpoint(self, patch_plotter):
+        patch_plotter.return_value = None
 
         response = self.client.get(self.api_links["plot_map"])
         assert response.status_code == 200
@@ -232,7 +236,9 @@ class TestAPIv2:
         response = self.client.get(self.api_links["plot_map_quiver_color_mag"])
         assert response.status_code == 200
 
-    def test_plot_transect_endpoint(self):
+    @patch('plotting.transect')
+    def test_plot_transect_endpoint(self, patch_plotter):
+        patch_plotter.return_value = None
 
         response = self.client.get(self.api_links["plot_transect"])
         assert response.status_code == 200
@@ -285,7 +291,9 @@ class TestAPIv2:
         response = self.client.get(self.api_links["plot_observation"])
         assert response.status_code == 200
 
-    def test_kml_query_endpoint(self):
+    @patch("utils.misc.list_kml_files")
+    def test_kml_query_endpoint(self, patch_kml_files):
+        patch_kml_files.return_value = ["file_1", "file_2", "file_3"]
 
         # response for each type of query
         response = []
@@ -295,7 +303,9 @@ class TestAPIv2:
         for resp in response:
             assert resp.status_code == 200
 
-    def test_kml_file_endpoint(self):
+    @patch("utils.misc._get_kml")
+    def test_kml_file_endpoint(self, patch_kml):
+        patch_kml.return_value = MagicMock(), None
         response = []
 
         # points
