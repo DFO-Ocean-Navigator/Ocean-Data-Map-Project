@@ -217,7 +217,7 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    @patch('plotting.map')
+    @patch("plotting.map")
     def test_plot_map_endpoint(self, patch_plotter):
         patch_plotter.return_value = None
 
@@ -236,7 +236,7 @@ class TestAPIv2:
         response = self.client.get(self.api_links["plot_map_quiver_color_mag"])
         assert response.status_code == 200
 
-    @patch('plotting.transect')
+    @patch("plotting.transect")
     def test_plot_transect_endpoint(self, patch_plotter):
         patch_plotter.return_value = None
 
@@ -333,7 +333,11 @@ class TestAPIv2:
         for resp in response:
             assert resp.status_code == 200
 
-    def test_tile_endpoint(self):
+    @patch("routes.api_v1_0._cache_and_send_img")
+    @patch("plotting.tile.plot")
+    def test_tile_endpoint(self, patch_tile, patch_cache_img):
+        patch_tile.return_value = None
+        patch_cache_img.return_value = None
         response = self.client.get(
             "/api/v1.0/tiles/giops_real/votemper/2212704000/0/6/50/40"
             "?projection=EPSG:3857&scale=-5,30&interp=gaussian&radius=25&neighbours=10"
@@ -341,14 +345,22 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    def test_topo_endpoint(self):
+    @patch("routes.api_v1_0._cache_and_send_img")
+    @patch("plotting.tile.plot")
+    def test_topo_endpoint(self, patch_tile, patch_cache_img):
+        patch_tile.return_value = None
+        patch_cache_img.return_value = None
         response = self.client.get(
             "/api/v1.0/tiles/topo/6/52/41?shaded_relief=false&projection=EPSG:3857"
         )
 
         assert response.status_code == 200
 
-    def test_bath_endpoint(self):
+    @patch("routes.api_v1_0._cache_and_send_img")
+    @patch("plotting.tile.plot")
+    def test_bath_endpoint(self, patch_tile, patch_cache_img):
+        patch_tile.return_value = None
+        patch_cache_img.return_value = None
         response = self.client.get("api/v1.0/tiles/bath/6/56/41?projection=EPSG:3857")
 
         assert response.status_code == 200
