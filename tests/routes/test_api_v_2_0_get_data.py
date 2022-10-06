@@ -8,6 +8,7 @@ client = TestClient(create_app())
 
 
 class TestAPIv1GetData(unittest.TestCase):
+    @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_data_endpoint_no_bearing(self) -> None:
         response = client.get(
             "/api/v1.0/data",
@@ -26,6 +27,7 @@ class TestAPIv1GetData(unittest.TestCase):
         self.assertEqual(response.headers["Content-Type"], "application/json")
         self.assertEqual(len(data["features"]), 265)
 
+    @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_data_endpoint_with_bearing(self) -> None:
         response = client.get(
             "/api/v1.0/data",
