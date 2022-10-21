@@ -12,4 +12,4 @@ export ONAV_GIT_TAG="$(git describe --tags --abbrev=0)"
 CERT_DIR=~/onav-cloud/self-signed-cert
 
 # https://pgjones.gitlab.io/hypercorn/how_to_guides/configuring.html#configuration-options
-hypercorn --keyfile $CERT_DIR/key.pem --certfile $CERT_DIR/cert.pem -w $(nproc) --graceful-timeout 0 -b 0.0.0.0:$((PORT)) "oceannavigator:create_app()" --access-logfile - --error-logfile -
+hypercorn --keyfile $CERT_DIR/key.pem --certfile $CERT_DIR/cert.pem -w $(nproc) --graceful-timeout 5 -b 0.0.0.0:$((PORT)) "oceannavigator:create_app()" --access-logfile - --error-logfile -

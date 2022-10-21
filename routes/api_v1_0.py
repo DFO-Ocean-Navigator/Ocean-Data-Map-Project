@@ -83,7 +83,7 @@ def get_db():
 
 
 @router.get("/git_info")
-async def git_info():
+def git_info():
     """
     Returns the current Git hash of the application.
     """
@@ -99,7 +99,7 @@ async def git_info():
 
 
 @router.get("/generate_script")
-async def generate_script(
+def generate_script(
     query: str = Query(..., description="string-ified JSON"),
     plot_type: str = Query(None, description="Type of requested data product."),
     lang: e.ScriptLang = Query(..., description="Language of the requested API script"),
@@ -123,7 +123,7 @@ async def generate_script(
 
 
 @router.get("/datasets")
-async def datasets():
+def datasets():
     """
     List of available datasets w/ some metadata.
     """
@@ -147,7 +147,7 @@ async def datasets():
 
 
 @router.get("/dataset/{dataset}")
-async def dataset(
+def dataset(
     dataset: str = Path(
         None,
         title="The key of the dataset.",
@@ -179,7 +179,7 @@ def time_dimension(
 
 
 @router.get("/dataset/{dataset}/quantum")
-async def quantum(
+def quantum(
     dataset: str = Path(
         ...,
         title="The key of the dataset.",
@@ -196,7 +196,7 @@ async def quantum(
 
 
 @router.get("/dataset/{dataset}/variables")
-async def variables(
+def variables(
     dataset: str = Path(
         ...,
         title="The key of the dataset.",
@@ -243,7 +243,7 @@ async def variables(
 
 
 @router.get("/dataset/{dataset}/{variable}/depths")
-async def depths(
+def depths(
     dataset: str = Path(
         ...,
         title="The key of the dataset.",
@@ -287,7 +287,7 @@ async def depths(
 
 
 @router.get("/scale/{dataset}/{variable}/{scale}")
-async def scale(
+def scale(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -316,7 +316,7 @@ async def scale(
 
 
 @router.get("/range")
-async def range(
+def range(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -376,7 +376,7 @@ async def range(
 
 
 @router.get("/data")
-async def data(
+def data(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -450,7 +450,7 @@ async def data(
 
 
 @router.get("/class4")
-async def class4_files():
+def class4_files():
     """
     Returns a list of available class4 files.
     """
@@ -460,7 +460,7 @@ async def class4_files():
 
 
 @router.get("/class4/{data_type}/{class4_type}")
-async def class4_data(
+def class4_data(
     data_type: str = Path(..., title="The type of data requested.", example="models"),
     class4_type: str = Path(
         ..., title="The type of the desired class4 product.", example="ocean_predict"
@@ -484,7 +484,7 @@ async def class4_data(
 
 
 @router.get("/class4/{class4_type}")
-async def class4_file(
+def class4_file(
     class4_type: str = Path(
         ..., title="The type of the desired class4 product.", example="ocean_predict"
     ),
@@ -516,7 +516,7 @@ async def class4_file(
 
 
 @router.get("/subset/{dataset}/{variables}")
-async def subset_query(
+def subset_query(
     request: Request,
     dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
     variables: str = Path(..., title="The variables keys.", example="votemper"),
@@ -572,7 +572,7 @@ async def subset_query(
 
 
 @router.get("/plot/colormaps")
-async def colormaps():
+def colormaps():
     """
     Returns list of available colormaps
     """
@@ -590,7 +590,7 @@ async def colormaps():
 
 
 @router.get("/plot/colormaps.png")
-async def colormaps_png():
+def colormaps_png():
     """
     Returns image of available colourmaps
     """
@@ -605,7 +605,7 @@ async def colormaps_png():
 
 
 @router.get("/plot/{plot_type}")
-async def plot(
+def plot(
     plot_type: str = Path(..., title="The key of the dataset.", example="profile"),
     query: str = Query(
         ...,
@@ -702,7 +702,7 @@ async def plot(
 
 
 @router.get("/kml/points")
-async def kml_points():
+def kml_points():
     """
     Returns the KML groups containing points of interest from hard-coded KML files
     """
@@ -713,7 +713,7 @@ async def kml_points():
 
 
 @router.get("/kml/points/{id}")
-async def kml_point(
+def kml_point(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
         ...,
@@ -738,7 +738,7 @@ async def kml_point(
 
 
 @router.get("/kml/lines")
-async def kml_lines():
+def kml_lines():
     """
     Returns the KML groups containing lines of interest from hard-coded KML files
     """
@@ -749,7 +749,7 @@ async def kml_lines():
 
 
 @router.get("/kml/lines/{id}")
-async def kml_line(
+def kml_line(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
         ...,
@@ -773,7 +773,7 @@ async def kml_line(
 
 
 @router.get("/kml/areas")
-async def kml_areas():
+def kml_areas():
     """
     Returns the KML groups containing areas of interest from hard-coded KML files
     """
@@ -784,7 +784,7 @@ async def kml_areas():
 
 
 @router.get("/kml/areas/{id}")
-async def kml_area(
+def kml_area(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
         ...,
@@ -813,7 +813,7 @@ async def kml_area(
 
 
 @router.get("/dataset/{dataset}/{variable}/timestamps")
-async def timestamps(
+def timestamps(
     dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
     variable: str = Path(..., title="The key of the variable.", example="votemper"),
 ):
@@ -858,7 +858,7 @@ async def timestamps(
 
 
 @router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
-async def data_tile(
+def data_tile(
     dataset: str = Path(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -934,7 +934,7 @@ async def data_tile(
 
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
-async def topography_tiles(
+def topography_tiles(
     zoom: int = Path(..., example=4),
     x: int = Path(..., example=0),
     y: int = Path(..., example=1),
@@ -1020,7 +1020,7 @@ async def bathymetry_tiles(
             headers={"Cache-Control": f"max-age={MAX_CACHE}"},
         )
 
-    img = plot_bathymetry(projection, x, y, zoom)
+    img = await plot_bathymetry(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
 
 
@@ -1099,7 +1099,7 @@ def mbt(
 
 
 @router.get("/observation/datatypes.json")
-async def observation_datatypes(db: Session = Depends(get_db)):
+def observation_datatypes(db: Session = Depends(get_db)):
     """
     Returns the list of observational data types. Used in ObservationSelector.
     """
@@ -1119,7 +1119,7 @@ async def observation_datatypes(db: Session = Depends(get_db)):
 
 
 @router.get("/observation/meta_keys/{platform_types}.json")
-async def observation_keys(
+def observation_keys(
     platform_types: str = Path(
         ...,
         title="List of platform types (comma seperated).",
@@ -1141,7 +1141,7 @@ async def observation_keys(
 
 
 @router.get("/observation/meta_values/{platform_types}/{key}.json")
-async def observation_values_v1_0(
+def observation_values_v1_0(
     platform_types: str = Path(
         ...,
         title="List of platform types (comma seperated).",
@@ -1168,7 +1168,7 @@ async def observation_values_v1_0(
 
 
 @router.get("/observation/tracktimerange/{platform_id}.json")
-async def observation_tracktime(
+def observation_tracktime(
     platform_id: str = Path(
         ...,
         title="Platform ID.",
@@ -1201,7 +1201,7 @@ async def observation_tracktime(
 
 
 @router.get("/observation/track/{query}.json")
-async def observation_track(
+def observation_track(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1307,7 +1307,7 @@ async def observation_track(
 
 
 @router.get("/observation/point/{query}.json")
-async def observation_point(
+def observation_point(
     query: str = Path(
         ...,
         title="List of key=value pairs, seperated by ;",
@@ -1409,7 +1409,7 @@ async def observation_point(
 
 
 @router.get("/observation/meta/{key}/{id}.json")
-async def observation_meta(
+def observation_meta(
     key: str = Path(
         ...,
         title="Type/Platform of observation.",
@@ -1452,7 +1452,7 @@ async def observation_meta(
 
 
 @router.get("/observation/variables/{query}.json")
-async def observation_variables(
+def observation_variables(
     query: str = Path(
         ...,
         title=" A key=value pair, where key is either station \

@@ -295,7 +295,7 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     return buf
 
 
-def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
+async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
     settings = get_settings()
 
     lat, lon = get_latlon_coords(projection, x, y, z)
