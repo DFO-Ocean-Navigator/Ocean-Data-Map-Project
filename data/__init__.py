@@ -23,16 +23,17 @@ def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
         * dataset -- Either a DatasetConfig object, or a string URL for the dataset
 
     Optional Keyword Arguments:
-        * variable {str or list} -- String or list of strings of variable keys to be loaded
-            (e.g. 'votemper' or ['votemper', 'vosaline']).
-        * timestamp {int} -- Integer value of date/time for requested data (e.g. 2128723200).
-            When loading a range of timestamps, this argument serves as the starting time.
+        * variable {str or list} -- String or list of strings of variable keys to be
+            loaded (e.g. 'votemper' or ['votemper', 'vosaline']).
+        * timestamp {int} -- Integer value of date/time for requested data (e.g.
+            2128723200). When loading a range of timestamps, this argument serves as
+            the starting time.
         * endtime {int} -- Integer value of date/time. This argument is only used when
             loading a range of timestamps, and should hold the ending time.
         * nearest_timestamp {bool} -- When true, open_dataset will assume the given
             starttime (and endtime) do not exactly correspond to a timestamp integer
-            in the dataset, and will perform a binary search to find the nearest timestamp
-            that is less-than-or-equal-to the given starttime (and endtime).
+            in the dataset, and will perform a binary search to find the nearest
+            timestamp that is less-than-or-equal-to the given starttime (and endtime).
     """
     MODEL_CLASSES = {
         "mercator": Mercator,
@@ -57,7 +58,8 @@ def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
         model_class = MODEL_CLASSES[getattr(dataset, "model_class", "").lower()]
     except (AttributeError, KeyError):
         raise ValueError(
-            f"Missing or unrecongized model_class attribute in config for dataset {dataset}"
+            "Missing or unrecongized model_class "
+            f"attribute in config for dataset {dataset}"
         )
 
     kwargs.update(
