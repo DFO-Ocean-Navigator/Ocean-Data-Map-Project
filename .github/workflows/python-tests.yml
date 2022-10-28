@@ -33,13 +33,13 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - name: Set up Python 3.8
+    - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.10
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.8
+        python-version: 3.10
     - name: Update environment
       run: conda env update -f config/conda/environment.yml --name test
     - name: Run tests
