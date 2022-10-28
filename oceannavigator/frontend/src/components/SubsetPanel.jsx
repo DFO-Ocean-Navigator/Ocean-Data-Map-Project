@@ -1,7 +1,7 @@
 import React from "react";
 import {Panel, Button, FormControl, FormGroup, ControlLabel, DropdownButton, MenuItem} from "react-bootstrap";
 import ComboBox from "./ComboBox.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
@@ -153,10 +153,10 @@ render() {
           data={this.state.subset_variables}            
           title={("Variables")}
         />
-        <SelectBox
+        <CheckBox
           id='time_range'
           key='time_range'
-          state={this.state.output_timerange}
+          checked={this.state.output_timerange}
           onUpdate={(_, value) => {this.setState({output_timerange: value,});}}
           title={_("Select Time Range")}
         />
@@ -205,10 +205,10 @@ render() {
             <option value="NETCDF4_CLASSIC">{_("NetCDF-4 Classic")}</option>
           </FormControl>
         </FormGroup>
-        <SelectBox 
+        <CheckBox 
           id='zip'
           key='zip'
-          state={this.state.zip} 
+          checked={this.state.zip} 
           onUpdate={ (_, checked) => { this.setState({zip: checked}); } }
           title={_("Compress as *.zip")}
         />

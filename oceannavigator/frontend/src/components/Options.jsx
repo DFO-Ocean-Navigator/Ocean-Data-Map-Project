@@ -2,7 +2,7 @@ import React from "react";
 import { Row, FormControl, ControlLabel, Col, Panel, Button } from "react-bootstrap";
 import NumericInput from "react-numeric-input";
 import Icon from "./lib/Icon.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -112,9 +112,9 @@ class Options extends React.Component {
             <Panel.Body>
               <Row>
                 <Col md={12}>
-                  <SelectBox
+                  <CheckBox
                     id='bathymetry'
-                    state={this.state.bathymetry}
+                    checked={this.state.bathymetry}
                     onUpdate={(e, val) => { this.setState({ "bathymetry": val, }); }}
                     title={_("Show Bathymetry Contours")}
                   />
@@ -151,9 +151,9 @@ class Options extends React.Component {
               </Row>
               <Row>
                 <Col md={12}>
-                  <SelectBox
+                  <CheckBox
                     id='topoShadedRelief'
-                    state={this.state.topoShadedRelief}
+                    checked={this.state.topoShadedRelief}
                     onUpdate={(e, val) => { this.setState({ "topoShadedRelief": val, }); }}
                     title={_("Topography Shaded Relief")}
                   />

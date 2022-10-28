@@ -9,7 +9,7 @@ import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
@@ -169,10 +169,10 @@ class LineWindow extends React.Component {
         <Panel.Body>
           <Row>
             <Col xs={9}>
-              <SelectBox
+              <CheckBox
                 id='dataset_compare'
                 key='dataset_compare'
-                state={this.props.dataset_compare}
+                checked={this.props.dataset_compare}
                 onUpdate={this.props.onUpdate}
                 title={_("Compare Datasets")}
               />
@@ -215,15 +215,15 @@ class LineWindow extends React.Component {
             />
           </div>
 
-          <SelectBox
+          <CheckBox
             key='showmap'
             id='showmap'
-            state={this.state.showmap}
+            checked={this.state.showmap}
             onUpdate={this.onLocalUpdate}
             title={_("Show Map Location")}
           >
             {_("showmap_help")}
-          </SelectBox>
+          </CheckBox>
             
           <Accordion id='line_accordion' title={"Plot Options"} content={plotOptions} />
         </Panel.Body>

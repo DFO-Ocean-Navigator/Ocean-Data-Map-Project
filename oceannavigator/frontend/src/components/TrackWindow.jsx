@@ -1,7 +1,7 @@
 import React from "react";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ContinousTimePicker from "./ContinousTimePicker.jsx";
 import ImageSize from "./ImageSize.jsx";
 import Accordion from "./lib/Accordion.jsx";
@@ -127,20 +127,20 @@ class TrackWindow extends React.Component {
       url={"/api/v1.0/variables/?dataset="+this.props.dataset}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
-    var showmap = <SelectBox
+    var showmap = <CheckBox
       key='showmap'
       id='showmap'
-      state={this.state.showmap}
+      checked={this.state.showmap}
       onUpdate={this.onLocalUpdate}
       title={_("Show Map")}
-    >{_("showmap_help")}</SelectBox>;
-    var latlon = <SelectBox
+    >{_("showmap_help")}</CheckBox>;
+    var latlon = <CheckBox
       key='latlon'
       id='latlon'
-      state={this.state.latlon}
+      checked={this.state.latlon}
       onUpdate={this.onLocalUpdate}
       title={_("Show Latitude/Longitude Plots")}
-    >{_("latlon_help")}</SelectBox>;
+    >{_("latlon_help")}</CheckBox>;
     var starttime = <ContinousTimePicker
       key='starttime'
       id='starttime'

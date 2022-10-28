@@ -1,5 +1,5 @@
 import React from "react";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -41,35 +41,35 @@ class VelocitySelector extends React.Component {
 
     return (
       <div>
-        <SelectBox
+        <CheckBox
           key='magnitude'
-          state={this.state.velocity_plots[PlotTypes["magnitude"]]}
+          checked={this.state.velocity_plots[PlotTypes["magnitude"]]}
           id='magnitude'
           onUpdate={this.updatePlotType}
           title={_("Magnitude")}
         >
           {_("show_magnitude")}
-        </SelectBox>  
+        </CheckBox>  
 
-        <SelectBox
+        <CheckBox
           key='parallel'
-          state={this.state.velocity_plots[PlotTypes["parallel"]]}
+          checked={this.state.velocity_plots[PlotTypes["parallel"]]}
           id='parallel'
           onUpdate={this.updatePlotType}
           title={_("Parallel")}
         >
           {_("show_parallel")}
-        </SelectBox>
+        </CheckBox>
         
-        <SelectBox
+        <CheckBox
           key='perpendicular'
-          state={this.state.velocity_plots[PlotTypes["perpendicular"]]}
+          checked={this.state.velocity_plots[PlotTypes["perpendicular"]]}
           id='perpendicular'
           onUpdate={this.updatePlotType}
           title={_("Perpendicular")}
         >
           {_("show_perpendicular")}
-        </SelectBox>
+        </CheckBox>
       </div>
 
     );

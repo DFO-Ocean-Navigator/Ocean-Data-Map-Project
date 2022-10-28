@@ -6,7 +6,7 @@
 
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import {Panel, Button, Row, Col, Tabs, Tab} from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
@@ -106,9 +106,9 @@ class MapInputs extends React.Component {
                 <Panel.Body>
                   <Row>
                     <Col xs={9}>
-                      <SelectBox
+                      <CheckBox
                         id='dataset_compare'
-                        state={this.props.dataset_compare}
+                        checked={this.props.dataset_compare}
                         onUpdate={this.props.changeHandler}
                         title={_("Compare Datasets")}
                       />
@@ -124,7 +124,7 @@ class MapInputs extends React.Component {
                       </Button>
                     </Col>
                   </Row>
-                  <SelectBox
+                  <CheckBox
                     id='syncRanges'
                     onUpdate={this.props.changeHandler}
                     title={_("Sync Variable Ranges")}

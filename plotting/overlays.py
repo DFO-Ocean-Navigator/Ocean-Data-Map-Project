@@ -1,9 +1,9 @@
 import hashlib
-import os
 import threading
 
 import numpy as np
 import pyresample
+from pathlib import Path
 from cachetools import LRUCache
 from flask import current_app
 from netCDF4 import Dataset
@@ -78,8 +78,7 @@ def bathymetry(target_lat, target_lon, blur=None):
             def do_save(filename, data):
                 np.save(filename, data.filled())
 
-            if not os.path.isdir(CACHE_DIR):
-                os.makedirs(CACHE_DIR)
+            Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
             t = threading.Thread(target=do_save, args=(CACHE_DIR + "/" + hashed, data))
             t.daemon = True

@@ -9,8 +9,6 @@ dependencies:
   - appdirs=1.4.4=pyh9f0ad1d_0
   - asciitree=0.3.3=py_2
   - babel=2.9.1=pyh44b312d_0
-  - basemap=1.2.2=py38hc951a7f_4
-  - basemap-data-hires=1.2.2=0
   - black=22.1.0=pyhd8ed1ab_0
   - blinker=1.4=py_1
   - blosc=1.21.0=h9c3ff4c_0

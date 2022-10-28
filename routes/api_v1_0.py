@@ -3,12 +3,12 @@ import datetime
 import gc
 import gzip
 import json
-import os
 import pickle
 import shutil
 import sqlite3
 import sys
 import tempfile
+from pathlib import Path
 from io import BytesIO
 
 import geojson
@@ -67,6 +67,7 @@ from .schemas import (
     GenerateScriptSchema,
     GetDataSchema,
     QuantumSchema,
+    TimedimensionSchema,
     TimestampsSchema,
 )
 
@@ -222,12 +223,26 @@ def datasets_query_v1_0():
                     "help": config.help,
                     "attribution": config.attribution,
                     "model_class": config.model_class,
+                    "group": config.group,
+                    "subgroup": config.subgroup,
+                    "time_dim_units": config.time_dim_units
                 }
             )
-    data = sorted(data, key=lambda k: k["value"])
     resp = jsonify(data)
     return resp
 
+@bp_v1_0.route("/api/v1.0/timeunit/")
+def timedimension_query_v1_0():
+    try:
+        result = TimedimensionSchema().load(request.args)
+    except ValidationError as e:
+        abort(400, str(e))
+
+    config = DatasetConfig(result["dataset"])
+
+    timedimension = config.time_dim_units
+
+    return jsonify(timedimension)
 
 @bp_v1_0.route("/api/v1.0/quantum/")
 def quantum_query_v1_0():
@@ -434,13 +449,12 @@ def get_data_v1_0():
     except ValidationError as e:
         abort(400, str(e))
 
-    cached_file_name = os.path.join(
-        current_app.config["CACHE_DIR"],
+    cached_file_name = Path(
+        current_app.config["CACHE_DIR"]).joinpath(
         "data",
-        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson",  # noqa: E501
-    )
+        f"get_data_{result['dataset']}_{result['variable']}_{result['depth']}_{result['time']}_{result['geometry_type']}.geojson", )   # noqa: E501
 
-    if os.path.isfile(cached_file_name):
+    if cached_file_name.is_file():
         print(f"Using cached {cached_file_name}")
         return send_file(cached_file_name, "application/json")
 
@@ -485,7 +499,8 @@ def get_data_v1_0():
             lon_var[lon_slice],
         )
 
-        os.makedirs(os.path.dirname(cached_file_name), exist_ok=True)
+        path = Path(cached_file_name).parent
+        path.mkdir(parents=True, exist_ok=True)
         with open(cached_file_name, "w", encoding="utf-8") as f:
             geojson.dump(d, f)
 
@@ -508,7 +523,6 @@ def class4_query_v1_0(class4_type: str, q: str, class4_id: str):
 
     if not class4_id:
         raise APIError("Please Specify an ID ")
-
 
     if q == 'forecasts':
         pts = class4.list_class4_forecasts(class4_id, class4_type)
@@ -953,7 +967,7 @@ def tile_v1_0(
     """
 
     cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = Path(cache_dir).joinpath(request.path[1:])
 
     # Check if the tile/image is cached and send it
     if _is_cache_valid(dataset, f):
@@ -999,9 +1013,9 @@ def topo_v1_0(shaded_relief: str, projection: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = Path(cache_dir).joinpath(request.path[1:])
 
-    if os.path.isfile(f):
+    if f.is_file():
         return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     bytesIOBuff = plotting.tile.topo(projection, x, y, zoom, bShaded_relief)
@@ -1022,9 +1036,9 @@ def bathymetry_v1_0(projection: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.png")
 
     cache_dir = current_app.config["CACHE_DIR"]
-    f = os.path.join(cache_dir, request.path[1:])
+    f = Path(cache_dir).joinpath(request.path[1:])
 
-    if os.path.isfile(f):
+    if f.is_file():
         return send_file(f, mimetype="image/png", cache_timeout=MAX_CACHE)
 
     img = plotting.tile.bathymetry(projection, x, y, zoom, {})
@@ -1040,8 +1054,8 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
     """
     cache_dir = current_app.config["CACHE_DIR"]
     shape_file_dir = current_app.config["SHAPE_FILE_DIR"]
-    requestf = str(os.path.join(cache_dir, request.path[1:]))
-    basedir = requestf.rsplit("/", 1)[0]
+    requestf = Path(cache_dir).joinpath(request.path[1:])
+    basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
     if (zoom < 7) or (projection != "EPSG:3857"):
@@ -1051,7 +1065,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Send file if cached or select data in SQLite file
-    if os.path.isfile(requestf):
+    if requestf.is_file():
         return send_file(requestf)
 
     y = (2**zoom - 1) - y
@@ -1064,8 +1078,7 @@ def mbt(projection: str, tiletype: str, zoom: int, x: int, y: int):
         return send_file(shape_file_dir + "/blank.mbt")
 
     # Write tile to cache and send file
-    if not os.path.isdir(basedir):
-        os.makedirs(basedir)
+    basedir.mkdir(parents=True, exist_ok=True)
     with open(requestf + ".pbf", "wb") as f:
         f.write(tile[0])
     with gzip.open(requestf + ".pbf", "rb") as gzipped:
@@ -1470,19 +1483,19 @@ def after_request(response):
     return response
 
 
-def _is_cache_valid(dataset: str, f: str) -> bool:
+def _is_cache_valid(dataset: str, f: Path) -> bool:
     """
     Returns True if dataset cache is valid
     """
 
     config = DatasetConfig(dataset)
-    if os.path.isfile(f):
+    if f.is_file():
         cache_time = config.cache
         if cache_time is not None:
-            modtime = datetime.datetime.fromtimestamp(os.path.getmtime(f))
+            modtime = datetime.datetime.fromtimestamp(f.stat().st_mtime)
             age_hours = (datetime.datetime.now() - modtime).total_seconds() / 3600
             if age_hours > cache_time:
-                os.remove(f)
+                f.unlink()
                 return False
             return True
         else:
@@ -1498,9 +1511,8 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
     bytesIOBuff: BytesIO object containing image data
     f: filename of image to be cached
     """
-    p = os.path.dirname(f)
-    if not os.path.isdir(p):
-        os.makedirs(p)
+    p = Path(f).parent
+    p.mkdir(parents=True, exist_ok=True)
 
     # This seems excessive
     bytesIOBuff.seek(0)

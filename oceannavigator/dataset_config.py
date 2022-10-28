@@ -1,6 +1,6 @@
 import json
-import os
 import re
+from pathlib import Path
 from typing import Union
 
 from flask import current_app
@@ -28,8 +28,8 @@ class DatasetConfig:
     @staticmethod
     def _get_dataset_config() -> dict:
         if DatasetConfig.__config is None:
-            cwd = os.path.dirname(os.path.realpath(__file__))
-            with open(os.path.join(cwd, current_app.config["datasetConfig"]), "r") as f:
+            cwd = Path(__file__).parent
+            with open(cwd.joinpath(current_app.config["datasetConfig"]), "r") as f:
                 DatasetConfig.__config = json.load(f)
 
         return DatasetConfig.__config
@@ -132,6 +132,22 @@ class DatasetConfig:
     @property
     def lon_var_key(self) -> str:
         return self._get_attribute("lon_var_key")
+
+    @property
+    def group(self) -> str:
+        try:
+            name = self._get_attribute("group")
+        except KeyError:
+            name = None
+        return name
+
+    @property
+    def subgroup(self) -> str:
+        try:
+            header = self._get_attribute("subgroup")
+        except KeyError:
+            header = None
+        return header
 
     @property
     def quantum(self) -> str:

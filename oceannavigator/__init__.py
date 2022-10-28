@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 import tempfile
+from pathlib import Path
 from sys import argv
 
 import dask
@@ -87,8 +88,8 @@ def create_app(testing: bool = False, dataset_config_path: str = ""):
     app.git_tag = subprocess_check_output("git", "describe", "--tags", "--abbrev=0")
 
     if app.config.get("WSGI_PROFILING"):
-        if not os.path.isdir("./profiler_results"):
-            os.mkdir("./profiler_results")
+        path = Path("./profiler_results")
+        path.mkdir(parents=True, exist_ok=True)
         app.wsgi_app = ProfilerMiddleware(
             app.wsgi_app,
             stream=None,

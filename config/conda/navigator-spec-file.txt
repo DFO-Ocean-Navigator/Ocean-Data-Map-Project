@@ -273,7 +273,6 @@ https://conda.anaconda.org/conda-forge/noarch/starlette-0.19.1-pyhd8ed1ab_0.tar.
 https://conda.anaconda.org/conda-forge/noarch/tifffile-2021.11.2-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/xarray-0.20.1-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/zarr-2.10.3-pyhd8ed1ab_0.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/basemap-1.2.2-py38hc951a7f_4.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/cartopy-0.20.0-py38hc951a7f_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/cmocean-2.0-py_3.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/dask-2021.11.2-pyhd8ed1ab_0.tar.bz2
@@ -286,7 +285,6 @@ https://conda.anaconda.org/conda-forge/noarch/networkx-2.7-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/opentelemetry-instrumentation-0.31b0-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/pyqt-5.12.3-py38h578d9bd_8.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/urllib3-1.26.8-pyhd8ed1ab_1.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/basemap-data-hires-1.2.2-0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/matplotlib-3.5.0-py38h578d9bd_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/opentelemetry-instrumentation-asgi-0.31b0-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/requests-2.26.0-pyhd8ed1ab_1.tar.bz2

@@ -1,5 +1,4 @@
 import hashlib
-import os
 import pickle
 import threading
 
@@ -11,6 +10,7 @@ import numpy as np
 import shapely.geometry as sgeom
 from flask import current_app
 from typing import Union
+from pathlib import Path
 
 
 def get_resolution(height: float, width: float) -> str:
@@ -49,7 +49,7 @@ def load_map(
 
     CACHE_DIR = current_app.config["CACHE_DIR"]
     filename = _get_filename(plot_proj.proj4_params["proj"], extent)
-    filename = "".join([CACHE_DIR, "/", filename])
+    filename = Path(CACHE_DIR).joinpath(filename)
 
     pc_proj = ccrs.PlateCarree()
     pc_extent = pc_proj.transform_points(
@@ -62,7 +62,7 @@ def load_map(
         pc_extent[1, 1] + 5,
     ]
 
-    if not os.path.exists(filename):
+    if not filename.exists():
         fig = plt.figure(figsize=figuresize, dpi=dpi)
         ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
         ax.set_extent(extent, crs=plot_proj)
@@ -87,9 +87,8 @@ def load_map(
 
         def do_pickle(fig, ax, filename: str) -> None:
             pickle.dump((fig, ax), open(filename, "wb"), -1)
-
-        if not os.path.isdir(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
+        
+        Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
         t = threading.Thread(target=do_pickle, args=(fig, ax, filename))
         t.daemon = True

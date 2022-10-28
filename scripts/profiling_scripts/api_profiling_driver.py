@@ -72,7 +72,7 @@ class ONav_Profiling_Driver:
             logging.info(f"Attempt {i+1}:")
             start_time = time.time()
             try:
-                resp = requests.get(url, timeout=self.max_time)
+                resp = requests.get(url, timeout=self.max_time, verify=False)
                 end_time = time.time()
 
                 if resp.status_code == 200:
@@ -148,7 +148,9 @@ class ONav_Profiling_Driver:
         return self.send_req(url)
 
     def get_git_hash(self):
-        resp = requests.get(self.api_url + "git-hash", timeout=self.max_time)
+        resp = requests.get(
+            self.api_url + "gitinfo", timeout=self.max_time, verify=False
+        )
         if resp.status_code == 200:
             return json.loads(resp.content)
         return ""

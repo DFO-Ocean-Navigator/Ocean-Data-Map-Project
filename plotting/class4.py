@@ -14,6 +14,7 @@ from plotting.plotter import Plotter
 class Class4Plotter(Plotter):
     def __init__(self, dataset_name: str, query: str, **kwargs):
         self.plottype: str = "class4"
+        self.class4_type: str = None
         super(Class4Plotter, self).__init__(dataset_name, query, **kwargs)
 
     def parse_query(self, query):
@@ -29,8 +30,9 @@ class Class4Plotter(Plotter):
             query.get("climatology")
         )
         self.error = query.get("error")
+        self.class4_type = query.get("class4type")
 
-        if query.get("class4type") == "ocean_predict":
+        if self.class4_type == "ocean_predict":
             self.fname_pattern = current_app.config["CLASS4_OP_PATH"]
         else:
             self.fname_pattern = current_app.config["CLASS4_RAO_PATH"]
@@ -155,8 +157,12 @@ class Class4Plotter(Plotter):
             if len(self.ids) > 1:
                 plt.legend(self.ids, loc="best")
 
-        plot_label = ""
-        giops_name = "GIOPS"
+        if self.class4_type == "ocean_predict":
+            model_label = "GIOPS"
+            plot_label = "Class4 GIOPS OceanPredict"
+        else:
+            model_label = "RIOPS"
+            plot_label = "Class4 RIOPS Assimilated Observations"
 
         for idx, v in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
@@ -168,7 +174,8 @@ class Class4Plotter(Plotter):
                 id_label = f"{self.ids[i]} " if len(self.ids) > 1 else ""
 
                 form = "-"
-                if self.observed_data[i, idx, :].count() < 3:
+                obs = self.observed_data[i, idx, :]
+                if np.count_nonzero(~np.isnan(obs)) < 3:
                     form = "o-"
 
                 if self.error in ["climatology", "observation"]:
@@ -197,7 +204,7 @@ class Class4Plotter(Plotter):
                             form,
                         )
                     )
-                    legend.append(f"{id_label} {giops_name}")
+                    legend.append(f"{id_label} {model_label}")
 
                     for j, model_name in enumerate(self.additional_model_names):
                         handles.append(
@@ -223,7 +230,6 @@ class Class4Plotter(Plotter):
                     lim = np.abs(plt.xlim()).max()
                     plt.xlim([-lim, lim])
                 else:
-                    plot_label = gettext("Class 4")
                     handles.append(
                         plt.plot(self.observed_data[i, idx, :], self.depths[i], form)
                     )
@@ -231,7 +237,7 @@ class Class4Plotter(Plotter):
                     handles.append(
                         plt.plot(self.forecast_data[i, idx, :], self.depths[i], form)
                     )
-                    legend.append(f"{id_label} {giops_name}")
+                    legend.append(f"{id_label} {model_label}")
                     for j, model_name in enumerate(self.additional_model_names):
                         handles.append(
                             plt.plot(

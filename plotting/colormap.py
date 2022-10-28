@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 from io import BytesIO
 
 import cmocean
@@ -41,7 +41,7 @@ def find_colormap(name):
 
 
 _c = mcolors.ColorConverter().to_rgb
-data_dir = os.path.join(os.path.dirname(plotting.__file__), "data")
+data_dir = (Path(plotting.__file__).parent).joinpath("data")
 colormaps = {
     "water velocity bearing": cmocean.cm.rain,
     "depth excess": cmocean.cm.deep,
@@ -76,10 +76,10 @@ colormaps = {
     "iron": cmocean.cm.amp,
     "oxygen": cmocean.cm.oxy,
     "phosphate": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "phosphate.txt"))
+        np.loadtxt(data_dir.joinpath("phosphate.txt"))
     ),
     "nitrate": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "nitrate.txt"))
+        np.loadtxt(data_dir.joinpath("nitrate.txt"))
     ),
     "nitrate concentration": cmocean.cm.tempo,
     "ice": cmocean.cm.ice,
@@ -287,11 +287,11 @@ colormaps = {
     "potential sub surface channel": mcolors.ListedColormap(["#ecf0f1", "#f57732"]),
     "thermal": cmocean.cm.thermal,
     "neo_sst": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "neo_sst.txt"))
+        np.loadtxt(data_dir.joinpath("neo_sst.txt"))
     ),
-    "BuYlRd": mcolors.ListedColormap(np.loadtxt(os.path.join(data_dir, "BuYlRd.txt"))),
+    "BuYlRd": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("BuYlRd.txt"))),
     "temperature": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "temperature.txt"))
+        np.loadtxt(data_dir.joinpath("temperature.txt"))
     ),
 }
 colormaps["wind"] = colormaps["velocity"]
