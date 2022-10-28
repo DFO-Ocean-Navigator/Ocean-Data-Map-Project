@@ -388,6 +388,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.
         * latitude: Latitude in degrees North
         * temperature: Temperatures in Celsius
         * salinity: Salinity
+        * bathy: Model Bathymetry
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
@@ -467,7 +468,7 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
 
         * salinity: Salinity
 
-        * bathy:
+        * bathy: Model Bathymetry
     """
 
     dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy)
