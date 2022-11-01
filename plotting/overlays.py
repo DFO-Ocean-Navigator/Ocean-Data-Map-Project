@@ -74,7 +74,6 @@ def bathymetry(target_lat, target_lon, blur=None):
                 target_def,
                 radius_of_influence=500000,
                 fill_value=None,
-                nprocs=4,
             )
 
             def do_save(filename, data):
