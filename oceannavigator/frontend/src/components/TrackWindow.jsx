@@ -124,7 +124,7 @@ class TrackWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/variables/?dataset="+this.props.dataset}
+      url={`/api/v1.0/dataset/${this.props.dataset}/variables`}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
     var showmap = <CheckBox
