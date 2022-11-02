@@ -7,11 +7,11 @@ from oceannavigator import create_app
 client = TestClient(create_app())
 
 
-class TestAPIv1GetData(unittest.TestCase):
+class TestAPIv2GetData(unittest.TestCase):
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_data_endpoint_no_bearing(self) -> None:
         response = client.get(
-            "/api/v1.0/data",
+            "/api/v2.0/data",
             params={
                 "dataset": "giops_real",
                 "variable": "votemper",
@@ -30,7 +30,7 @@ class TestAPIv1GetData(unittest.TestCase):
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_data_endpoint_with_bearing(self) -> None:
         response = client.get(
-            "/api/v1.0/data",
+            "/api/v2.0/data",
             params={
                 "dataset": "giops_real",
                 "variable": "magwatervel",
@@ -47,6 +47,6 @@ class TestAPIv1GetData(unittest.TestCase):
         self.assertEqual(len(data["features"]), 265)
 
     def test_data_endpoint_returns_error_422_when_params_are_missing(self) -> None:
-        response = client.get("/api/v1.0/data", params={})
+        response = client.get("/api/v2.0/data", params={})
 
         self.assertEqual(response.status_code, 422)

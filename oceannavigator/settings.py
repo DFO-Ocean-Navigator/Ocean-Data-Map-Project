@@ -6,8 +6,8 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    api_v1_route: str = "/api/v1"
-    openapi_route: str = "/api/v1/openapi.json"
+    api_v2_route: str = "/api/v2"
+    openapi_route: str = "/api/v2/openapi.json"
 
     git_hash: str = ""
     git_tag: str = ""

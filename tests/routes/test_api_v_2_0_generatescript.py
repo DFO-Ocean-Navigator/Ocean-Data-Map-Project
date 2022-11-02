@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from oceannavigator import create_app
 
 
-class TestApiv10GenerateScript(unittest.TestCase):
+class TestApiv20GenerateScript(unittest.TestCase):
     def setUp(self) -> None:
         self.app = TestClient(create_app())
 
@@ -26,7 +26,7 @@ class TestApiv10GenerateScript(unittest.TestCase):
             }
 
             res = self.app.get(
-                "/api/v1.0/generate_script",
+                "/api/v2.0/generate_script",
                 params={
                     "query": query_string,
                     "plot_type": "profile",
@@ -54,7 +54,7 @@ class TestApiv10GenerateScript(unittest.TestCase):
             )
 
             res = self.app.get(
-                "/api/v1.0/generate_script",
+                "/api/v2.0/generate_script",
                 params={
                     "query": query_string,
                     "plot_type": "profile",

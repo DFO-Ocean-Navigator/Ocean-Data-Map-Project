@@ -56,9 +56,9 @@ def configure_opentelemetry(app: FastAPI) -> None:
 
 
 def add_routes(app: FastAPI) -> None:
-    from routes.api_v1_0 import router as v1_router
+    from routes.api_v2_0 import router as v2_router
 
-    app.include_router(v1_router)
+    app.include_router(v2_router)
 
 
 def configure_exception_handlers(app: FastAPI) -> None:

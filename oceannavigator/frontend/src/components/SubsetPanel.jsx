@@ -81,7 +81,7 @@ subsetArea() {
   }
   const output_endtime = this.state.output_timerange ? 
     this.state.output_endtime : this.state.output_starttime;
-  window.location.href = `/api/v1.0/subset/${this.props.dataset.dataset}/${this.state.output_variables.join() }?` +
+  window.location.href = `/api/v2.0/subset/${this.props.dataset.dataset}/${this.state.output_variables.join() }?` +
      "&output_format=" + this.state.output_format +
       queryString +
      "&time=" + [this.state.output_starttime, output_endtime].join() +
@@ -106,7 +106,7 @@ saveScript(key) {
   }
 
   window.location.href = window.location.origin + 
-                        "/api/v1.0/generate_script/?query=" + 
+                        "/api/v2.0/generate_script/?query=" + 
                         stringify(query) + 
                         "&lang=" + key + 
                         "&scriptType=subset";

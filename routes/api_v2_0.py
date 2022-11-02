@@ -69,7 +69,7 @@ except exc.OperationalError:
     log().error("Unable to connect to MySQL database.")
 
 router = APIRouter(
-    prefix="/api/v1.0",
+    prefix="/api/v2.0",
     responses={404: {"message": "Not found"}},
 )
 
@@ -165,7 +165,7 @@ def dataset(
     }
 
 
-@router.get("/api/v1.0/{dataset}/timeunit")
+@router.get("/api/v2.0/{dataset}/timeunit")
 def time_dimension(
     dataset: str = Path(
         None,
@@ -887,7 +887,7 @@ def data_tile(
     f = os.path.join(
         settings.cache_dir,
         "api",
-        "v1.0",
+        "v2.0",
         "tiles",
         str(interp),
         str(radius),
@@ -959,7 +959,7 @@ def topography_tiles(
     f = os.path.join(
         settings.cache_dir,
         "api",
-        "v1.0",
+        "v2.0",
         "tiles",
         "topo",
         projection,
@@ -1004,7 +1004,7 @@ async def bathymetry_tiles(
     f = os.path.join(
         settings.cache_dir,
         "api",
-        "v1.0",
+        "v2.0",
         "tiles",
         "bath",
         projection,
@@ -1044,7 +1044,7 @@ def mbt(
     requestf = pathlib.Path(
         settings.cache_dir,
         "api",
-        "v1.0",
+        "v2.0",
         "mbt",
         projection,
         tiletype,
@@ -1141,7 +1141,7 @@ def observation_keys(
 
 
 @router.get("/observation/meta_values/{platform_types}/{key}.json")
-def observation_values_v1_0(
+def observation_values(
     platform_types: str = Path(
         ...,
         title="List of platform types (comma seperated).",

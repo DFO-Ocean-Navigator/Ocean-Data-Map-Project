@@ -63,7 +63,7 @@ class PlotImage extends React.PureComponent {
         scriptType = "csv";
         break;
     }
-    const url = `${window.location.origin}/api/v1.0/generate_script?query=${query}&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
+    const url = `${window.location.origin}/api/v2.0/generate_script?query=${query}&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
     window.location.href = url;
   }
 
@@ -105,7 +105,7 @@ class PlotImage extends React.PureComponent {
       });
 
       const promise = $.ajax({
-        url: `/api/v1.0/plot/${type}`,
+        url: `/api/v2.0/plot/${type}`,
         cache: true,
         data: paramString,
         dataType: "json",
@@ -303,7 +303,7 @@ class PlotImage extends React.PureComponent {
   urlFromQuery(q) {
     const [type, query] = this.generateQuery(q);
     return (
-      `/api/v1.0/plot/${type}?query=` + encodeURIComponent(stringify(query))
+      `/api/v2.0/plot/${type}?query=` + encodeURIComponent(stringify(query))
     );
   }
 

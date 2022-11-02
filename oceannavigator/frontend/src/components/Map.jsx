@@ -172,7 +172,7 @@ export default class Map extends React.PureComponent {
     };
 
     this.scaleViewer = new app.ScaleViewer({
-      image: "/api/v1.0/scale/giops_day/votemper/-5,30",
+      image: "/api/v2.0/scale/giops_day/votemper/-5,30",
     });
 
     this.loader = function (extent, resolution, projection) {
@@ -180,15 +180,15 @@ export default class Map extends React.PureComponent {
         let url = "";
         switch (this.props.state.vectortype) {
           case "observation_points":
-            url = `/api/v1.0/observation/point/` +
+            url = `/api/v2.0/observation/point/` +
               `${this.props.state.vectorid}.json`;
             break;
           case "observation_tracks":
-            url = `/api/v1.0/observation/track/` +
+            url = `/api/v2.0/observation/track/` +
               `${this.props.state.vectorid}.json`;
             break;
           case "class4":
-            url = `/api/v1.0/class4` +
+            url = `/api/v2.0/class4` +
               `/${this.props.state.class4type}` +
               `?projection=${projection.getCode()}` +
               `&resolution=${Math.round(resolution)}` +
@@ -197,20 +197,20 @@ export default class Map extends React.PureComponent {
             break;                       
           case "points":
           case "lines":
-            url = `/api/v1.0/kml/${this.props.state.vectortype}` +
+            url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
               `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
             break;
           case "areas":
-            url = `/api/v1.0/kml/${this.props.state.vectortype}` +
+            url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
               `&resolution=${Math.round(resolution)}` +
               `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
             break;
           default:
-            url = `/api/v1.0/${this.props.state.vectortype}` +
+            url = `/api/v2.0/${this.props.state.vectortype}` +
               `/${projection.getCode()}` +
               `/${Math.round(resolution)}` +
               `/${extent.map(function (i) { return Math.round(i); })}` +
@@ -294,7 +294,7 @@ export default class Map extends React.PureComponent {
     this.layer_bath = new ollayer.Tile(
       {
         source: new olsource.XYZ({
-          url: `/api/v1.0/tiles/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+          url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection,
         }),
         opacity: this.props.options.mapBathymetryOpacity,
@@ -318,7 +318,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection,
         }),
     });
@@ -337,7 +337,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
         }),
     });
 
@@ -824,7 +824,7 @@ export default class Map extends React.PureComponent {
             type = 'platform';
           }
           $.ajax({
-            url: `/api/v1.0/observation/meta/${type}/${feature.get("id")}}.json`,
+            url: `/api/v2.0/observation/meta/${type}/${feature.get("id")}}.json`,
             success: function (response) {
               this.overlay.setPosition(e.coordinate);
               feature.set("meta", ReactDOMServer.renderToString(
@@ -1045,7 +1045,7 @@ export default class Map extends React.PureComponent {
         return new ollayer.Tile({
           preload: 1,
           source: new olsource.XYZ({
-            url: `/api/v1.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
+            url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
             projection: projection,
             attributions: [
               new olcontrol.Attribution({
@@ -1418,7 +1418,7 @@ export default class Map extends React.PureComponent {
 
     this.scaleViewer = new app.ScaleViewer({
       image: (
-        `/api/v1.0/scale/${currentDataset}` +
+        `/api/v2.0/scale/${currentDataset}` +
         `/${currentVariable}` +
         `/${scale}`
       )
@@ -1439,7 +1439,7 @@ export default class Map extends React.PureComponent {
       default:
         source = new olsource.XYZ({
           url: (
-            `/api/v1.0/tiles/bath/{z}/{x}/{y}?projection=${currentProj}`
+            `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${currentProj}`
           ),
           projection: currentProj,
         });
@@ -1465,7 +1465,7 @@ export default class Map extends React.PureComponent {
     if (currentQuiverVariable !== 'none') {
       source = new olsource.Vector(
         {
-          url: `/api/v1.0/data?dataset=${currentDataset}&variable=${currentQuiverVariable}&time=${currentTime}&depth=${currentDepth}&geometry_type=area`,
+          url: `/api/v2.0/data?dataset=${currentDataset}&variable=${currentQuiverVariable}&time=${currentTime}&depth=${currentDepth}&geometry_type=area`,
           format: new olformat.GeoJSON(
             { 
               featureProjection: olproj.get("EPSG:3857"),
@@ -1495,7 +1495,7 @@ export default class Map extends React.PureComponent {
       scale = scale.join(",");
     }
 
-    props.url = "/api/v1.0/tiles" +
+    props.url = "/api/v2.0/tiles" +
       `/${this.props.state.dataset}` +
       `/${this.props.state.variable}` +
       `/${this.props.state.time}` +
@@ -1580,7 +1580,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection
         })
       );
@@ -1591,7 +1591,7 @@ export default class Map extends React.PureComponent {
           format: new olformat.MVT(),
           tileGrid: this.vectorTileGrid,
           tilePixelRatio: 8,
-          url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
           projection: this.props.state.projection,
         })
       );
@@ -1626,7 +1626,7 @@ export default class Map extends React.PureComponent {
             format: new olformat.MVT(),
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+            url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${this.props.state.projection}`,
             projection: this.props.state.projection
           })
         );
@@ -1637,7 +1637,7 @@ export default class Map extends React.PureComponent {
             format: new olformat.MVT(),
             tileGrid: this.vectorTileGrid,
             tilePixelRatio: 8,
-            url: `/api/v1.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
+            url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${this.props.state.projection}`,
             projection: this.props.state.projection,
           })
         );

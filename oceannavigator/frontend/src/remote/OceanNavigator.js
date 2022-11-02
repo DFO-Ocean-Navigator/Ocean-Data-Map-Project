@@ -11,25 +11,25 @@ const instance = axios.create({
 
 export function GetDatasetsPromise() {
   return instance.get(
-    "/api/v1.0/datasets"
+    "/api/v2.0/datasets"
   );
 }
 
 export function GetVariablesPromise(dataset) {
   return instance.get(
-    `/api/v1.0/dataset/${dataset}/variables`
+    `/api/v2.0/dataset/${dataset}/variables`
   );
 }
 
 export function GetTimestampsPromise(dataset, variable) {
   return instance.get(
-    `/api/v1.0/dataset/${dataset}/${variable}/timestamps`
+    `/api/v2.0/dataset/${dataset}/${variable}/timestamps`
   );
 }
 
 export function GetDepthsPromise(dataset, variable) {
   return instance.get(
-    `/api/v1.0/dataset/${dataset}/${variable}/depths`,
+    `/api/v2.0/dataset/${dataset}/${variable}/depths`,
     {
       params: {
         include_all_key: true,
@@ -40,24 +40,24 @@ export function GetDepthsPromise(dataset, variable) {
 
 export function GetPresetPointsPromise() {
   return instance.get(
-    "/api/v1.0/kml/points"
+    "/api/v2.0/kml/points"
   );
 }
 
 export function GetPresetLinesPromise() {
   return instance.get(
-    "/api/v1.0/kml/lines"
+    "/api/v2.0/kml/lines"
   );
 }
 
 export function GetPresetAreasPromise() {
   return instance.get(
-    "/api/v1.0/kml/areas"
+    "/api/v2.0/kml/areas"
   );
 }
 
 export function GetClass4Promise() {
   return instance.get(
-    "/api/v1.0/class4"
+    "/api/v2.0/class4"
   );
 }

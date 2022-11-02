@@ -292,7 +292,7 @@ class PointWindow extends React.Component {
           state={this.state.dataset_0.variable}
           def=""
           onUpdate={this.onLocalUpdate}
-          url={`/api/v1.0/dataset/${this.state.dataset_0.dataset}/variables?vectors_only=True`}
+          url={`/api/v2.0/dataset/${this.state.dataset_0.dataset}/variables?vectors_only=True`}
           title={_("Variable")}
         >
           <h1>Variable</h1>
@@ -306,7 +306,7 @@ class PointWindow extends React.Component {
           def={""}
           onUpdate={this.onLocalUpdate}
           url={
-            "/api/v1.0/depth/?variable=" +
+            "/api/v2.0/depth/?variable=" +
             this.state.dataset_0.variable +
             "&dataset=" +
             this.props.dataset_0.dataset
@@ -325,7 +325,7 @@ class PointWindow extends React.Component {
             key="observation_variable"
             id="observation_variable"
             state={this.state.observation_variable}
-            url={`/api/v1.0/observation/variables/station=${this.props.point[0][2]}.json`}
+            url={`/api/v2.0/observation/variables/station=${this.props.point[0][2]}.json`}
             title={_("Observation Variable")}
             multiple
             onUpdate={this.onLocalUpdate}
@@ -447,7 +447,7 @@ class PointWindow extends React.Component {
               state={this.state.colormap}
               def="default"
               onUpdate={this.onLocalUpdate}
-              url="/api/v1.0/plot/colormaps"
+              url="/api/v2.0/plot/colormaps"
               title={_("Colourmap")}
             >
               {_("colourmap_help")}

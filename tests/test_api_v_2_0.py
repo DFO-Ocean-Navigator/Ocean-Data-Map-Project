@@ -19,7 +19,7 @@ class TestAPIv2:
         api_links = json.load(endpoints)
 
     def test_git_info(self) -> None:
-        response = self.client.get("/api/v1.0/git_info")
+        response = self.client.get("/api/v2.0/git_info")
 
         assert response.status_code == 200
 
@@ -28,14 +28,14 @@ class TestAPIv2:
             for script_type in e.ScriptType:
 
                 response = self.client.get(
-                    "/api/v1.0/generate_script",
+                    "/api/v2.0/generate_script",
                     params={"query": "", "lang": lang, "script_type": script_type},
                 )
 
                 assert response.status_code == 200
 
     def test_datasets(self) -> None:
-        response = self.client.get("/api/v1.0/datasets")
+        response = self.client.get("/api/v2.0/datasets")
 
         data = response.json()
 
@@ -43,7 +43,7 @@ class TestAPIv2:
         assert len(data) == 7
 
     def test_dataset(self) -> None:
-        response = self.client.get("/api/v1.0/dataset/giops")
+        response = self.client.get("/api/v2.0/dataset/giops")
 
         data = response.json()
 
@@ -52,7 +52,7 @@ class TestAPIv2:
         assert data["quantum"] == "day"
 
     def test_quantum(self) -> None:
-        response = self.client.get("/api/v1.0/dataset/giops")
+        response = self.client.get("/api/v2.0/dataset/giops")
 
         data = response.json()
 
@@ -60,12 +60,12 @@ class TestAPIv2:
         assert data["quantum"] == "day"
 
     def test_quantum_returns_404_when_dataset_not_found(self) -> None:
-        response = self.client.get("/api/v1.0/dataset/asdf")
+        response = self.client.get("/api/v2.0/dataset/asdf")
 
         assert response.status_code == 404
 
     def test_variables(self) -> None:
-        response = self.client.get("/api/v1.0/dataset/giops/variables")
+        response = self.client.get("/api/v2.0/dataset/giops/variables")
 
         expected = [
             {
@@ -82,7 +82,7 @@ class TestAPIv2:
 
     def test_variables_depth_only(self) -> None:
         response = self.client.get(
-            "/api/v1.0/dataset/giops/variables", params={"has_depth_only": True}
+            "/api/v2.0/dataset/giops/variables", params={"has_depth_only": True}
         )
 
         expected = [
@@ -100,7 +100,7 @@ class TestAPIv2:
 
     def test_variables_vectors_only(self) -> None:
         response = self.client.get(
-            "/api/v1.0/dataset/giops/variables", params={"vectors_only": True}
+            "/api/v2.0/dataset/giops/variables", params={"vectors_only": True}
         )
 
         expected = []
@@ -109,13 +109,13 @@ class TestAPIv2:
         assert response.json() == expected
 
     def test_variables_returns_404_when_dataset_not_found(self) -> None:
-        response = self.client.get("/api/v1.0/dataset/asdf/variables")
+        response = self.client.get("/api/v2.0/dataset/asdf/variables")
 
         assert response.status_code == 404
         assert "asdf" in response.json()["message"]
 
     def test_depths_includes_all_by_default(self):
-        response = self.client.get("/api/v1.0/dataset/giops/votemper/depths")
+        response = self.client.get("/api/v2.0/dataset/giops/votemper/depths")
 
         data = response.json()
 
@@ -126,7 +126,7 @@ class TestAPIv2:
 
     def test_depths_excludes_all(self):
         response = self.client.get(
-            "/api/v1.0/dataset/giops/votemper/depths", params={"include_all_key": False}
+            "/api/v2.0/dataset/giops/votemper/depths", params={"include_all_key": False}
         )
 
         data = response.json()
@@ -136,13 +136,13 @@ class TestAPIv2:
         assert "all" not in map(lambda d: d["id"], data)
 
     def test_scale(self) -> None:
-        response = self.client.get("/api/v1.0/scale/giops/votemper/-5,30")
+        response = self.client.get("/api/v2.0/scale/giops/votemper/-5,30")
 
         assert response.status_code == 200
 
     def test_range(self) -> None:
         response = self.client.get(
-            "/api/v1.0/range",
+            "/api/v2.0/range",
             params={
                 "dataset": "giops_real",
                 "variable": "votemper",
@@ -158,7 +158,7 @@ class TestAPIv2:
         assert response.json() == approx(expected)
 
     def test_timestamps_endpoint_sqlite(self):
-        response = self.client.get("/api/v1.0/dataset/nemo_sqlite3/votemper/timestamps")
+        response = self.client.get("/api/v2.0/dataset/nemo_sqlite3/votemper/timestamps")
         data = json.loads(response.content)
 
         assert response.status_code == 200
@@ -168,7 +168,7 @@ class TestAPIv2:
 
     def test_timestamps_endpoint_xarray(self):
 
-        response = self.client.get("/api/v1.0/dataset/giops/votemper/timestamps")
+        response = self.client.get("/api/v2.0/dataset/giops/votemper/timestamps")
         data = json.loads(response.content)
 
         assert response.status_code == 200
@@ -177,25 +177,25 @@ class TestAPIv2:
         assert data[0]["value"] == "2014-05-17T00:00:00+00:00"
 
     def test_colormaps_endpoint(self):
-        response = self.client.get("/api/v1.0/plot/colormaps")
+        response = self.client.get("/api/v2.0/plot/colormaps")
         data = json.loads(response.content)
 
         assert response.status_code == 200
         assert {"id": "temperature", "value": "Temperature"} in data
 
     def test_colormaps_image_endpoint(self):
-        response = self.client.get("/api/v1.0/plot/colormaps.png")
+        response = self.client.get("/api/v2.0/plot/colormaps.png")
 
         assert response.status_code == 200
 
     def test_class4_query_endpoint(self):
-        response = self.client.get("/api/v1.0/class4")
+        response = self.client.get("/api/v2.0/class4")
 
         response.status_code == 200
 
     def test_class4_models_endpoint(self):
         response = self.client.get(
-            "/api/v1.0/class4/models/ocean_predict"
+            "/api/v2.0/class4/models/ocean_predict"
             "?id=class4_20190102_GIOPS_CONCEPTS_2.3_profile"
         )
 
@@ -203,7 +203,7 @@ class TestAPIv2:
 
     def test_class4_file_endpoint(self):
         response = self.client.get(
-            "/api/v1.0/class4/ocean_predict?projection=EPSG:3857"
+            "/api/v2.0/class4/ocean_predict?projection=EPSG:3857"
             "&resolution=9784"
             "&extent=-15936951,1567587,4805001,12398409"
             "&id=class4_20200101_GIOPS_TEST_profile"
@@ -296,9 +296,9 @@ class TestAPIv2:
 
         # response for each type of query
         response = []
-        response.append(self.client.get("/api/v1.0/kml/points"))
-        response.append(self.client.get("/api/v1.0/kml/lines"))
-        response.append(self.client.get("/api/v1.0/kml/areas"))
+        response.append(self.client.get("/api/v2.0/kml/points"))
+        response.append(self.client.get("/api/v2.0/kml/lines"))
+        response.append(self.client.get("/api/v2.0/kml/areas"))
         for resp in response:
             assert resp.status_code == 200
 
@@ -309,21 +309,21 @@ class TestAPIv2:
         # points
         response.append(
             self.client.get(
-                "/api/v1.0/kml/points/AZMP_Stations?projection=EPSG:3857"
+                "/api/v2.0/kml/points/AZMP_Stations?projection=EPSG:3857"
                 "&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
         # lines
         response.append(
             self.client.get(
-                "/api/v1.0/kml/lines/AZMP%20Transects?projection=EPSG:3857"
+                "/api/v2.0/kml/lines/AZMP%20Transects?projection=EPSG:3857"
                 "&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
         # areas
         response.append(
             self.client.get(
-                "/api/v1.0/kml/areas/AZMP_NL_Region_Analysis_Areas?projection=EPSG:3857"
+                "/api/v2.0/kml/areas/AZMP_NL_Region_Analysis_Areas?projection=EPSG:3857"
                 "&resolution=9784&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
@@ -331,13 +331,13 @@ class TestAPIv2:
         for resp in response:
             assert resp.status_code == 200
 
-    @patch("routes.api_v1_0._cache_and_send_img")
+    @patch("routes.api_v2_0._cache_and_send_img")
     @patch("plotting.tile.plot")
     def test_tile_endpoint(self, patch_tile, patch_cache_img):
         patch_tile.return_value = None
         patch_cache_img.return_value = None
         response = self.client.get(
-            "/api/v1.0/tiles/giops_real/votemper/2212704000/0/6/50/40"
+            "/api/v2.0/tiles/giops_real/votemper/2212704000/0/6/50/40"
             "?projection=EPSG:3857&scale=-5,30&interp=gaussian&radius=25&neighbours=10"
         )
 
@@ -346,20 +346,20 @@ class TestAPIv2:
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_topo_endpoint(self):
         response = self.client.get(
-            "/api/v1.0/tiles/topo/6/52/41?shaded_relief=false&projection=EPSG:3857"
+            "/api/v2.0/tiles/topo/6/52/41?shaded_relief=false&projection=EPSG:3857"
         )
 
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_bath_endpoint(self):
-        response = self.client.get("api/v1.0/tiles/bath/6/56/41?projection=EPSG:3857")
+        response = self.client.get("api/v2.0/tiles/bath/6/56/41?projection=EPSG:3857")
 
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_mbt_endpoint(self):
-        response = self.client.get("/api/v1.0/mbt/lands/7/105/77?projection=EPSG:3857")
+        response = self.client.get("/api/v2.0/mbt/lands/7/105/77?projection=EPSG:3857")
 
         assert response.status_code == 200
 

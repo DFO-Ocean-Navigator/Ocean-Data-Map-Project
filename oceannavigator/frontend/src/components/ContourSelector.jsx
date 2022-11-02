@@ -70,7 +70,7 @@ class ContourSelector extends React.Component {
           state={this.props.state.variable}
           def=""
           onUpdate={this.onUpdate}
-          url={`/api/v1.0/dataset/${this.props.dataset}/variables`} 
+          url={`/api/v2.0/dataset/${this.props.dataset}/variables`} 
           title={this.props.title}
         >
           {this.props.children}
@@ -99,14 +99,14 @@ class ContourSelector extends React.Component {
               state={this.props.state.colormap}
               def=""
               onUpdate={this.onUpdate}
-              url="/api/v1.0/plot/colormaps"
+              url="/api/v2.0/plot/colormaps"
               title={_("Colourmap")}
             >
               There are several colourmaps available. This tool tries to pick an
               appropriate default based on the variable type (Default For
               Variable). If you want to use any of the others, they are all
               selectable.
-              <img src="/colormaps.png/" />
+              <img src="/api/v2.0/plot/colormaps.png/" />
             </ComboBox>
           </div>
           <CheckBox

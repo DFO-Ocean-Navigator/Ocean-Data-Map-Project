@@ -8,7 +8,7 @@ queryObj <- fromJSON(query)
 fname <- paste("ONAV_PLOT_", queryObj["dataset"],"_", queryObj["variable"],".png", sep="")
 
 gsub("[\r\n]", "", query)
-base_url <- "http://navigator.oceansdata.ca/api/v1.0/plot/{p}?"
+base_url <- "https://navigator.oceansdata.ca/api/v2.0/plot/{p}?"
 url <- paste(base_url,"&query=",URLencode(query),"&dpi=",toString(dpi), sep="")
 print(url)
 
