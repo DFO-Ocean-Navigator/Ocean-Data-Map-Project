@@ -129,7 +129,7 @@ class PlotImage extends React.PureComponent {
         function (xhr) {
           if (this._mounted) {
             // Get our custom error message
-            const message = JSON.parse(xhr.responseText).message;
+            const message = xhr.getResponseHeader("x-error-message");
 
             this.setState({
               url: FAIL_IMAGE,
