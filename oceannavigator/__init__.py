@@ -1,140 +1,107 @@
 import logging
-import os
-import subprocess
-import tempfile
-from pathlib import Path
-from sys import argv
+import pathlib
 
 import dask
 import sentry_sdk
-from flask import Flask, request, send_file
-from flask.logging import default_handler
-from flask_babel import Babel
-from flask_compress import Compress
-from sentry_sdk.integrations.flask import FlaskIntegration
-from werkzeug.middleware.profiler import ProfilerMiddleware
+from fastapi import FastAPI, Request
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.routing import Mount
+from fastapi.staticfiles import StaticFiles
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
-from data.observational import db
-from utils.ascii_terminal_colors import ASCIITerminalColors
+from oceannavigator.dataset_config import DatasetConfig
 
-# Although DatasetConfig is not used in this module, this import is absolutely necessary
-# because it is how the rest of the app gets access to DatasetConfig
-from .dataset_config import DatasetConfig  # noqa: F401
-
-babel = Babel()
+from .settings import get_settings
 
 
-def config_blueprints(app) -> None:
-    from routes.api_v1_0 import bp_v1_0
+def configure_logger(log_level: str) -> None:
+    logger = logging.getLogger("Ocean_Navigator")
+    logger.setLevel(log_level)
 
-    app.register_blueprint(bp_v1_0)
-
-
-def config_dask(app) -> None:
-    dask.config.set(scheduler=app.config.get("DASK_SCHEDULER", "processes"))
-    dask.config.set(num_workers=app.config.get("DASK_NUM_WORKERS", 4))
-    dask.config.set(
-        {
-            "multiprocessing.context": app.config.get(
-                "DASK_MULTIPROCESSING_CONTEXT", "spawn"
-            )
-        }
+    formatter = logging.Formatter(
+        "[%(asctime)s] [%(process)d] [%(levelname)s] "
+        "%(message)s (%(filename)s:%(lineno)d)"
     )
 
+    ch = logging.StreamHandler()
+    ch.setLevel(log_level)
+    ch.setFormatter(formatter)
 
-def configure_log_formatter() -> None:
-    default_handler.setFormatter(
-        logging.Formatter(
-            "%(asctime)s %(levelname)s in [%(pathname)s:%(lineno)d]: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-    )
+    logger.addHandler(ch)
 
 
-def subprocess_check_output(*args) -> str:
-    try:
-        return (
-            subprocess.check_output([*args], stderr=subprocess.STDOUT)
-            .decode("ascii")
-            .strip()
-        )
-    except UnicodeDecodeError:
-        print(
-            "Unable to decode subprocess response - try updating your current branch."
-        )
-        return ""
-    except subprocess.CalledProcessError as e:
-        print(
-            f"Exception on process - args={args} rc=#{e.returncode} output=#{e.output}"
-        )
-        return ""
+def configure_dask() -> None:
+    settings = get_settings()
+    dask.config.set(scheduler=settings.dask_scheduler)
+    dask.config.set(num_workers=settings.dask_num_workers)
+    dask.config.set({"multiprocessing.context": settings.dask_multiprocessing_context})
 
 
-def create_app(testing: bool = False, dataset_config_path: str = ""):
-    configure_log_formatter()
+def configure_sentry(app: FastAPI) -> None:
+    settings = get_settings()
 
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
-        integrations=[FlaskIntegration()],
-        traces_sample_rate=float(os.getenv("SENTRY_TRACES_RATE", 0)),
-        environment=os.getenv("SENTRY_ENV"),
+        traces_sample_rate=float(settings.sentry_traces_rate),
+        environment=settings.sentry_env,
     )
-    app = Flask(__name__, static_url_path="", static_folder="frontend")
-    app.add_url_rule("/", "root", lambda: app.send_static_file("index.html"))
-    app.config.from_pyfile("oceannavigator.cfg", silent=False)
-    app.config.from_envvar("OCEANNAVIGATOR_SETTINGS", silent=True)
-    app.testing = testing
-    app.git_hash = subprocess_check_output("git", "rev-parse", "HEAD")
-    app.git_tag = subprocess_check_output("git", "describe", "--tags", "--abbrev=0")
 
-    if app.config.get("WSGI_PROFILING"):
-        path = Path("./profiler_results")
-        path.mkdir(parents=True, exist_ok=True)
-        app.wsgi_app = ProfilerMiddleware(
-            app.wsgi_app,
-            stream=None,
-            restrictions=[10],
-            profile_dir="./profiler_results",
-        )
+    SentryAsgiMiddleware(app)
 
-    if testing:
-        # Override cache dirs when testing
-        # to avoid test files being cached
-        # in production cache
-        cache_dir = tempfile.mkdtemp()
-        tile_dir = tempfile.mkdtemp()
-        app.config.update(CACHE_DIR=cache_dir, TILE_CACHE_DIR=tile_dir)
-        print(
-            f"{ASCIITerminalColors.WARNING}[Warning] -- Cached files will NOT be cleaned after tests complete: {cache_dir} AND {tile_dir}{ASCIITerminalColors.ENDC}"  # noqa: E501
-        )
 
-    db.init_app(app)
+def configure_opentelemetry(app: FastAPI) -> None:
+    FastAPIInstrumentor.instrument_app(app)
 
-    datasetConfig = argv[-1]
-    if ".json" in datasetConfig:
-        app.config["datasetConfig"] = datasetConfig
-    else:
-        app.config["datasetConfig"] = "datasetconfig.json"
 
-    if dataset_config_path:
-        app.config["datasetConfig"] = dataset_config_path
+def add_routes(app: FastAPI) -> None:
+    from routes.api_v2_0 import router as v2_router
 
-    @app.route("/public/")
-    def public_index():
-        res = send_file("frontend/public/index.html")
-        return res
+    app.include_router(v2_router)
 
-    config_dask(app)
 
-    config_blueprints(app)
+def configure_exception_handlers(app: FastAPI) -> None:
+    @app.exception_handler(KeyError)
+    async def resource_not_found_handler(request: Request, exception) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"message": str(exception)})
 
-    Compress(app)
 
-    babel.init_app(app)
+def create_app() -> FastAPI:
+    get_settings.cache_clear()
+    settings = get_settings()
+
+    configure_logger(settings.log_level)
+
+    DatasetConfig._get_dataset_config.cache_clear()
+    DatasetConfig._get_dataset_config()
+
+    pathlib.Path('oceannavigator/frontend/public').mkdir(parents=True, exist_ok=True)
+
+    routes = [
+        Mount(
+            "/public",
+            app=StaticFiles(directory="oceannavigator/frontend/public", html=True),
+            name="public",
+        ),
+    ]
+
+    app = FastAPI(debug=settings.debug, routes=routes)
+
+    app.add_middleware(GZipMiddleware)
+
+    configure_sentry(app)
+    configure_opentelemetry(app)
+    configure_dask()
+    configure_exception_handlers(app)
+
+    add_routes(app)
+
+    # We must mount the root page AFTER adding ALL other routes.
+    # see: https://github.com/encode/starlette/issues/437#issuecomment-473598659
+    # Yes, this function is discouraged but YOLO.
+    app.mount(
+        "/", StaticFiles(directory="oceannavigator/frontend/", html=True), name="root"
+    )
 
     return app
-
-
-@babel.localeselector
-def get_locale():
-    return request.accept_languages.best_match(["en", "fr"])

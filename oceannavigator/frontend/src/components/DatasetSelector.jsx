@@ -526,7 +526,7 @@ class DatasetSelector extends React.Component {
             ).scale
           }
           autourl={
-            "/api/v1.0/range/" +
+            "/api/v2.0/range/" +
             this.state.dataset +
             "/" +
             this.state.variable +

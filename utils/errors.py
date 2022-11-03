@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 """
     Base class for errors
 """
@@ -47,14 +49,14 @@ class ServerError(ErrorBase):
 
 
 """
-    Error class for API-related stuff
+    Error method for API-related stuff
 """
 
 
-class APIError(ErrorBase):
-    def __init__(self, message: str):
-        super(APIError, self).__init__(
-            message,
-            status_code=400,
-            link="https://dfo-ocean-navigator.github.io/Ocean-Navigator-API-Tool/",
-        )
+def APIError(message):
+
+    return HTTPException(
+        status_code=404,
+        detail="Improper API usage.",
+        headers={"X-Error-Message": message},
+    )

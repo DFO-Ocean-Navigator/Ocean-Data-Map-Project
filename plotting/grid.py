@@ -175,7 +175,6 @@ class Grid(object):
                     method=method,
                     neighbours=neighbours,
                     radius_of_influence=radius,
-                    nprocs=4,
                 )
             )
         resampled = np.ma.vstack(resampled)
@@ -283,7 +282,6 @@ class Grid(object):
                     method=method,
                     neighbours=neighbours,
                     radius_of_influence=radius,
-                    nprocs=4,
                 )
             )
         combined = np.ma.array(combined)
@@ -343,7 +341,6 @@ def resample(
     method="inv_square",
     neighbours=8,
     radius_of_influence=500000,
-    nprocs=4,
 ):
     masked_lat = in_lat.view(np.ma.MaskedArray)
     masked_lon = in_lon.view(np.ma.MaskedArray)
