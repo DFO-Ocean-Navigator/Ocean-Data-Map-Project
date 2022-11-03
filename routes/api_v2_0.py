@@ -605,7 +605,7 @@ def colormaps_png():
 
 
 @router.get("/plot/{plot_type}")
-def plot(
+async def plot(
     plot_type: str = Path(..., title="The key of the dataset.", example="profile"),
     query: str = Query(
         ...,
