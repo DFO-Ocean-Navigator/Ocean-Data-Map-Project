@@ -130,7 +130,7 @@ class TransectPlotter(LinePlotter):
                 "distance": distance,
                 "data": value,
                 "name": variable_names[0],
-                "unit": variable_units[0],
+                "units": variable_units[0],
                 "parallel": parallel,
                 "perpendicular": perpendicular,
                 "magnitude": magnitude,
@@ -150,7 +150,7 @@ class TransectPlotter(LinePlotter):
                     "distance": surface_dist,
                     "data": surface_value,
                     "name": surface_name,
-                    "unit": surface_unit,
+                    "units": surface_unit,
                 }
 
         # Load data sent from Right Map (if in compare mode)
@@ -207,7 +207,7 @@ class TransectPlotter(LinePlotter):
                         self.points, self.compare["variables"][0], self.compare["time"]
                     )
 
-                    self.compare["unit"] = dataset.variables[
+                    self.compare["units"] = dataset.variables[
                         self.compare["variables"][0]
                     ].unit
                     self.__fill_invalid_shift(climate_data)
@@ -307,22 +307,22 @@ class TransectPlotter(LinePlotter):
 
         if self.surface is not None:
             columns.append(
-                "%s (%s)" % (self.surface_data["name"], self.surface_data["unit"])
+                "%s (%s)" % (self.surface_data["name"], self.surface_data["units"])
             )
 
         if len(self.variables) > 1:
             columns.append(
                 "Parallel %s (%s)"
-                % (self.transect_data["name"], self.transect_data["unit"])
+                % (self.transect_data["name"], self.transect_data["units"])
             )
             columns.append(
                 "Perpendicular %s (%s)"
-                % (self.transect_data["name"], self.transect_data["unit"])
+                % (self.transect_data["name"], self.transect_data["units"])
             )
             values = ["parallel", "perpendicular"]
         else:
             columns.append(
-                "%s (%s)" % (self.transect_data["name"], self.transect_data["unit"])
+                "%s (%s)" % (self.transect_data["name"], self.transect_data["units"])
             )
             values = ["data"]
 
@@ -359,7 +359,7 @@ class TransectPlotter(LinePlotter):
 
         columns = [
             "Statistic",
-        ] + ["%s (%s)" % (self.transect_data["name"], self.transect_data["unit"])]
+        ] + ["%s (%s)" % (self.transect_data["name"], self.transect_data["units"])]
 
         data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
@@ -392,14 +392,14 @@ class TransectPlotter(LinePlotter):
                 "%s Parallel" % self.transect_data["name"],
                 "%s Perpendicular" % self.transect_data["name"],
             ]
-            variable_units = [self.transect_data["unit"]] * 2
+            variable_units = [self.transect_data["units"]] * 2
             pa = self.transect_data["parallel"].transpose()
             pe = self.transect_data["perpendicular"].transpose()
             data = np.ma.array([pa, pe])
             data = np.rollaxis(data, 0, 2)
         else:
             variable_names = [self.transect_data["name"]]
-            variable_units = [self.transect_data["unit"]]
+            variable_units = [self.transect_data["units"]]
             data = self.transect_data["data"].transpose()
 
         data = float_to_str(data)
@@ -612,7 +612,7 @@ class TransectPlotter(LinePlotter):
                     "Magnitude", # gettext("Magnitude"),
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
                 Row += 1
@@ -630,7 +630,7 @@ class TransectPlotter(LinePlotter):
                     "Parallel", # gettext("Parallel"),
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
                 Row += 1
@@ -649,7 +649,7 @@ class TransectPlotter(LinePlotter):
                     "Perpendicular", # gettext("Perpendicular"),
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
 
@@ -693,7 +693,7 @@ class TransectPlotter(LinePlotter):
                     "Parallel", # gettext("Parallel"),
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
                 Col += 1
@@ -710,7 +710,7 @@ class TransectPlotter(LinePlotter):
                     "Perpendicular", # gettext("Perpendicular"),
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
 
@@ -749,7 +749,7 @@ class TransectPlotter(LinePlotter):
                         "Parallel", # gettext("Parallel"),
                         vmin,
                         vmax,
-                        self.transect_data["unit"],
+                        self.transect_data["units"],
                         cmap,
                     )
                     Col += 1
@@ -766,7 +766,7 @@ class TransectPlotter(LinePlotter):
                         "Perpendicular", # gettext("Perpendicular"),
                         vmin,
                         vmax,
-                        self.transect_data["unit"],
+                        self.transect_data["units"],
                         cmap,
                     )
 
@@ -792,7 +792,7 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["name"],
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
 
@@ -816,7 +816,7 @@ class TransectPlotter(LinePlotter):
                     self.compare["name"],
                     vmin,
                     vmax,
-                    self.compare["unit"],
+                    self.compare["units"],
                     self.compare["colormap"],
                 )
 
@@ -849,7 +849,7 @@ class TransectPlotter(LinePlotter):
                         vmax,
                         # Since both variables are the same doesn't matter which
                         # view we reference
-                        self.transect_data["unit"],
+                        self.transect_data["units"],
                         # Colormap for difference graphs
                         colormap.find_colormap(self.compare["colormap_diff"]),
                     )
@@ -902,7 +902,7 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["name"],
                     vmin,
                     vmax,
-                    self.transect_data["unit"],
+                    self.transect_data["units"],
                     self.cmap,
                 )
 
@@ -924,7 +924,7 @@ class TransectPlotter(LinePlotter):
         ax.locator_params(nbins=3)
         ax.yaxis.tick_right()
         ax.yaxis.set_label_position("right")
-        label = plt.ylabel(utils.mathtext(self.surface_data["unit"]))
+        label = plt.ylabel(utils.mathtext(self.surface_data["units"]))
         title = plt.title(self.surface_data["name"], y=1.1)
         plt.setp(title, size="smaller")
         plt.setp(label, size="smaller")

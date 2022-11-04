@@ -747,7 +747,7 @@ class NetCDFData(Data):
         try:
             return list(self.dataset.dims)
         except AttributeError:
-            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions 
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions
             # property
             return [dim for dim in self.dataset.dimensions]
 
