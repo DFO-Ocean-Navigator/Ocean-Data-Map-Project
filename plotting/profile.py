@@ -1,7 +1,6 @@
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
 
 import plotting.utils as utils
 from data import open_dataset
@@ -24,7 +23,7 @@ class ProfilePlotter(PointPlotter):
                 self.load_misc(ds, self.variables)
             except IndexError as e:
                 raise ClientError(
-                    gettext(
+                    ( #gettext(
                         "The selected variable(s) were not found in the dataset. \
                         Most likely, this variable is a derived product from \
                         existing dataset variables. Please select another variable. "
@@ -181,7 +180,7 @@ class ProfilePlotter(PointPlotter):
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
+                current_axis.set_ylabel("Depth (m)", fontsize=14) # current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
 
             if self.compare:
@@ -196,7 +195,7 @@ class ProfilePlotter(PointPlotter):
             plt.suptitle(
                 "%s(%s)\n%s\n%s"
                 % (
-                    gettext("Profile for "),
+                    "Profile for ", # gettext("Profile for "),
                     ", ".join(self.names),
                     ", ".join(self.variable_names),
                     self.date_formatter(self.iso_timestamp),

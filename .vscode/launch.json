@@ -1,21 +1,22 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "ONav",
-            "type": "python",
-            "request": "launch",
-            "program": "runserver.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "hypercorn",
+      "args": ["runserver.sh:app"],
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
 }

@@ -8,10 +8,10 @@ import cftime
 import numpy as np
 import pyproj
 import xarray as xr
-from flask import current_app
 from shapely.geometry import Point
 from shapely.geometry.polygon import LinearRing
 
+from oceannavigator.settings import get_settings
 from scripts import generate_class4_list
 
 
@@ -23,13 +23,14 @@ def list_class4_files():
     not accessible, this function falls back to the slow method of generating
     the list on the fly.
     """
+    settings = get_settings()
 
     pickle_files = ["class4_OP_files.pickle", "class4_RAO_files.pickle"]
-    class4_path = ["CLASS4_OP_PATH", "CLASS4_RAO_PATH"]
+    class4_path = [settings.class4_op_path, settings.class4_rao_path]
     data = {"ocean_predict": None, "riops_obs": None}
 
     for file, path, class4_type in zip(pickle_files, class4_path, data.keys()):
-        cache_file_name = Path(current_app.config["CACHE_DIR"]).joinpath(file)
+        cache_file_name = Path(settings.cache_dir).joinpath(file)
 
         try:
             fp = open(cache_file_name, "rb")
@@ -39,9 +40,7 @@ def list_class4_files():
                    Class 4 files on the fly.
                    """
             print(msg)
-            return _list_class4_files_slowly(
-                current_app.config[path], current_app.config["CLASS4_FNAME_PATTERN"]
-            )
+            return _list_class4_files_slowly(path, settings.class4_fname_pattern)
 
         # We need to read from the cache file. To ensure another process is not
         # currently *writing* to the cache file, first acquire a shared lock (i.e.,
@@ -73,9 +72,7 @@ def list_class4_files():
                 Class 4 files on the fly.
                 """
             print(msg)
-            result = _list_class4_files_slowly(
-                current_app.config[path], current_app.config["CLASS4_FNAME_PATTERN"]
-            )
+            result = _list_class4_files_slowly(path, settings.class4_fname_pattern)
         fp.close()
 
         data[class4_type] = result
@@ -261,11 +258,12 @@ def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
 
         List of dictionaries with `id` and `value` fields.
     """
+    settings = get_settings()
 
     if class4_type == "ocean_predict":
-        type_path = current_app.config["CLASS4_OP_PATH"]
+        type_path = settings.class4_op_path
     else:
-        type_path = current_app.config["CLASS4_RAO_PATH"]
+        type_path = settings.class4_rao_path
 
     yyyymmdd = class4_id[7:15]
     yyyy = yyyymmdd[:4]
@@ -284,9 +282,10 @@ def list_class4_models(class4_id: str, class4_type: str) -> List[dict]:
 
 
 def get_fname_pattern(class4_type):
+    settings = get_settings()
     if class4_type == "ocean_predict":
-        fname_pattern = current_app.config["CLASS4_OP_PATH"]
-    else:
-        fname_pattern = current_app.config["CLASS4_RAO_PATH"]
+        fname_pattern = settings.class4_op_path
+    elif class4_type == "riops_obs":
+        fname_pattern = settings.class4_rao_path
 
-    return fname_pattern + current_app.config["CLASS4_FNAME_PATTERN"]
+    return fname_pattern + settings.class4_fname_pattern

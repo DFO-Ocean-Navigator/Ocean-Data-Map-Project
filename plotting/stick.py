@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
+# from flask_babel import gettext
 from matplotlib.dates import date2num
 
 import plotting.utils as utils
@@ -191,7 +191,7 @@ class StickPlotter(PointPlotter):
                         depth = "%d m" % np.round(self.data_depth[idx, 0, idx2, 0])
                     if self.plotTitle is None or self.plotTitle == "":
                         a.set_title(
-                            gettext("%s at (%s)\n%s")
+                            "%s at (%s)\n%s"  # gettext("%s at (%s)\n%s")
                             % (self.variable_name, self.names[idx], depth),
                             fontsize=15,
                         )

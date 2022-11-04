@@ -1,15 +1,14 @@
-import datetime
 import unittest
 from unittest.mock import patch
 
 import numpy as np
-import pytz
+from fastapi.exceptions import HTTPException
+from pytest import raises
 
 from data.nemo import Nemo
 from data.netcdf_data import NetCDFData
 from data.variable import Variable
 from data.variable_list import VariableList
-from utils.errors import APIError
 
 
 class TestNemo(unittest.TestCase):
@@ -223,5 +222,5 @@ class TestNemo(unittest.TestCase):
     def test_get_profile_raises_when_surface_variable_requested(self):
         nc_data = NetCDFData("tests/testdata/salishseacast_ssh_test.nc")
         with Nemo(nc_data) as ds:
-            with self.assertRaises(APIError):
+            with raises(HTTPException):
                 ds.get_profile(None, None, "ssh", None, None)

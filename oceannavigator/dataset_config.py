@@ -1,38 +1,43 @@
 import json
 import re
-from pathlib import Path
-from typing import Union
+from functools import lru_cache
+from typing import List, Union
 
-from flask import current_app
+from .log import log
+from .settings import get_settings
 
 
 class DatasetConfig:
     """Access class for the dataset configuration"""
 
-    __config = None
-
     def __init__(self, dataset: str) -> None:
-        self._config = DatasetConfig._get_dataset_config()[dataset]
+        try:
+            self._config = DatasetConfig._get_dataset_config()[dataset]
+        except KeyError as e:
+            raise KeyError(f"Dataset ({dataset}) not found.") from e
+
         self._dataset_key: str = dataset
 
     @staticmethod
-    def get_datasets() -> list:
+    def get_datasets() -> List[str]:
         """
         Returns a list of the currently enabled datasets in the dataset config file
         """
         config = DatasetConfig._get_dataset_config()
 
         # Only return "enabled" datasets
-        return [key for key in config.keys() if config[key].get("enabled")]
+        return list(filter(lambda k: config[k].get("enabled"), config.keys()))
 
     @staticmethod
+    @lru_cache()
     def _get_dataset_config() -> dict:
-        if DatasetConfig.__config is None:
-            cwd = Path(__file__).parent
-            with open(cwd.joinpath(current_app.config["datasetConfig"]), "r") as f:
-                DatasetConfig.__config = json.load(f)
-
-        return DatasetConfig.__config
+        settings = get_settings()
+        with open(settings.dataset_config_file, "r") as f:
+            config = json.load(f)
+            log().debug(
+                f"Loaded dataset config file from: {settings.dataset_config_file}"
+            )
+            return config
 
     def _get_attribute(self, key: str) -> Union[str, dict]:
         return self._config.get(key) if not None else ""
