@@ -235,11 +235,11 @@ class AreaWindow extends React.Component {
               state={this.state.colormap_diff} 
               def='default' 
               onUpdate={this.onLocalUpdate} 
-              url='/api/v1.0/colormaps/' 
+              url='/api/v2.0/plot/colormaps' 
               title={_("Diff. Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/colormaps.png" />
+              <img src="/api/v2.0/plot/colormaps.png/" />
             </ComboBox>
           </div>
           {/* End of Compare Datasets options */}
@@ -328,11 +328,11 @@ class AreaWindow extends React.Component {
               state={this.state.leftColormap} 
               def='default' 
               onUpdate={this.onLocalUpdate} 
-              url='/api/v1.0/colormaps/' 
+              url='/api/v2.0/plot/colormaps' 
               title={_("Colourmap")}
             >
               {_("colourmap_help")}
-              <img src="/colormaps.png" />
+              <img src="/api/v2.0/plot/colormaps.png/" />
             </ComboBox>
           </div>
         </Panel.Body>
@@ -368,11 +368,11 @@ class AreaWindow extends React.Component {
                   state={this.state.rightColormap} 
                   def='default' 
                   onUpdate={this.onLocalUpdate} 
-                  url='/api/v1.0/colormaps/' 
+                  url='/api/v2.0/plot/colormaps' 
                   title={_("Colourmap")}
                 >
                   {_("colourmap_help")}
-                  <img src="/colormaps.png" />
+                  <img src="/api/v2.0/plot/colormaps.png/" />
                 </ComboBox>
               </div>
             </Panel.Body>

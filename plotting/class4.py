@@ -3,12 +3,15 @@ from textwrap import wrap
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import current_app
-from flask_babel import gettext
+
+#from flask_babel import gettext
 from netCDF4 import Dataset, chartostring
 
 import plotting.utils as utils
+from oceannavigator.settings import get_settings
 from plotting.plotter import Plotter
+
+settings = get_settings()
 
 
 class Class4Plotter(Plotter):
@@ -33,10 +36,10 @@ class Class4Plotter(Plotter):
         self.class4_type = query.get("class4type")
 
         if self.class4_type == "ocean_predict":
-            self.fname_pattern = current_app.config["CLASS4_OP_PATH"]
+            self.fname_pattern = settings.class4_op_path
         else:
-            self.fname_pattern = current_app.config["CLASS4_RAO_PATH"]
-        self.fname_pattern += current_app.config["CLASS4_FNAME_PATTERN"]
+            self.fname_pattern = settings.class4_rao_path
+        self.fname_pattern += settings.class4_fname_pattern
 
         models = query.get("models")
         if models is None:
@@ -180,7 +183,7 @@ class Class4Plotter(Plotter):
 
                 if self.error in ["climatology", "observation"]:
                     if self.error == "climatology":
-                        plot_label = gettext("Error wrt Climatology")
+                        plot_label = "Error wrt Climatology" # gettext("Error wrt Climatology")
                         handles.append(
                             plt.plot(
                                 self.observed_data[i, idx, :]
@@ -189,11 +192,11 @@ class Class4Plotter(Plotter):
                                 form,
                             )
                         )
-                        legend.append(f"{id_label} {gettext('Observed')}")
+                        legend.append(f"{id_label} {'Observed'}") # {gettext('Observed')}")
 
                         data = self.climatology_data
                     else:
-                        plot_label = gettext("Error wrt Observation")
+                        plot_label = "Error wrt Observation" # gettext("Error wrt Observation")
 
                         data = self.observed_data
 
@@ -226,14 +229,14 @@ class Class4Plotter(Plotter):
                                 form,
                             )
                         )
-                        legend.append(f"{id_label} {gettext('Climatology')}")
+                        legend.append(f"{id_label} {'Climatology'}") # {gettext('Climatology')}")
                     lim = np.abs(plt.xlim()).max()
                     plt.xlim([-lim, lim])
                 else:
                     handles.append(
                         plt.plot(self.observed_data[i, idx, :], self.depths[i], form)
                     )
-                    legend.append("%s %s" % (id_label, gettext("Observed")))
+                    legend.append("%s %s" % (id_label, "Observed")) # gettext("Observed")))
                     handles.append(
                         plt.plot(self.forecast_data[i, idx, :], self.depths[i], form)
                     )
@@ -254,7 +257,7 @@ class Class4Plotter(Plotter):
                                 self.climatology_data[i, idx, :], self.depths[i], form
                             )
                         )
-                        legend.append(f"{id_label} {gettext('Climatology')}")
+                        legend.append(f"{id_label} {'Climatology'}") # {gettext('Climatology')}")
 
             plt.xlim([np.floor(plt.xlim()[0]), np.ceil(plt.xlim()[1])])
 
@@ -263,7 +266,7 @@ class Class4Plotter(Plotter):
             plt.xlabel(f"{v} ({utils.mathtext(self.variable_units[idx])})", fontsize=14)
             plt.gca().invert_yaxis()
             plt.ylabel(
-                gettext(f"Depth ({utils.mathtext(self.depth_unit)})"), fontsize=14
+                f"Depth ({utils.mathtext(self.depth_unit)})", fontsize=14 # gettext(f"Depth ({utils.mathtext(self.depth_unit)})"), fontsize=14
             )
             plt.grid(True)
 

@@ -45,7 +45,7 @@ class TrackWindow extends React.Component {
 
   componentDidMount() {
     $.ajax({
-      url: `/api/v1.0/observation/tracktimerange/${this.props.track}.json`,
+      url: `/api/v2.0/observation/tracktimerange/${this.props.track}.json`,
       dataType: "json",
       cache: true,
       success: function(data) {
@@ -103,7 +103,7 @@ class TrackWindow extends React.Component {
       id='dataset'
       state={this.props.dataset}
       def=''
-      url='/api/v1.0/datasets/'
+      url='/api/v2.0/datasets'
       title={_("Dataset")}
       onUpdate={this.props.onUpdate}
     />;
@@ -114,7 +114,7 @@ class TrackWindow extends React.Component {
       state={this.state.trackvariable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={`/api/v1.0/observation/variables/platform=${this.props.track[0]}.json`}
+      url={`/api/v2.0/observation/variables/platform=${this.props.track[0]}.json`}
       title={_("Observed Variable")}
     ><h1>Track Variable</h1></ComboBox>;
     var variable = <ComboBox
@@ -124,7 +124,7 @@ class TrackWindow extends React.Component {
       state={this.state.variable}
       def=''
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/variables/?dataset="+this.props.dataset}
+      url={`/api/v2.0/dataset/${this.props.dataset}/variables`}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
     var showmap = <CheckBox
@@ -192,7 +192,7 @@ class TrackWindow extends React.Component {
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={"/api/v1.0/depth/?variable=" +
+      url={"/api/v2.0/depth/?variable=" +
         this.state.variable +
         "&dataset=" +
         this.props.dataset

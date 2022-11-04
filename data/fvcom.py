@@ -226,7 +226,6 @@ class Fvcom(Model):
                             neighbours=10,
                             weight_funcs=weight,
                             fill_value=None,
-                            nprocs=4,
                         )
                     )
 
@@ -246,7 +245,6 @@ class Fvcom(Model):
                     neighbours=10,
                     weight_funcs=weight,
                     fill_value=None,
-                    nprocs=4,
                 )
 
         if len(origshape) == 3:

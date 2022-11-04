@@ -23,7 +23,6 @@ class SubsetPanel extends React.Component {
       dataset: props.dataset.dataset,
       variable: props.dataset.variable,
       output_format: "NETCDF4", // Subset output format
-      convertToUserGrid: false,
       zip: false, // Should subset file(s) be zipped
       subset_variables: [],
     };
@@ -82,13 +81,10 @@ subsetArea() {
   }
   const output_endtime = this.state.output_timerange ? 
     this.state.output_endtime : this.state.output_starttime;
-  window.location.href = "/api/v1.0/subset/?" +
+  window.location.href = `/api/v2.0/subset/${this.props.dataset.dataset}/${this.state.output_variables.join() }?` +
      "&output_format=" + this.state.output_format +
-     "&dataset_name=" + this.props.dataset.dataset +
-     "&variables=" + this.state.output_variables.join() +
       queryString +
      "&time=" + [this.state.output_starttime, output_endtime].join() +
-     "&user_grid=" + (this.state.convertToUserGrid ? 1 : 0) +
      "&should_zip=" + (this.state.zip ? 1 : 0);
 }
 
@@ -98,7 +94,6 @@ saveScript(key) {
     "dataset_name": this.props.dataset.dataset,
     "variables": this.state.output_variables.join(),
     "time": [this.state.output_starttime, this.state.output_endtime].join(),
-    "user_grid": (this.state.convertToUserGrid ? 1:0),
     "should_zip": (this.state.zip ? 1:0)
   };
   // check if predefined area
@@ -111,10 +106,10 @@ saveScript(key) {
   }
 
   window.location.href = window.location.origin + 
-                        "/api/v1.0/generatescript/?query=" + 
+                        "/api/v2.0/generate_script/?query=" + 
                         stringify(query) + 
                         "&lang=" + key + 
-                        "&scriptType=SUBSET";
+                        "&scriptType=subset";
 }
 
 getSubsetVariables() {

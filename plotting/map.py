@@ -7,7 +7,6 @@ import cartopy.crs as ccrs
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
 from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
@@ -178,7 +177,7 @@ class MapPlotter(Plotter):
 
             if abs(self.bounds[3] - self.bounds[1]) > 360:
                 raise ClientError(
-                    gettext(
+                    ( # gettext(
                         "You have requested an area that exceeds the width \
                         of the world. Thinking big is good but plots need to \
                         be less than 360 deg wide."
