@@ -312,11 +312,26 @@ class MapToolbar extends React.Component {
 
   // Instructs the OceanNavigator to fetch point data
   applyPointCoords() {
+    let latitude = this.state.coordinate[0]
+    let longitude = this.state.coordinate[1]
+    //Latitude ranges between -90 and 90 degrees, inclusive. 
+    //Values above or below this range will be clamped to the range [-90, 90]. 
+    //This means that if the value specified is less than -90, it will be set to -90. 
+    //And if the value is greater than 90, it will be set to 90.
+    latitude = (latitude >90) ? 90: latitude;
+    latitude = (latitude <-90) ? -90: latitude;
+    //Longitude ranges between -180 and 180 degrees, inclusive. 
+    //Values above or below this range will be wrapped so that they fall within the range.
+    //For example, a value of -190 will be converted to 170. A value of 190 will be converted to -170. 
+    //This reflects the fact that longitudes wrap around the globe.//
+    longitude = (longitude >180) ? longitude - 360: longitude;
+    longitude = (longitude <-180) ? 360 + longitude: longitude;
+    let appliedPointCords = [latitude, longitude]
     // Draw points on map(s)
-    this.props.action("add", "point", [this.state.coordinate]);
+    this.props.action("add", "point", [appliedPointCords]);
     // We send "enterPoint" too so that the coordinates do not get
     // negated or reversed.
-    this.props.action("point", this.state.coordinate, "enterPoint");
+    this.props.action("point", appliedPointCords, "enterPoint");
   }
 
   // Fetch line data
@@ -377,6 +392,10 @@ class MapToolbar extends React.Component {
           }
 
           const points = results.data.map(function(point) {
+            point[lat] = (point[lat] >90) ? 90: point[lat];
+            point[lat] = (point[lat] <-90) ? -90: point[lat];
+            point[lon] = (point[lon] >180) ? point[lon] - 360: point[lon];
+            point[lon] = (point[lon] <-180) ? 360 + point[lon]: point[lon];
             return [point[lat], point[lon]];
           });
 
