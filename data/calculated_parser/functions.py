@@ -506,12 +506,16 @@ def calculate_del_C(
         first_minimum[it.multi_index] = x.tolist()[0] if array_size > 0 else -1
     if depth_index == 1:
         Cmin = np.squeeze(
-            np.take_along_axis(soundspeed, first_minimum[:, np.newaxis, :, :], axis=depth_index)
+            np.take_along_axis(
+                soundspeed, first_minimum[:, np.newaxis, :, :], axis=depth_index
             )
+        )
     else:
         Cmin = np.squeeze(
-            np.take_along_axis(soundspeed, first_minimum[np.newaxis, :, :], axis=depth_index)
+            np.take_along_axis(
+                soundspeed, first_minimum[np.newaxis, :, :], axis=depth_index
             )
+        )
     Cmin[first_minimum == -1] = np.nan
     # calculating delZ
     first_maximum = np.empty_like(maxima, dtype="int64")
@@ -523,11 +527,15 @@ def calculate_del_C(
     channel_start_depth[first_maximum == -1] = np.nan
     if depth_index == 1:
         Cmax = np.squeeze(
-            np.take_along_axis(soundspeed, first_maximum[:, np.newaxis, :, :], axis=depth_index)
+            np.take_along_axis(
+                soundspeed, first_maximum[:, np.newaxis, :, :], axis=depth_index
+            )
         )
     else:
         Cmax = np.squeeze(
-            np.take_along_axis(soundspeed, first_maximum[np.newaxis, :, :], axis=depth_index)
+            np.take_along_axis(
+                soundspeed, first_maximum[np.newaxis, :, :], axis=depth_index
+            )
         )
     Cmax[first_minimum == -1] = np.nan
     # channel_end_depth = np.apply_along_axis(np.interp,0, Cmax,soundspeed,depth)
@@ -536,7 +544,9 @@ def calculate_del_C(
     if depth_index == 1:
         for x in it:
             channel_end_depth[it.multi_index] = np.interp(
-                x, soundspeed[it.multi_index[0],:, it.multi_index[1], it.multi_index[2]], depth
+                x,
+                soundspeed[it.multi_index[0], :, it.multi_index[1], it.multi_index[2]],
+                depth,
             )
     else:
         for x in it:
@@ -607,13 +617,25 @@ def potentialsubsurfacechannel(
                 p3 > p2
             ):  # if the only maximum is not higher in the water column than the minima
                 if depth_index == 1:
-                    p1_sound_speed = sound_speed[it.multi_index[0], p1, it.multi_index[1], it.multi_index[2]]
-                    p2_sound_speed = sound_speed[it.multi_index[0], p2, it.multi_index[1], it.multi_index[2]]
-                    p3_sound_speed = sound_speed[it.multi_index[0], p3, it.multi_index[1], it.multi_index[2]]
+                    p1_sound_speed = sound_speed[
+                        it.multi_index[0], p1, it.multi_index[1], it.multi_index[2]
+                    ]
+                    p2_sound_speed = sound_speed[
+                        it.multi_index[0], p2, it.multi_index[1], it.multi_index[2]
+                    ]
+                    p3_sound_speed = sound_speed[
+                        it.multi_index[0], p3, it.multi_index[1], it.multi_index[2]
+                    ]
                 else:
-                    p1_sound_speed = sound_speed[p1, it.multi_index[0], it.multi_index[1]]
-                    p2_sound_speed = sound_speed[p2, it.multi_index[0], it.multi_index[1]]
-                    p3_sound_speed = sound_speed[p3, it.multi_index[0], it.multi_index[1]]
+                    p1_sound_speed = sound_speed[
+                        p1, it.multi_index[0], it.multi_index[1]
+                    ]
+                    p2_sound_speed = sound_speed[
+                        p2, it.multi_index[0], it.multi_index[1]
+                    ]
+                    p3_sound_speed = sound_speed[
+                        p3, it.multi_index[0], it.multi_index[1]
+                    ]
 
                 c1 = abs(p1_sound_speed - p2_sound_speed)
                 c2 = abs(p3_sound_speed - p2_sound_speed)
