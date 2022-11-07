@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-source ${HOME}/tools/conf/ocean-navigator-env.sh
+source ${HOME}/onav-cloud/etc/ocean-navigator-env.sh
 conda activate navigator
-python ${HOME}/Ocean-Data-Map-Project/scripts/generate_class4_list.py --config ${HOME}/Ocean-Data-Map-Project/oceannavigator/oceannavigator.cfg
+python ${HOME}/onav-cloud/Ocean-Data-Map-Project/scripts/generate_class4_list.py --config ${HOME}/onav-cloud/Ocean-Data-Map-Project/oceannavigator/configs/default.env

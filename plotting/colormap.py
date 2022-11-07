@@ -6,7 +6,6 @@ import cmocean
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
 
 import plotting
 
@@ -301,6 +300,7 @@ colormaps["wind"] = colormaps["velocity"]
 # Babel so that they'll end up in the translation list.
 # If the gettext calls were in the definition of colormap_names, they'd get
 # executed before the user's locale is known and would always be in English.
+"""
 gettext("Ammonium Concentration")
 gettext("Anomaly")
 gettext("Bathymetry")
@@ -344,6 +344,7 @@ gettext("Density")
 gettext("Deep")
 gettext("Balance")
 gettext("Potential Sub Surface Channel")
+"""
 
 colormap_names = {
     "ammonium concentration": "Ammonium Concentration",
@@ -401,7 +402,7 @@ def plot_colormaps():
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
-    fig.suptitle(gettext("Ocean Navigator Colourmaps"), fontsize=14)
+    fig.suptitle("Ocean Navigator Colourmaps", fontsize=14)
     for ax, cmap in zip(axes, sorted(colormap_names, key=colormap_names.get)):
         ax.imshow(gradient, aspect="auto", cmap=colormaps.get(cmap))
         pos = list(ax.get_position().bounds)
@@ -415,12 +416,11 @@ def plot_colormaps():
         ax.set_axis_off()
 
     buf = BytesIO()
-    try:
-        plt.savefig(buf, format="png", dpi="figure")
-        plt.close(fig)
-        return buf.getvalue()
-    finally:
-        buf.close()
+    plt.savefig(buf, format="png", dpi="figure")
+    plt.close(fig)
+
+    buf.seek(0)
+    return buf
 
 
 if __name__ == "__main__":

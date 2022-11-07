@@ -5,7 +5,8 @@ import re
 from operator import itemgetter
 
 import numpy as np
-from flask_babel import gettext
+
+# from flask_babel import gettext
 from shapely.geometry import LinearRing, MultiPolygon, Point, Polygon
 from shapely.ops import cascaded_union
 
@@ -179,34 +180,34 @@ class Stats:
                                     "%s %s" % (variable_name, variable_depth)
                                 ).strip(),
                                 "unit": variable_unit,
-                                "min": gettext("No Data"),
-                                "max": gettext("No Data"),
-                                "mean": gettext("No Data"),
-                                "median": gettext("No Data"),
-                                "stddev": gettext("No Data"),
+                                "min": "No Data",  # gettext("No Data"),
+                                "max": "No Data",  # gettext("No Data"),
+                                "mean": "No Data",  # gettext("No Data"),
+                                "median": "No Data",  # gettext("No Data"),
+                                "stddev": "No Data",  # gettext("No Data"),
                                 "num": "0",
                             }
                         )
                         ClientError(
-                            gettext(
-                                "there are no datapoints in the area you selected. \
-                                                you may have selected a area on land or you may \
-                                                have an ara that is smallenough to fit between \
-                                                the datapoints try selection a different area or \
-                                                a larger area"
-                            )
+                            # gettext(
+                            "there are no datapoints in the area you selected. \
+                            you may have selected a area on land or you may \
+                            have an ara that is smallenough to fit between \
+                            the datapoints try selection a different area or \
+                            a larger area"
+                            # )
                         )
 
             area_info.stats = area_info.output
             return
 
         raise ServerError(
-            gettext(
-                "An Error has occurred. When opening the dataset. \
-                                Please try again or try a different dataset. \
-                                If you would like to report this error please \
-                                contact oceandatamap@gmail.com"
-            )
+            # gettext(
+            "An Error has occurred. When opening the dataset. \
+                Please try again or try a different dataset. \
+                If you would like to report this error please \
+                contact oceandatamap@gmail.com"
+            # )
         )
 
 
@@ -293,10 +294,12 @@ def wrap_computer_stats(query, dataset_name, lon_values):
         wrap_val = -180
     else:
         raise ClientError(
-            gettext(
-                "something went wrong. It seems you are trying to create a plot across the international date line."
-                + "While we do support this function it must be done within 360 deg of the default map view. Try refreshing the page and try again"
-            )
+            # gettext(
+            "something went wrong. It seems you are trying to create a plot across \
+            the international date line. While we do support this function it must \
+            be done within 360 deg of the default map view. Try refreshing the page \
+            and try again"
+            # )
         )
 
     variables = query.get("variable")
@@ -353,13 +356,13 @@ def wrap_computer_stats(query, dataset_name, lon_values):
 
     if int(area_data.area.stats[0]["variables"][0]["num"]) == 0:
         raise ClientError(
-            gettext(
-                "there are no datapoints in the area you selected. \
-                                            You may have selected a area on land or you may \
-                                            have an ara that is too small. \
-                                            Try selection a different area or \
-                                            a larger area"
-            )
+            # gettext(
+            "there are no datapoints in the area you selected. \
+            You may have selected a area on land or you may \
+            have an ara that is too small. \
+            Try selection a different area or \
+            a larger area"
+            # )
         )
     return json.dumps(sorted(area_data.area.stats, key=itemgetter("name")))
 
@@ -391,13 +394,13 @@ def computer_stats(area, query, dataset_name):
 
     if int(area_data.area.stats[0]["variables"][0]["num"]) == 0:
         raise ClientError(
-            gettext(
-                "there are no datapoints in the area you selected. \
-                                            You may have selected a area on land or you may \
-                                            have an ara that is too small. \
-                                            Try selection a different area or \
-                                            a larger area"
-            )
+            # gettext(
+            "there are no datapoints in the area you selected. \
+            You may have selected a area on land or you may \
+            have an ara that is too small. \
+            Try selection a different area or \
+            a larger area"
+            # )
         )
     return json.dumps(sorted(area_data.area.stats, key=itemgetter("name")))
 
@@ -422,20 +425,20 @@ def stats(dataset_name, query):
             points_lat.append(p[1])
     except Exception as e:
         raise ServerError(
-            gettext(
-                "Unknown Error: you have tried something that we did not expect. \
+            # gettext(
+            "Unknown Error: you have tried something that we did not expect. \
                                 Please try again or try something else. If you would like to report \
                                 this error please contact oceandatamap@gmail.com. "
-            )
+            # )
             + str(e)
         )
 
     if (max(points_lat) - min(points_lat)) > 360:
         raise ClientError(
-            gettext(
-                "Error: you are trying to create a plot that is wider than the world. \
+            # gettext(
+            "Error: you are trying to create a plot that is wider than the world. \
         The desired information is ambiguous please select a smaller area and try again"
-            )
+            # )
         )
     elif any((p > 180 or p < -180) for p in points_lat) and any(
         -180 <= p <= 180 for p in points_lat
@@ -445,9 +448,10 @@ def stats(dataset_name, query):
         return computer_stats(area, query, dataset_name)
 
     raise ServerError(
-        gettext(
-            "Unknown Error: you have tried something that we did not expect. \
-                        Please try again or try something else. If you would like to report \
-                        this error please contact oceandatamap@gmail.com"
-        )
+        # gettext(
+        "Unknown Error: you have tried something that we did \
+        not expect. Please try again or try something else. \
+        If you would like to report this error please contact \
+        oceandatamap@gmail.com"
+        # )
     )

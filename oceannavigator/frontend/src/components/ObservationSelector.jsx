@@ -112,7 +112,7 @@ class ObservationSelector extends React.Component {
   }
 
   fetchDataTypes() {
-    const url = `/api/v1.0/observation/datatypes.json`;
+    const url = `/api/v2.0/observation/datatypes.json`;
     $.ajax({
       url: url,
       dataType: "json",
@@ -129,7 +129,7 @@ class ObservationSelector extends React.Component {
   }
 
   fetchMetaKeys() {
-    const url = `/api/v1.0/observation/meta_keys/${this.state.platform_type}.json`;
+    const url = `/api/v2.0/observation/meta_keys/${this.state.platform_type}.json`;
     $.ajax({
       url: url,
       dataType: "json",
@@ -152,7 +152,7 @@ class ObservationSelector extends React.Component {
   }
 
   fetchMetaValues() {
-    const url = `/api/v1.0/observation/meta_values/${this.state.platform_type}/${this.state.meta_key}.json`;
+    const url = `/api/v2.0/observation/meta_values/${this.state.platform_type}/${this.state.meta_key}.json`;
     $.ajax({
       url: url,
       dataType: "json",

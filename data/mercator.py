@@ -279,8 +279,8 @@ class Mercator(Model):
         var = self.nc_data.get_dataset_variable(variable)
         if not self.__has_depth(var):
             raise APIError(
-                f"This plot requires a depth dimension. This variable ({variable}) \
-                    doesn't have a depth dimension."
+                f"This plot requires a depth dimension. This variable ({variable}) "
+                "doesn't have a depth dimension."
             )
 
         time_slice = self.nc_data.make_time_slice(starttime, endtime)
