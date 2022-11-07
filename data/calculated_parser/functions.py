@@ -550,7 +550,6 @@ def calculate_del_C(
     final_denom = numerator / denominator
     final_denom = np.power(final_denom, 2)
     delC = Cmin / final_denom
-    # print(delC)
     return delC
 
 
@@ -576,6 +575,7 @@ def potentialsubsurfacechannel(
     depth = depth[depth < 1000]
     depth_length = len(depth)
     if temperature.ndim == 4:
+        # data has time dimension
         depth_index = 1
     elif temperature.ndim == 3:
         depth_index = 0
@@ -585,13 +585,8 @@ def potentialsubsurfacechannel(
     sound_speed = sspeed(depth, latitude, temp, sal)
     minima = np.apply_along_axis(spsignal.find_peaks, depth_index, -sound_speed)
     maxima = np.apply_along_axis(spsignal.find_peaks, depth_index, sound_speed)
-
-    if depth_index == 0:
-        minima = np.squeeze(np.delete(minima, 1, axis=0))
-        maxima = np.squeeze(np.delete(maxima, 1, axis=0))
-    else:
-        minima = np.squeeze(np.delete(minima, 1, axis=1))
-        maxima = np.squeeze(np.delete(maxima, 1, axis=1))
+    minima = np.squeeze(np.delete(minima, 1, axis=depth_index))
+    maxima = np.squeeze(np.delete(maxima, 1, axis=depth_index))
 
     delC = calculate_del_C(depth, sound_speed, minima, maxima, freq_cutoff, depth_index)
     hasPSSC = np.zeros_like(minima, dtype="float")
