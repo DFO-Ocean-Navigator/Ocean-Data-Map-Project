@@ -11,41 +11,28 @@ const instance = axios.create({
 
 export function GetDatasetsPromise() {
   return instance.get(
-    "/api/v1.0/datasets/"
+    "/api/v2.0/datasets"
   );
 }
 
 export function GetVariablesPromise(dataset) {
   return instance.get(
-    "/api/v1.0/variables/",
-    {
-      params: {
-        dataset: dataset
-      }
-    }
+    `/api/v2.0/dataset/${dataset}/variables`
   );
 }
 
 export function GetTimestampsPromise(dataset, variable) {
   return instance.get(
-    "/api/v1.0/timestamps/",
-    {
-      params: {
-        dataset: dataset,
-        variable: variable
-      }
-    }
+    `/api/v2.0/dataset/${dataset}/${variable}/timestamps`
   );
 }
 
 export function GetDepthsPromise(dataset, variable) {
   return instance.get(
-    "/api/v1.0/depth/",
+    `/api/v2.0/dataset/${dataset}/${variable}/depths`,
     {
       params: {
-        dataset: dataset,
-        variable: variable,
-        all: true,
+        include_all_key: true,
       }
     }
   );
@@ -53,24 +40,24 @@ export function GetDepthsPromise(dataset, variable) {
 
 export function GetPresetPointsPromise() {
   return instance.get(
-    "/api/v1.0/points/"
+    "/api/v2.0/kml/points"
   );
 }
 
 export function GetPresetLinesPromise() {
   return instance.get(
-    "/api/v1.0/lines/"
+    "/api/v2.0/kml/lines"
   );
 }
 
 export function GetPresetAreasPromise() {
   return instance.get(
-    "/api/v1.0/areas/"
+    "/api/v2.0/kml/areas"
   );
 }
 
 export function GetClass4Promise() {
   return instance.get(
-    "/api/v1.0/class4/"
+    "/api/v2.0/class4"
   );
 }

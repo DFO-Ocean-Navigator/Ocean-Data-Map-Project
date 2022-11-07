@@ -9,7 +9,7 @@
         "help": "help",
         "attribution": "attrib",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
         }
     },
 
@@ -22,7 +22,7 @@
         "help": "help",
         "attribution": "attrib",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
         }
     },
 
@@ -38,12 +38,12 @@
         "time_dim_units": "seconds since 1950-01-01 00:00:00",
         "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] },
-            "vosaline": { "name": "Salinity", "unit": "PSU", "scale": [30, 40] },
-            "vozocrtx": { "name": "Water Y Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "vomecrty": { "name": "Water X Velocity", "unit": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "magwatervel": { "name": "Water Velocity", "unit": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"], "east_vector_component": "vozocrtx", "north_vector_component": "vomecrty" },
-            "bearing": { "hide": "true", "name": "Water Velocity Bearing (deg clockwise +tive from N)", "unit": "degrees", "scale": [0, 360], "equation": "bearing(vomecrty, vozocrtx)" ,"dims": ["time", "depth", "latitude", "longitude"] }
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] },
+            "vosaline": { "name": "Salinity", "units": "PSU", "scale": [30, 40] },
+            "vozocrtx": { "name": "Water Y Velocity", "units": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "vomecrty": { "name": "Water X Velocity", "units": "m/s", "scale": [-3, 3], "zero_centered": "true" },
+            "magwatervel": { "name": "Water Velocity", "units": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"], "east_vector_component": "vozocrtx", "north_vector_component": "vomecrty" },
+            "bearing": { "hide": "true", "name": "Water Velocity Bearing (deg clockwise +tive from N)", "units": "degrees", "scale": [0, 360], "equation": "bearing(vomecrty, vozocrtx)" ,"dims": ["time", "depth", "latitude", "longitude"] }
         }
     },
 
@@ -56,7 +56,7 @@
         "model_class": "Nemo",
         "attribution": "attrib",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
         }
     },
 
@@ -76,7 +76,7 @@
         "lat_var_key": "nav_lat",
         "lon_var_key": "nav_lon",
         "variables": {
-            "ssh": { "name":  "Sea Surface Height", "unit":  "m", "scale":  [-4, 4], "zero_centered": "true" }
+            "ssh": { "name":  "Sea Surface Height", "units":  "m", "scale":  [-4, 4], "zero_centered": "true" }
         }
     },
 
@@ -99,8 +99,8 @@
         "lon_var_key": "nav_lon",
         "attribution": "UBC-MOAD",
         "variables": {
-            "uVelocity": { "name":  "Eastward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
-            "vVelocity": { "name":  "Northward Current", "unit":  "m/s", "scale":  [-8, 8], "zero_centered": "true" }
+            "uVelocity": { "name":  "Eastward Current", "units":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
+            "vVelocity": { "name":  "Northward Current", "units":  "m/s", "scale":  [-8, 8], "zero_centered": "true" }
         }
     },
 
@@ -115,7 +115,7 @@
         "lon_var_key": "longitude",
         "attribution": "attrib",
         "variables": {
-            "votemper": { "name": "Temperature", "unit": "Celsius", "scale": [-5, 30] }
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
         }
     }
 }

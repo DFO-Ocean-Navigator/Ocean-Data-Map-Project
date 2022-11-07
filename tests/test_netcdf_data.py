@@ -10,6 +10,7 @@ from unittest.mock import patch
 import cftime
 import netCDF4
 import numpy
+import pytest
 import pytz
 import xarray
 
@@ -17,9 +18,13 @@ from data.netcdf_data import NetCDFData
 
 
 class TestNetCDFData(unittest.TestCase):
-    def setUp(self):
-        with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
-            self.patch_dataset_config_ret_val = json.load(dataPatch)
+    with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
+        patch_dataset_config_ret_val = json.load(dataPatch)
+
+    @pytest.fixture(scope="class", autouse=True)
+    def setUp_teardown(self):
+        # with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
+        #     self.patch_dataset_config_ret_val = json.load(dataPatch)
 
         ds = xarray.Dataset(
             {
@@ -54,7 +59,7 @@ class TestNetCDFData(unittest.TestCase):
         if not (os.path.exists("tests/testdata/giops_test.zarr")):
             ds.to_zarr("tests/testdata/giops_test.zarr")
 
-    def tearDown(self):
+        yield
         if os.path.exists("tests/testdata/giops_test.zarr"):
             shutil.rmtree("tests/testdata/giops_test.zarr")
 
@@ -89,8 +94,8 @@ class TestNetCDFData(unittest.TestCase):
 
     @unittest.skip(
         "Format of tests/testdata/fvcom_tests.nc causes "
-        "ValueError: MFNetCDF4 only works with NETCDF3_* and NETCDF4_CLASSIC formatted files, "
-        "not NETCDF4"
+        "ValueError: MFNetCDF4 only works with NETCDF3_* and NETCDF4_CLASSIC formatted"
+        "files, not NETCDF4"
     )
     def test_enter_nc_files_list_fvcom(self):
         nc_data = NetCDFData("tests/testdata/fvcom_test.nc")
@@ -237,7 +242,7 @@ class TestNetCDFData(unittest.TestCase):
             query = dict(
                 [
                     ("output_format", "NETCDF3_NC"),
-                    ("dataset_name", "mercator_test"),
+                    ("dataset", "mercator_test"),
                     ("variables", "votemper"),
                     ("min_range", "-79.0,2.0"),
                     ("max_range", "-78.0,3.0"),
@@ -264,7 +269,7 @@ class TestNetCDFData(unittest.TestCase):
             query = dict(
                 [
                     ("output_format", "NETCDF3_NC"),
-                    ("dataset_name", "giops"),
+                    ("dataset", "giops"),
                     ("variables", "votemper"),
                     ("min_range", "1.0,-160.0"),
                     ("max_range", "2.0,-161.0"),
@@ -293,7 +298,8 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(lon.attrs["long_name"], "Longitude")
 
     def test_latlon_variables_not_found_raises(self):
-        # Use salishseacast_ssh_test.nc here because it has neither nav_lat nor latitude variables
+        # Use salishseacast_ssh_test.nc here because it has neither nav_lat nor
+        # latitude variables
         with NetCDFData("tests/testdata/salishseacast_ssh_test.nc") as nc_data:
             with self.assertRaises(KeyError):
                 lat, lon = nc_data.latlon_variables
@@ -397,7 +403,6 @@ class TestNetCDFData(unittest.TestCase):
 
         kwargs = {"dataset_key": "giops"}
         with NetCDFData("tests/testdata/nemo_test.nc", **kwargs) as nc_data:
-            file_list = nc_data.get_nc_file_list(nc_data._dataset_config)
             self.assertIsNone(nc_data._nc_files)
 
     @patch("data.netcdf_data.DatasetConfig._get_dataset_config")

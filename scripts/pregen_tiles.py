@@ -18,7 +18,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-base_url = f"{args.url}/api/v1.0"
+base_url = f"{args.url}/api/v2.0"
 
 
 def get_tile(
