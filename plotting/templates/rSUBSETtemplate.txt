@@ -5,7 +5,7 @@ query <- '{q}'
 queryObj <- fromJSON(query)
 fname <- "script_output.nc"
 
-base_url <- "http://navigator.oceansdata.ca/api/v1.0/subset/?"
+base_url <- "https://navigator.oceansdata.ca/api/v2.0/subset/?"
 url <- base_url
 
 for (key in names(queryObj))

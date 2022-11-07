@@ -293,7 +293,7 @@ def __get_soniclayerdepth_mask(
     Create mask which masks out values BELOW deep sound channel.
     """
 
-    mask = min_depth_indices.ravel()[..., np.newaxis] < np.arange(soundspeed.shape[0])
+    mask = min_depth_indices.ravel()[..., np.newaxis] <= np.arange(soundspeed.shape[0])
 
     return mask.T.reshape(soundspeed.shape)
 
@@ -375,7 +375,7 @@ def deepsoundchannel(depth, latitude, temperature, salinity) -> np.ndarray:
     return depth[min_indices]
 
 
-def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray:
+def deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
     """
     Find and return the deep sound channel bottom (the second depth where
     the speed of sound is equal to the speed at the sonic layer depth).
@@ -388,6 +388,7 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
         * latitude: Latitude in degrees North
         * temperature: Temperatures in Celsius
         * salinity: Salinity
+        * bathy: Model Bathymetry
     """
 
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
@@ -418,21 +419,39 @@ def deepsoundchannelbottom(depth, latitude, temperature, salinity) -> np.ndarray
             0,  # apply along depth axis
         )
     )
+    sound_speed_values_at_sonic_layer_depth[np.where(max_indices == 0)] = np.nan
 
     # Flip the mask since we actually want to examine the values BELOW the sonic
     # layer depth.
     sound_speed.mask = ~sound_speed.mask
 
-    # Nearest neighbour
-    # numpy broadcasting handles subtraction between 3D and 2D arrays
-    min_difference = np.abs(
-        sound_speed - sound_speed_values_at_sonic_layer_depth
-    ).argmin(
-        axis=0
-    )  # We can use argmin here because the fill_value of the masked arrays is np.nan
+    # Use linear interpolation along axis 0 to compute DSCB. We find the two
+    # points where sound_speed is closest to sound_speed_values_at_sonic_layer_depth
+    # and interpolate between them.
+    var_shape = sound_speed.shape
+    if len(var_shape) == 3:
+        grid = np.ogrid[: var_shape[-2], : var_shape[-1]]
+    else:
+        grid = np.ogrid[: var_shape[-3], : var_shape[-2], : var_shape[-1]]
 
-    # Finito...LOOK MOM! NO LOOPS!!!
-    return depth[min_difference]
+    # Find closest sound speed values
+    diff = np.abs(sound_speed - sound_speed_values_at_sonic_layer_depth)
+    min_diff_0 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
+    diff[tuple([min_diff_0, *grid])] = np.nan
+    min_diff_1 = np.nanargmin(np.ma.masked_invalid(diff), axis=0)
+
+    # Set up and perform linear interpolation
+    x = sound_speed_values_at_sonic_layer_depth
+    x0 = np.take_along_axis(sound_speed, min_diff_0[np.newaxis], axis=0)
+    x1 = np.take_along_axis(sound_speed, min_diff_1[np.newaxis], axis=0)
+    y0 = depth[min_diff_0]
+    y1 = depth[min_diff_1]
+
+    dscb = (y0 * (x1 - x) + y1 * (x - x0)) / (x1 - x0)
+    dscb[dscb > bathy.data] = np.nan
+    dscb[dscb < 0] = np.nan
+
+    return np.squeeze(dscb)
 
 
 def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
@@ -449,13 +468,13 @@ def depthexcess(depth, latitude, temperature, salinity, bathy) -> np.ndarray:
 
         * salinity: Salinity
 
-        * bathy:
+        * bathy: Model Bathymetry
     """
 
-    dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity)
+    dscb = deepsoundchannelbottom(depth, latitude, temperature, salinity, bathy)
 
     # Actually do the math.
-    return dscb - bathy.data
+    return np.abs(dscb - bathy.data)
 
 
 def calculate_del_C(

@@ -1,7 +1,7 @@
 from io import BytesIO
 
 
-def generatePython(url, scriptType: str) -> BytesIO:
+def generatePython(url: str, plot_type: str, script_Type: str) -> BytesIO:
     if "class4id" in url:
         var = "class4id"
     elif "drifter" in url:
@@ -19,11 +19,13 @@ def generatePython(url, scriptType: str) -> BytesIO:
     if "null" in query:
         query = query.replace("null", "None")
 
-    with open(f"plotting/templates/python{scriptType}template.txt", "r") as f:
+    with open(f"plotting/templates/python_{script_Type}_template.txt", "r") as f:
         template = str(f.read())
 
-        if scriptType == "PLOT":
-            template = template.format(q=query, var=var)
+        if script_Type == "plot":
+            template = template.format(q=query, p=plot_type, var=var)
+        elif script_Type == "csv":
+            template = template.format(q=query, p=plot_type, var=var)
         else:
             template = template.format(q=query, var=var)
 
@@ -33,7 +35,7 @@ def generatePython(url, scriptType: str) -> BytesIO:
         return finalScript
 
 
-def generateR(url, scriptType: str) -> BytesIO:
+def generateR(url, plot_type: str, script_Type: str) -> BytesIO:
 
     if "class4id" in url:
         var = "class4id"
@@ -51,11 +53,13 @@ def generateR(url, scriptType: str) -> BytesIO:
     if "null" in query:
         query = query.replace("null", "None")
 
-    with open(f"plotting/templates/r{scriptType}template.txt", "r") as f:
+    with open(f"plotting/templates/r_{script_Type}_template.txt", "r") as f:
         template = str(f.read())
 
-        if scriptType == "PLOT":
-            template = template.format(q=query, var=var)
+        if script_Type == "plot":
+            template = template.format(q=query, p=plot_type, var=var)
+        elif script_Type == "csv":
+            template = template.format(q=query, p=plot_type, var=var)
         else:
             template = template.format(q=query)
 

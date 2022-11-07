@@ -31,7 +31,7 @@ export default class CheckBox extends React.PureComponent {
 //***********************************************************************
 CheckBox.propTypes = {
   title: PropTypes.string.isRequired,
-  checked: PropTypes.bool.isRequired,
+  checked: PropTypes.bool,
   id: PropTypes.string.isRequired,
   onUpdate: PropTypes.func.isRequired,
   style: PropTypes.object,

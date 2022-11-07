@@ -15,7 +15,7 @@ import pyresample
 import xarray
 import xarray.core.variable
 from cachetools import TTLCache
-from flask_babel import format_date
+from babel.dates import format_date
 
 import data.calculated
 import data.utils
@@ -368,7 +368,7 @@ class NetCDFData(Data):
                 )
             )
 
-        dataset_name = query.get("dataset_name")
+        dataset_name = query.get("dataset")
         y_coord, x_coord = self.yx_dimensions
 
         # Do subset along coordinates
@@ -420,7 +420,7 @@ class NetCDFData(Data):
             + output_format
         )
 
-        # Workaround for 
+        # Workaround for
         # https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
         if "_NCProperties" in subset.attrs.keys():
             del subset.attrs["_NCProperties"]
@@ -747,7 +747,7 @@ class NetCDFData(Data):
         try:
             return list(self.dataset.dims)
         except AttributeError:
-            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions 
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions
             # property
             return [dim for dim in self.dataset.dimensions]
 

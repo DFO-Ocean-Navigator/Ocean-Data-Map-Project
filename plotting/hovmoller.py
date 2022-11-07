@@ -3,7 +3,7 @@ import re
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
+#from flask_babel import gettext
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Silence a FutureWarning
@@ -193,15 +193,15 @@ class HovmollerPlotter(LinePlotter):
             gs,
             [0, 1],
             [0, 0],
-            gettext(self.variable_name),
+            self.variable_name, # gettext(self.variable_name),
             vmin,
             vmax,
             self.data,
             self.iso_timestamps,
             self.cmap,
             self.variable_unit,
-            gettext(self.variable_name)
-            + gettext(get_depth_label(self.depth_value, self.depth_unit)),
+            self.variable_name # gettext(self.variable_name)
+            + get_depth_label(self.depth_value, self.depth_unit), # gettext(get_depth_label(self.depth_value, self.depth_unit)),
         )
 
         # If in compare mode
@@ -229,17 +229,18 @@ class HovmollerPlotter(LinePlotter):
                 gs,
                 [1, 1],
                 [1, 0],
-                gettext(self.compare["variable_name"]),
+                self.compare["variable_name"], # gettext(self.compare["variable_name"]),
                 vmin,
                 vmax,
                 self.compare["data"],
                 self.compare["times"],
                 self.compare["colormap"],
                 self.compare["variable_unit"],
-                gettext(self.compare["variable_name"])
-                + gettext(
-                    get_depth_label(self.compare["depth"], self.compare["depth_unit"])
-                ),
+                self.compare["variable_name"] # gettext(self.compare["variable_name"])
+                + get_depth_label(self.compare["depth"], self.compare["depth_unit"]),
+                #  gettext(
+                #     get_depth_label(self.compare["depth"], self.compare["depth_unit"])
+                # ),
             )
 
             # Difference plot
@@ -253,26 +254,27 @@ class HovmollerPlotter(LinePlotter):
                     gs,
                     [2, 1],
                     [2, 0],
-                    gettext(self.compare["variable_name"]),
+                    self.compare["variable_name"], # gettext(self.compare["variable_name"]),
                     vmin,
                     vmax,
                     data_difference,
                     self.compare["times"],
                     colormap.find_colormap("anomaly"),
                     self.compare["variable_unit"],
-                    gettext(self.compare["variable_name"])
-                    + gettext(" Difference")
-                    + gettext(
-                        get_depth_label(
-                            self.compare["depth"], self.compare["depth_unit"]
-                        )
-                    ),
+                    self.compare["variable_name"] # gettext(self.compare["variable_name"])
+                    + " Difference" # + gettext(" Difference")
+                    + get_depth_label(self.compare["depth"], self.compare["depth_unit"]),
+                    # + gettext(
+                    #     get_depth_label(
+                    #         self.compare["depth"], self.compare["depth_unit"]
+                    #     )
+                    # ),
                 )
 
         # Image title
         if self.plotTitle:
             fig.suptitle(
-                gettext("Hovm\xf6ller Diagram(s) for:\n%s") % (self.name), fontsize=15
+                "Hovm\xf6ller Diagram(s) for:\n%s" % (self.name), fontsize=15 # gettext("Hovm\xf6ller Diagram(s) for:\n%s") % (self.name), fontsize=15
             )
         else:
             fig.suptitle(self.plotTitle, fontsize=15)
@@ -348,7 +350,7 @@ class HovmollerPlotter(LinePlotter):
             transform=ax.transAxes,
         )
 
-        plt.xlabel(gettext("Distance (km)"))
+        plt.xlabel("Distance (km)") # plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])
 
         divider = make_axes_locatable(plt.gca())
