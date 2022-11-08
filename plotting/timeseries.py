@@ -47,6 +47,9 @@ class TimeseriesPlotter(PointPlotter):
             variable=self.variables,
             timestamp=self.starttime,
             endtime=self.endtime,
+            interp=self.interp,
+            radius=self.radius,
+            neighbours=self.neighbours,
         ) as dataset:
             self.load_misc(dataset, self.variables)
 

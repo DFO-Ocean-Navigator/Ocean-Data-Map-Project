@@ -54,6 +54,7 @@ class PointWindow extends React.Component {
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
+        options: props.dataset_0.options,
       },
     };
 
@@ -435,6 +436,9 @@ class PointWindow extends React.Component {
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;
         plot_query.colormap = this.state.colormap;
+        plot_query.interp = this.state.dataset_0.options.interpType;
+        plot_query.radius = this.state.dataset_0.options.interpRadius;
+        plot_query.neighbours = this.state.dataset_0.options.interpNeighbours;
         //plot_query.scale = "auto";
 
         inputs = [global];
