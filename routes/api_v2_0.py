@@ -841,10 +841,14 @@ def timestamps(
                 vals = db.get_timestamps(data_vars[0])
             else:
                 vals = db.get_timestamps(variable)
+            time_dim_units = config.time_dim_units
     else:
         with open_dataset(config, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
-    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
+            time_dim_units = (
+                config.time_dim_units or ds.nc_data.time_variable.attrs["units"]
+            )
+    converted_vals = time_index_to_datetime(vals, time_dim_units)
 
     result = []
     for idx, date in enumerate(converted_vals):
