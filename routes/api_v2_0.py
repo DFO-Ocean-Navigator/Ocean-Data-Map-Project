@@ -862,7 +862,7 @@ def timestamps(
 
 
 @router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
-def data_tile(
+async def data_tile(
     dataset: str = Path(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -907,17 +907,17 @@ def data_tile(
         f"{y}.png",
     )
 
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # if os.path.isfile(f):
+    #     return FileResponse(
+    #         f,
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
 
-    img = plotting.tile.plot(
+    img = await plotting.tile.plot(
         projection,
         x,
         y,
@@ -934,7 +934,11 @@ def data_tile(
         },
     )
 
-    return _cache_and_send_img(img, f)
+    buf = BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    buf.seek(0)
+
+    return _cache_and_send_img(buf, f)
 
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
