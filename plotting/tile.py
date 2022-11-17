@@ -161,7 +161,7 @@ def scale(args):
     return buf
 
 
-def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
+async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     settings = get_settings()
 
     lat, lon = get_latlon_coords(projection, x, y, z)
@@ -233,11 +233,7 @@ def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
-    buf = BytesIO()
-    im.save(buf, format="PNG", optimize=True)
-    buf.seek(0)
-
-    return buf
+    return im
 
 
 def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
