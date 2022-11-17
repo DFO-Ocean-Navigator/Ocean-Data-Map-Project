@@ -741,8 +741,8 @@ class NetCDFData(Data):
             longitude.
         """
         return (
-            self.__find_variable(["nav_lat", "latitude"]),
-            self.__find_variable(["nav_lon", "longitude"]),
+            self.__find_variable(["nav_lat", "latitude", "lat"]),
+            self.__find_variable(["nav_lon", "longitude", "lon"]),
         )
 
     @property

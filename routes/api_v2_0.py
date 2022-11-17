@@ -842,10 +842,14 @@ def timestamps(
                 vals = db.get_timestamps(data_vars[0])
             else:
                 vals = db.get_timestamps(variable)
+            time_dim_units = config.time_dim_units
     else:
         with open_dataset(config, variable=variable) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
-    converted_vals = time_index_to_datetime(vals, config.time_dim_units)
+            time_dim_units = (
+                config.time_dim_units or ds.nc_data.time_variable.attrs["units"]
+            )
+    converted_vals = time_index_to_datetime(vals, time_dim_units)
 
     result = []
     for idx, date in enumerate(converted_vals):
@@ -859,7 +863,7 @@ def timestamps(
 
 
 @router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
-def data_tile(
+async def data_tile(
     dataset: str = Path(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -914,7 +918,7 @@ def data_tile(
     if depth != "bottom" and depth != "all":
         depth = int(depth)
 
-    img = plotting.tile.plot(
+    img = await plotting.tile.plot(
         projection,
         x,
         y,
@@ -931,7 +935,11 @@ def data_tile(
         },
     )
 
-    return _cache_and_send_img(img, f)
+    buf = BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    buf.seek(0)
+
+    return _cache_and_send_img(buf, f)
 
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")

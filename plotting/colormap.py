@@ -69,17 +69,14 @@ colormaps = {
     "velocity": cmocean.cm.delta,
     "eastward current": cmocean.cm.delta,
     "northward current": cmocean.cm.delta,
-    "waveheight": cmocean.cm.amp,
-    "waveperiod": cmocean.cm.tempo,
+    "wave height": cmocean.cm.amp,
+    "wave period": cmocean.cm.tempo,
+    "wave direction": cmocean.cm.phase,
     "chlorophyll": cmocean.cm.algae,
     "iron": cmocean.cm.amp,
     "oxygen": cmocean.cm.oxy,
-    "phosphate": mcolors.ListedColormap(
-        np.loadtxt(data_dir.joinpath("phosphate.txt"))
-    ),
-    "nitrate": mcolors.ListedColormap(
-        np.loadtxt(data_dir.joinpath("nitrate.txt"))
-    ),
+    "phosphate": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("phosphate.txt"))),
+    "nitrate": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("nitrate.txt"))),
     "nitrate concentration": cmocean.cm.tempo,
     "ice": cmocean.cm.ice,
     "phytoplankton": cmocean.cm.deep_r,
@@ -285,9 +282,7 @@ colormaps = {
     "grey": make_colormap([_c("#ffffff"), _c("#000000")]),
     "potential sub surface channel": mcolors.ListedColormap(["#ecf0f1", "#f57732"]),
     "thermal": cmocean.cm.thermal,
-    "neo_sst": mcolors.ListedColormap(
-        np.loadtxt(data_dir.joinpath("neo_sst.txt"))
-    ),
+    "neo_sst": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("neo_sst.txt"))),
     "BuYlRd": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("BuYlRd.txt"))),
     "temperature": mcolors.ListedColormap(
         np.loadtxt(data_dir.joinpath("temperature.txt"))
