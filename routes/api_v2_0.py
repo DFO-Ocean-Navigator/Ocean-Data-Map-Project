@@ -234,6 +234,7 @@ def variables(
                     "scale": config.variable[v].scale,
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
+                    "vector_variable": v.key in config.vector_variables,
                 }
             )
 
@@ -425,7 +426,7 @@ def data(
         data = data[data_slice]
 
         bearings = None
-        if "mag" in variable:
+        if variable in config.vector_variables:
             bearings_var = config.variable[variable].bearing_component or "bearing"
             with open_dataset(
                 config, variable=bearings_var, timestamp=time

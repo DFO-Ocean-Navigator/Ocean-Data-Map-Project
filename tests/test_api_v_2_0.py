@@ -74,6 +74,7 @@ class TestAPIv2:
                 "scale": [-5, 30],
                 "interp": None,
                 "two_dimensional": False,
+                "vector_variable": False,
             }
         ]
 
@@ -92,6 +93,7 @@ class TestAPIv2:
                 "scale": [-5, 30],
                 "interp": None,
                 "two_dimensional": False,
+                "vector_variable": False,
             }
         ]
 

@@ -414,7 +414,7 @@ class DatasetSelector extends React.Component {
         MODEL_CLASSES_WITH_QUIVER.includes(this.state.model_class)
       ) {
         quiverVariables = this.state.datasetVariables.filter((variable) => {
-          return variable.id.includes("mag") && variable.id.includes("vel");
+          return variable.vector_variable;
         });
       }
       quiverVariables.unshift({ id: "none", value: "None" });
