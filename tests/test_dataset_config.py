@@ -67,6 +67,7 @@ class TestUtil:
         m.return_value = {
             "key": {
                 "enabled": True,
+                "vector_variables": ["magmyvar", "magnitudemyvar"],
                 "variables": {
                     "magmyvar": {
                         "name": "my_variable",
