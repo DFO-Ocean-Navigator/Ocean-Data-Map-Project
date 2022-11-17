@@ -334,7 +334,7 @@ class TestAPIv2:
     @patch("routes.api_v2_0._cache_and_send_img")
     @patch("plotting.tile.plot")
     def test_tile_endpoint(self, patch_tile, patch_cache_img):
-        patch_tile.return_value = None
+        patch_tile.save.return_value = None
         patch_cache_img.return_value = None
         response = self.client.get(
             "/api/v2.0/tiles/giops_real/votemper/2212704000/0/6/50/40"
