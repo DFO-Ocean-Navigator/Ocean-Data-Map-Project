@@ -70,8 +70,8 @@ class Lexer:
 
     # Identifiers either function names or variable names
     def t_ID(self, t):
-        """[a-zA-Z_][a-zA-Z_0-9]*"""
-        regex = re.compile("[a-zA-Z][a-zA-Z_0-9]*")
+        """[a-zA-Z_][a-zA-Z_0-9-]*"""
+        regex = re.compile("[a-zA-Z][a-zA-Z_0-9-]*")
         # Look at the functions defined in the functions module, if they match
         # the regular expression (start with upper or lower-case character, and
         # only contain alphanumeric characters, underscores, and the digits 0-9

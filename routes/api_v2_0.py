@@ -377,7 +377,7 @@ def range(
 
 
 @router.get("/data")
-def data(
+async def data(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -435,7 +435,7 @@ def data(
                     data_slice
                 ].squeeze(drop=True)
 
-        d = data_array_to_geojson(
+        d = await data_array_to_geojson(
             data.squeeze(drop=True),
             bearings,  # this is a hack
             lat_var[lat_slice],

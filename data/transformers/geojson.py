@@ -5,7 +5,7 @@ from geojson import Feature, FeatureCollection, Point
 from data.utils import trunc
 
 
-def data_array_to_geojson(
+async def data_array_to_geojson(
     data_array: xr.DataArray,
     bearings: xr.DataArray,
     lat_var: xr.DataArray,
