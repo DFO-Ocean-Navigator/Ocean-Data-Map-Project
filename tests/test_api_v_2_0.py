@@ -144,14 +144,8 @@ class TestAPIv2:
 
     def test_range(self) -> None:
         response = self.client.get(
-            "/api/v2.0/range",
-            params={
-                "dataset": "giops_real",
-                "variable": "votemper",
-                "depth": "0",
-                "time": 2212704000,
-                "extent": "-14958556.575,2726984.185,3826607.496,11239011.655",
-            },
+            "/api/v2.0/range/giops_real/votemper/gaussian/25/10/EPSG:3857"
+            "/-14958556.575,2726984.185,3826607.496,11239011.655/0/2212704000"
         )
 
         expected = {"min": -1.169886341970023, "max": 9.347870007228384}

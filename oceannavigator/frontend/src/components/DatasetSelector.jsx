@@ -544,8 +544,7 @@ class DatasetSelector extends React.Component {
             "/" +
             this.state.depth +
             "/" +
-            this.state.time +
-            ".json"
+            this.state.time
           }
         />
       );
