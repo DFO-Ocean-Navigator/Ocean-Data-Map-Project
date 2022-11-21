@@ -634,7 +634,8 @@ async def plot(
     db: Session = Depends(get_db),
 ):
     """
-    Interface for all plotting operations. Update example query with valid timestamp to test.
+    Interface for all plotting operations. Update example query with valid timestamp to
+    test.
     """
 
     if format == "json":
