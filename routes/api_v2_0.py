@@ -243,6 +243,55 @@ def variables(
     return data
 
 
+@router.get("/dataset/{dataset}/{variable}/timestamps")
+def timestamps(
+    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
+    variable: str = Path(..., title="The key of the variable.", example="votemper"),
+):
+    """
+    Returns all timestamps available for a given variable in a dataset.
+    This is variable-dependent because datasets can have multiple "quantums",
+    as in surface 2D variables may be hourly, while 3D variables may be daily.
+
+    Returns:
+        All timestamp pairs (e.g. [netcdf_timestamp_integer, iso_8601_date_string])
+        for the given dataset and variable.
+    """
+
+    config = DatasetConfig(dataset)
+
+    # Handle possible list of URLs for staggered grid velocity field datasets
+    url = config.url if not isinstance(config.url, list) else config.url[0]
+    if url.endswith(".sqlite3"):
+        with SQLiteDatabase(url) as db:
+            if variable in config.calculated_variables:
+                data_vars = get_data_vars_from_equation(
+                    config.calculated_variables[variable]["equation"],
+                    [v.key for v in db.get_data_variables()],
+                )
+                vals = db.get_timestamps(data_vars[0])
+            else:
+                vals = db.get_timestamps(variable)
+            time_dim_units = config.time_dim_units
+    else:
+        with open_dataset(config, variable=variable) as ds:
+            vals = list(map(int, ds.nc_data.time_variable.values))
+            time_dim_units = (
+                config.time_dim_units or ds.nc_data.time_variable.attrs["units"]
+            )
+    converted_vals = time_index_to_datetime(vals, time_dim_units)
+
+    result = []
+    for idx, date in enumerate(converted_vals):
+        if config.quantum == "month" or config.variable[variable].quantum == "month":
+            date = datetime.datetime(date.year, date.month, 15)
+        result.append({"id": vals[idx], "value": date.isoformat()})
+
+    result = sorted(result, key=lambda k: k["id"])
+
+    return jsonable_encoder(result)
+
+
 @router.get("/dataset/{dataset}/{variable}/depths")
 def depths(
     dataset: str = Path(
@@ -815,55 +864,6 @@ def kml_area(
         utils.misc.areas(id, projection, resolution, view_bounds),
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
-
-
-@router.get("/dataset/{dataset}/{variable}/timestamps")
-def timestamps(
-    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
-    variable: str = Path(..., title="The key of the variable.", example="votemper"),
-):
-    """
-    Returns all timestamps available for a given variable in a dataset.
-    This is variable-dependent because datasets can have multiple "quantums",
-    as in surface 2D variables may be hourly, while 3D variables may be daily.
-
-    Returns:
-        All timestamp pairs (e.g. [netcdf_timestamp_integer, iso_8601_date_string])
-        for the given dataset and variable.
-    """
-
-    config = DatasetConfig(dataset)
-
-    # Handle possible list of URLs for staggered grid velocity field datasets
-    url = config.url if not isinstance(config.url, list) else config.url[0]
-    if url.endswith(".sqlite3"):
-        with SQLiteDatabase(url) as db:
-            if variable in config.calculated_variables:
-                data_vars = get_data_vars_from_equation(
-                    config.calculated_variables[variable]["equation"],
-                    [v.key for v in db.get_data_variables()],
-                )
-                vals = db.get_timestamps(data_vars[0])
-            else:
-                vals = db.get_timestamps(variable)
-            time_dim_units = config.time_dim_units
-    else:
-        with open_dataset(config, variable=variable) as ds:
-            vals = list(map(int, ds.nc_data.time_variable.values))
-            time_dim_units = (
-                config.time_dim_units or ds.nc_data.time_variable.attrs["units"]
-            )
-    converted_vals = time_index_to_datetime(vals, time_dim_units)
-
-    result = []
-    for idx, date in enumerate(converted_vals):
-        if config.quantum == "month" or config.variable[variable].quantum == "month":
-            date = datetime.datetime(date.year, date.month, 15)
-        result.append({"id": vals[idx], "value": date.isoformat()})
-
-    result = sorted(result, key=lambda k: k["id"])
-
-    return jsonable_encoder(result)
 
 
 @router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
