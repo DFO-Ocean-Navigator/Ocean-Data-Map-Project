@@ -74,7 +74,8 @@ class Lexer:
         regex = re.compile("[a-zA-Z][a-zA-Z_0-9-]*")
         # Look at the functions defined in the functions module, if they match
         # the regular expression (start with upper or lower-case character, and
-        # only contain alphanumeric characters, underscores, and the digits 0-9
+        # only contain alphanumeric characters, underscores, hyphens, and the
+        # digits 0-9.
         fnames = filter(regex.match, dir(functions))
         if t.value not in fnames:
             # If the token does not match a function in functions, then we add
