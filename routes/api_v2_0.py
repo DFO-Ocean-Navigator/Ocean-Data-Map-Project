@@ -316,7 +316,10 @@ def scale(
     )
 
 
-@router.get("/range")
+@router.get(
+    "/range/{dataset}/{variable}/{interp}/{radius}/{neighbours}"
+    "/{projection}/{extent}/{depth}/{time}"
+)
 def range(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
@@ -631,7 +634,7 @@ async def plot(
     db: Session = Depends(get_db),
 ):
     """
-    Interface for all plotting operations.
+    Interface for all plotting operations. Update example query with valid timestamp to test.
     """
 
     if format == "json":
