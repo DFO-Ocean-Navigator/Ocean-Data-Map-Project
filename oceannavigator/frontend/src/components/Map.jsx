@@ -200,14 +200,14 @@ export default class Map extends React.PureComponent {
             url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
-              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}`; 
             break;
           case "areas":
             url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
               `&resolution=${Math.round(resolution)}` +
-              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}`; 
             break;
           default:
             url = `/api/v2.0/${this.props.state.vectortype}` +
@@ -585,7 +585,7 @@ export default class Map extends React.PureComponent {
                 anchor: anchor,
                 rotation: deg2rad(parseFloat(feature.get("data")))
               })
-            })          
+            });          
           } else {
             const velocity = parseFloat(feature.get("data"));
             const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
@@ -598,7 +598,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(1.0)) {
               return new olstyle.Style({
@@ -609,7 +609,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(2.0)) {
               return new olstyle.Style({
@@ -620,7 +620,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(3.0)) {
               return new olstyle.Style({
@@ -631,7 +631,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(5.0)) {
               return new olstyle.Style({
@@ -642,7 +642,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(7.0)) {
               return new olstyle.Style({
@@ -653,7 +653,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(10.0)) {
               return new olstyle.Style({
@@ -664,7 +664,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else if (velocity < knotsToMetersPerSecond(13.0)) {
               return new olstyle.Style({
@@ -675,7 +675,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
             else {
               return new olstyle.Style({
@@ -686,7 +686,7 @@ export default class Map extends React.PureComponent {
                   anchor: anchor,
                   rotation: rotationRads
                 })
-              })
+              });
             }
           }
         }
@@ -776,7 +776,7 @@ export default class Map extends React.PureComponent {
       if (feature && feature.get("name")) {
         this.overlay.setPosition(e.coordinate);
         if (feature.get("data")) {
-          let bearing = feature.get("bearing")
+          let bearing = feature.get("bearing");
           this.popupElement.innerHTML = ReactDOMServer.renderToString(
             <table>
               <tr><td>Variable</td><td>{feature.get("name")}</td></tr>
@@ -1234,7 +1234,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear(); }.bind(this),
         251
       );
     }.bind(this));
@@ -1276,7 +1276,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear(); }.bind(this),
         251
       );
     }.bind(this));
