@@ -587,9 +587,9 @@ export default class Map extends React.PureComponent {
               })
             })          
           } else {
-            const data = parseFloat(feature.get("data"));
+            const velocity = parseFloat(feature.get("data"));
             const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
-            if (data < knotsToMetersPerSecond(0.5)) {
+            if (velocity < knotsToMetersPerSecond(0.5)) {
               return new olstyle.Style({
                 image: new olstyle.Icon({
                   scale: 0.3,
