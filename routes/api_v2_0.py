@@ -492,6 +492,7 @@ async def data(
             bearings,  # this is a hack
             lat_var[lat_slice],
             lon_var[lon_slice],
+            config.variable[variable].scale,
         )
 
         path = pathlib.Path(cached_file_name).parent

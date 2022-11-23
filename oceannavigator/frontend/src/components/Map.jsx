@@ -35,6 +35,8 @@ const I7 = require("../images/s111/I7.svg").default;
 const I8 = require("../images/s111/I8.svg").default;
 const I9 = require("../images/s111/I9.svg").default;
 
+const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
+
 function knotsToMetersPerSecond(knots) {
   return knots * 0.514444;
 }
@@ -576,119 +578,22 @@ export default class Map extends React.PureComponent {
       {
         source: null, // set source during update function below
         style: function(feature, resolution) {
+          let scale = feature.get("scale");
+          let rotation = null;
           if (!feature.get("bearing")) { // bearing-only variable (no magnitude)
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.35,
-                src: I2,
-                opacity: 1,
-                anchor: anchor,
-                rotation: deg2rad(parseFloat(feature.get("data")))
-              })
-            });          
+            rotation = deg2rad(parseFloat(feature.get("data")))
           } else {
-            const velocity = parseFloat(feature.get("data"));
-            const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
-            if (velocity < knotsToMetersPerSecond(0.5)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.3,
-                  src: I1,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(1.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.35,
-                  src: I2,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(2.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.35,
-                  src: I3,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(3.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.4,
-                  src: I4,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(5.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.5,
-                  src: I5,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(7.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.7,
-                  src: I6,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(10.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.75,
-                  src: I7,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else if (velocity < knotsToMetersPerSecond(13.0)) {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 0.9,
-                  src: I8,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
-            else {
-              return new olstyle.Style({
-                image: new olstyle.Icon({
-                  scale: 1.0,
-                  src: I9,
-                  opacity: 1,
-                  anchor: anchor,
-                  rotation: rotationRads
-                })
-              });
-            }
+            rotation = deg2rad(parseFloat(feature.get("bearing"))); 
           }
+          return new olstyle.Style({
+            image: new olstyle.Icon({
+              scale: (scale+1)/10,
+              src: arrowImages[scale],
+              opacity: 1,
+              anchor: anchor,
+              rotation: rotation
+            })
+          });          
         }
       }
     );
