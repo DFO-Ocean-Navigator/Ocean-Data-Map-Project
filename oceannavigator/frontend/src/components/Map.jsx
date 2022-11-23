@@ -37,10 +37,6 @@ const I9 = require("../images/s111/I9.svg").default;
 
 const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
-function knotsToMetersPerSecond(knots) {
-  return knots * 0.514444;
-}
-
 function deg2rad(deg) {
   return deg * Math.PI/180.0;
 }
@@ -587,7 +583,7 @@ export default class Map extends React.PureComponent {
           }
           return new olstyle.Style({
             image: new olstyle.Icon({
-              scale: (scale+1)/10,
+              scale: 0.2 + (scale+1)/16,
               src: arrowImages[scale],
               opacity: 1,
               anchor: anchor,

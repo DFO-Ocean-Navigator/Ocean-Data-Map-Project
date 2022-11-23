@@ -74,7 +74,7 @@ async def data_array_to_geojson(
         scale_data[scale_data > 9] = 9
         scale_data[scale_data < 0] = 0
     else:
-        scale = np.full(data.shape(), 2, np.int8)
+        scale_data = np.full(data.shape, 2)
 
     features = []
     for elem, multi_idx in enumerate_nd_array(data):
