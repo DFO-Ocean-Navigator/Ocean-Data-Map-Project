@@ -5,11 +5,12 @@ from geojson import Feature, FeatureCollection, Point
 from data.utils import trunc
 
 
-def data_array_to_geojson(
+async def data_array_to_geojson(
     data_array: xr.DataArray,
     bearings: xr.DataArray,
     lat_var: xr.DataArray,
     lon_var: xr.DataArray,
+    scale: list,
 ) -> FeatureCollection:
     """
     Converts a given xarray.DataArray, along with lat and lon keys to a
@@ -68,6 +69,13 @@ def data_array_to_geojson(
             yield it[0], it.multi_index
             it.iternext()
 
+    if bearings is not None:
+        scale_data = np.ceil(10 * (data - scale[0]) / scale[1])
+        scale_data[scale_data > 9] = 9
+        scale_data[scale_data < 0] = 0
+    else:
+        scale_data = np.full(data.shape, 2)
+
     features = []
     for elem, multi_idx in enumerate_nd_array(data):
         if np.isnan(elem):
@@ -86,6 +94,7 @@ def data_array_to_geojson(
             if np.isnan(bearings[multi_idx].item()):
                 continue
             props["bearing"] = bearings[multi_idx].item()
+        props["scale"] = int(scale_data[multi_idx])
 
         features.append(Feature(geometry=p, properties=props))
 

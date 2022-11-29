@@ -429,7 +429,7 @@ def range(
 
 
 @router.get("/data")
-def data(
+async def data(
     dataset: str = Query(
         ..., description="The key of the dataset.", example="giops_day"
     ),
@@ -478,8 +478,8 @@ def data(
         data = data[data_slice]
 
         bearings = None
-        if variable in config.vector_variables:
-            bearings_var = config.variable[variable].bearing_component or "bearing"
+        bearings_var = config.variable[variable].bearing_component
+        if variable in config.vector_variables and bearings_var:
             with open_dataset(
                 config, variable=bearings_var, timestamp=time
             ) as ds_bearing:
@@ -487,11 +487,12 @@ def data(
                     data_slice
                 ].squeeze(drop=True)
 
-        d = data_array_to_geojson(
+        d = await data_array_to_geojson(
             data.squeeze(drop=True),
             bearings,  # this is a hack
             lat_var[lat_slice],
             lon_var[lon_slice],
+            config.variable[variable].scale,
         )
 
         path = pathlib.Path(cached_file_name).parent

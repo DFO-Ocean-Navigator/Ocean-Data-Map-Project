@@ -35,9 +35,7 @@ const I7 = require("../images/s111/I7.svg").default;
 const I8 = require("../images/s111/I8.svg").default;
 const I9 = require("../images/s111/I9.svg").default;
 
-function knotsToMetersPerSecond(knots) {
-  return knots * 0.514444;
-}
+const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
 function deg2rad(deg) {
   return deg * Math.PI/180.0;
@@ -200,14 +198,14 @@ export default class Map extends React.PureComponent {
             url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
-              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}`; 
             break;
           case "areas":
             url = `/api/v2.0/kml/${this.props.state.vectortype}` +
               `/${this.props.state.vectorid}` +
               `?projection=${projection.getCode()}` +
               `&resolution=${Math.round(resolution)}` +
-              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}` 
+              `&view_bounds=${extent.map(function (i) { return Math.round(i); })}`; 
             break;
           default:
             url = `/api/v2.0/${this.props.state.vectortype}` +
@@ -576,107 +574,22 @@ export default class Map extends React.PureComponent {
       {
         source: null, // set source during update function below
         style: function(feature, resolution) {
-          const velocity = parseFloat(feature.get("data"));
-          const rotationRads = deg2rad(parseFloat(feature.get("bearing")));
-          if (velocity < knotsToMetersPerSecond(0.5)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.3,
-                src: I1,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
+          let scale = feature.get("scale");
+          let rotation = null;
+          if (!feature.get("bearing")) { // bearing-only variable (no magnitude)
+            rotation = deg2rad(parseFloat(feature.get("data")))
+          } else {
+            rotation = deg2rad(parseFloat(feature.get("bearing"))); 
           }
-          else if (velocity < knotsToMetersPerSecond(1.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.35,
-                src: I2,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
+          return new olstyle.Style({
+            image: new olstyle.Icon({
+              scale: 0.2 + (scale+1)/16,
+              src: arrowImages[scale],
+              opacity: 1,
+              anchor: anchor,
+              rotation: rotation
             })
-          }
-          else if (velocity < knotsToMetersPerSecond(2.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.35,
-                src: I3,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(3.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.4,
-                src: I4,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(5.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.5,
-                src: I5,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(7.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.7,
-                src: I6,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(10.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.75,
-                src: I7,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else if (velocity < knotsToMetersPerSecond(13.0)) {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 0.9,
-                src: I8,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
-          else {
-            return new olstyle.Style({
-              image: new olstyle.Icon({
-                scale: 1.0,
-                src: I9,
-                opacity: 1,
-                anchor: anchor,
-                rotation: rotationRads
-              })
-            })
-          }
+          });          
         }
       }
     );
@@ -764,12 +677,13 @@ export default class Map extends React.PureComponent {
       if (feature && feature.get("name")) {
         this.overlay.setPosition(e.coordinate);
         if (feature.get("data")) {
+          let bearing = feature.get("bearing");
           this.popupElement.innerHTML = ReactDOMServer.renderToString(
             <table>
               <tr><td>Variable</td><td>{feature.get("name")}</td></tr>
               <tr><td>Data</td><td>{feature.get("data")}</td></tr>
               <tr><td>Units</td><td>{feature.get("units")}</td></tr>
-              <tr><td>Bearing (+ve deg clockwise N)</td><td>{feature.get("bearing")}</td></tr>
+              {bearing && <tr><td>Bearing (+ve deg clockwise N)</td><td>{bearing}</td></tr>}
             </table>
           );
         } else {
@@ -1221,7 +1135,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear(); }.bind(this),
         251
       );
     }.bind(this));
@@ -1263,7 +1177,7 @@ export default class Map extends React.PureComponent {
       this.map.removeInteraction(draw);
       this._drawing = false;
       setTimeout(
-        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear() }.bind(this),
+        function () { this.controlDoubleClickZoom(true); this.obsDrawSource.clear(); }.bind(this),
         251
       );
     }.bind(this));
