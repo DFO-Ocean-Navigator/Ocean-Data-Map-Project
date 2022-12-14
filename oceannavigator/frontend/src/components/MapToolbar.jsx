@@ -93,7 +93,7 @@ class MapToolbar extends React.Component {
         class4Files = this.state.class4RAOFiles;
         break;
     }
-    let dates = Object.keys(class4Files).sort()
+    let dates = Object.keys(class4Files).sort();
     this.class4Picker = $(div).datepicker({
       dateFormat: "yy-mm-dd",
       beforeShowDay: (d) => this.beforeShowDay(d,type),
@@ -307,8 +307,8 @@ class MapToolbar extends React.Component {
 
   // Instructs the OceanNavigator to fetch point data
   applyPointCoords() {
-    let latitude = this.state.coordinate[0]
-    let longitude = this.state.coordinate[1]
+    let latitude = this.state.coordinate[0];
+    let longitude = this.state.coordinate[1];
     //Latitude ranges between -90 and 90 degrees, inclusive. 
     //Values above or below this range will be clamped to the range [-90, 90]. 
     //This means that if the value specified is less than -90, it will be set to -90. 
@@ -321,7 +321,7 @@ class MapToolbar extends React.Component {
     //This reflects the fact that longitudes wrap around the globe.//
     longitude = (longitude >180) ? longitude - 360: longitude;
     longitude = (longitude <-180) ? 360 + longitude: longitude;
-    let appliedPointCords = [latitude, longitude]
+    let appliedPointCords = [latitude, longitude];
     // Draw points on map(s)
     this.props.action("add", "point", [appliedPointCords]);
     // We send "enterPoint" too so that the coordinates do not get
