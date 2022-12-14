@@ -23,9 +23,7 @@ class WarningBar extends React.PureComponent {
     if(this.state.show){
       return (
         <Alert bsStyle="warning" onDismiss={this.handleDismiss}>
-              Class 4 datasets currently static. Temporal Coverage: Jan 2019 
-              to Jan 2022, partial coverage Feb-May 2022 (Ocean Predict) and 
-              Feb 2022 to May 2022 (RIOPS Assimilation Observation).
+          *** Add warning here ***
         </Alert>
       );
     }

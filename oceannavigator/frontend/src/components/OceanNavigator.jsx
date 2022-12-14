@@ -666,7 +666,7 @@ class OceanNavigator extends React.Component {
             observationArea={this.state.observationArea}
             disablePlotInteraction={this.removeMapInteraction}
           />
-          <WarningBar />
+          {/* <WarningBar /> */}
           {map}
         </div>
 

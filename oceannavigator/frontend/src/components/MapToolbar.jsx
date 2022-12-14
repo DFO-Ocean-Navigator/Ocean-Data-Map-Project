@@ -81,24 +81,19 @@ class MapToolbar extends React.Component {
     let button = null;
     let div = null;
     let class4Files = null;
-    let minDate = null;
-    let maxDate = null;
     switch (type){
       case "ocean_predict":
         button = $(ReactDOM.findDOMNode(this.class4OPButton));
         div = this.class4OpDiv;
         class4Files = this.state.class4OPFiles;
-        minDate = new Date(2019, 1, 1); 
-        maxDate = new Date(2022, 1, 27);
         break;
       case "riops_obs":
         button = $(ReactDOM.findDOMNode(this.class4RAOButton));
         div = this.class4RAODiv;
         class4Files = this.state.class4RAOFiles;
-        minDate = new Date(2022, 1, 1);
-        maxDate = new Date(2022, 4, 30);
         break;
     }
+    let dates = Object.keys(class4Files).sort();
     this.class4Picker = $(div).datepicker({
       dateFormat: "yy-mm-dd",
       beforeShowDay: (d) => this.beforeShowDay(d,type),
@@ -106,8 +101,8 @@ class MapToolbar extends React.Component {
       onSelect: function(text, picker) {
         this.props.action("show", "class4", class4Files[text], type);
       }.bind(this),
-      minDate: minDate,
-      maxDate: maxDate
+      minDate: new Date(dates[0]),
+      maxDate: new Date(dates[dates.length - 1])
     }); 
     $(div).css("left", button.offset() + "px");
     this.forceUpdate();
@@ -312,8 +307,8 @@ class MapToolbar extends React.Component {
 
   // Instructs the OceanNavigator to fetch point data
   applyPointCoords() {
-    let latitude = this.state.coordinate[0]
-    let longitude = this.state.coordinate[1]
+    let latitude = this.state.coordinate[0];
+    let longitude = this.state.coordinate[1];
     //Latitude ranges between -90 and 90 degrees, inclusive. 
     //Values above or below this range will be clamped to the range [-90, 90]. 
     //This means that if the value specified is less than -90, it will be set to -90. 
@@ -326,7 +321,7 @@ class MapToolbar extends React.Component {
     //This reflects the fact that longitudes wrap around the globe.//
     longitude = (longitude >180) ? longitude - 360: longitude;
     longitude = (longitude <-180) ? 360 + longitude: longitude;
-    let appliedPointCords = [latitude, longitude]
+    let appliedPointCords = [latitude, longitude];
     // Draw points on map(s)
     this.props.action("add", "point", [appliedPointCords]);
     // We send "enterPoint" too so that the coordinates do not get
