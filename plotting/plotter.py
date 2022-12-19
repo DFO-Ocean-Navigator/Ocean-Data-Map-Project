@@ -31,6 +31,7 @@ class Plotter(metaclass=ABCMeta):
         self.variable_units = None
         self.scale = None
         self.date_formatter = None
+        self.interactive: bool = False
         # Init interpolation stuff
         self.interp: str = "gaussian"
         self.radius: int = 25000  # radius in meters
@@ -83,6 +84,8 @@ class Plotter(metaclass=ABCMeta):
         self.scale = self.__get_scale(query.get("scale"))
 
         self.variables = self.__get_variables(query.get("variable"))
+
+        self.interactive = query.get('interactive')
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -169,6 +172,8 @@ class Plotter(metaclass=ABCMeta):
     def __get_time(self, param: str):
         if param is None or len(str(param)) == 0:
             return -1
+        elif isinstance(param, list):
+            return [int(p) for p in param]
         else:
             try:
                 return int(param)

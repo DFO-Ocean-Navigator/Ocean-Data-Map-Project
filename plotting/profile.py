@@ -16,14 +16,17 @@ class ProfilePlotter(PointPlotter):
     def load_data(self):
 
         with open_dataset(
-            self.dataset_config, timestamp=self.time, variable=self.variables
+            self.dataset_config,
+            variable=self.variables,
+            timestamp=self.starttime,
+            endtime=self.endtime,
         ) as ds:
 
             try:
                 self.load_misc(ds, self.variables)
             except IndexError as e:
                 raise ClientError(
-                    ( #gettext(
+                    (  # gettext(
                         "The selected variable(s) were not found in the dataset. \
                         Most likely, this variable is a derived product from \
                         existing dataset variables. Please select another variable. "
@@ -68,24 +71,34 @@ class ProfilePlotter(PointPlotter):
         ]
 
         columns = [
+            "Time",
             "Latitude",
             "Longitude",
             "Depth",
         ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
         data = []
 
-        # For each point
-        for p in range(0, self.data.shape[0]):
-            # For each depth
-            for d in range(0, self.data.shape[2]):
-                if self.data[p, :, d].mask.all():
-                    continue
-                entry = [
-                    "%0.4f" % self.points[p][0],
-                    "%0.4f" % self.points[p][1],
-                    "%0.1f" % self.depths[p, 0, d],
-                ] + ["%0.1f" % x for x in self.data[p, :, d]]
-                data.append(entry)
+        timestamp = self.iso_timestamp
+        if not isinstance(timestamp, list):
+            timestamp = [timestamp]
+
+        # for each timestamp
+        for t in range(len(timestamp)):
+            # For each point
+            for p in range(0, self.data.shape[1]):
+                # For each depth
+                for d in range(0, self.data.shape[3]):
+                    print(self.depths[t, p, 0, d])
+                    if self.data[t, p, :, d].mask.all():
+                        print("masked")
+                        continue
+                    entry = [
+                        timestamp[t].isoformat(),
+                        "%0.4f" % self.points[p][0],
+                        "%0.4f" % self.points[p][1],
+                        "%0.1f" % self.depths[t, p, 0, d],
+                    ] + ["%0.1f" % x for x in self.data[t, p, :, d]]
+                    data.append(entry)
 
         return super(ProfilePlotter, self).csv(header, columns, data)
 
@@ -116,96 +129,6 @@ class ProfilePlotter(PointPlotter):
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def plot(self):
-        # Create base figure
-        fig = plt.figure(figsize=self.figuresize, dpi=self.dpi)
+        data = np.ma.compressed(self.data).tolist()
 
-        # Setup figure layout
-        width = len(self.variables)
-        if self.showmap:
-            width += 1
-            # Horizontally scale the actual plots by 2x the size of
-            # the location map
-            width_ratios = [1]
-            [width_ratios.append(2) for w in range(0, width - 1)]
-        else:
-            width_ratios = None
-
-        # Create layout helper
-        gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
-        subplot = 0
-
-        # Render point location
-        if self.showmap:
-            utils.point_plot(
-                np.array(
-                    [
-                        [x[0] for x in self.points],  # Latitudes
-                        [x[1] for x in self.points],  # Longitudes
-                    ]
-                ),
-                gs[0, subplot],
-            )
-            subplot += 1
-
-        is_y_label_plotted = False
-        # Create a subplot for each variable selected
-        # Each subplot has all points plotted
-        for idx, _ in enumerate(self.variables):
-            plt.subplot(gs[:, subplot])
-
-            plt.plot(
-                self.data[:, idx, :].transpose(), self.depths[:, idx, :].transpose()
-            )
-
-            var_unit = utils.mathtext(self.variable_units[idx])
-            current_axis = plt.gca()
-            current_axis.xaxis.set_label_position("top")
-            current_axis.xaxis.set_ticks_position("top")
-            current_axis.invert_yaxis()
-            current_axis.grid(True)
-            current_axis.set_xlabel(
-                "%s (%s)" % (self.variable_names[idx], var_unit),
-                fontsize=14,
-            )
-
-            stats_str = self.get_stats_str(self.data[:, idx, :], var_unit)
-            y_offset = -0.05
-            if len(self.variables) > 2:
-                stats_str = stats_str.replace(", ", ",\n")
-                y_offset = -0.15
-
-            current_axis.text(
-                0, y_offset, stats_str, fontsize=14, transform=current_axis.transAxes
-            )
-
-            # Put y-axis label on left-most graph (but after the point location)
-            if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                current_axis.set_ylabel("Depth (m)", fontsize=14) # current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
-                is_y_label_plotted = True
-
-            if self.compare:
-                xlim = np.abs(plt.gca().get_xlim()).max()
-                plt.gca().set_xlim([-xlim, xlim])
-
-            subplot += 1
-
-        self.plot_legend(fig, self.names)
-
-        if not self.plotTitle:
-            plt.suptitle(
-                "%s(%s)\n%s\n%s"
-                % (
-                    "Profile for ", # gettext("Profile for "),
-                    ", ".join(self.names),
-                    ", ".join(self.variable_names),
-                    self.date_formatter(self.iso_timestamp),
-                ),
-                fontsize=15,
-            )
-        else:
-            plt.suptitle(self.plotTitle, fontsize=15)
-
-        fig.tight_layout()
-        fig.subplots_adjust(top=(0.8))
-
-        return super(ProfilePlotter, self).plot(fig)
+        return (data, self.mime, self.filename)

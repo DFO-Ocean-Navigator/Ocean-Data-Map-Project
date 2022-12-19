@@ -699,6 +699,16 @@ async def plot(
                 headers={"Cache-Control": "max-age=300"},
             )
 
+    elif format == "data":
+
+        def make_response(data, mime):
+
+            return Response(
+                json.dumps(data),
+                media_type=mime,
+                headers={"Cache-Control": "max-age=300"},
+            )
+
     else:
 
         def make_response(data, mime):
@@ -752,6 +762,12 @@ async def plot(
 
     if save:
         response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+    elif plotter.interactive:
+        response = {
+            'data': img,
+            'variableName': plotter.variable_names,
+            'variableUnit': plotter.variable_units
+        }
 
     return response
 

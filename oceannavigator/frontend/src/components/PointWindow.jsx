@@ -515,6 +515,8 @@ class PointWindow extends React.Component {
               query={plot_query} // For image saving link.
               permlink_subquery={permlink_subquery}
               action={this.props.action}
+              starttime={this.props.dataset_0.starttime}
+              time={this.props.dataset_0.time}
             />
           </Col>
         </Row>

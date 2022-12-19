@@ -36,13 +36,16 @@ class PointPlotter(Plotter):
             or len(names) != len(points)
             or names[0] is None
         ):
-            names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in points]
+            names = [
+                "(%1.4f, %1.4f)" % (float(point[0]), float(point[1]))
+                for point in points
+            ]
 
         t = sorted(zip(names, points))
         self.names = [n for (n, p) in t]
         self.points = [p for (n, p) in t]
 
-    def get_data(self, dataset, variables, time):
+    def get_data_old(self, dataset, variables, time):
         point_data = []
         point_depths = []
 
@@ -59,6 +62,31 @@ class PointPlotter(Plotter):
 
         return np.ma.array(point_data), np.ma.array(point_depths)
 
+    def get_data(self, dataset, variables, time):
+        if not isinstance(time, list):
+            time = [time]
+
+        time_data = []
+        time_depths = []
+        for t in time:
+            point_data = []
+            point_depths = []
+            for p in self.points:
+                data = []
+                depths = []
+                for v in variables:
+                    prof, d = dataset.get_profile(float(p[0]), float(p[1]), v, t)
+                    data.append(prof)
+                    depths.append(d)
+
+                point_data.append(np.ma.array(data))
+                point_depths.append(np.ma.array(depths))
+
+            time_data.append(np.ma.array(point_data))
+            time_depths.append(np.ma.array(point_depths))
+
+        return np.ma.array(time_data), np.ma.array(time_depths)
+
     def subtract_other(self, data):
         if self.compare:
             compare_config = DatasetConfig(self.compare["dataset"])
@@ -74,8 +102,9 @@ class PointPlotter(Plotter):
 
     @property
     def figuresize(self):
-        figuresize = list(map(float, self.size.split("x")))
-        if len(self.points) > 10:
-            figuresize[0] *= 1.0 / 1.25
+        if self.size:
+            figuresize = list(map(float, self.size.split("x")))
+            if len(self.points) > 10:
+                figuresize[0] *= 1.0 / 1.25
 
-        return figuresize
+            return figuresize
