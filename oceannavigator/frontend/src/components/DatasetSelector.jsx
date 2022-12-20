@@ -210,8 +210,11 @@ class DatasetSelector extends React.Component {
     // Multiple variables were selected
     // so don't update everything else
     if (newVariable instanceof HTMLCollection) {
+      let variables = Array.from(newVariable).map((o) => o.value);
+      let variableData = this.state.datasetVariables.filter(item => variables.includes(item.id)); 
       newState = {
-        variable: Array.from(newVariable).map((o) => o.value),
+        variable: variables,
+        variable_scale: variableData.map((o) => o.scale),
         variable_two_dimensional: false,
       };
     } else {
