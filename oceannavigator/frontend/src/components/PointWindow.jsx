@@ -51,6 +51,7 @@ class PointWindow extends React.Component {
       dataset_0: {
         dataset: props.dataset_0.dataset,
         variable: [props.dataset_0.variable],
+        variable_scale: props.dataset_0.variable_scale,
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
@@ -239,6 +240,7 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
               showQuiverSelector={false}
               showVariableRange={false}
+              showAxisRange={this.state.selected === TabEnum.PROFILE}
               showTimeRange={showTimeRange}
               showDepthSelector={showDepthSelector}
               options={this.props.options}
@@ -387,6 +389,7 @@ class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.state.dataset_0.time;
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_scale = this.state.dataset_0.variable_scale;
         inputs = [global];
         break;
 

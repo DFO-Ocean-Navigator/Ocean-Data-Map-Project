@@ -8,6 +8,7 @@ import {
   OverlayTrigger,
 } from "react-bootstrap";
 
+import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
 import Range from "./Range.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -146,7 +147,7 @@ class DatasetSelector extends React.Component {
 
                     datasetVariables: variableResult.data,
                     variable: newVariable,
-                    variable_scale: newVariableScale,
+                    variable_scale: [newVariableScale],
                     quiverVariable: "none",
 
                     time: newTime,
@@ -211,7 +212,7 @@ class DatasetSelector extends React.Component {
     // so don't update everything else
     if (newVariable instanceof HTMLCollection) {
       let variables = Array.from(newVariable).map((o) => o.value);
-      let variableData = this.state.datasetVariables.filter(item => variables.includes(item.id)); 
+      let variableData = this.state.datasetVariables.filter(item => variables.includes(item.id));
       newState = {
         variable: variables,
         variable_scale: variableData.map((o) => o.scale),
@@ -224,7 +225,7 @@ class DatasetSelector extends React.Component {
 
       newState = {
         variable: newVariable,
-        variable_scale: variable.scale,
+        variable_scale: [variable.scale],
         variable_two_dimensional: variable.two_dimensional,
         options: {
           ...this.state.options,
@@ -300,6 +301,13 @@ class DatasetSelector extends React.Component {
       return;
     }
 
+    if (key == "variable_scale") {
+      let scale = this.state.variable_scale;
+      scale[value[0]] = value[1]
+      this.setState({variable_scale: scale})
+      return;
+    }
+
     const newState = {
       [key]: value,
     };
@@ -351,7 +359,7 @@ class DatasetSelector extends React.Component {
           id={`dataset-selector-dataset-selector-${this.props.id}`}
           key={`dataset-selector-dataset-selector-${this.props.id}`}
           datasets={this.state.availableDatasets.map((d) => {
-            return { id: d.id, value: d.value, group: d.group, subgroup: d.subgroup};
+            return { id: d.id, value: d.value, group: d.group, subgroup: d.subgroup };
           })}
           label={_("Dataset")}
           onChange={this.onUpdate}
@@ -553,6 +561,30 @@ class DatasetSelector extends React.Component {
       );
     }
 
+    let axisRange = [];
+    if (
+      this.props.showAxisRange &&
+      this.state.datasetVariables &&
+      this.state.datasetVariables.length > 0 &&
+      !this.state.loading
+    ) {
+      let axisVariables = Array.isArray(this.state.variable) ? this.state.variable : [this.state.variable];
+      let variableData = this.state.datasetVariables.filter((v) => axisVariables.includes(v.id));
+      let axisVariableScales = variableData.map((v) => v.scale);
+      let axisVariableNames = variableData.map((v) => v.value);
+      for (let i = 0; i < axisVariables.length; ++i) {
+        let range = <AxisRange
+          key={axisVariables[i] + "_axis_range"}
+          id={axisVariables[i] + "_axis_range"}
+          title={axisVariableNames[i] + " Range"}
+          range={axisVariableScales[i]}
+          index={i}
+          onUpdate={this.onUpdate}
+        />
+        axisRange.push(range)
+      }
+    }
+
     const goButtonTooltip = (
       <Tooltip id="goButtonTooltip">{_("Click to apply selections")}</Tooltip>
     );
@@ -570,6 +602,8 @@ class DatasetSelector extends React.Component {
         {timeSelector}
 
         {variableRange}
+
+        {axisRange}
 
         <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
           <Button bsStyle="primary" block onClick={this.handleGoButton}>
@@ -605,6 +639,7 @@ DatasetSelector.propTypes = {
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
   showVariableRange: PropTypes.bool,
+  showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.string,
@@ -617,6 +652,7 @@ DatasetSelector.defaultProps = {
   showTimeRange: false,
   showDepthSelector: true,
   showVariableRange: true,
+  showAxisRange: false,
   showVariableSelector: true,
   showDepthsAll: false,
 };

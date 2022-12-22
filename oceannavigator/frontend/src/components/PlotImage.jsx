@@ -155,6 +155,7 @@ class PlotImage extends React.PureComponent {
 
     switch (q.type) {
       case "profile":
+        query.variable_scale = q.variable_scale;
       case "ts":
       case "sound":
         query.variable = q.variable;
