@@ -16,6 +16,7 @@ class AxisRange extends React.Component {
     super(props);
 
     this.state = {
+      auto: false,
       min: this.props.range[0], 
       max: this.props.range[1],
     };
@@ -57,6 +58,11 @@ class AxisRange extends React.Component {
     this.setState({
       auto: e.target.checked
     });
+    if (e.target.checked) {
+      this.props.onUpdate("variable_scale", [this.props.index, null]);
+    } else {
+      this.updateParent()
+    }
   }
 
   handleResetButton() {
