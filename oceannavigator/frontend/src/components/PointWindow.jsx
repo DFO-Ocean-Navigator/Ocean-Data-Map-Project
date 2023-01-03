@@ -202,6 +202,9 @@ class PointWindow extends React.Component {
       this.state.selected === TabEnum.PROFILE ||
       this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
+    const showAxisRange = 
+      this.state.selected === TabEnum.PROFILE ||
+      this.state.selected === TabEnum.MOORING;
 
     const plotOptions = (
       <div>
@@ -240,7 +243,7 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
               showQuiverSelector={false}
               showVariableRange={false}
-              showAxisRange={this.state.selected === TabEnum.PROFILE}
+              showAxisRange={showAxisRange}
               showTimeRange={showTimeRange}
               showDepthSelector={showDepthSelector}
               options={this.props.options}
@@ -435,6 +438,7 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_scale = this.state.dataset_0.variable_scale;
         plot_query.starttime = this.state.dataset_0.starttime;
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;

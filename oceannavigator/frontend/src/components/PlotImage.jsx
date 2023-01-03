@@ -173,6 +173,7 @@ class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
+        query.variable_scale = q.variable_scale;
         query.depth = q.depth;
         query.starttime = q.starttime;
         query.endtime = q.endtime;
