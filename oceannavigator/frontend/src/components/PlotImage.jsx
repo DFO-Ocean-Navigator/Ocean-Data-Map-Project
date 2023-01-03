@@ -72,8 +72,8 @@ class PlotImage extends React.PureComponent {
     this.loadImage(...this.generateQuery(this.props.query));
   }
 
-  componentDidUpdate(nextProps) {
-    this.loadImage(...this.generateQuery(nextProps.query));
+  componentDidUpdate() {
+    this.loadImage(...this.generateQuery(this.props.query));
   }
 
   componentWillUnmount() {

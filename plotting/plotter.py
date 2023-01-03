@@ -259,7 +259,7 @@ class Plotter(metaclass=ABCMeta):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
-            buf.write(", ".join(columns))   
+            buf.write(", ".join(columns))
             buf.write("\n")
 
             for line in data:

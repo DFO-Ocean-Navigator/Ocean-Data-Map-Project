@@ -121,7 +121,7 @@ AxisRange.propTypes = {
   title: PropTypes.string,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
-  index: propTypes.number,
+  index: PropTypes.number,
 };
 
 export default withTranslation()(AxisRange);
