@@ -51,7 +51,7 @@ class PointWindow extends React.Component {
       dataset_0: {
         dataset: props.dataset_0.dataset,
         variable: [props.dataset_0.variable],
-        variable_scale: props.dataset_0.variable_scale,
+        variable_range: props.dataset_0.variable_scale,
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
@@ -392,7 +392,7 @@ class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.state.dataset_0.time;
         plot_query.variable = this.state.dataset_0.variable;
-        plot_query.variable_scale = this.state.dataset_0.variable_scale;
+        plot_query.variable_range = this.state.dataset_0.variable_range;
         inputs = [global];
         break;
 
@@ -438,7 +438,7 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.state.dataset_0.variable;
-        plot_query.variable_scale = this.state.dataset_0.variable_scale;
+        plot_query.variable_range = this.state.dataset_0.variable_range;
         plot_query.starttime = this.state.dataset_0.starttime;
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;

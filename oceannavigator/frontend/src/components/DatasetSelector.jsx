@@ -147,7 +147,8 @@ class DatasetSelector extends React.Component {
 
                     datasetVariables: variableResult.data,
                     variable: newVariable,
-                    variable_scale: [newVariableScale],
+                    variable_scale: newVariableScale,
+                    variable_range: [newVariableScale],
                     quiverVariable: "none",
 
                     time: newTime,
@@ -215,7 +216,7 @@ class DatasetSelector extends React.Component {
       let variableData = this.state.datasetVariables.filter(item => variables.includes(item.id));
       newState = {
         variable: variables,
-        variable_scale: variableData.map((o) => o.scale),
+        variable_range: variableData.map((o) => o.scale),
         variable_two_dimensional: false,
       };
     } else {
@@ -301,10 +302,10 @@ class DatasetSelector extends React.Component {
       return;
     }
 
-    if (key == "variable_scale") {
-      let scale = this.state.variable_scale;
-      scale[value[0]] = value[1]
-      this.setState({variable_scale: scale})
+    if (key == "variable_range") {
+      let range = this.state.variable_range;
+      range[value[0]] = value[1]
+      this.setState({variable_range: range})
       return;
     }
 
@@ -570,14 +571,14 @@ class DatasetSelector extends React.Component {
     ) {
       let axisVariables = Array.isArray(this.state.variable) ? this.state.variable : [this.state.variable];
       let variableData = this.state.datasetVariables.filter((v) => axisVariables.includes(v.id));
-      let axisVariableScales = variableData.map((v) => v.scale);
+      let axisVariableRanges = variableData.map((v) => v.scale);
       let axisVariableNames = variableData.map((v) => v.value);
       for (let i = 0; i < axisVariables.length; ++i) {
         let range = <AxisRange
           key={axisVariables[i] + "_axis_range"}
           id={axisVariables[i] + "_axis_range"}
           title={axisVariableNames[i] + " Range"}
-          range={axisVariableScales[i]}
+          range={axisVariableRanges[i]}
           index={i}
           onUpdate={this.onUpdate}
         />
