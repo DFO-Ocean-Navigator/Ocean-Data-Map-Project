@@ -28,9 +28,10 @@ class AxisRange extends React.Component {
     this.updateParent = this.updateParent.bind(this);
   }
 
-
   updateParent() {
-    this.props.onUpdate("variable_scale", [this.props.index, [this.state.min, this.state.max]]);
+    this.props.onUpdate(
+      "variable_range", [this.props.variable, [this.state.min, this.state.max]]
+    );
   }
 
   changed(key, value) {
@@ -58,7 +59,7 @@ class AxisRange extends React.Component {
       auto: e.target.checked
     });
     if (e.target.checked) {
-      this.props.onUpdate("variable_scale", [this.props.index, null]);
+      this.props.onUpdate("variable_range", [this.props.variable, null]);
     } else {
       this.updateParent();
     }
@@ -119,9 +120,9 @@ class AxisRange extends React.Component {
 AxisRange.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
+  variable: PropTypes.string,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
-  index: PropTypes.number,
 };
 
 export default withTranslation()(AxisRange);

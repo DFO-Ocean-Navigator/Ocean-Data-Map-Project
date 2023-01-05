@@ -513,6 +513,6 @@ class TimeseriesPlotter(PointPlotter):
             )
 
             if self.axis_range:
-                plt.gca().set_ylim(self.axis_range[idx])
+                plt.gca().set_ylim(self.axis_range[0])
 
         return super(TimeseriesPlotter, self).plot(fig)

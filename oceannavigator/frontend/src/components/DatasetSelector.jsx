@@ -31,7 +31,8 @@ const PARENT_ATTRIBUTES_TO_UPDATE = Object.freeze([
   "dataset_attribution",
   "quantum",
   "variable",
-  "variable_scale", // Default range values for variable
+  "variable_scale",
+  "variable_range",
   "depth",
   "time",
   "starttime",
@@ -90,6 +91,8 @@ class DatasetSelector extends React.Component {
         // dataset if said variable exists in the new dataset.
         let newVariable = currentVariable;
         let newVariableScale = this.state.variable_scale;
+        let variable_range = {};
+        variable_range[newVariable] = newVariableScale;
         let interpType = this.state.options.interpType;
         let interpRadius = this.state.options.interpRadius;
         let interpNeighbours = this.state.options.interpNeighbours;
@@ -99,6 +102,7 @@ class DatasetSelector extends React.Component {
         if (!variableIds.includes(currentVariable)) {
           newVariable = variableResult.data[0].id;
           newVariableScale = variableResult.data[0].scale;
+          variable_range[newVariable] = newVariableScale;
           interpType =
             variableResult.data[0].interp?.interpType || this.DEF_INTERP_TYPE;
           interpRadius =
@@ -136,6 +140,7 @@ class DatasetSelector extends React.Component {
                 // conditions, and having the UI
                 // in a bad state if one of the
                 // API calls fail.
+
                 this.setState(
                   {
                     loading: false,
@@ -148,7 +153,7 @@ class DatasetSelector extends React.Component {
                     datasetVariables: variableResult.data,
                     variable: newVariable,
                     variable_scale: newVariableScale,
-                    variable_range: [newVariableScale],
+                    variable_range: variable_range,
                     quiverVariable: "none",
 
                     time: newTime,
@@ -213,10 +218,13 @@ class DatasetSelector extends React.Component {
     // so don't update everything else
     if (newVariable instanceof HTMLCollection) {
       let variables = Array.from(newVariable).map((o) => o.value);
-      let variableData = this.state.datasetVariables.filter(item => variables.includes(item.id));
+      let variableRanges = {};
+      variables.forEach(v => {
+        variableRanges[v] = this.state.datasetVariables.find(item => item.id === v).scale;
+      });
       newState = {
         variable: variables,
-        variable_range: variableData.map((o) => o.scale),
+        variable_range: variableRanges,
         variable_two_dimensional: false,
       };
     } else {
@@ -272,6 +280,15 @@ class DatasetSelector extends React.Component {
     );
   }
 
+  componentDidUpdate(prevProps) {
+    if (!this.props.multipleVariables && Array.isArray(this.state.variable)) {
+      this.setState({ 
+        variable: this.state.variable[0],
+        variable_range: this.state.variable_range[this.state.variable[0]] 
+      });
+    }
+  }
+
   nothingChanged(key, value) {
     return this.state[key] === value;
   }
@@ -305,7 +322,7 @@ class DatasetSelector extends React.Component {
     if (key == "variable_range") {
       let range = this.state.variable_range;
       range[value[0]] = value[1]
-      this.setState({variable_range: range})
+      this.setState({ variable_range: range })
       return;
     }
 
@@ -372,6 +389,7 @@ class DatasetSelector extends React.Component {
 
     let timeSelector = null;
     if (this.state.datasetTimestamps && !this.state.loading) {
+      let v = Array.isArray(this.state.variable) ? this.state.variable[0] : this.state.variable;
       if (this.props.showTimeRange) {
         timeSelector = (
           <div>
@@ -385,7 +403,7 @@ class DatasetSelector extends React.Component {
               onUpdate={this.onUpdate}
               max={this.state.time}
               dataset={this.state.dataset}
-              variable={this.state.variable}
+              variable={v}
             />
             <TimePicker
               key="time"
@@ -397,7 +415,7 @@ class DatasetSelector extends React.Component {
               onUpdate={this.onUpdate}
               min={this.state.starttime}
               dataset={this.state.dataset}
-              variable={this.state.variable}
+              variable={v}
             />
           </div>
         );
@@ -412,7 +430,7 @@ class DatasetSelector extends React.Component {
             onUpdate={this.onUpdate}
             title={_("Time (UTC)")}
             dataset={this.state.dataset}
-            variable={this.state.variable}
+            variable={v}
           />
         );
       }
