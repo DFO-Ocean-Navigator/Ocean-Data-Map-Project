@@ -280,11 +280,11 @@ class DatasetSelector extends React.Component {
     );
   }
 
-  componentDidUpdate(prevProps) {
-    if (!this.props.multipleVariables && Array.isArray(this.state.variable)) {
-      this.setState({ 
-        variable: this.state.variable[0],
-        variable_range: this.state.variable_range[this.state.variable[0]] 
+  componentWillUpdate(nextProps) {
+    if (!nextProps.multipleVariables && this.props.multipleVariables && Array.isArray(this.state.variable)) {
+      this.setState({
+        variable: [this.state.variable[0]],
+        variable_range: [this.state.variable_range[this.state.variable[0]]]
       });
     }
   }
