@@ -512,7 +512,7 @@ class TimeseriesPlotter(PointPlotter):
                 transform=ax.transAxes,
             )
 
-            if self.axis_range[0]:
+            if self.axis_range:
                 plt.gca().set_ylim(self.axis_range[0])
 
         return super(TimeseriesPlotter, self).plot(fig)
