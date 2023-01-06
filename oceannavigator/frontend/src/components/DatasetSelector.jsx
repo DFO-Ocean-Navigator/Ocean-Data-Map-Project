@@ -282,9 +282,11 @@ class DatasetSelector extends React.Component {
 
   componentWillUpdate(nextProps) {
     if (!nextProps.multipleVariables && this.props.multipleVariables && Array.isArray(this.state.variable)) {
+      let variable_range = {}
+      variable_range[this.state.variable[0]] = this.state.variable_range[this.state.variable[0]];
       this.setState({
         variable: [this.state.variable[0]],
-        variable_range: [this.state.variable_range[this.state.variable[0]]]
+        variable_range: variable_range
       });
     }
   }
@@ -347,6 +349,7 @@ class DatasetSelector extends React.Component {
   }
 
   render() {
+    console.log(this.state.variable_range)
     _("Dataset");
     _("Variable");
     _("Depth");
@@ -596,8 +599,8 @@ class DatasetSelector extends React.Component {
           key={axisVariables[i] + "_axis_range"}
           id={axisVariables[i] + "_axis_range"}
           title={axisVariableNames[i] + " Range"}
+          variable={axisVariables[i]}
           range={axisVariableRanges[i]}
-          index={i}
           onUpdate={this.onUpdate}
         />
         axisRange.push(range)
