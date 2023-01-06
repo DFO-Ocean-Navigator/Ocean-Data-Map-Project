@@ -231,10 +231,13 @@ class DatasetSelector extends React.Component {
       const variable = this.state.datasetVariables.find(
         (v) => v.id === newVariable
       );
+      let newVariableRange = {};
+      newVariableRange[newVariable] = variable.scale;
 
       newState = {
         variable: newVariable,
         variable_scale: [variable.scale],
+        variable_range: newVariableRange,
         variable_two_dimensional: variable.two_dimensional,
         options: {
           ...this.state.options,
@@ -349,7 +352,6 @@ class DatasetSelector extends React.Component {
   }
 
   render() {
-    console.log(this.state.variable_range)
     _("Dataset");
     _("Variable");
     _("Depth");

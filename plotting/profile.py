@@ -187,7 +187,7 @@ class ProfilePlotter(PointPlotter):
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
-            elif self.axis_range:
+            elif self.axis_range[idx]:
                 plt.gca().set_xlim(self.axis_range[idx])
 
             subplot += 1
