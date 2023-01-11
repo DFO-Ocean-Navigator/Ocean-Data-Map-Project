@@ -84,14 +84,7 @@ class NetCDFData(Data):
         else:
             try:
                 # Handle list of URLs for staggered grid velocity field datasets
-                urls = self.url if isinstance(self.url, list) else [self.url]
-                fields = xarray.Dataset()
-                for url in urls:
-                    field = xarray.open_dataset(url, decode_times=decode_times)
-                    variables = list(field.keys())
-                    for var in variables:
-                        fields[var] = field[var][-100:, :, :, :]
-                fields.attrs = field.attrs
+                fields = self._remote_ds(decode_times)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
@@ -880,16 +873,8 @@ class NetCDFData(Data):
             try:
                 # Handle possible list of URLs for staggered grid velocity field
                 # datasets
-                url = self.url if isinstance(self.url, list) else [self.url]
-                # This will raise a FutureWarning for xarray>=0.12.2.
-                # That warning should be resolvable by changing to:
-                # with xarray.open_mfdataset(url, combine="by_coords",
-                # decode_times=False) as ds:
-                with xarray.open_mfdataset(url, decode_times=False) as ds:
-                    self._variable_list = self._get_xarray_data_variables(
-                        ds
-                    )  # Cache the list for later
-
+                ds = self._remote_ds(False)
+                self._variable_list = self._get_xarray_data_variables(ds)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
@@ -1077,3 +1062,19 @@ class NetCDFData(Data):
         if timestamp > 0 and endtime < 0:
             idx = data.utils.roll_time(endtime, len_timestamps)
             return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
+
+    def _remote_ds(self, decode_times: bool) -> xarray.Dataset:
+        """Constructs dataset from individual variables. This avoids memory errors due
+        to xarray's inability to lazily concatenate large datasets. Datasets are
+        arbitrarily limited to 100 most recent timestamps.
+        """
+        urls = self.url if isinstance(self.url, list) else [self.url]
+        fields = xarray.Dataset()
+        for url in urls:
+            field = xarray.open_dataset(url, decode_times=decode_times)
+            variables = list(field.keys())
+            for var in variables:
+                fields[var] = field[var][-100:]
+        fields.attrs = field.attrs
+
+        return fields
