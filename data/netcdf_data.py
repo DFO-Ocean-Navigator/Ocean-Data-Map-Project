@@ -84,12 +84,14 @@ class NetCDFData(Data):
         else:
             try:
                 # Handle list of URLs for staggered grid velocity field datasets
-                url = self.url if isinstance(self.url, list) else [self.url]
-                # This will raise a FutureWarning for xarray>=0.12.2.
-                # That warning should be resolvable by changing to:
-                # fields = xarray.open_mfdataset(self.url, combine="by_coords",
-                # decode_times=decode_times)
-                fields = xarray.open_mfdataset(url, decode_times=decode_times)
+                urls = self.url if isinstance(self.url, list) else [self.url]
+                fields = xarray.Dataset()
+                for url in urls:
+                    field = xarray.open_dataset(url, decode_times=decode_times)
+                    variables = list(field.keys())
+                    for var in variables:
+                        fields[var] = field[var][-100:, :, :, :]
+                fields.attrs = field.attrs
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
