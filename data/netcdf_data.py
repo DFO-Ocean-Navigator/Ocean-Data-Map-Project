@@ -84,7 +84,11 @@ class NetCDFData(Data):
         else:
             try:
                 # Handle list of URLs for staggered grid velocity field datasets
-                fields = self._remote_ds(decode_times)
+                url = self.url if isinstance(self.url, list) else [self.url]
+                if len(url) > 1:
+                    fields = self._construct_remote_ds(url, decode_times)
+                else:
+                    fields = xarray.open_mfdataset(url, decode_times=decode_times)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
@@ -873,7 +877,12 @@ class NetCDFData(Data):
             try:
                 # Handle possible list of URLs for staggered grid velocity field
                 # datasets
-                ds = self._remote_ds(False)
+                url = self.url if isinstance(self.url, list) else [self.url]
+                if len(url) > 1:
+                    ds = self._construct_remote_ds(url, False)
+                else:
+                    ds = xarray.open_mfdataset(url, decode_times=False)
+                # Cache the list for later
                 self._variable_list = self._get_xarray_data_variables(ds)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
@@ -1063,12 +1072,11 @@ class NetCDFData(Data):
             idx = data.utils.roll_time(endtime, len_timestamps)
             return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
 
-    def _remote_ds(self, decode_times: bool) -> xarray.Dataset:
-        """Constructs dataset from individual variables. This avoids memory errors due
+    def _construct_remote_ds(self, urls: list, decode_times: bool) -> xarray.Dataset:
+        """Constructs dataset from multiple remote urls. This avoids memory errors due
         to xarray's inability to lazily concatenate large datasets. Datasets are
         arbitrarily limited to 100 most recent timestamps.
         """
-        urls = self.url if isinstance(self.url, list) else [self.url]
         fields = xarray.Dataset()
         for url in urls:
             field = xarray.open_dataset(url, decode_times=decode_times)
