@@ -84,6 +84,8 @@ class Plotter(metaclass=ABCMeta):
 
         self.variables = self.__get_variables(query.get("variable"))
 
+        self.axis_range = query.get("variable_range")
+
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
             self.compare = query.get("compare_to")
@@ -257,7 +259,7 @@ class Plotter(metaclass=ABCMeta):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
-            buf.write(", ".join(columns))   
+            buf.write(", ".join(columns))
             buf.write("\n")
 
             for line in data:

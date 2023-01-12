@@ -72,10 +72,8 @@ class PlotImage extends React.PureComponent {
     this.loadImage(...this.generateQuery(this.props.query));
   }
 
-  componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(...this.generateQuery(props.query));
-    }
+  componentDidUpdate() {
+    this.loadImage(...this.generateQuery(this.props.query));
   }
 
   componentWillUnmount() {
@@ -155,6 +153,7 @@ class PlotImage extends React.PureComponent {
 
     switch (q.type) {
       case "profile":
+        query.variable_range = q.variable_range;
       case "ts":
       case "sound":
         query.variable = q.variable;
@@ -174,6 +173,7 @@ class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
+        query.variable_range = q.variable_range;
         query.depth = q.depth;
         query.starttime = q.starttime;
         query.endtime = q.endtime;
