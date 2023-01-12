@@ -8,6 +8,7 @@ import {
   OverlayTrigger,
 } from "react-bootstrap";
 
+import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
 import Range from "./Range.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -30,7 +31,8 @@ const PARENT_ATTRIBUTES_TO_UPDATE = Object.freeze([
   "dataset_attribution",
   "quantum",
   "variable",
-  "variable_scale", // Default range values for variable
+  "variable_scale",
+  "variable_range",
   "depth",
   "time",
   "starttime",
@@ -89,6 +91,8 @@ class DatasetSelector extends React.Component {
         // dataset if said variable exists in the new dataset.
         let newVariable = currentVariable;
         let newVariableScale = this.state.variable_scale;
+        let variable_range = {};
+        variable_range[newVariable] = null;
         let interpType = this.state.options.interpType;
         let interpRadius = this.state.options.interpRadius;
         let interpNeighbours = this.state.options.interpNeighbours;
@@ -98,6 +102,7 @@ class DatasetSelector extends React.Component {
         if (!variableIds.includes(currentVariable)) {
           newVariable = variableResult.data[0].id;
           newVariableScale = variableResult.data[0].scale;
+          variable_range[newVariable] = null;
           interpType =
             variableResult.data[0].interp?.interpType || this.DEF_INTERP_TYPE;
           interpRadius =
@@ -135,6 +140,7 @@ class DatasetSelector extends React.Component {
                 // conditions, and having the UI
                 // in a bad state if one of the
                 // API calls fail.
+
                 this.setState(
                   {
                     loading: false,
@@ -147,6 +153,7 @@ class DatasetSelector extends React.Component {
                     datasetVariables: variableResult.data,
                     variable: newVariable,
                     variable_scale: newVariableScale,
+                    variable_range: variable_range,
                     quiverVariable: "none",
 
                     time: newTime,
@@ -210,18 +217,27 @@ class DatasetSelector extends React.Component {
     // Multiple variables were selected
     // so don't update everything else
     if (newVariable instanceof HTMLCollection) {
+      let variables = Array.from(newVariable).map((o) => o.value);
+      let variableRanges = {};
+      variables.forEach(v => {
+        variableRanges[v] = null;
+      });
       newState = {
-        variable: Array.from(newVariable).map((o) => o.value),
+        variable: variables,
+        variable_range: variableRanges,
         variable_two_dimensional: false,
       };
     } else {
       const variable = this.state.datasetVariables.find(
         (v) => v.id === newVariable
       );
+      let newVariableRange = {};
+      newVariableRange[newVariable] = null;
 
       newState = {
         variable: newVariable,
-        variable_scale: variable.scale,
+        variable_scale: [variable.scale],
+        variable_range: newVariableRange,
         variable_two_dimensional: variable.two_dimensional,
         options: {
           ...this.state.options,
@@ -267,6 +283,17 @@ class DatasetSelector extends React.Component {
     );
   }
 
+  componentWillUpdate(nextProps) {
+    if (!nextProps.multipleVariables && this.props.multipleVariables && Array.isArray(this.state.variable)) {
+      let variable_range = {}
+      variable_range[this.state.variable[0]] = this.state.variable_range[this.state.variable[0]];
+      this.setState({
+        variable: [this.state.variable[0]],
+        variable_range: variable_range
+      });
+    }
+  }
+
   nothingChanged(key, value) {
     return this.state[key] === value;
   }
@@ -294,6 +321,13 @@ class DatasetSelector extends React.Component {
 
     if (this.variableChanged(key)) {
       this.changeVariable(value);
+      return;
+    }
+
+    if (key == "variable_range") {
+      let range = this.state.variable_range;
+      range[value[0]] = value[1]
+      this.setState({ variable_range: range })
       return;
     }
 
@@ -348,7 +382,7 @@ class DatasetSelector extends React.Component {
           id={`dataset-selector-dataset-selector-${this.props.id}`}
           key={`dataset-selector-dataset-selector-${this.props.id}`}
           datasets={this.state.availableDatasets.map((d) => {
-            return { id: d.id, value: d.value, group: d.group, subgroup: d.subgroup};
+            return { id: d.id, value: d.value, group: d.group, subgroup: d.subgroup };
           })}
           label={_("Dataset")}
           onChange={this.onUpdate}
@@ -360,6 +394,7 @@ class DatasetSelector extends React.Component {
 
     let timeSelector = null;
     if (this.state.datasetTimestamps && !this.state.loading) {
+      let v = Array.isArray(this.state.variable) ? this.state.variable[0] : this.state.variable;
       if (this.props.showTimeRange) {
         timeSelector = (
           <div>
@@ -373,7 +408,7 @@ class DatasetSelector extends React.Component {
               onUpdate={this.onUpdate}
               max={this.state.time}
               dataset={this.state.dataset}
-              variable={this.state.variable}
+              variable={v}
             />
             <TimePicker
               key="time"
@@ -385,7 +420,7 @@ class DatasetSelector extends React.Component {
               onUpdate={this.onUpdate}
               min={this.state.starttime}
               dataset={this.state.dataset}
-              variable={this.state.variable}
+              variable={v}
             />
           </div>
         );
@@ -400,7 +435,7 @@ class DatasetSelector extends React.Component {
             onUpdate={this.onUpdate}
             title={_("Time (UTC)")}
             dataset={this.state.dataset}
-            variable={this.state.variable}
+            variable={v}
           />
         );
       }
@@ -550,6 +585,30 @@ class DatasetSelector extends React.Component {
       );
     }
 
+    let axisRange = [];
+    if (
+      this.props.showAxisRange &&
+      this.state.datasetVariables &&
+      this.state.datasetVariables.length > 0 &&
+      !this.state.loading
+    ) {
+      let axisVariables = Array.isArray(this.state.variable) ? this.state.variable : [this.state.variable];
+      let variableData = this.state.datasetVariables.filter((v) => axisVariables.includes(v.id));
+      let axisVariableRanges = variableData.map((v) => v.scale);
+      let axisVariableNames = variableData.map((v) => v.value);
+      for (let i = 0; i < axisVariables.length; ++i) {
+        let range = <AxisRange
+          key={axisVariables[i] + "_axis_range"}
+          id={axisVariables[i] + "_axis_range"}
+          title={axisVariableNames[i] + " Range"}
+          variable={axisVariables[i]}
+          range={axisVariableRanges[i]}
+          onUpdate={this.onUpdate}
+        />
+        axisRange.push(range)
+      }
+    }
+
     const goButtonTooltip = (
       <Tooltip id="goButtonTooltip">{_("Click to apply selections")}</Tooltip>
     );
@@ -567,6 +626,8 @@ class DatasetSelector extends React.Component {
         {timeSelector}
 
         {variableRange}
+
+        {axisRange}
 
         <OverlayTrigger placement="bottom" overlay={goButtonTooltip}>
           <Button bsStyle="primary" block onClick={this.handleGoButton}>
@@ -602,6 +663,7 @@ DatasetSelector.propTypes = {
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
   showVariableRange: PropTypes.bool,
+  showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.string,
@@ -614,6 +676,7 @@ DatasetSelector.defaultProps = {
   showTimeRange: false,
   showDepthSelector: true,
   showVariableRange: true,
+  showAxisRange: false,
   showVariableSelector: true,
   showDepthsAll: false,
 };
