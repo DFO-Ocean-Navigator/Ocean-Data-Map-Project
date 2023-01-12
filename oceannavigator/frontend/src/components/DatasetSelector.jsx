@@ -92,7 +92,7 @@ class DatasetSelector extends React.Component {
         let newVariable = currentVariable;
         let newVariableScale = this.state.variable_scale;
         let variable_range = {};
-        variable_range[newVariable] = newVariableScale;
+        variable_range[newVariable] = null;
         let interpType = this.state.options.interpType;
         let interpRadius = this.state.options.interpRadius;
         let interpNeighbours = this.state.options.interpNeighbours;
@@ -102,7 +102,7 @@ class DatasetSelector extends React.Component {
         if (!variableIds.includes(currentVariable)) {
           newVariable = variableResult.data[0].id;
           newVariableScale = variableResult.data[0].scale;
-          variable_range[newVariable] = newVariableScale;
+          variable_range[newVariable] = null;
           interpType =
             variableResult.data[0].interp?.interpType || this.DEF_INTERP_TYPE;
           interpRadius =
@@ -220,7 +220,7 @@ class DatasetSelector extends React.Component {
       let variables = Array.from(newVariable).map((o) => o.value);
       let variableRanges = {};
       variables.forEach(v => {
-        variableRanges[v] = this.state.datasetVariables.find(item => item.id === v).scale;
+        variableRanges[v] = null;
       });
       newState = {
         variable: variables,
@@ -232,7 +232,7 @@ class DatasetSelector extends React.Component {
         (v) => v.id === newVariable
       );
       let newVariableRange = {};
-      newVariableRange[newVariable] = variable.scale;
+      newVariableRange[newVariable] = null;
 
       newState = {
         variable: newVariable,

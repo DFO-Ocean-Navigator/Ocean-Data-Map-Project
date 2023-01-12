@@ -71,7 +71,7 @@ class PointWindow extends React.Component {
 
   componentWillMount() {
     let dataset_0 = this.state.dataset_0;
-    dataset_0.variable_range[this.props.dataset_0.variable] = this.props.dataset_0.variable_scale;
+    dataset_0.variable_range[this.props.dataset_0.variable] = null;
     this.setState({ dataset_0: dataset_0 })
   }
 

@@ -15,7 +15,7 @@ class AxisRange extends React.Component {
     super(props);
 
     this.state = {
-      auto: false,
+      auto: true,
       min: this.props.range[0],
       max: this.props.range[1],
     };
@@ -41,7 +41,7 @@ class AxisRange extends React.Component {
     state[key] = value;
     this.setState(state);
 
-    this.timeout = setTimeout(this.updateParent, 1000);
+    this.timeout = setTimeout(this.updateParent, 500);
   }
 
   keyPress(e) {
@@ -66,10 +66,14 @@ class AxisRange extends React.Component {
   }
 
   handleResetButton() {
+    clearTimeout(this.timeout);
+
     this.setState({
       min: this.props.range[0],
       max: this.props.range[1],
     });
+    
+    this.timeout = setTimeout(this.updateParent, 500);
   }
 
   render() {
