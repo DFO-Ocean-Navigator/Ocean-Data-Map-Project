@@ -51,6 +51,7 @@ class PointWindow extends React.Component {
       dataset_0: {
         dataset: props.dataset_0.dataset,
         variable: [props.dataset_0.variable],
+        variable_range: {},
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
@@ -66,6 +67,12 @@ class PointWindow extends React.Component {
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+  }
+
+  componentWillMount() {
+    let dataset_0 = this.state.dataset_0;
+    dataset_0.variable_range[this.props.dataset_0.variable] = null;
+    this.setState({ dataset_0: dataset_0 })
   }
 
   componentDidMount() {
@@ -201,6 +208,9 @@ class PointWindow extends React.Component {
       this.state.selected === TabEnum.PROFILE ||
       this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
+    const showAxisRange =
+      this.state.selected === TabEnum.PROFILE ||
+      this.state.selected === TabEnum.MOORING;
 
     const plotOptions = (
       <div>
@@ -239,6 +249,7 @@ class PointWindow extends React.Component {
               onUpdate={this.onLocalUpdate}
               showQuiverSelector={false}
               showVariableRange={false}
+              showAxisRange={showAxisRange}
               showTimeRange={showTimeRange}
               showDepthSelector={showDepthSelector}
               options={this.props.options}
@@ -250,15 +261,15 @@ class PointWindow extends React.Component {
               mountedVariable={this.props.dataset_0.variable}
             />
 
-          <CheckBox
-            key='showmap'
-            id='showmap'
-            checked={this.state.showmap}
-            onUpdate={this.onLocalUpdate}
-            title={_("Show Location")}
-          >
-            {_("showmap_help")}
-          </CheckBox>
+            <CheckBox
+              key='showmap'
+              id='showmap'
+              checked={this.state.showmap}
+              onUpdate={this.onLocalUpdate}
+              title={_("Show Location")}
+            >
+              {_("showmap_help")}
+            </CheckBox>
 
             <div
               style={{
@@ -387,6 +398,7 @@ class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.state.dataset_0.time;
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_range = Object.values(this.state.dataset_0.variable_range);
         inputs = [global];
         break;
 
@@ -432,6 +444,7 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_range = Object.values(this.state.dataset_0.variable_range);
         plot_query.starttime = this.state.dataset_0.starttime;
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;
