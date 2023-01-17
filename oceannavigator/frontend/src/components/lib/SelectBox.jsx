@@ -1,8 +1,8 @@
 import React from "react";
-import { FormGroup, ControlLabel, FormControl, Modal, Button } from "react-bootstrap";
+import { Form, FloatingLabel, Modal, Button } from "react-bootstrap";
 import PropTypes from "prop-types";
 
-import Icon from "./Icon";
+import Icon from "./Icon.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -50,54 +50,55 @@ export class SelectBox extends React.Component {
 
     return (
       <>
-        <FormGroup controlid={`formgroup-${this.props.id}-selectbox`}>
-          <ControlLabel>{this.props.label}</ControlLabel>
-          
-          <Button
-            onClick={this.toggleShowHelp}
-            bsStyle="default"
-            bsSize="xsmall"
-            style={{"display": this.props.helpContent ? "block" : "none", "float": "right"}}
-          >
-            ?
-          </Button>
+        <Form>
+          <Form.Group controlid={`formgroup-${this.props.id}-selectbox`}>
+            <FloatingLabel >{this.props.label}</FloatingLabel >
+            
+            <Button
+              onClick={this.toggleShowHelp}
+              variant="default"
+              size="xsmall"
+              style={{"display": this.props.helpContent ? "block" : "none", "float": "right"}}
+            >
+              ?
+            </Button>
 
-          <FormControl
-            componentClass="select"
-            name={this.props.name}
-            placeholder={disabled ? _("Loading...") : this.props.placeholder}
-            onChange={(e) => {
-              if (this.props.multiple) {
-                this.props.onChange(e.target.name, e.target.selectedOptions);
-              }
-              else {
-                this.props.onChange(e.target.name, e.target.value);
-              }
-            }}
-            disabled={disabled}
-            value={this.props.selected}
-            multiple={this.props.multiple}
-          >
-            {options}
-          </FormControl>
-        </FormGroup>
+            <Form.Select
+              name={this.props.name}
+              placeholder={disabled ? "Loading..." : this.props.placeholder}
+              onChange={(e) => {
+                if (this.props.multiple) {
+                  this.props.onChange(e.target.name, e.target.selectedOptions);
+                }
+                else {
+                  this.props.onChange(e.target.name, e.target.value);
+                }
+              }}
+              disabled={disabled}
+              value={this.props.selected}
+              multiple={this.props.multiple}
+            >
+              {options}
+            </Form.Select>
+          </Form.Group>
+        </Form>
 
         <Modal
           show={this.state.showHelp}
           onHide={this.toggleShowHelp}
-          bsSize="large"
+          size="large"
           dialogClassName="helpdialog"
           backdrop={true}
         >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Help")}</Modal.Title>
+          <Modal.Header closeButton closeLabel={"Close"}>
+            <Modal.Title>{"Help"}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {this.props.helpContent}
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.toggleShowHelp}>
-              <Icon icon="close"/> {_("Close")}
+              <Icon icon="close"/> {"Close"}
             </Button>
           </Modal.Footer>
         </Modal>

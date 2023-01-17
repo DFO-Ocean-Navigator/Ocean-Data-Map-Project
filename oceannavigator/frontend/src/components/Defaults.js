@@ -9,18 +9,21 @@ const DATASET_DEFAULTS = Object.freeze({
   variable: "votemper",
   quiverVariable: "none",
   variable_scale: [-5, 30],
+  variable_two_dimensional: false,
 });
-  
-const DEFAULT_OPTIONS = Object.freeze({
+
+const MAP_SETTINGS = Object.freeze({
   interpType: "gaussian",
   interpRadius: 25, // km
   interpNeighbours: 10,
+});
   
+const DEFAULT_SETTINGS = Object.freeze({
   mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
   topoShadedRelief: false,    // Show relief mapping on topography
   bathymetry: true,           // Show bathymetry contours
   bathyContour: "etopo1",
 });
   
-export { DATASET_DEFAULTS, DEFAULT_OPTIONS };
+export { DATASET_DEFAULTS, MAP_SETTINGS, DEFAULT_SETTINGS };
   

@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Panel } from "react-bootstrap";
+import { Card } from "react-bootstrap";
 
-import Icon from "./Icon";
+import Icon from "./Icon.jsx";
 import { withTranslation } from "react-i18next";
 
 export class Accordion extends React.Component { 
@@ -17,27 +17,27 @@ export class Accordion extends React.Component {
 
   render() {
     return (
-      <Panel 
+      <Card 
         id={this.props.id}
         expanded={this.state.open}
-        onToggle={}
-        bsStyle='primary'
+        onToggle={() => {}}
+        variant='primary'
       >
-        <Panel.Heading onClick={() => this.setState({open: !this.state.open})}>
+        <Card.Heading onClick={() => this.setState({open: !this.state.open})}>
           <div style={{ display: "flex", justifyContent: "space-between" }}> 
-            <Panel.Title>{this.props.title}</Panel.Title>
+            <Card.Title>{this.props.title}</Card.Title>
             <Icon icon={this.state.panelIcon}/>  
           </div>
-        </Panel.Heading>
-        <Panel.Collapse 
+        </Card.Heading>
+        <Card.Collapse 
           onEntering={() => {this.setState({panelIcon: "angle-up"})}}
           onExiting={() => {this.setState({panelIcon: "angle-down"})}}
         >
-          <Panel.Body>
+          <Card.Body>
             {this.props.content}
-          </Panel.Body>
-        </Panel.Collapse>
-      </Panel>
+          </Card.Body>
+        </Card.Collapse>
+      </Card>
     );    
   }
 };

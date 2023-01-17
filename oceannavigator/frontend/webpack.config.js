@@ -1,72 +1,20 @@
-const webpack = require("webpack");
 const path = require("path");
 
 const BUILD_DIR = path.resolve(__dirname, "public");
 const APP_DIR = path.resolve(__dirname, "src");
 
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-const config = {
+module.exports = {
   entry: [
-    APP_DIR + "/index.jsx",
+      APP_DIR + "/index.jsx",
   ],
   output: {
-    path: BUILD_DIR,
-    filename: "oceannavigator.js",
-    publicPath: "/public/"
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(t|j)sx?$/,
-        exclude: [/node_modules/],
-        loader: ["ts-loader"]
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          "css-loader",
-          "sass-loader"
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"]
-      },
-      {
-        test: /\.(png|gif|svg|eot|woff2?|ttf|svg)(\?.*)?$/,
-        loader: "file-loader",
-        options: {
-          name: "/[name].[ext]"
-        }
-      }
-    ]
-  },
-  resolve: {
-    alias: {
-      "jquery-ui": "jquery-ui/ui/widgets",
-      "jquery-ui-css": "jquery-ui/../../themes/base",
-      "jquery-ui-month-picker": "jquery-ui-month-picker/src",
+      path: BUILD_DIR,
+      filename: "oceannavigator.js",
+      publicPath: "/public/"
     },
-    extensions: [".ts", ".tsx", ".js", ".jsx"]
-  },
   plugins: [
-    new webpack.ProvidePlugin({
-      $: "jquery",
-      jQuery: "jquery",
-    }),
-    new webpack.DefinePlugin({
-      "_": "this.props.t",
-    }),
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": `"${process.env.NODE_ENV}"`
-    }),
-    new MiniCssExtractPlugin({
-      filename: "oceannavigator.css",
-      chunkFilename: "[name].css"
-    }),
     new HtmlWebpackPlugin({
       filename: "index.html",
       hash: true,
@@ -74,10 +22,33 @@ const config = {
       xhtml: true,
       template: "src/index.ejs",
     }),
-    new webpack.DefinePlugin({
-      "process.env.LOGGER_LEVEL": JSON.stringify("info")
-    })
-  ]
+  ],
+  devServer: {
+    port: 3030, // you can change the port
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/, // .js and .jsx files
+        exclude: /node_modules/, // excluding the node_modules folder
+        use: {
+          loader: "babel-loader",
+        },
+      },
+      {
+        test: /\.(sa|sc|c)ss$/, // styles files
+        use: ["style-loader", "css-loader", "sass-loader"],
+      },
+      {
+        test: /\.(png|woff|woff2|eot|ttf|svg)$/, // to import images and fonts
+        loader: "url-loader",
+        options: { limit: false },
+      },
+    ],
+  },
+  resolve: {
+    alias: {
+      "axios/lib": path.resolve(__dirname, "./node_modules/axios/lib"),
+    }
+  }
 };
-
-module.exports = config;

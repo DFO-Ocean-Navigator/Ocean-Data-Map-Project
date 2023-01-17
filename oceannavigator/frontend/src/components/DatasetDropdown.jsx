@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import FontAwesome from "react-fontawesome";
 import { Button, Modal } from "react-bootstrap";
 
-import Accordion from "./lib/Accordion";
-import Icon from "./lib/Icon";
+import Accordion from "./lib/Accordion.jsx";
+import Icon from "./lib/Icon.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -88,7 +88,7 @@ export class DatasetDropdown extends React.Component {
     this.setState(prevState => ({
       showHelp: !prevState.showHelp,
     }));
-  }   
+  }
 
   selectHandler(dataset) {
     this.props.onChange("dataset", dataset);
@@ -101,33 +101,38 @@ export class DatasetDropdown extends React.Component {
     })[0].value;
 
     return (
-      <>
-        <label>Dataset</label>
-        <Button
-          onClick={this.toggleShowHelp}
-          bsStyle="default"
-          bsSize="xsmall"
-          style={{
-            display: this.props.helpContent ? "block" : "none",
-            float: "right",
-          }}
-        >
-          ?
-        </Button>
-        <div className="dd-wrapper">
-          <button type="button" className="dd-header" onClick={this.toggleList}>
-            <div className="dd-header-title">{title}</div>
-            <FontAwesome
-              className="dd-header-icon"
-              name="fa-solid fa-angle-down"
-            />
-          </button>
-          {this.state.isListOpen && (
-            <div role="list" className="dd-list">
-              {this.state.options}
-            </div>
-          )}
-        </div>
+<>
+        <FormGroup controlid={`formgroup-${this.props.id}-selectbox`}>
+          <ControlLabel>{this.props.label}</ControlLabel>
+          
+          <Button
+            onClick={this.toggleShowHelp}
+            bsStyle="default"
+            bsSize="xsmall"
+            style={{"display": this.props.helpContent ? "block" : "none", "float": "right"}}
+          >
+            ?
+          </Button>
+
+          <FormControl
+            componentClass="select"
+            name={this.props.name}
+            placeholder={disabled ? _("Loading...") : this.props.placeholder}
+            onChange={(e) => {
+              if (this.props.multiple) {
+                this.props.onChange(e.target.name, e.target.selectedOptions);
+              }
+              else {
+                this.props.onChange(e.target.name, e.target.value);
+              }
+            }}
+            disabled={disabled}
+            value={this.props.selected}
+            multiple={this.props.multiple}
+          >
+            {options}
+          </FormControl>
+        </FormGroup>
 
         <Modal
           show={this.state.showHelp}

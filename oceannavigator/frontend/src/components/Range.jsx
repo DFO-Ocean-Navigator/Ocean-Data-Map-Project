@@ -1,12 +1,14 @@
 /* eslint react/no-deprecated: 0 */
 
 import React from "react";
-import {Button, ButtonToolbar, Checkbox} from "react-bootstrap";
-import NumericInput from "react-numeric-input";
+import {Button, ButtonToolbar, Form} from "react-bootstrap";
+// import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
-const stringify = require("fast-stable-stringify");
+// const stringify = require("fast-stable-stringify");
+
+const axios = require('axios');
 
 class Range extends React.Component {
 
@@ -47,7 +49,7 @@ class Range extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (stringify(this.props) !== stringify(nextProps)) {
+    if (JSON.stringify(this.props) !== JSON.stringify(nextProps)) {
 
       let scale = nextProps.state;
       if (typeof scale === "string" || scale instanceof String) {
@@ -112,38 +114,33 @@ class Range extends React.Component {
   }
 
   getAutoScale() {
-    $.ajax({
-      url: this.props.autourl,
-      dataType: "json",
-      cache: false,
-      success: function (data) {
-        if (this._mounted) {
-          this.props.onUpdate(this.props.id, [data.min, data.max]);
-        }
-      }.bind(this),
-      
-      error: function (r, status, err) {
-        if (this._mounted) {
-          console.error(this.props.autourl, status, err.toString());
-        }
+    axios.get(this.props.autourl).then(function (data) {
+      if (this._mounted) {
+        this.props.onUpdate(this.props.id, [data.min, data.max]);
       }
-    });
+    })
+    .catch (function (r, status, err) {
+      if (this._mounted) {
+        console.error(this.props.autourl, status, err.toString());
+      }
+    })
+    .bind(this);
   }
 
   render() {
     const auto = (
-      <Checkbox>
+      <Form.Check>
         <input type='checkbox' id={this.props.id + "_auto"} checked={this.state.auto} onChange={this.autoChanged.bind(this)} />
-        {_("Auto Range")}
-      </Checkbox>
+        {"Auto Range"}
+      </Form.Check>
     );
 
     let autobuttons = <div></div>;
     if (this.props.autourl) {
       autobuttons = (
         <ButtonToolbar style={{ display: "inline-block", "float": "right" }}>
-          <Button name='default' onClick={this.handleDefaultButton}>{_("Default")}</Button>
-          <Button name='auto' bsStyle="primary" onClick={this.getAutoScale}>{_("Auto")}</Button>
+          <Button name='default' onClick={this.handleDefaultButton}>{"Default"}</Button>
+          <Button name='auto' variant="primary" onClick={this.getAutoScale}>{"Auto"}</Button>
         </ButtonToolbar>
       );
     }
@@ -156,10 +153,11 @@ class Range extends React.Component {
           <tbody>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_min"}>{_("Min:")}</label>
+                <label htmlFor={this.props.id + "_min"}>{"Min:"}</label>
               </td>
               <td>
-                <NumericInput
+                <input 
+                  type="number"
                   value={this.state.min}
                   onChange={(n, s) => this.changed("min", n)}
                   step={0.1}
@@ -172,10 +170,11 @@ class Range extends React.Component {
             </tr>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_max"}>{_("Max:")}</label>
+                <label htmlFor={this.props.id + "_max"}>{"Max:"}</label>
               </td>
               <td>
-                <NumericInput
+              <input 
+                  type="number"
                   value={this.state.max}
                   onChange={(n, s) => this.changed("max", n)}
                   step={0.1}
