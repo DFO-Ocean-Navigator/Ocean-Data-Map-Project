@@ -486,23 +486,294 @@ class OceanNavigator extends React.Component {
   }
 
   render() {
-   
-    return (
-      <PointWindow
-        dataset_0={this.state}
-        point={[[45,-45]]}
-        names={this.state.names}
-        onUpdate={this.updateState}
-        onUpdateOptions={this.updateOptions}
-        init={this.state.subquery}
-        dataset_compare={this.state.dataset_compare}
-        dataset_1={this.state.dataset_1}
+    let modalContent = "";
+    let modalTitle = "";
+
+    switch (this.state.modal) {
+      case "point":
+        modalContent = (
+          <PointWindow
+            dataset_0={this.state}
+            point={this.state.point}
+            names={this.state.names}
+            onUpdate={this.updateState}
+            onUpdateOptions={this.updateOptions}
+            init={this.state.subquery}
+            dataset_compare={this.state.dataset_compare}
+            dataset_1={this.state.dataset_1}
+            action={this.action}
+            showHelp={this.toggleCompareHelp}
+            swapViews={this.swapViews}
+            options={this.state.options}
+          />
+        );
+        modalTitle = this.state.point.map(p => formatLatLon(p[0], p[1]))
+        modalTitle = modalTitle.join(", ")
+        break;
+      case "line":
+        modalContent = (
+          <LineWindow
+            dataset_0={this.state}
+            line={this.state.line}
+            colormap={this.state.colormap}
+            names={this.state.names}
+            onUpdate={this.updateState}
+            onUpdateOptions={this.updateOptions}
+            init={this.state.subquery}
+            dataset_compare={this.state.dataset_compare}
+            dataset_1={this.state.dataset_1}
+            action={this.action}
+            showHelp={this.toggleCompareHelp}
+            swapViews={this.swapViews}
+            options={this.state.options}
+          />
+        );
+
+        modalTitle = "(" + this.state.line[0].map(function(ll) {
+          return formatLatLon(ll[0], ll[1]);
+        }).join("), (") + ")";
+        break;
+      case "area":
+        modalContent = (
+          <AreaWindow
+            dataset_0={this.state}
+            area={this.state.area}
+            colormap={this.state.colormap}
+            names={this.state.names}
+            projection={this.state.projection}
+            onUpdate={this.updateState}
+            onUpdateOptions={this.updateOptions}
+            init={this.state.subquery}
+            dataset_compare={this.state.dataset_compare}
+            dataset_1={this.state.dataset_1}
+            showHelp={this.toggleCompareHelp}
+            action={this.action}
+            swapViews={this.swapViews}
+            options={this.state.options}
+          />
+        );
+
+        modalTitle = "";
+        break;
+      case "track":
+        modalContent = (
+          <TrackWindow
+            dataset={this.state.dataset}
+            quantum={this.state.quantum}
+            track={this.state.track}
+            variable={this.state.variable}
+            scale={this.state.variable_scale}
+            names={this.state.names}
+            depth={this.state.depth}
+            onUpdate={this.updateState}
+            init={this.state.subquery}
+            action={this.action}
+            obs_query={this.state.vectorid}
+          />
+        );
+
+        modalTitle = "";
+        break;
+      case "class4":
+        modalContent = (
+          <Class4Window
+            dataset={this.state.dataset}
+            class4id={this.state.class4}
+            class4type={this.state.class4type}
+            calss4type={this.state.modal}
+            init={this.state.subquery}
+            action={this.action}
+          />
+        );
+        modalTitle = "";
+        break;
+    }
+    if (this.state.modal !== "point" && this.state.names && this.state.names.length > 0) {
+      modalTitle = this.state.names.slice(0).sort().join(", ");
+    }
+
+    _("Loading");
+
+    const contentClassName = this.state.sidebarOpen ? "content open" : "content";
+    
+    // Pick which map we need
+    let map = null;
+    if (this.state.dataset_compare) {
+      
+      const secondState = $.extend(true, {}, this.state);
+      for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
+        const keys = Object.keys(this.state.dataset_1);
+        secondState[keys[i]] = this.state.dataset_1[keys[i]];
+      }
+      map = <div className='multimap'>
+        <Map
+          ref={(m) => this.mapComponent = m}
+          state={this.state}
+          action={this.action}
+          updateState={this.updateState}
+          partner={this.mapComponent2}
+          scale={this.state.variable_scale}
+          options={this.state.options}
+          quiverVariable={this.state.quiverVariable}
+        />
+        <Map
+          ref={(m) => this.mapComponent2 = m}
+          state={secondState}
+          action={this.action}
+          updateState={this.updateState}
+          partner={this.mapComponent}
+          scale={this.state.dataset_1.variable_scale}
+          options={this.state.options}
+        />
+      </div>;
+    } 
+    else {
+      map = <Map
+        ref={(m) => this.mapComponent = m}
+        state={this.state}
         action={this.action}
-        showHelp={this.toggleCompareHelp}
-        swapViews={this.swapViews}
+        updateState={this.updateState}
+        scale={this.state.variable_scale}
         options={this.state.options}
-      />
-    )
+        quiverVariable={this.state.quiverVariable}
+      />;
+    }
+
+    return (
+      <div className='OceanNavigator'>
+        <MapInputs
+          state={this.state}
+          swapViews={this.swapViews}
+          changeHandler={this.updateState}
+          showHelp={this.toggleCompareHelp}
+          options={this.state.options}
+          updateOptions={this.updateOptions}
+          extent={this.state.extent}
+          projection={this.state.projection}
+          basemap={this.state.basemap}
+          dataset_compare={this.state.dataset_compare}
+          sidebarOpen={this.state.sidebarOpen}
+        />
+        <div className={contentClassName}>
+          <MapToolbar
+            action={this.action}
+            plotEnabled={this.state.plotEnabled}
+            dataset_compare={this.state.dataset_compare}
+            updateState={this.updateState}
+            toggleSidebar={this.toggleSidebar}
+            toggleOptionsSidebar={this.toggleOptionsSidebar}
+            showObservationSelect={this.state.showObservationSelect}
+            observationArea={this.state.observationArea}
+            disablePlotInteraction={this.removeMapInteraction}
+          />
+          {/* <WarningBar /> */}
+          {map}
+        </div>
+
+        <Modal
+          show={this.state.showModal}
+          onHide={this.closeModal}
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{modalTitle}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {modalContent}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={this.closeModal}
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showPermalink}
+          onHide={() => this.setState({showPermalink: false})}
+          dialogClassName='permalink-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="link" alt={_("Share Link")}/> {_("Share Link")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Permalink
+              generatePermLink={this.generatePermLink}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showPermalink: false})}
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showOptions}
+          onHide={() => this.setState({showOptions: false})}
+          dialogClassName='permalink-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="gear" alt={_("Options")}/> {_("Options")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Options 
+              options={this.state.options}
+              updateOptions={this.updateOptions}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showOptions: false})}
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showHelp}
+          onHide={() => this.setState({showHelp: false})}
+          dialogClassName='full-screen-modal'
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title><Icon icon="question" alt={_("Help")}/> {_("Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Iframe 
+              url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+              height="768px"
+              position="relative"
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={() => this.setState({showHelp: false})}
+            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.showCompareHelp}
+          onHide={this.toggleCompareHelp}
+          bsSize="large"
+          dialogClassName="helpdialog"
+          backdrop={true}
+        >
+          <Modal.Header closeButton closeLabel={_("Close")}>
+            <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
+    );
   }
 }
 
