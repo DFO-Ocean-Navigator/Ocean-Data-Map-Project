@@ -689,10 +689,8 @@ async def plot(
     """
 
     if format == "json":
-
         def make_response(data, mime):
             b64 = base64.encodebytes(data).decode()
-
             return Response(
                 json.dumps("data:%s;base64,%s" % (mime, b64)),
                 media_type=mime,
@@ -700,9 +698,7 @@ async def plot(
             )
 
     elif format == "data":
-
         def make_response(data, mime):
-
             return Response(
                 json.dumps(data),
                 media_type=mime,
@@ -710,7 +706,6 @@ async def plot(
             )
 
     else:
-
         def make_response(data, mime):
             return Response(
                 data, media_type=mime, headers={"Cache-Control": "max-age=300"}
@@ -762,7 +757,7 @@ async def plot(
 
     if save:
         response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
-    elif plotter.interactive:
+    elif format=="data":
         response = {
             'data': img,
             'variableName': plotter.variable_names,
