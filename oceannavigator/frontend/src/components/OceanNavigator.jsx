@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import DatasetSelector from "./DatasetSelector.jsx";
 
 import { DATASET_DEFAULTS, MAP_SETTINGS, DEFAULT_SETTINGS } from "./Defaults.js";
+import TimeSlider from "./TimeSlider.jsx";
 
 function OceanNavigator() {
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
@@ -38,16 +39,19 @@ function OceanNavigator() {
 
 
   return (
-    <>
-      <DatasetSelector
-        key='map_inputs_dataset_0'
-        id='dataset_0'
-        onUpdate={changeHandler}
-        options={mapSettings}
-        // projection={mapSettings.projection}
-        // extent={mapSettings.extent}
-      /> 
-    </>
+    <div>
+        <DatasetSelector
+          key='map_inputs_dataset_0'
+          id='dataset_0'
+          onUpdate={changeHandler}
+          options={mapSettings}
+          // projection={mapSettings.projection}
+          // extent={mapSettings.extent}
+        /> 
+      <TimeSlider
+        dataset={dataset0}
+      />
+    </div>
   );
 }
 

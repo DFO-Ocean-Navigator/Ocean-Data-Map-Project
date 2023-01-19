@@ -1,5 +1,5 @@
 import React from "react";
-import {createRoot} from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import OceanNavigator from "./components/OceanNavigator.jsx";
 // import WebFont from "webfontloader";
 // import Browser from "detect-browser";
