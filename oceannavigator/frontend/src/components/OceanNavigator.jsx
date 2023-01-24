@@ -3,7 +3,8 @@ import React, { useState } from "react";
 
 import DatasetSelector from "./DatasetSelector.jsx";
 
-import { DATASET_DEFAULTS, MAP_SETTINGS, DEFAULT_SETTINGS } from "./Defaults.js";
+import { DATASET_DEFAULTS, MAP_SETTINGS } from "./Defaults.js";
+import GlobalMap from "./GlobalMap.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 
 function OceanNavigator() {
@@ -27,9 +28,6 @@ function OceanNavigator() {
     sidebarOpen: true, // Controls sidebar opened/closed status
     showObservationSelect: false,
     observationArea: [],
-    options: {
-      ...DEFAULT_SETTINGS
-    },
   });
 
 
@@ -40,17 +38,18 @@ function OceanNavigator() {
 
   return (
     <div>
-        <DatasetSelector
-          key='map_inputs_dataset_0'
-          id='dataset_0'
-          onUpdate={changeHandler}
-          options={mapSettings}
-          // projection={mapSettings.projection}
-          // extent={mapSettings.extent}
-        /> 
-      <TimeSlider
-        dataset={dataset0}
-      />
+        <GlobalMap
+          mapSettings={mapSettings}
+          dataset={dataset0}
+          // ref={(m) => this.mapComponent = m}
+          // state={this.state}
+          // action={this.action}
+          // updateState={this.updateState}
+          // partner={this.mapComponent2}
+          // scale={this.state.variable_scale}
+          // options={this.state.options}
+          // quiverVariable={this.state.quiverVariable}
+        />
     </div>
   );
 }
