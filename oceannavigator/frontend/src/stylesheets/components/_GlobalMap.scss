@@ -1,4 +1,8 @@
-.ol-zoom {
-  left: unset;
-  right: 8px;
+Div.map-container {
+  z-index: 0;
+  
+  .ol-zoom {
+    left: unset;
+    right: 8px;
+  }
 }

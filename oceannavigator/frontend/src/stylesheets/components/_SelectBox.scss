@@ -1,0 +1,24 @@
+.form-select {
+  border: 0px;
+  font-size: 10pt;
+  border-bottom: 1px solid;
+  border-radius: 0px;
+  width: auto;
+  max-width: 300px;
+  padding-bottom: 0;
+}
+
+.form-label {
+  font-size: 10pt;
+  margin: 0;
+  padding: 5;
+}
+
+.col {
+  display: inline;
+  align-items: center;
+}
+.row {
+  margin: 0;
+  flex-wrap: nowrap;
+}

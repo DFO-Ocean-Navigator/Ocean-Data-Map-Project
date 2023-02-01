@@ -1,0 +1,10 @@
+div div.DatasetSelector {
+  padding: 0;
+}
+
+div.DatasetSelector-horizontal {
+    padding: 5px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+}

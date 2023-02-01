@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const path = require("path");
 
 const BUILD_DIR = path.resolve(__dirname, "public");
@@ -15,6 +16,9 @@ module.exports = {
       publicPath: "/public/"
     },
   plugins: [
+    new webpack.DefinePlugin({
+      "_": "this.props.t",
+    }),
     new HtmlWebpackPlugin({
       filename: "index.html",
       hash: true,

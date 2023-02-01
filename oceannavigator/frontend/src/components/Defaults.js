@@ -1,6 +1,5 @@
-
 const DATASET_DEFAULTS = Object.freeze({
-  dataset: "giops_day",
+  id: "giops_day",
   attribution: "",
   quantum: "day",
   depth: 0,
@@ -12,15 +11,14 @@ const DATASET_DEFAULTS = Object.freeze({
   variable_two_dimensional: false,
 });
 
-const MAP_SETTINGS = Object.freeze({
+const MAP_DEFAULTS = Object.freeze({
   interpType: "gaussian",
   interpRadius: 25, // km
   interpNeighbours: 10,
   mapBathymetryOpacity: 0.75, // Opacity of bathymetry contours
-  topoShadedRelief: false,    // Show relief mapping on topography
-  bathymetry: true,           // Show bathymetry contours
+  topoShadedRelief: false, // Show relief mapping on topography
+  bathymetry: true, // Show bathymetry contours
   bathyContour: "etopo1",
 });
-  
-export { DATASET_DEFAULTS, MAP_SETTINGS };
-  
+
+export { DATASET_DEFAULTS, MAP_DEFAULTS };

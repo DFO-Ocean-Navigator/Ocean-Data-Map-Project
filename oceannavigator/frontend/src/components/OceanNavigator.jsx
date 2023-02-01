@@ -1,11 +1,12 @@
 import { nominalTypeHack } from "prop-types";
 import React, { useState } from "react";
 
-import DatasetSelector from "./DatasetSelector.jsx";
-
-import { DATASET_DEFAULTS, MAP_SETTINGS } from "./Defaults.js";
+import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
+import DrawingTools from "./DrawingTools.jsx";
 import GlobalMap from "./GlobalMap.jsx";
-import TimeSlider from "./TimeSlider.jsx";
+import MapInputs from "./MapInputs.jsx";
+import MapTools from "./MapTools.jsx";
+
 
 function OceanNavigator() {
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
@@ -17,10 +18,11 @@ function OceanNavigator() {
     vectorid: null,
     basemap: "topo",
     extent: [],
-    ...MAP_SETTINGS,
+    ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
     showModal: false,
+    showDrawingTools: false,
     busy: false, // Controls if the busyModal is visible
     showHelp: false,
     showCompareHelp: false,
@@ -30,26 +32,46 @@ function OceanNavigator() {
     observationArea: [],
   });
 
-
   const changeHandler = () => {
     return none;
-  }
+  };
 
+  const drawingTools = uiSettings.showDrawingTools ? <DrawingTools /> : null;
+
+  const updateUI = (key, value) => {
+    let newUISettings = {
+      ...uiSettings,
+      [key]: value,
+    };
+    setUiSettings(newUISettings);
+  };
 
   return (
+
     <div>
-        <GlobalMap
-          mapSettings={mapSettings}
-          dataset={dataset0}
-          // ref={(m) => this.mapComponent = m}
-          // state={this.state}
-          // action={this.action}
-          // updateState={this.updateState}
-          // partner={this.mapComponent2}
-          // scale={this.state.variable_scale}
-          // options={this.state.options}
-          // quiverVariable={this.state.quiverVariable}
-        />
+      {drawingTools}
+      <MapInputs
+        dataset={dataset0}
+        mapSettings={mapSettings}
+        changeHandler={changeHandler}
+        updateUI={updateUI}
+      />
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+      />
+      <GlobalMap
+        mapSettings={mapSettings}
+        dataset={dataset0}
+        // ref={(m) => this.mapComponent = m}
+        // state={this.state}
+        // action={this.action}
+        // updateState={this.updateState}
+        // partner={this.mapComponent2}
+        // scale={this.state.variable_scale}
+        // options={this.state.options}
+        // quiverVariable={this.state.quiverVariable}
+      />
     </div>
   );
 }

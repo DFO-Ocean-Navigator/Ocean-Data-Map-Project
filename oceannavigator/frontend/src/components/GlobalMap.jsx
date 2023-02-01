@@ -23,7 +23,7 @@ const MAX_ZOOM = {
 };
 
 function GlobalMap(props) {
-  const [map, setMap] = useState(new Map({ target: "map-container" }));
+  const [map, setMap] = useState();
   const [dataSource, setDataSource] = useState({});
 
   useEffect(() => {
@@ -43,12 +43,6 @@ function GlobalMap(props) {
     });
     setMap(map);
   }, []);
-
-  useEffect(() => {
-    console.log("dataset update");
-    console.log(props.dataset);
-    console.log(map.getLayers().getArray());
-  }, [props.dataset]);
 
   let center = [-50, 53];
   if (props.mapSettings.center) {
@@ -99,7 +93,7 @@ function GlobalMap(props) {
     let dataSource = {};
     dataSource.url =
       "/api/v2.0/tiles" +
-      `/${props.dataset.dataset}` +
+      `/${props.dataset.id}` +
       `/${props.dataset.variable}` +
       `/${props.dataset.time}` +
       `/${props.dataset.depth}` +

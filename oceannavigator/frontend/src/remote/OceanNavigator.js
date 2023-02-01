@@ -1,13 +1,14 @@
 // Cannot use async/awat syntax here since we still have clients
 // that use IE which doesn't support that.
 
-const axios = require('axios').default;
+// const axios = require('axios');
+import axios from 'axios';
 import { cacheAdapterEnhancer } from "axios-extensions";
 import adapter from 'axios/lib/adapters/xhr'
 
 const instance = axios.create({
   headers: { "Cache-Control": "no-cache" },
-  adapter: cacheAdapterEnhancer(adapter)
+  adapter: cacheAdapterEnhancer(adapter),
 });
 
 export function GetDatasetsPromise() {
