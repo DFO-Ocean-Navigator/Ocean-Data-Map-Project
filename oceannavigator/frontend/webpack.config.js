@@ -26,6 +26,9 @@ module.exports = {
       xhtml: true,
       template: "src/index.ejs",
     }),
+    new webpack.DefinePlugin({
+      "process.env.LOGGER_LEVEL": JSON.stringify('info')
+    })
   ],
   devServer: {
     port: 3030, // you can change the port

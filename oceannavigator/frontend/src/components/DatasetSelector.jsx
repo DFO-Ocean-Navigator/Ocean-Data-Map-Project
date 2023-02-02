@@ -198,8 +198,8 @@ function DatasetSelector(props) {
       };
     }
 
-    setDataset({...dataset, ...newDataset});
-    setOptions({...options, ...newOptions});
+    setDataset({ ...dataset, ...newDataset });
+    setOptions({ ...options, ...newOptions });
   };
 
   const nothingChanged = (key, value) => {
@@ -232,6 +232,10 @@ function DatasetSelector(props) {
     let newDataset = { ...dataset, [key]: value };
     setDataset(newDataset);
   };
+
+  const handleGoButton = () => {
+    props.onUpdate(dataset)
+  };  
 
   let datasetSelector = null;
 
@@ -374,7 +378,7 @@ function DatasetSelector(props) {
     );
   }
 
-
+  console.log(dataset);
   return (
     <>
       <div
@@ -385,7 +389,7 @@ function DatasetSelector(props) {
         {variableSelector}
         {quiverSelector}
         {depthSelector}
-        <Button variant="primary" type="submit">
+        <Button variant="primary" type="submit" onClick={handleGoButton}>
           Go
         </Button>
       </div>

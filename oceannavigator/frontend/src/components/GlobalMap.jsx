@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Map, View } from "ol";
 import TileLayer from "ol/layer/Tile";
 import * as olProj from "ol/proj";
 import { Style, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
-import VectorTileLayer from 'ol/layer/VectorTile.js';
+import VectorTileLayer from "ol/layer/VectorTile.js";
 import * as olTilegrid from "ol/tilegrid";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
@@ -23,12 +23,12 @@ const MAX_ZOOM = {
 };
 
 function GlobalMap(props) {
-  const [map, setMap] = useState();
-  const [dataSource, setDataSource] = useState({});
+  const mapRef = useRef();
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
-    let map = new Map({
-      target: "map-container",
+    let options = {
+      view: new View({ zoom: 4, center: [-50, 53] }),
       layers: [
         layer_basemap,
         layer_data,
@@ -39,32 +39,50 @@ function GlobalMap(props) {
         // layer_obsDraw,
         // layer_quiver,
       ],
-      view: mapView,
-    });
-    setMap(map);
+      controls: [],
+      overlays: [],
+    };
+    let mapObject = new Map(options);
+    mapObject.setTarget(mapRef.current);
+    setMap(mapObject);
+    return () => mapObject.setTarget(undefined);
   }, []);
 
-  let center = [-50, 53];
-  if (props.mapSettings.center) {
-    center = props.mapSettings.center.map(parseFloat);
-  }
-  let zoom = 4;
-  if (props.mapSettings.zoom) {
-    zoom = props.mapSettings.zoom;
-  }
-  const projection = props.mapSettings.projection;
+  useEffect(() => {
+    if (map) {
+      let center = [-50, 53];
+      if (props.mapSettings.center) {
+        center = props.mapSettings.center.map(parseFloat);
+      }
+      let zoom = 4;
+      if (props.mapSettings.zoom) {
+        zoom = props.mapSettings.zoom;
+      }
+      let projection = props.mapSettings.projection;
+      const newView = new View({
+        center: olProj.transform(center, "EPSG:4326", projection),
+        projection: projection,
+        zoom: zoom,
+        maxZoom: MAX_ZOOM[projection],
+        minZoom: MIN_ZOOM[projection],
+      });
 
-  const mapView = new View({
-    center: olProj.transform(center, "EPSG:4326", projection),
-    projection: projection,
-    zoom: zoom,
-    maxZoom: MAX_ZOOM[props.mapSettings.projection],
-    minZoom: MIN_ZOOM[props.mapSettings.projection],
-  });
+      map.setView(newView);
+    }
+  }, [props.mapSettings]);
+
+  useEffect(() => {
+    if (map) {
+      let datalayer = map.getLayers().getArray()[1];
+      datalayer.setSource(new XYZ(getDataSource()));
+    }
+  }, [props.dataset]);
+
+  const projection = props.mapSettings.projection;
 
   const vectorTileGrid = new olTilegrid.createXYZ({
     tileSize: 512,
-    maxZoom: MAX_ZOOM[props.mapSettings.projection],
+    maxZoom: MAX_ZOOM[projection],
   });
 
   const getBasemap = (source, projection, attribution) => {
@@ -129,21 +147,20 @@ function GlobalMap(props) {
     preload: 1,
   });
 
-  const layer_bathshapes = new VectorTileLayer(
-    {
-      opacity: props.mapSettings.mapBathymetryOpacity,
-      visible: props.mapSettings.bathymetry,
-      style: new Style({
-        stroke: new Stroke({
-          color: 'rgba(0, 0, 0, 1)'
-        })
+  const layer_bathshapes = new VectorTileLayer({
+    opacity: props.mapSettings.mapBathymetryOpacity,
+    visible: props.mapSettings.bathymetry,
+    style: new Style({
+      stroke: new Stroke({
+        color: "rgba(0, 0, 0, 1)",
       }),
-      source: new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-      }),
+    }),
+    source: new VectorTile({
+      format: new MVT(),
+      tileGrid: vectorTileGrid,
+      tilePixelRatio: 8,
+      url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+    }),
   });
 
   const layer_landshapes = new VectorTileLayer({
@@ -168,6 +185,7 @@ function GlobalMap(props) {
   return (
     <div
       style={{ height: "100vh", width: "100%" }}
+      ref={mapRef}
       id="map-container"
       className="map-container"
     />

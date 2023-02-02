@@ -32,8 +32,8 @@ function OceanNavigator() {
     observationArea: [],
   });
 
-  const changeHandler = () => {
-    return none;
+  const updateDataset0 = (dataset) => {
+    setDataset0(dataset);
   };
 
   const drawingTools = uiSettings.showDrawingTools ? <DrawingTools /> : null;
@@ -53,7 +53,7 @@ function OceanNavigator() {
       <MapInputs
         dataset={dataset0}
         mapSettings={mapSettings}
-        changeHandler={changeHandler}
+        changeHandler={updateDataset0}
         updateUI={updateUI}
       />
       <MapTools
