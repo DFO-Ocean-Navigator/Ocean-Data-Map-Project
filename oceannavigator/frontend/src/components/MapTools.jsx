@@ -15,26 +15,34 @@ import EnterCoordsModal from "./EnterCoordsModal.jsx";
 
 function MapTools(props) {
   const mapToolsRef = useRef(null);
-  const [showPlotButtons, setShowPlotButtons] = useState(false);
   const [showEnterPointsModal, setShowEnterPointsModal] = useState(false);
 
-  const startDrawing = () => {
-    props.updateUI("showDrawingTools", !props.uiSettings.showDrawingTools);
-    props.action("draw");
-  };
+  const handleDrawing = () => {
+    if (!props.uiSettings.showDrawingTools) {
+      props.updateUI("showDrawingTools", true);
+      props.action("startDrawing");
+    } else {
+      props.updateUI("showDrawingTools", false);
+      props.action("stopDrawing");
+    }
+  }
 
   const handleEnterPoints = () => {
     setShowEnterPointsModal(!showEnterPointsModal);
   };
 
-  // const enterCoordsModal = showEnterPointsModal ? (
-  //   <EnterCoordsModal handleClose={handleEnterPoints} />
-  // ) : null;
+  const enterCoordsModal = showEnterPointsModal ? (
+    <EnterCoordsModal
+      handleClose={handleEnterPoints}
+      pointCoordinates={props.pointCoordinates}
+      action={props.action}
+    />
+  ) : null;
 
   return (
     <>
       <div className="MapTools" ref={mapToolsRef}>
-        <Button className="tool-button" onClick={startDrawing}>
+        <Button className="tool-button" onClick={handleDrawing}>
           <FontAwesomeIcon icon={faDrawPolygon} />
         </Button>
         <Button className="tool-button" onClick={handleEnterPoints}>
@@ -53,7 +61,7 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faInfo} />
         </Button>
       </div>
-      {/* {enterCoordsModal} */}
+      {enterCoordsModal}
     </>
   );
 }

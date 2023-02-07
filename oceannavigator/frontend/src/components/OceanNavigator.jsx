@@ -36,10 +36,13 @@ function OceanNavigator() {
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
-      case "draw":
-        mapRef0.current.draw();
+      case "startDrawing":
+        mapRef0.current.startDrawing();
         break;
-      case "drawType":
+      case "stopDrawing":
+        mapRef0.current.stopDrawing();
+        break;
+      case "drawingType":
         setDrawing({ ...drawing, ...arg });
         break;
       case "undoPoints":
@@ -50,8 +53,12 @@ function OceanNavigator() {
       case "clearPoints":
         setPointCoordinates([]);
         break;
-      case "addPoints":
+      case "addPoint":
         setPointCoordinates((prevCoordinates) => [...prevCoordinates, arg]);
+        break;
+      case "removePoint":
+        let coords = pointCoordinates.filter((coord, index) => index !== arg);
+        setPointCoordinates(coords);
         break;
     }
   };
@@ -88,6 +95,8 @@ function OceanNavigator() {
     />
   );
 
+  console.log(pointCoordinates);
+
   return (
     <div>
       {drawingTools}
@@ -97,7 +106,12 @@ function OceanNavigator() {
         changeHandler={updateDataset0}
         updateUI={updateUI}
       />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+        pointCoordinates={pointCoordinates}
+      />
 
       {mapComponent0}
     </div>

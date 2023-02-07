@@ -120,7 +120,8 @@ const GlobalMap = forwardRef((props, ref) => {
   }, [props.pointCoordinates, props.drawing.type]);
 
   useImperativeHandle(ref, () => ({
-    draw: draw,
+    startDrawing: draw,
+    stopDrawing: removeMapInteractions,
   }));
 
   const removeMapInteractions = (type) => {
@@ -333,7 +334,7 @@ const GlobalMap = forwardRef((props, ref) => {
         )
         .reverse();
       // Draw point on map(s)
-      props.action("addPoints", latlon);
+      props.action("addPoint", latlon);
       setTimeout(() => {
         controlDoubleClickZoom(true);
       }, 251);
