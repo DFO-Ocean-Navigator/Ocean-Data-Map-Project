@@ -44,7 +44,7 @@ export class SelectBox extends React.Component {
     }
 
     const disabled =
-      !Array.isArray(this.props.options) || !this.props.options.length;
+      this.props.loading || !Array.isArray(this.props.options) || !this.props.options.length;
 
     return (
       // <>

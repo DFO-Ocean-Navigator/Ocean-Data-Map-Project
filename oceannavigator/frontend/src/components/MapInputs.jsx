@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 import DatasetSelector from "./DatasetSelector.jsx";
-import TimeSlider from "./TimeSlider.jsx";
 
 function MapInputs(props) {
 
@@ -12,6 +11,7 @@ function MapInputs(props) {
         id='dataset_1'
         onUpdate={props.changeHandler}
         mapSettings={props.mapSettings}
+        updateLoading={props.updateLoading}
       />
     </div>
   )

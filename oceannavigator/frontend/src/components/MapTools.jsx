@@ -1,37 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faDrawPolygon,
+  faTableList,
+  faGear,
+  faKeyboard,
+  faSatelliteDish,
+  faInfo,
+} from "@fortawesome/free-solid-svg-icons";
 
-import { Button } from "react-bootstrap";
+import { Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
+import EnterCoordsModal from "./EnterCoordsModal.jsx";
 
 function MapTools(props) {
+  const mapToolsRef = useRef(null);
   const [showPlotButtons, setShowPlotButtons] = useState(false);
+  const [showEnterPointsModal, setShowEnterPointsModal] = useState(false);
 
-  const showButtons = () => {
+  const startDrawing = () => {
     props.updateUI("showDrawingTools", !props.uiSettings.showDrawingTools);
+    props.action("draw");
   };
 
+  const handleEnterPoints = () => {
+    setShowEnterPointsModal(!showEnterPointsModal);
+  };
+
+  // const enterCoordsModal = showEnterPointsModal ? (
+  //   <EnterCoordsModal handleClose={handleEnterPoints} />
+  // ) : null;
+
   return (
-    <div className="MapTools">
-      <Button className="tool-button" onClick={showButtons}>
-        <FontAwesomeIcon icon="diagram-project" />
-      </Button>
-      <Button className="tool-button">
-        <FontAwesomeIcon icon="keyboard" />
-      </Button>
-      <Button className="tool-button">
-        <FontAwesomeIcon icon="table-list" />
-      </Button>
-      <Button className="tool-button">
-        <FontAwesomeIcon icon="satellite-dish" />
-      </Button>
-      <Button className="tool-button">
-        <FontAwesomeIcon icon="gear" />
-      </Button>
-      <Button className="tool-button">
-        <FontAwesomeIcon icon="info" />
-      </Button>
-    </div>
+    <>
+      <div className="MapTools" ref={mapToolsRef}>
+        <Button className="tool-button" onClick={startDrawing}>
+          <FontAwesomeIcon icon={faDrawPolygon} />
+        </Button>
+        <Button className="tool-button" onClick={handleEnterPoints}>
+          <FontAwesomeIcon icon={faKeyboard} />
+        </Button>
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faTableList} />
+        </Button>
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faSatelliteDish} />
+        </Button>
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faGear} />
+        </Button>
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faInfo} />
+        </Button>
+      </div>
+      {/* {enterCoordsModal} */}
+    </>
   );
 }
 

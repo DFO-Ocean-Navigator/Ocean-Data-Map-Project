@@ -2,20 +2,19 @@ Div.MapTools {
   position: absolute;
   z-index: 10;
   right: 10px;
-  top: 35%;
-  display: flex;
-  flex-direction: row;
+  top: 50%;
+  transform: translate(0, -50%);
   opacity: 0.5;
   align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  
 }
 
 Div.MapTools:hover {
   opacity: 1;
 }
-
 
 .tool-button {
   margin: 5px;

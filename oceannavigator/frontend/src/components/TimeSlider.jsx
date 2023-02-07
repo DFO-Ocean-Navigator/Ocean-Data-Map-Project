@@ -19,10 +19,12 @@ function TimeSlider(props) {
     setMin(props.timestamps.length < 50 ? 0 : props.timestamps.length - 50);
     setMax(props.timestamps.length);
     setSelected(props.timestamps.length - 1);
-  }, [props.dataset.id]);
+  }, [props.timestamps]);
 
   useEffect(() => {
-    props.onChange(props.id, parseInt(props.timestamps[selected].id));
+    if (props.timestamps.length > 0) {
+      props.onChange(props.id, parseInt(props.timestamps[selected].id));
+    }
   }, [selected]);
 
   const getFormattedTime = (time) => {
@@ -65,33 +67,27 @@ function TimeSlider(props) {
 
   const setMajorTick = (time) => {
     switch (props.dataset.quantum) {
-      case "season":
-        return true;
       case "hour":
         return time.getUTCHours() === 0 || time.getUTCHours() === 12;
       case "day":
         return time.getUTCHours() === 0 || time.getUTCHours() === 12;
-      case "month":
-        return true;
-      case "year":
-        return true;
     }
+    return true;
   };
 
   const getSeason = (time) => {
     // assumes timestamp is not on boundary
-    let year = time.getFullYear()
-    // winter
-    if (new Date(year - 1, 11, 22) <= time && time <= new Date(year, 2, 20) ) {
-      return `Winter ${year - 1}`
-    } else if  (new Date(year, 2, 20) <= time && time <= new Date(year, 5, 20) ) {
-      return `Spring ${year}`
-    } else if  (new Date(year, 5, 21) <= time && time <= new Date(year, 8, 22) ) {
-      return `Summer ${year}`
+    let year = time.getFullYear();
+    if (new Date(year - 1, 11, 22) <= time && time <= new Date(year, 2, 20)) {
+      return `Winter ${year - 1}`;
+    } else if (new Date(year, 2, 20) <= time && time <= new Date(year, 5, 20)) {
+      return `Spring ${year}`;
+    } else if (new Date(year, 5, 21) <= time && time <= new Date(year, 8, 22)) {
+      return `Summer ${year}`;
     } else {
-      return `Fall ${year}`
+      return `Fall ${year}`;
     }
-  }
+  };
 
   const onDragOver = (e) => {
     e.preventDefault();
@@ -120,9 +116,7 @@ function TimeSlider(props) {
         placement="top"
         container={containerRef}
         overlay={
-          <Tooltip id={`handle-tooltip`}>
-            {getFormattedTime(time)}
-          </Tooltip>
+          <Tooltip id={`handle-tooltip`}>{getFormattedTime(time)}</Tooltip>
         }
       >
         <div draggable className="slider-handle" />
@@ -215,34 +209,34 @@ function TimeSlider(props) {
         <Button
           className="slider-button"
           onClick={prevFrame}
-          disabled={min === 0}
+          disabled={min === 0 || props.loading}
         >
           <ChevronDoubleLeft />
         </Button>
         <Button
           className="slider-button"
           onClick={prevValue}
-          disabled={selected === 0}
+          disabled={selected === 0 || props.loading}
         >
           <ChevronLeft />
         </Button>
       </div>
       <div className="slider-container" ref={containerRef}>
         {sliderRail}
-        {ticks}
+        {props.loading ? null : ticks}
       </div>
       <div className="button-container">
         <Button
           className="slider-button"
           onClick={nextValue}
-          disabled={selected === props.timestamps.length - 1}
+          disabled={selected === props.timestamps.length - 1 || props.loading}
         >
           <ChevronRight />
         </Button>
         <Button
           className="slider-button"
           onClick={nextFrame}
-          disabled={max === props.timestamps.length}
+          disabled={max === props.timestamps.length || props.loading}
         >
           <ChevronDoubleRight />
         </Button>

@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { Modal, ProgressBar, Button } from "react-bootstrap";
 
-import {
-  Modal,
-  ProgressBar,
-  Button,
-  Tooltip,
-  OverlayTrigger,
-  Form,
-  Row,
-  Col,
-} from "react-bootstrap";
-
-import DatasetDropdown from "./DatasetDropdown.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
-import Range from "./Range.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 
 import {
@@ -29,7 +17,7 @@ import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
 function DatasetSelector(props) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [loadingTitle, setLoadingTitle] = useState("");
   const [datasetVariables, setDatasetVariables] = useState([]);
@@ -53,7 +41,7 @@ function DatasetSelector(props) {
       // Use defaults in DATASET_DEFAULTS
       changeDataset(dataset.id, dataset.variable, true);
     }
-  }, [props, availableDatasets]);
+  }, [availableDatasets]);
 
   const changeDataset = (
     newDataset,
@@ -64,6 +52,10 @@ function DatasetSelector(props) {
       return d.id === newDataset;
     })[0];
 
+    setLoading(true);
+    setLoadingPercent(10);
+    setLoadingTitle(currentDataset.value);
+
     const quantum = currentDataset.quantum;
     const model_class = currentDataset.model_class;
 
@@ -71,6 +63,7 @@ function DatasetSelector(props) {
       (variableResult) => {
         // Carry the currently selected variable to the new
         // dataset if said variable exists in the new dataset.
+        setLoadingPercent(33);
         let newVariable = currentVariable;
         let newVariableScale = dataset.variable_scale;
         let variable_range = {};
@@ -99,6 +92,7 @@ function DatasetSelector(props) {
 
         GetTimestampsPromise(newDataset, newVariable).then(
           (timeResult) => {
+            setLoadingPercent(66);
             const timeData = timeResult.data;
 
             const newTime = timeData[timeData.length - 1].id;
@@ -109,6 +103,7 @@ function DatasetSelector(props) {
 
             GetDepthsPromise(newDataset, newVariable).then(
               (depthResult) => {
+                setLoadingPercent(90);
                 setDataset({
                   id: newDataset,
                   model_class: model_class,
@@ -129,25 +124,30 @@ function DatasetSelector(props) {
                   interpRadius: interpRadius,
                   interpNeighbours: interpNeighbours,
                 });
+                setLoading(false);
+                setLoadingPercent(100);
 
                 if (updateParentOnSuccess) {
                   // updateParent();
                 }
               },
               (error) => {
-                // update loading bar
+                setLoading(false);
+                setLoadingPercent(0);
                 console.error(error);
               }
             );
           },
           (error) => {
-            // update loading bar
+            setLoading(false);
+            setLoadingPercent(0);
             console.error(error);
           }
         );
       },
       (error) => {
-        // update loading bar
+        setLoading(false);
+        setLoadingPercent(0);
         console.error(error);
       }
     );
@@ -234,12 +234,12 @@ function DatasetSelector(props) {
   };
 
   const handleGoButton = () => {
-    props.onUpdate(dataset)
-  };  
+    props.onUpdate(dataset);
+  };
 
   let datasetSelector = null;
 
-  if (availableDatasets && availableDatasets.length > 0 && !loading) {
+  if (availableDatasets && availableDatasets.length > 0) {
     const helpContent = availableDatasets.map((d) => {
       return (
         <p key={`help-${d.id}`}>
@@ -259,6 +259,7 @@ function DatasetSelector(props) {
         onChange={updateDataset}
         selected={dataset.id}
         helpContent={helpContent}
+        loading={loading}
       />
     );
   }
@@ -267,8 +268,7 @@ function DatasetSelector(props) {
   if (
     props.showVariableSelector &&
     datasetVariables &&
-    datasetVariables.length > 0 &&
-    !loading
+    datasetVariables.length > 0
   ) {
     let options = [];
     if (props.variables === "3d") {
@@ -299,12 +299,13 @@ function DatasetSelector(props) {
         onChange={updateDataset}
         selected={selected}
         multiple={props.multipleVariables}
+        loading={loading}
       />
     );
   }
 
   let quiverSelector = null;
-  if (props.showQuiverSelector && !loading) {
+  if (props.showQuiverSelector) {
     let quiverVariables = [];
     if (
       datasetVariables &&
@@ -320,11 +321,12 @@ function DatasetSelector(props) {
       <SelectBox
         id={`dataset-selector-quiver-selector-${props.id}`}
         name="quiverVariable"
-        label={"Quiver"} // Variable"}
+        label={"Quiver"}
         placeholder={"Quiver Variable"}
         options={quiverVariables}
         onChange={updateDataset}
         selected={quiverVariable}
+        loading={loading}
       />
     );
   }
@@ -334,7 +336,6 @@ function DatasetSelector(props) {
     props.showDepthSelector &&
     datasetDepths &&
     datasetDepths.length > 0 &&
-    !loading &&
     !dataset.variable_two_dimensional
   ) {
     depthSelector = (
@@ -360,25 +361,24 @@ function DatasetSelector(props) {
             return d.id === depth;
           })[0].id
         }
+        loading={loading}
       />
     );
   }
 
   let timeSelector = null;
-  if (datasetTimestamps && datasetTimestamps.length > 0) {
-    timeSelector = (
-      <TimeSlider
-        key="time"
-        id="time"
-        dataset={dataset}
-        timestamps={datasetTimestamps}
-        initialValue={dataset.time}
-        onChange={updateDataset}
-      />
-    );
-  }
+  timeSelector = (
+    <TimeSlider
+      key="time"
+      id="time"
+      dataset={dataset}
+      timestamps={datasetTimestamps}
+      initialValue={dataset.time}
+      onChange={updateDataset}
+      loading={loading}
+    />
+  );
 
-  console.log(dataset);
   return (
     <>
       <div
@@ -389,11 +389,30 @@ function DatasetSelector(props) {
         {variableSelector}
         {quiverSelector}
         {depthSelector}
-        <Button variant="primary" type="submit" onClick={handleGoButton}>
+        <Button
+          variant="primary"
+          type="submit"
+          onClick={handleGoButton}
+          disabled={loading}
+        >
           Go
         </Button>
       </div>
       {timeSelector}
+
+      <Modal
+        show={loading}
+        backdrop
+        size="sm"
+        style={{ top: "33%", opacity: 1 }}
+      >
+        <Modal.Header>
+          <Modal.Title>Loading {loadingTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ProgressBar now={loadingPercent} />
+        </Modal.Body>
+      </Modal>
     </>
   );
 }

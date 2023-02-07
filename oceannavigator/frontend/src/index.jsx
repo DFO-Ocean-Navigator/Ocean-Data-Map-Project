@@ -1,34 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import OceanNavigator from "./components/OceanNavigator.jsx";
-import {
-  faDrawPolygon,
-  faTable,
-  faChartLine,
-  faDiagramProject,
-  faTableList,
-  faGear,
-  faKeyboard,
-  faSatelliteDish,
-  faChevronLeft,
-  faChevronRight,
-  faInfo
-} from "@fortawesome/free-solid-svg-icons";
-import { library } from "@fortawesome/fontawesome-svg-core";
 
-library.add(
-  faDrawPolygon,
-  faTable,
-  faChartLine,
-  faDiagramProject,
-  faTableList,
-  faGear,
-  faKeyboard,
-  faSatelliteDish,
-  faChevronLeft,
-  faChevronRight,
-  faInfo
-);
 // import WebFont from "webfontloader";
 // import Browser from "detect-browser";
 // import ReactGA from "react-ga";
