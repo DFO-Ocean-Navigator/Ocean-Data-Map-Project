@@ -510,9 +510,9 @@ class PointWindow extends React.Component {
           <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>
             {_("Sound Speed Profile")}
           </NavItem>
-          <NavItem disabled eventKey={TabEnum.STICK}>
+          {/* <NavItem disabled eventKey={TabEnum.STICK}>
             {_("Stick Plot")}
-          </NavItem>
+          </NavItem> */}
           <NavItem
             eventKey={TabEnum.OBSERVATION}
             disabled={this.props.point[0][2] === undefined}
