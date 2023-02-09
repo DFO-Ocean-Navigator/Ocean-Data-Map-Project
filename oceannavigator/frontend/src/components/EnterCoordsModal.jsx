@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Papa from "papaparse";
 
 import { Button, Modal } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
@@ -6,21 +7,39 @@ import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
 function EnterCoordsModal(props) {
-  const [coordinates, setCoordinates] = useState([]);
-  const [enteredLat, setEnteredLat] = useState(null);
-  const [enteredLon, setEnteredLon] = useState(null);
+  const [enteredLat, setEnteredLat] = useState("");
+  const [enteredLon, setEnteredLon] = useState("");
   const [tableEntries, setTableEntries] = useState([]);
+  const [timer, setTimer] = useState(null);
+  const fileForm = useRef(null);
+  const fileInput = useRef(null);
 
   useEffect(() => {
     setTableEntries(
       props.pointCoordinates.map((coord, index) => {
         return (
-          <tr key={`entry_${coord[0]}_${coord[1]}`}>
-            <td>{coord[0]}</td>
-            <td>{coord[1]}</td>
+          <tr key={`row_${index}`}>
+            <td>
+              <input
+                id={index}
+                key={index}
+                className="cord-input"
+                value={coord[0]}
+                onChange={updateLat}
+              />
+            </td>
+            <td>
+              <input
+                id={index}
+                key={`row_${index}_lon`}
+                className="cord-input"
+                value={coord[1]}
+                onChange={updateLon}
+              />
+            </td>
             <td>
               <button
-                className="removeCoord"
+                className="remove-button"
                 onClick={() => props.action("removePoint", index)}
               >
                 <X />
@@ -35,9 +54,9 @@ function EnterCoordsModal(props) {
   const submitHandler = (e) => {
     e.preventDefault();
     if (enteredLat & enteredLon) {
-      props.action("addPoint", [enteredLat, enteredLon]);
-      setEnteredLat(null);
-      setEnteredLon(null);
+      props.action("addPoints", [[enteredLat, enteredLon]]);
+      setEnteredLat("");
+      setEnteredLon("");
     }
   };
 
@@ -49,71 +68,169 @@ function EnterCoordsModal(props) {
     setEnteredLon(parseFloat(e.target.value));
   };
 
+  const updateLat = (e) => {
+    clearTimeout(timer);
+    setTimer(
+      setTimeout(
+        props.action(
+          "updatePoint",
+          parseInt(e.target.id),
+          0,
+          parseFloat(e.target.value)
+        ),
+        500
+      )
+    );
+  };
+
+  const updateLon = (e) => {
+    clearTimeout(timer);
+    setTimer(
+      setTimeout(
+        props.action(
+          "updatePoint",
+          parseInt(e.target.id),
+          1,
+          parseFloat(e.target.value)
+        ),
+        500
+      )
+    );
+  };
+
   const handleClear = () => {
     props.action("clearPoints");
   };
 
-  return (
-    <Modal
-      show={true}
-      onHide={props.handleClose}
-      size="xl"
-      style={{ opacity: 1 }}
-      dialogClassName="coords-modal-dialog"
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Enter Coordinates</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Card>
-          <Card.Body>
-            <Table striped bordered size="sm">
-              <thead>
-                <tr>
-                  <th>Latitude</th>
-                  <th>Longitude</th>
-                  <th style={{ width: "5%" }}></th>
-                </tr>
-              </thead>
-              <tbody>{tableEntries}</tbody>
-            </Table>
+  const handleUpload = () => {
+    fileInput.current.click();
+  };
 
-            <form onSubmit={submitHandler}>
-              <div style={{ display: "flex", justifyContent: "right" }}>
-                <label>Latitude:</label>
-                <input
-                  type="number"
-                  min="-90"
-                  max="90"
-                  step="0.0001"
-                  value={enteredLat}
-                  onChange={latChangeHandler}
-                />
-                <label>Longitude:</label>
-                <input
-                  type="number"
-                  min="-180"
-                  max="180"
-                  step="0.0001"
-                  value={enteredLon}
-                  onChange={lonChangeHandler}
-                />
-                <button type="submit">Add</button>
-                <button type="button" onClick={handleClear}>
-                  Clear
-                </button>
-              </div>
-            </form>
-          </Card.Body>
-        </Card>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary">Upload Coordinates</Button>
-        <Button variant="primary" onClick={props.handleClose}>
-        Apply
-        </Button>
-      </Modal.Footer>
-    </Modal>
+  const parseCSV = (e) => {
+    if (e.target.files.length == 1) {
+      const file = e.target.files[0];
+
+      Papa.parse(file, {
+        dynamicTyping: true,
+        skipEmptyLines: true,
+        header: true,
+        complete: function (results) {
+          // Convert everything to lowercase
+          const fields_lowered = results.meta.fields.map(function (f) {
+            return f.toLowerCase().trim();
+          });
+
+          function findKey(names) {
+            for (let i = 0; i < names.length; i++) {
+              const index = fields_lowered.indexOf(names[i]);
+              if (index > -1) {
+                return results.meta.fields[index];
+              }
+            }
+            return -1;
+          }
+
+          const lat = findKey(["latitude", "lat"]);
+          const lon = findKey(["longitude", "lon"]);
+          if (lat == -1 || lon == -1) {
+            alert(
+              _(
+                "Error: Could not find latitude or longitude column in file: "
+              ) + file.name
+            );
+            return;
+          }
+
+          const points = results.data.map(function (point) {
+            point[lat] = point[lat] > 90 ? 90 : point[lat];
+            point[lat] = point[lat] < -90 ? -90 : point[lat];
+            point[lon] = point[lon] > 180 ? point[lon] - 360 : point[lon];
+            point[lon] = point[lon] < -180 ? 360 + point[lon] : point[lon];
+            return [point[lat], point[lon]];
+          });
+
+          props.action("addPoints", points);
+        },
+      });
+
+      fileForm.current.reset();
+    }
+  };
+
+  return (
+    <>
+      <Modal
+        show={true}
+        onHide={props.handleClose}
+        size="xl"
+        style={{ opacity: 1 }}
+        dialogClassName="coords-modal-dialog"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Enter Coordinates</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Card>
+            <Card.Body>
+              <Table bordered size="sm">
+                <thead>
+                  <tr>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th style={{ width: "5%" }}></th>
+                  </tr>
+                </thead>
+                <tbody>{tableEntries}</tbody>
+              </Table>
+
+              <form onSubmit={submitHandler}>
+                <div style={{ display: "flex", justifyContent: "right" }}>
+                  <label>Latitude:</label>
+                  <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    step="0.0001"
+                    value={enteredLat}
+                    onChange={latChangeHandler}
+                  />
+                  <label>Longitude:</label>
+                  <input
+                    type="number"
+                    min="-180"
+                    max="180"
+                    step="0.0001"
+                    value={enteredLon}
+                    onChange={lonChangeHandler}
+                  />
+                  <button type="submit">Add</button>
+                  <button type="button" onClick={handleClear}>
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </Card.Body>
+          </Card>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleUpload}>
+            Upload Coordinates
+          </Button>
+          <Button variant="primary" onClick={props.handleClose}>
+            Apply
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <form ref={fileForm}>
+        <input
+          type="file"
+          style={{ display: "none" }}
+          onChange={parseCSV}
+          ref={fileInput}
+          accept=".csv,.CSV"
+        />
+      </form>
+    </>
   );
 }
 

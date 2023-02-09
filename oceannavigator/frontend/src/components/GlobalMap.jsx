@@ -8,7 +8,7 @@ import React, {
 import { Map, View } from "ol";
 import Feature from "ol/Feature.js";
 import TileLayer from "ol/layer/Tile";
-import { Style, Circle, Stroke, Fill, RegularShape } from "ol/style";
+import { Style, Circle, Stroke, Fill, Text, RegularShape } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile.js";
 import VectorSource from "ol/source/Vector";
@@ -282,17 +282,17 @@ const GlobalMap = forwardRef((props, ref) => {
                   props.mapSettings.projection
                 )
               ),
-              // text: new Text({
-              //   text: feat.get("name"),
-              //   font: "14px sans-serif",
-              //   fill: new Fill({
-              //     color: "#000",
-              //   }),
-              //   stroke: new Stroke({
-              //     color: "#FFFFFF",
-              //     width: 2,
-              //   }),
-              // }),
+              text: new Text({
+                text: feat.get("name"),
+                font: "14px sans-serif",
+                fill: new Fill({
+                  color: "#000",
+                }),
+                stroke: new Stroke({
+                  color: "#FFFFFF",
+                  width: 2,
+                }),
+              }),
             }),
           ];
         }
@@ -334,7 +334,7 @@ const GlobalMap = forwardRef((props, ref) => {
         )
         .reverse();
       // Draw point on map(s)
-      props.action("addPoint", latlon);
+      props.action("addPoints", [latlon]);
       setTimeout(() => {
         controlDoubleClickZoom(true);
       }, 251);

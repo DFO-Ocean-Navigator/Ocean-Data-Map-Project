@@ -53,12 +53,17 @@ function OceanNavigator() {
       case "clearPoints":
         setPointCoordinates([]);
         break;
-      case "addPoint":
-        setPointCoordinates((prevCoordinates) => [...prevCoordinates, arg]);
+      case "addPoints":
+        setPointCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
       case "removePoint":
         let coords = pointCoordinates.filter((coord, index) => index !== arg);
         setPointCoordinates(coords);
+        break;
+      case "updatePoint":
+        const newCoords = [...pointCoordinates];
+        newCoords[arg][arg2] = arg3;
+        setPointCoordinates(newCoords);
         break;
     }
   };
@@ -94,8 +99,6 @@ function OceanNavigator() {
       pointCoordinates={pointCoordinates}
     />
   );
-
-  console.log(pointCoordinates);
 
   return (
     <div>
