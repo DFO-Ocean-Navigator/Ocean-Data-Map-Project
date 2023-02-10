@@ -6,6 +6,7 @@ import DrawingTools from "./DrawingTools.jsx";
 import GlobalMap from "./GlobalMap.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
+import ScaleViewer from "./ScaleViewer.jsx";
 
 function OceanNavigator() {
   const mapRef0 = useRef(null);
@@ -32,7 +33,7 @@ function OceanNavigator() {
     observationArea: [],
   });
   const [pointCoordinates, setPointCoordinates] = useState([]);
-  const [drawing, setDrawing] = useState({ type: "point" });
+  const [drawingType, setDrawingType] = useState("point");
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
@@ -43,7 +44,7 @@ function OceanNavigator() {
         mapRef0.current.stopDrawing();
         break;
       case "drawingType":
-        setDrawing({ ...drawing, ...arg });
+        setDrawingType(arg);
         break;
       case "undoPoints":
         setPointCoordinates(
@@ -68,8 +69,14 @@ function OceanNavigator() {
     }
   };
 
-  const updateDataset0 = (dataset) => {
-    setDataset0(dataset);
+  const updateDataset0 = (key, value) => {
+    switch (key) {
+      case "dataset":
+        setDataset0(value);
+        break;
+      default:
+        setDataset0({ ...dataset0, [key]: value });
+    }
   };
 
   const updateUI = (key, value) => {
@@ -80,12 +87,20 @@ function OceanNavigator() {
     setUiSettings(newUISettings);
   };
 
+  const updateMap = (key, value) => {
+    let newMapSettings = {
+      ...mapSettings,
+      [key]: value,
+    };
+    setMapSettings(newMapSettings);
+  };
+
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={uiSettings}
       updateUI={updateUI}
       action={action}
-      drawing={drawing}
+      drawingType={drawingType}
     />
   ) : null;
 
@@ -94,8 +109,9 @@ function OceanNavigator() {
       ref={mapRef0}
       mapSettings={mapSettings}
       dataset={dataset0}
-      drawing={drawing}
+      drawingType={drawingType}
       action={action}
+      updateMapSettings={updateMap}
       pointCoordinates={pointCoordinates}
     />
   );
@@ -103,6 +119,11 @@ function OceanNavigator() {
   return (
     <div>
       {drawingTools}
+      <ScaleViewer
+        dataset={dataset0}
+        mapSettings={mapSettings}
+        onUpdate={updateDataset0}
+      />
       <MapInputs
         dataset={dataset0}
         mapSettings={mapSettings}
@@ -114,6 +135,7 @@ function OceanNavigator() {
         updateUI={updateUI}
         action={action}
         pointCoordinates={pointCoordinates}
+        drawingType={drawingType}
       />
 
       {mapComponent0}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
 
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, ToggleButton } from "react-bootstrap";
 import Card from "react-bootstrap/Card";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
@@ -22,7 +22,7 @@ function EnterCoordsModal(props) {
             <td>
               <input
                 id={index}
-                key={index}
+                key={`row_${index}_lat`}
                 className="cord-input"
                 value={coord[0]}
                 onChange={updateLat}
@@ -50,6 +50,17 @@ function EnterCoordsModal(props) {
       })
     );
   }, [props.pointCoordinates]);
+
+  const radios = [
+    { name: "Point", value: "point" },
+    { name: "Line", value: "line" },
+    { name: "Area", value: "area" },
+  ];
+
+  const handleRadio = (e) => {
+    let type = e.currentTarget.value;
+    props.action("drawingType", type);
+  };
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -184,7 +195,7 @@ function EnterCoordsModal(props) {
               </Table>
 
               <form onSubmit={submitHandler}>
-                <div style={{ display: "flex", justifyContent: "right" }}>
+                <div className="table-button-container">
                   <label>Latitude:</label>
                   <input
                     type="number"
@@ -213,11 +224,28 @@ function EnterCoordsModal(props) {
           </Card>
         </Modal.Body>
         <Modal.Footer>
+          <div>
+            {radios.map((radio, idx) => (
+              <ToggleButton
+                className="plot-toggle"
+                key={idx}
+                id={`radio-${idx}`}
+                type="radio"
+                name="radio"
+                value={radio.value}
+                checked={props.drawingType === radio.value}
+                onChange={handleRadio}
+              >
+                {radio.name}
+              </ToggleButton>
+            ))}
+          </div>
           <Button variant="primary" onClick={handleUpload}>
-            Upload Coordinates
+            Upload csv
           </Button>
+          <Button variant="primary">Plot</Button>
           <Button variant="primary" onClick={props.handleClose}>
-            Apply
+            Close
           </Button>
         </Modal.Footer>
       </Modal>

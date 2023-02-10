@@ -119,7 +119,7 @@ function TimeSlider(props) {
           <Tooltip id={`handle-tooltip`}>{getFormattedTime(time)}</Tooltip>
         }
       >
-        <div draggable className="slider-handle" />
+        <div className="slider-handle" />
       </OverlayTrigger>
     );
   };

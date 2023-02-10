@@ -4,7 +4,6 @@ import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function DrawingTools(props) {
-  const [radioValue, setRadioValue] = useState("point");
 
   const radios = [
     { name: "Point", value: "point" },
@@ -14,8 +13,7 @@ function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    setRadioValue(type);
-    props.action("drawingType", { type: type });
+    props.action("drawingType", type);
   };
 
   const handleClear = () => {
@@ -42,7 +40,7 @@ function DrawingTools(props) {
             type="radio"
             name="radio"
             value={radio.value}
-            checked={radioValue === radio.value}
+            checked={props.drawingType === radio.value}
             onChange={handleRadio}
           >
             {radio.name}

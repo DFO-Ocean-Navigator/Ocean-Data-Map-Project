@@ -184,7 +184,7 @@ function DatasetSelector(props) {
 
       newDataset = {
         variable: newVariable,
-        variable_scale: [variable.scale],
+        variable_scale: variable.scale,
         variable_range: newVariableRange,
         variable_two_dimensional: variable.two_dimensional,
       };
@@ -234,7 +234,7 @@ function DatasetSelector(props) {
   };
 
   const handleGoButton = () => {
-    props.onUpdate(dataset);
+    props.onUpdate("dataset", dataset);
   };
 
   let datasetSelector = null;

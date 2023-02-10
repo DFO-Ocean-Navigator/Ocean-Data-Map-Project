@@ -2,6 +2,10 @@
   top: 25%;
   transform: translate(0, -50%);
 }
+.table-button-container {
+  display: flex;
+  justify-content: space-between;
+}
 
 .cord-input {
   width: 100%;

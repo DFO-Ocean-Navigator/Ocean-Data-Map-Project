@@ -17,7 +17,7 @@ import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import Draw from "ol/interaction/Draw";
-import * as olExtent from 'ol/extent';
+import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
 import * as olgeom from "ol/geom";
 import * as olLoadingstrategy from "ol/loadingstrategy";
@@ -47,36 +47,6 @@ const GlobalMap = forwardRef((props, ref) => {
   const [vectorSource, setVectorSource] = useState();
 
   useEffect(() => {
-    let options = {
-      view: new View({ zoom: 4, center: [-50, 53] }),
-      layers: [
-        layer_basemap,
-        layer_data,
-        layer_landshapes,
-        layer_bath,
-        layer_bathshapes,
-        layer_vector,
-        // layer_obsDraw,
-        // layer_quiver,
-      ],
-      controls: [],
-      overlays: [],
-    };
-    let mapObject = new Map(options);
-    mapObject.setTarget(mapRef.current);
-    setMap(mapObject);
-
-    let newVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-      // loader: this.loader.bind(this),
-    });
-
-    setVectorSource(newVectorSource);
-  }, []);
-
-  useEffect(() => {
     let center = [-50, 53];
     if (props.mapSettings.center) {
       center = props.mapSettings.center.map(parseFloat);
@@ -94,14 +64,56 @@ const GlobalMap = forwardRef((props, ref) => {
       minZoom: MIN_ZOOM[projection],
     });
 
-    setView(mapView);
-  }, [props.mapSettings]);
+    let options = {
+      view: mapView,
+      layers: [
+        layer_basemap,
+        layer_data,
+        layer_landshapes,
+        layer_bath,
+        layer_bathshapes,
+        layer_vector,
+        // layer_obsDraw,
+        // layer_quiver,
+      ],
+      controls: [],
+      overlays: [],
+    };
+    let mapObject = new Map(options);
+    mapObject.setTarget(mapRef.current);
 
-  useEffect(() => {
-    if (map) {
-      map.setView(view);
-    }
-  }, [view]);
+    mapObject.on("moveend", function () {
+      const c = olProj
+        .transform(
+          mapView.getCenter(),
+          props.mapSettings.projection,
+          "EPSG:4326"
+        )
+        .map(function (c) {
+          return c.toFixed(4);
+        });
+      props.updateMapSettings("center", c);
+      props.updateMapSettings("zoom", mapView.getZoom());
+      const extent = mapView.calculateExtent(mapObject.getSize());
+      props.updateMapSettings("extent", extent);
+      mapObject.render();
+      if (props.partner) {
+        props.partner.mapView.setCenter(mapView.getCenter());
+        props.partner.mapView.setZoom(mapView.getZoom());
+      }
+    });
+
+    setMap(mapObject);
+
+    let newVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+      // loader: this.loader.bind(this),
+    });
+
+    setVectorSource(newVectorSource);
+  }, []);
 
   useEffect(() => {
     if (map) {
@@ -117,7 +129,7 @@ const GlobalMap = forwardRef((props, ref) => {
       let vectorLayer = map.getLayers().getArray()[5];
       vectorLayer.setSource(vectorSource);
     }
-  }, [props.pointCoordinates, props.drawing.type]);
+  }, [props.pointCoordinates, props.drawingType]);
 
   useImperativeHandle(ref, () => ({
     startDrawing: draw,
@@ -322,7 +334,7 @@ const GlobalMap = forwardRef((props, ref) => {
       source: vectorSource,
       type: "Point",
     });
-    drawAction.set("type", props.drawing.type);
+    drawAction.set("type", props.drawingType);
     drawAction.on("drawend", function (e) {
       // Disable zooming when drawing
       controlDoubleClickZoom(false);
@@ -345,7 +357,7 @@ const GlobalMap = forwardRef((props, ref) => {
   const drawPoints = () => {
     let geom;
     let feat;
-    switch (props.drawing.type) {
+    switch (props.drawingType) {
       case "point":
         for (let c of props.pointCoordinates) {
           geom = new olgeom.Point([c[1], c[0]]);

@@ -36,6 +36,7 @@ function MapTools(props) {
       handleClose={handleEnterPoints}
       pointCoordinates={props.pointCoordinates}
       action={props.action}
+      drawingType={props.drawingType}
     />
   ) : null;
 
