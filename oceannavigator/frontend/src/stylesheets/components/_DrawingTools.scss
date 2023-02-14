@@ -1,12 +1,12 @@
 Div.drawing-tools {
   position: absolute;
   z-index: 10;
-  width: 24%;
-  left: 40%;
+  width: 100%;
   bottom: 108px;
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 10px;
 
   .plot-toggle {
     background-color: #008cba;

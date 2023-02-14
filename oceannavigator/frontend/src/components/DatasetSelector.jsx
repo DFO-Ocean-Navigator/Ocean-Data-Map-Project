@@ -27,6 +27,7 @@ function DatasetSelector(props) {
   const [dataset, setDataset] = useState(DATASET_DEFAULTS);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [quiverVariable, setQuiverVariable] = useState("none");
+  const [updateParent, setUpdateParent] = useState(false);
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -42,6 +43,13 @@ function DatasetSelector(props) {
       changeDataset(dataset.id, dataset.variable, true);
     }
   }, [availableDatasets]);
+
+  useEffect(() => {
+    if (updateParent) {
+      props.onUpdate("dataset", dataset);
+      setUpdateParent(false);
+    }
+  }, [dataset])
 
   const changeDataset = (
     newDataset,
@@ -128,7 +136,7 @@ function DatasetSelector(props) {
                 setLoadingPercent(100);
 
                 if (updateParentOnSuccess) {
-                  // updateParent();
+                  setUpdateParent(true);
                 }
               },
               (error) => {
@@ -404,7 +412,7 @@ function DatasetSelector(props) {
         show={loading}
         backdrop
         size="sm"
-        style={{ top: "33%", opacity: 1 }}
+        dialogClassName="loading-modal"
       >
         <Modal.Header>
           <Modal.Title>Loading {loadingTitle}</Modal.Title>

@@ -10,8 +10,7 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Button, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import EnterCoordsModal from "./EnterCoordsModal.jsx";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 function MapTools(props) {
   const mapToolsRef = useRef(null);
@@ -25,20 +24,15 @@ function MapTools(props) {
       props.updateUI("showDrawingTools", false);
       props.action("stopDrawing");
     }
-  }
-
-  const handleEnterPoints = () => {
-    setShowEnterPointsModal(!showEnterPointsModal);
   };
 
-  const enterCoordsModal = showEnterPointsModal ? (
-    <EnterCoordsModal
-      handleClose={handleEnterPoints}
-      pointCoordinates={props.pointCoordinates}
-      action={props.action}
-      drawingType={props.drawingType}
-    />
-  ) : null;
+  const handleEnterPoints = () => {
+    props.updateUI("modalType", "enterCoords");
+  };
+
+  const handlePresetFeatures = () => {
+    props.updateUI("modalType", "presetFeatures");
+  };
 
   return (
     <>
@@ -49,7 +43,7 @@ function MapTools(props) {
         <Button className="tool-button" onClick={handleEnterPoints}>
           <FontAwesomeIcon icon={faKeyboard} />
         </Button>
-        <Button className="tool-button">
+        <Button className="tool-button" onClick={handlePresetFeatures}>
           <FontAwesomeIcon icon={faTableList} />
         </Button>
         <Button className="tool-button">
@@ -62,7 +56,6 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faInfo} />
         </Button>
       </div>
-      {enterCoordsModal}
     </>
   );
 }

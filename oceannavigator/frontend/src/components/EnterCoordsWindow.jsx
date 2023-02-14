@@ -6,7 +6,7 @@ import Card from "react-bootstrap/Card";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
-function EnterCoordsModal(props) {
+function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
   const [enteredLon, setEnteredLon] = useState("");
   const [tableEntries, setTableEntries] = useState([]);
@@ -170,85 +170,65 @@ function EnterCoordsModal(props) {
 
   return (
     <>
-      <Modal
-        show={true}
-        onHide={props.handleClose}
-        size="xl"
-        style={{ opacity: 1 }}
-        dialogClassName="coords-modal-dialog"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Enter Coordinates</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Card>
-            <Card.Body>
-              <Table bordered size="sm">
-                <thead>
-                  <tr>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th style={{ width: "5%" }}></th>
-                  </tr>
-                </thead>
-                <tbody>{tableEntries}</tbody>
-              </Table>
+      <Table bordered size="sm">
+        <thead>
+          <tr>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th style={{ width: "5%" }}></th>
+          </tr>
+        </thead>
+        <tbody>{tableEntries}</tbody>
+      </Table>
 
-              <form onSubmit={submitHandler}>
-                <div className="table-button-container">
-                  <label>Latitude:</label>
-                  <input
-                    type="number"
-                    min="-90"
-                    max="90"
-                    step="0.0001"
-                    value={enteredLat}
-                    onChange={latChangeHandler}
-                  />
-                  <label>Longitude:</label>
-                  <input
-                    type="number"
-                    min="-180"
-                    max="180"
-                    step="0.0001"
-                    value={enteredLon}
-                    onChange={lonChangeHandler}
-                  />
-                  <button type="submit">Add</button>
-                  <button type="button" onClick={handleClear}>
-                    Clear
-                  </button>
-                </div>
-              </form>
-            </Card.Body>
-          </Card>
-        </Modal.Body>
-        <Modal.Footer>
-          <div>
-            {radios.map((radio, idx) => (
-              <ToggleButton
-                className="plot-toggle"
-                key={idx}
-                id={`radio-${idx}`}
-                type="radio"
-                name="radio"
-                value={radio.value}
-                checked={props.drawingType === radio.value}
-                onChange={handleRadio}
-              >
-                {radio.name}
-              </ToggleButton>
-            ))}
-          </div>
-          <Button variant="primary" onClick={handleUpload}>
-            Upload csv
-          </Button>
-          <Button variant="primary">Plot</Button>
-          <Button variant="primary" onClick={props.handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <form onSubmit={submitHandler}>
+        <div className="table-button-container">
+          <label>Latitude:</label>
+          <input
+            type="number"
+            min="-90"
+            max="90"
+            step="0.0001"
+            value={enteredLat}
+            onChange={latChangeHandler}
+          />
+          <label>Longitude:</label>
+          <input
+            type="number"
+            min="-180"
+            max="180"
+            step="0.0001"
+            value={enteredLon}
+            onChange={lonChangeHandler}
+          />
+          <button type="submit">Add</button>
+          <button type="button" onClick={handleClear}>
+            Clear
+          </button>
+        </div>
+      </form>
+      <div className="plot-button-container">
+        <div className="toggle-button-container">
+        {radios.map((radio, idx) => (
+          <ToggleButton
+            className="plot-toggle"
+            key={idx}
+            id={`radio-${idx}`}
+            type="radio"
+            name="radio"
+            value={radio.value}
+            checked={props.drawingType === radio.value}
+            onChange={handleRadio}
+          >
+            {radio.name}
+          </ToggleButton>
+        ))}
+        </div>
+        <Button className="plot-button" onClick={handleUpload}>
+          Upload csv
+        </Button>
+        <Button className="plot-button">Plot</Button>
+      </div>
       <form ref={fileForm}>
         <input
           type="file"
@@ -262,4 +242,4 @@ function EnterCoordsModal(props) {
   );
 }
 
-export default EnterCoordsModal;
+export default EnterCoordsWindow;

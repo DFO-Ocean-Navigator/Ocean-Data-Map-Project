@@ -116,7 +116,7 @@ const GlobalMap = forwardRef((props, ref) => {
   }, []);
 
   useEffect(() => {
-    if (map) {
+    if (props.dataset.time > 0) {
       let dataLayer = map.getLayers().getArray()[1];
       dataLayer.setSource(new XYZ(getDataSource()));
     }
@@ -212,7 +212,6 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const layer_data = new TileLayer({
     preload: 1,
-    source: new XYZ(getDataSource()),
   });
 
   const layer_bath = new TileLayer({

@@ -8,3 +8,11 @@ div.DatasetSelector-horizontal {
   flex-wrap: nowrap;
   align-items: flex-end;
 }
+
+.loading-modal {
+  top: 33%;
+  .modal-content {
+    width: 200%;
+    transform: translateX(-25%);
+  }
+}

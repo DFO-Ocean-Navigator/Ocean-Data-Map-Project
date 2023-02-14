@@ -1,5 +1,7 @@
 import { nominalTypeHack } from "prop-types";
 import React, { useState, useRef, useEffect } from "react";
+import { Button } from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import DrawingTools from "./DrawingTools.jsx";
@@ -7,6 +9,14 @@ import GlobalMap from "./GlobalMap.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
+import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
+import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
+
+import {
+  GetPresetPointsPromise,
+  GetPresetLinesPromise,
+  GetPresetAreasPromise,
+} from "../remote/OceanNavigator.js";
 
 function OceanNavigator() {
   const mapRef0 = useRef(null);
@@ -23,17 +33,49 @@ function OceanNavigator() {
   });
   const [uiSettings, setUiSettings] = useState({
     showModal: false,
+    modalType: "",
     showDrawingTools: false,
     busy: false, // Controls if the busyModal is visible
     showHelp: false,
     showCompareHelp: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
-    sidebarOpen: true, // Controls sidebar opened/closed status
     showObservationSelect: false,
     observationArea: [],
   });
   const [pointCoordinates, setPointCoordinates] = useState([]);
   const [drawingType, setDrawingType] = useState("point");
+  const [pointFiles, setPointFiles] = useState([]);
+  const [lineFiles, setLineFiles] = useState([]);
+  const [areaFiles, setAreaFiles] = useState([]);
+
+  useEffect(() => {
+    GetPresetPointsPromise().then(
+      (result) => {
+        setPointFiles(result.data);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    GetPresetLinesPromise().then(
+      (result) => {
+        setLineFiles(result.data);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+
+    GetPresetAreasPromise().then(
+      (result) => {
+        setAreaFiles(result.data);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }, []);
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
@@ -95,6 +137,14 @@ function OceanNavigator() {
     setMapSettings(newMapSettings);
   };
 
+  const closeModal = () => [
+    setUiSettings({
+      ...uiSettings,
+      showModal: false,
+      modalType: "",
+    }),
+  ];
+
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={uiSettings}
@@ -115,6 +165,31 @@ function OceanNavigator() {
       pointCoordinates={pointCoordinates}
     />
   );
+
+  let modalContent = null;
+  let modalTitle = "";
+  switch (uiSettings.modalType) {
+    case "presetFeatures":
+      modalContent = (
+        <PresetFeaturesWindow
+          points={pointFiles}
+          lines={lineFiles}
+          areas={areaFiles}
+        />
+      );
+      modalTitle = "Preset Features";
+      break;
+      case "enterCoords":
+        modalContent = (
+          <EnterCoordsWindow
+            pointCoordinates={pointCoordinates}
+            action={action}
+            drawingType={drawingType}
+          />
+        );
+        modalTitle = "Enter Coordinates";
+        break;
+  }
 
   return (
     <div>
@@ -137,8 +212,20 @@ function OceanNavigator() {
         pointCoordinates={pointCoordinates}
         drawingType={drawingType}
       />
-
       {mapComponent0}
+      <Modal
+        show={uiSettings.modalType}
+        onHide={closeModal}
+        dialogClassName="full-screen-modal"
+      >
+        <Modal.Header closeButton closeVariant="white" closeLabel={"Close"}>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalContent}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeModal}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
