@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap-icons";
 
 import Calendar from "./Calendar.jsx";
+import MonthlyCalendar from "./MonthlyCalendar.jsx";
 
 function TimePicker(props) {
   const [data, setData] = useState([]);
@@ -130,7 +131,7 @@ function TimePicker(props) {
   };
 
   const hourChanged = (e) => {
-    props.onUpdate(props.id, e.target.value)
+    props.onUpdate(props.id, e.target.value);
   };
 
   const handlePrevTime = () => {
@@ -155,6 +156,7 @@ function TimePicker(props) {
         props.onUpdate(props.id, hours[hours.length - 1][0]);
         break;
       case "day":
+      case "month":
         const utcDate = new Date(
           Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
         );
@@ -166,11 +168,10 @@ function TimePicker(props) {
   let buttonText = "";
   let calendar = null;
   if (Object.keys(map).length > 0) {
+    let selectedDate = new Date(map[props.state]);
     switch (props.dataset.quantum) {
       case "hour":
       case "day":
-        let selectedDate = new Date(map[props.state]);
-
         buttonText = selectedDate.toLocaleDateString(undefined, {
           year: "numeric",
           month: "long",
@@ -186,6 +187,18 @@ function TimePicker(props) {
         ) : null;
         break;
       case "month":
+        buttonText = selectedDate.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+        });
+
+        calendar = showCalendar ? (
+          <MonthlyCalendar
+            selected={selectedDate}
+            availableDates={Object.values(map)}
+            onUpdate={handleCalendarInteraction}
+          />
+        ) : null;
         break;
       case "year":
         break;
