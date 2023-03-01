@@ -215,6 +215,7 @@ function TimePicker(props) {
         ) : null;
         break;
       case "year":
+        buttonText = selectedDate.getUTCFullYear();
         break;
       case "season":
         buttonText = getSeason(selectedDate)
