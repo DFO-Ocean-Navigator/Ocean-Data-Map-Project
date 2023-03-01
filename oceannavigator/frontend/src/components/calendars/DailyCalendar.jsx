@@ -17,7 +17,7 @@ const MONTHS = [
   "December",
 ];
 
-function Calendar(props) {
+function DailyCalendar(props) {
   // Helper functions sourced from https://blog.logrocket.com/react-custom-datepicker-step-by-step/
 
   const [month, setMonth] = useState(props.selected.getMonth());
@@ -196,4 +196,4 @@ function Calendar(props) {
   );
 }
 
-export default Calendar;
+export default DailyCalendar;

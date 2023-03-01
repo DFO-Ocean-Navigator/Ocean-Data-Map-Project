@@ -8,8 +8,9 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import Calendar from "./Calendar.jsx";
-import MonthlyCalendar from "./MonthlyCalendar.jsx";
+import DailyCalendar from "./calendars/DailyCalendar.jsx";
+import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
+import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
 
 function TimePicker(props) {
   const [data, setData] = useState([]);
@@ -76,6 +77,20 @@ function TimePicker(props) {
     });
 
     return hours;
+  };
+
+  const getSeason = (time) => {
+    // assumes timestamp is not on boundary
+    let year = time.getFullYear();
+    if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
+      return `Winter ${year - 1}`;
+    } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
+      return `Spring ${year}`;
+    } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
+      return `Summer ${year}`;
+    } else {
+      return `Fall ${year}`;
+    }
   };
 
   const getMinMaxTimestamps = (data) => {
@@ -155,8 +170,7 @@ function TimePicker(props) {
         setDateHours(hours);
         props.onUpdate(props.id, hours[hours.length - 1][0]);
         break;
-      case "day":
-      case "month":
+      default:
         const utcDate = new Date(
           Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
         );
@@ -179,7 +193,7 @@ function TimePicker(props) {
         });
 
         calendar = showCalendar ? (
-          <Calendar
+          <DailyCalendar
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
@@ -203,6 +217,15 @@ function TimePicker(props) {
       case "year":
         break;
       case "season":
+        buttonText = getSeason(selectedDate)
+
+        calendar = showCalendar ? (
+          <SeasonalCalendar
+            selected={selectedDate}
+            availableDates={Object.values(map)}
+            onUpdate={handleCalendarInteraction}
+          />
+        ) : null;
         break;
     }
   }

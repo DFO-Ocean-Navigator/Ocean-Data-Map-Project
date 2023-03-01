@@ -19,7 +19,7 @@ Div.calendar-container {
 
   .calendar {
     display: grid;
-    grid-template: repeat(4, auto) / repeat(3, auto);
+    grid-template: repeat(2, auto) / repeat(2, auto);
     column-gap: 2px;
     row-gap: 2px;
     background-color: #ffffff;

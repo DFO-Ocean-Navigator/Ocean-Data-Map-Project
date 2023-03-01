@@ -1,0 +1,37 @@
+Div.timepicker {
+  max-width: 300px;
+
+  .button-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .date-label {
+      font-size: medium;
+      width: 70%;
+      height: 30px;
+      border: none;
+      border: 1px solid #000;
+      background-color: #fff;
+      color: #000;
+    }
+
+    .hour-selector {
+      font-size: medium;
+      width: 30%;
+      height: 30px;
+      border: 1px solid #000;
+      border-left: none;
+      background-color: #fff;
+      color: #000;
+    }
+
+    .header-button {
+      color: #008cba;
+      background-color: #fff;
+      border: none;
+      border-radius: 50%;
+    }
+  }
+}
