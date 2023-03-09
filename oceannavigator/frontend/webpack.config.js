@@ -51,6 +51,13 @@ module.exports = {
         loader: "url-loader",
         options: { limit: false },
       },
+      {
+        test: /\.(png|gif|svg|eot|woff2?|ttf|svg)(\?.*)?$/,
+        loader: "file-loader",
+        options: {
+          name: "/[name].[ext]"
+        }
+      }
     ],
   },
   resolve: {
