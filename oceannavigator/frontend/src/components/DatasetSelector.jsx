@@ -4,6 +4,7 @@ import { Modal, ProgressBar, Button } from "react-bootstrap";
 
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
+import TimePicker from "./TimePicker.jsx";
 
 import {
   GetDatasetsPromise,
@@ -36,11 +37,13 @@ function DatasetSelector(props) {
   }, []);
 
   useEffect(() => {
-    if (props.mountedDataset && props.mountedVariable) {
-      changeDataset(props.mountedDataset, props.mountedVariable);
-    } else if (availableDatasets.length > 0) {
-      // Use defaults in DATASET_DEFAULTS
-      changeDataset(dataset.id, dataset.variable, true);
+    if (availableDatasets.length > 0) {
+      if (props.mountedDataset && props.mountedVariable) {
+        changeDataset(props.mountedDataset, props.mountedVariable);
+      } else {
+        // Use defaults in DATASET_DEFAULTS
+        changeDataset(dataset.id, dataset.variable, true);
+      }
     }
   }, [availableDatasets]);
 
@@ -49,7 +52,7 @@ function DatasetSelector(props) {
       props.onUpdate("dataset", dataset);
       setUpdateParent(false);
     }
-  }, [dataset])
+  }, [dataset]);
 
   const changeDataset = (
     newDataset,
@@ -268,6 +271,7 @@ function DatasetSelector(props) {
         selected={dataset.id}
         helpContent={helpContent}
         loading={loading}
+        horizontalLayout={props.horizontalLayout}
       />
     );
   }
@@ -308,6 +312,7 @@ function DatasetSelector(props) {
         selected={selected}
         multiple={props.multipleVariables}
         loading={loading}
+        horizontalLayout={props.horizontalLayout}
       />
     );
   }
@@ -335,6 +340,7 @@ function DatasetSelector(props) {
         onChange={updateDataset}
         selected={quiverVariable}
         loading={loading}
+        horizontalLayout={props.horizontalLayout}
       />
     );
   }
@@ -370,50 +376,97 @@ function DatasetSelector(props) {
           })[0].id
         }
         loading={loading}
+        horizontalLayout={props.horizontalLayout}
       />
     );
   }
 
   let timeSelector = null;
-  timeSelector = (
-    <TimeSlider
-      key="time"
-      id="time"
-      dataset={dataset}
-      timestamps={datasetTimestamps}
-      initialValue={dataset.time}
-      onChange={updateDataset}
-      loading={loading}
-    />
+  if (props.showTimeSlider) {
+    timeSelector = (
+      <TimeSlider
+        key="time"
+        id="time"
+        dataset={dataset}
+        timestamps={datasetTimestamps}
+        initialValue={dataset.time}
+        onChange={updateDataset}
+        loading={loading}
+      />
+    );
+  } else if (datasetTimestamps && !loading) {
+    if (props.showTimeRange) {
+      timeSelector = (
+        <div>
+          <TimePicker
+            key="starttime"
+            id="starttime"
+            state={dataset.starttime}
+            title={"Start Time (UTC)"}
+            onUpdate={updateDataset}
+            max={dataset.time}
+            dataset={dataset}
+            timestamps={datasetTimestamps}
+          />
+          <TimePicker
+            key="time"
+            id="time"
+            state={dataset.time}
+            title={"End Time (UTC)"}
+            onUpdate={updateDataset}
+            min={dataset.starttime}
+            dataset={dataset}
+            timestamps={datasetTimestamps}
+          />
+        </div>
+      );
+    } else {
+      timeSelector = (
+        <TimePicker
+          key="time"
+          id="time"
+          state={dataset.time}
+          onUpdate={updateDataset}
+          title={"Time (UTC)"}
+          dataset={dataset}
+          timestamps={datasetTimestamps}
+        />
+      );
+    }
+  }
+
+  const goButton = (
+    <Button
+      variant="primary"
+      type="submit"
+      onClick={handleGoButton}
+      disabled={loading}
+    >
+      Go
+    </Button>
   );
 
   return (
     <>
       <div
         id={`dataset-selector-${props.id}`}
-        className="DatasetSelector-horizontal"
+        className={
+          props.horizontalLayout
+            ? "DatasetSelector-horizontal"
+            : "DatasetSelector"
+        }
       >
         {datasetSelector}
         {variableSelector}
         {quiverSelector}
         {depthSelector}
-        <Button
-          variant="primary"
-          type="submit"
-          onClick={handleGoButton}
-          disabled={loading}
-        >
-          Go
-        </Button>
+        {props.horizontalLayout ? goButton : null}
       </div>
       {timeSelector}
 
-      <Modal
-        show={loading}
-        backdrop
-        size="sm"
-        dialogClassName="loading-modal"
-      >
+      {props.horizontalLayout ? null : goButton}
+
+      <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
           <Modal.Title>Loading {loadingTitle}</Modal.Title>
         </Modal.Header>
@@ -440,6 +493,7 @@ DatasetSelector.propTypes = {
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.string,
   mountedVariable: PropTypes.string,
+  horizontalLayout: PropTypes.bool,
 };
 
 DatasetSelector.defaultProps = {
@@ -451,6 +505,7 @@ DatasetSelector.defaultProps = {
   showAxisRange: false,
   showVariableSelector: true,
   showDepthsAll: false,
+  horizontalLayout: false,
 };
 
 export default DatasetSelector;

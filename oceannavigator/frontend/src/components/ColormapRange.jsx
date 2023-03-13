@@ -8,14 +8,14 @@ const axios = require("axios");
 
 function ColormapRange(props) {
   const [useAuto, setUseAuto] = useState(props.auto);
-  const [min, setMin] = useState(props.state[0]);
-  const [max, setMax] = useState(props.state[1]);
-  const [timer, setTimer] = useState();
+  const [min, setMin] = useState(parseFloat(props.state[0]).toFixed(4));
+  const [max, setMax] = useState(parseFloat(props.state[1]).toFixed(4));
+  // const [timer, setTimer] = useState();
 
-  useEffect(() => {
-    setMin(props.state[0]);
-    setMax(props.state[1]);
-  }, [props.state])
+  // useEffect(() => {
+  //   setMin(props.state[0]);
+  //   setMax(props.state[1]);
+  // }, [props.state])
 
   useEffect(() => {
     let newMin = parseFloat(min).toFixed(4);
@@ -34,15 +34,6 @@ function ColormapRange(props) {
       return () => clearTimeout(timer);
     }
   }, [min, max]);
-
-  const updateParent = () => {
-    clearTimeout(timer);
-
-    const range =
-      min.toString() + "," + max.toString() + (useAuto ? ",auto" : "");
-
-    setTimer(setTimeout(props.onUpdate, 250, props.id, range));
-  };
 
   const changed = (key, e) => {
     switch (key) {
@@ -129,7 +120,6 @@ function ColormapRange(props) {
                 value={min}
                 onChange={(e) => changed("min", e)}
                 step={0.1}
-                precision={4}
               />
             </td>
           </tr>
@@ -143,7 +133,6 @@ function ColormapRange(props) {
                 value={max}
                 onChange={(e) => changed("max", e)}
                 step={0.1}
-                precision={4}
               />
             </td>
           </tr>

@@ -12,6 +12,8 @@ function MapInputs(props) {
         onUpdate={props.changeHandler}
         mapSettings={props.mapSettings}
         updateLoading={props.updateLoading}
+        horizontalLayout={true}
+        showTimeSlider={true}
       />
     </div>
   )

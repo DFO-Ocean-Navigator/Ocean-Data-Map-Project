@@ -1,6 +1,12 @@
 Div.timepicker {
   max-width: 300px;
 
+  .timepicker-label {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 10pt;
+  }
+
   .button-container {
     width: 100%;
     display: flex;

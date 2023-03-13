@@ -1,11 +1,11 @@
-Div.calendar-container {
+Div.daily-calendar-container {
   position: absolute;
   border: 1px solid #aeaeae;
   width: 300px;
   justify-content: center;
   z-index: 10;
 
-  .calendar-header {
+  .daily-calendar-header {
     width: 100%;
     color: #ffffff;
     background-color: #008cba;
@@ -17,7 +17,7 @@ Div.calendar-container {
     align-items: center;
   }
 
-  .calendar {
+  .daily-calendar {
     display: grid;
     grid-template: repeat(7, auto) / repeat(7, auto);
     column-gap: 2px;

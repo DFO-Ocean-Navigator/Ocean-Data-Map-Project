@@ -11,12 +11,27 @@ import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
 import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
 import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
+import PointWindow from "./PointWindow.jsx";
 
 import {
   GetPresetPointsPromise,
   GetPresetLinesPromise,
   GetPresetAreasPromise,
 } from "../remote/OceanNavigator.js";
+
+function formatLatLon(latitude, longitude) {
+  latitude = latitude > 90 ? 90 : latitude;
+  latitude = latitude < -90 ? -90 : latitude;
+  longitude = longitude > 180 ? longitude - 360 : longitude;
+  longitude = longitude < -180 ? 360 + longitude : longitude;
+  let formatted = "";
+  formatted += Math.abs(latitude).toFixed(4) + " ";
+  formatted += latitude >= 0 ? "N" : "S";
+  formatted += ", ";
+  formatted += Math.abs(longitude).toFixed(4) + " ";
+  formatted += longitude >= 0 ? "E" : "W";
+  return formatted;
+}
 
 function OceanNavigator() {
   const mapRef0 = useRef(null);
@@ -169,6 +184,27 @@ function OceanNavigator() {
   let modalContent = null;
   let modalTitle = "";
   switch (uiSettings.modalType) {
+    case "point":
+      modalContent = (
+        <PointWindow
+          dataset_0={dataset0}
+          point={pointCoordinates}
+          mapSettings={mapSettings}
+          // names={this.state.names}
+          // onUpdate={this.updateState}
+          // onUpdateOptions={this.updateOptions}
+          // init={this.state.subquery}
+          // dataset_compare={this.state.dataset_compare}
+          // dataset_1={this.state.dataset_1}
+          action={action}
+          // showHelp={this.toggleCompareHelp}
+          // swapViews={this.swapViews}
+          // options={this.state.options}
+        />
+      );
+      modalTitle = pointCoordinates.map((p) => formatLatLon(p[0], p[1]));
+      modalTitle = modalTitle.join(", ");
+      break;
     case "presetFeatures":
       modalContent = (
         <PresetFeaturesWindow
@@ -179,16 +215,16 @@ function OceanNavigator() {
       );
       modalTitle = "Preset Features";
       break;
-      case "enterCoords":
-        modalContent = (
-          <EnterCoordsWindow
-            pointCoordinates={pointCoordinates}
-            action={action}
-            drawingType={drawingType}
-          />
-        );
-        modalTitle = "Enter Coordinates";
-        break;
+    case "enterCoords":
+      modalContent = (
+        <EnterCoordsWindow
+          pointCoordinates={pointCoordinates}
+          action={action}
+          drawingType={drawingType}
+        />
+      );
+      modalTitle = "Enter Coordinates";
+      break;
   }
 
   return (
@@ -217,6 +253,7 @@ function OceanNavigator() {
         show={uiSettings.modalType}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
+        size="lg"
       >
         <Modal.Header closeButton closeVariant="white" closeLabel={"Close"}>
           <Modal.Title>{modalTitle}</Modal.Title>

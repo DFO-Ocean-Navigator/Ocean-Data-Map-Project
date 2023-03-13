@@ -3,9 +3,7 @@ import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import {
   ChevronLeft,
-  ChevronDoubleLeft,
   ChevronRight,
-  ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
 import DailyCalendar from "./calendars/DailyCalendar.jsx";
@@ -16,13 +14,23 @@ function TimePicker(props) {
   const [data, setData] = useState([]);
   const [map, setMap] = useState({});
   const [revMap, setRevMap] = useState({});
-  const [min, setMin] = useState();
-  const [max, setMax] = useState();
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateHours, setDateHours] = useState([]);
 
   useEffect(() => {
-    const data = props.timestamps;
+    let data = props.timestamps;
+
+    if (props.min) {
+      data = data.filter((data) => {
+        return data.id > props.min;
+      });
+    }
+
+    if (props.max) {
+      data = data.filter((data) => {
+        return data.id < props.max;
+      });
+    }
 
     let map = {};
     let revMap = {};
@@ -54,14 +62,10 @@ function TimePicker(props) {
       setDateHours(hours);
     }
 
-    const [min, max] = getMinMaxTimestamps(data);
-
     setData(data);
     setMap(map);
     setRevMap(revMap);
-    setMin(min);
-    setMax(max);
-  }, [props.timestamps]);
+  }, [props]);
 
   const zeroPad = (num) => {
     return num.toString().padStart(2, "0");
@@ -177,6 +181,7 @@ function TimePicker(props) {
         props.onUpdate(props.id, revMap[utcDate.toUTCString()]);
         break;
     }
+    setShowCalendar(!showCalendar)
   };
 
   let buttonText = "";
@@ -218,7 +223,7 @@ function TimePicker(props) {
         buttonText = selectedDate.getUTCFullYear();
         break;
       case "season":
-        buttonText = getSeason(selectedDate)
+        buttonText = getSeason(selectedDate);
 
         calendar = showCalendar ? (
           <SeasonalCalendar
@@ -277,6 +282,7 @@ function TimePicker(props) {
 
   return (
     <div className="timepicker">
+      <label className="timepicker-label">{props.title}</label>
       <div className="button-container">{headerButtons}</div>
       {calendar}
     </div>

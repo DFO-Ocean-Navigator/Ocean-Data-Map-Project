@@ -1,18 +1,30 @@
-div div.DatasetSelector {
-  padding: 0;
+div.DatasetSelector {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-end;
 }
 
 div.DatasetSelector-horizontal {
   padding: 5px;
   display: flex;
   flex-wrap: nowrap;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .loading-modal {
   top: 33%;
+  z-index: 100;
   .modal-content {
     width: 200%;
     transform: translateX(-25%);
   }
+}
+
+.global-settings-card{
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

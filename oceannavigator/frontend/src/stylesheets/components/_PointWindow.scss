@@ -1,2 +1,13 @@
 .PointWindow {
+    .settings-col{
+        padding: unset;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .plot-col{
+        padding: unset;
+        display: flex;
+        justify-content: center;
+    }
 }

@@ -3,6 +3,16 @@
   font-size: 10pt;
   border-bottom: 1px solid;
   border-radius: 0px;
+  max-width: 300px;
+  padding-bottom: 0;
+  margin: 5px;
+}
+
+.form-select-hotizontal {
+  border: 0px;
+  font-size: 10pt;
+  border-bottom: 1px solid;
+  border-radius: 0px;
   width: auto;
   max-width: 300px;
   padding-bottom: 0;
@@ -15,9 +25,10 @@
 }
 
 .col {
-  display: inline;
   align-items: center;
+  width: 100%;
 }
+
 .row {
   margin: 0;
   flex-wrap: nowrap;

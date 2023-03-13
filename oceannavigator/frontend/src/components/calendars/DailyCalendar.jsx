@@ -178,17 +178,17 @@ function DailyCalendar(props) {
   }
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-header">
+    <div className="daily-calendar-container">
+      <div className="daily-calendar-header">
         <Button disabled={prevDisabled} onClick={prevMonth}>
           <ChevronLeft />
         </Button>
-        <label className="calendar-header">{`${MONTHS[month]} ${year}`}</label>
+        <label>{`${MONTHS[month]} ${year}`}</label>
         <Button disabled={nextDisabled} onClick={nextMonth}>
           <ChevronRight />
         </Button>
       </div>
-      <div className="calendar">
+      <div className="daily-calendar">
         {dayLabels}
         {dateButtons}
       </div>

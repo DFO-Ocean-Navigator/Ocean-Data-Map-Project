@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function DrawingTools(props) {
+  const [drawingType, setDrawingType] = useState("point")
 
   const radios = [
     { name: "Point", value: "point" },
@@ -13,6 +14,7 @@ function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
+    setDrawingType(type)
     props.action("drawingType", type);
   };
 
@@ -27,6 +29,10 @@ function DrawingTools(props) {
   const handleCancel = () => {
     props.updateUI("showDrawingTools", !props.uiSettings.showDrawingTools);
     props.action("stopDrawing");
+  };
+
+  const handlePlot = () => {
+    props.updateUI("modalType", drawingType);
   };
 
   return (
@@ -48,7 +54,7 @@ function DrawingTools(props) {
         ))}
       </div>
 
-      <Button className="plot-button">Plot</Button>
+      <Button className="plot-button" onClick={handlePlot}>Plot</Button>
       <Button className="plot-button" onClick={handleClear}>
         Clear
       </Button>
