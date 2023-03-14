@@ -1,8 +1,6 @@
-/* eslint react/no-deprecated: 0 */
-
 import React from "react";
 import axios from "axios";
-import { Modal, Button, FormControl } from "react-bootstrap";
+import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
@@ -316,8 +314,7 @@ class ComboBox extends React.Component {
             </Modal.Footer>
           </Modal>
 
-          <FormControl
-            componentClass="select"
+          <Form.Select
             size={Math.min(
               10,
               this.props.multiple ? this.state.data.length : 1
@@ -327,7 +324,7 @@ class ComboBox extends React.Component {
             multiple={this.props.multiple}
           >
             {options}
-          </FormControl>
+          </Form.Select>
         </div>
       );
     } else {

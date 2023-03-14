@@ -13,6 +13,7 @@ import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
 import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
+import AreaWindow from "./AreaWindow.jsx";
 
 import {
   GetPresetPointsPromise,
@@ -48,7 +49,7 @@ function OceanNavigator() {
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
-    showModal: true,
+    showModal: false,
     modalType: "",
     showDrawingTools: false,
     busy: false, // Controls if the busyModal is visible
@@ -59,7 +60,7 @@ function OceanNavigator() {
     observationArea: [],
   });
   const [pointCoordinates, setPointCoordinates] = useState([]);
-  const [names, setNames] = useState([])
+  const [names, setNames] = useState([]);
   const [drawingType, setDrawingType] = useState("point");
   const [pointFiles, setPointFiles] = useState([]);
   const [lineFiles, setLineFiles] = useState([]);
@@ -220,7 +221,7 @@ function OceanNavigator() {
           // onUpdateOptions={this.updateOptions}
           // init={this.state.subquery}
           // dataset_compare={this.state.dataset_compare}
-          
+
           action={action}
           // showHelp={this.toggleCompareHelp}
           // swapViews={this.swapViews}
@@ -236,6 +237,28 @@ function OceanNavigator() {
           })
           .join("), (") +
         ")";
+      break;
+    case "area":
+      modalContent = (
+        <AreaWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          area={pointCoordinates}
+          mapSettings={mapSettings}
+          // colormap={this.state.colormap}
+          names={names}
+          onUpdate={updateDataset0}
+          // onUpdateOptions={this.updateOptions}
+          // init={this.state.subquery}
+          // dataset_compare={this.state.dataset_compare}
+          // showHelp={this.toggleCompareHelp}
+          action={action}
+          // swapViews={this.swapViews}
+          // options={this.state.options}
+        />
+      );
+
+      modalTitle = "";
       break;
     case "presetFeatures":
       modalContent = (

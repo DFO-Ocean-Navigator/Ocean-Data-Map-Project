@@ -7,9 +7,11 @@ import DailyCalendar from "./calendars/DailyCalendar.jsx";
 import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
 import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
 
+import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
 import useOutsideClick from "./lib/useOutsideClick.jsx";
 
 function TimePicker(props) {
+  const [timestamps, setTimestamps] = useState([]);
   const [data, setData] = useState([]);
   const [map, setMap] = useState({});
   const [revMap, setRevMap] = useState({});
@@ -19,7 +21,21 @@ function TimePicker(props) {
   const ref = useOutsideClick(handleClickOutside);
 
   useEffect(() => {
-    let data = props.timestamps;
+    let timestamps = [];
+    if (!props.timestamps) {
+      GetTimestampsPromise(props.dataset.id, props.dataset.variable).then(
+        (result) => {
+          setTimestamps(result.data);
+        }
+      );
+    } else {
+      setTimestamps(props.timestamps);
+    }
+    
+  }, [props]);
+
+  useEffect(() => {
+    let data = timestamps;
 
     if (props.min) {
       data = data.filter((data) => {
@@ -66,7 +82,7 @@ function TimePicker(props) {
     setData(data);
     setMap(map);
     setRevMap(revMap);
-  }, [props]);
+  }, [timestamps]);
 
   const zeroPad = (num) => {
     return num.toString().padStart(2, "0");
@@ -99,12 +115,11 @@ function TimePicker(props) {
   };
 
   function handleClickOutside() {
-    console.log("clicked outside");
     setShowCalendar((showCalendar) => !showCalendar);
   }
 
   const getIndexFromTimestamp = (timestamp) => {
-    return props.timestamps.findIndex((ts) => {
+    return timestamps.findIndex((ts) => {
       return ts.id === timestamp;
     });
   };

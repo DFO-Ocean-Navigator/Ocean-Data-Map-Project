@@ -114,7 +114,7 @@ class LineWindow extends React.Component {
 
   onSelect(key) {
     this.setState({
-      selected: key,
+      selected: parseInt(key),
     });
   }
 
