@@ -1,13 +1,32 @@
-.coords-modal-dialog {
-  top: 25%;
-  transform: translate(0, -50%);
-}
+Div.EnterCoordsWindow {
+  .table-container {
+    display: flex;
+    flex-direction: row;
+    .table-button-container {
+      display: grid;
+      grid-template: repeat(2, auto) / repeat(2, auto);
+    }
+  }
+  .plot-button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 
-.table-button-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 5px;
+    .toggle-button-container {
+      margin-right: 5%;
+    }
+
+    .plot-toggle {
+      background-color: #008cba;
+      border-radius: 5px;
+      border-color: #fff;
+    }
+
+    .plot-button {
+      border-radius: 5px;
+      border-color: #fff;
+    }
+  }
 }
 
 .cord-input {

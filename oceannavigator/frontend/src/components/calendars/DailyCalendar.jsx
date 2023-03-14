@@ -17,7 +17,7 @@ const MONTHS = [
   "December",
 ];
 
-function DailyCalendar(props) {
+const DailyCalendar = React.forwardRef((props, ref) => {
   // Helper functions sourced from https://blog.logrocket.com/react-custom-datepicker-step-by-step/
 
   const [month, setMonth] = useState(props.selected.getMonth());
@@ -178,7 +178,7 @@ function DailyCalendar(props) {
   }
 
   return (
-    <div className="daily-calendar-container">
+    <div ref={ref} className="daily-calendar-container">
       <div className="daily-calendar-header">
         <Button disabled={prevDisabled} onClick={prevMonth}>
           <ChevronLeft />
@@ -194,6 +194,6 @@ function DailyCalendar(props) {
       </div>
     </div>
   );
-}
+});
 
 export default DailyCalendar;

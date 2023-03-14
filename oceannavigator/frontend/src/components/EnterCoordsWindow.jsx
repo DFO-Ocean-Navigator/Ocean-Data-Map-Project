@@ -169,60 +169,63 @@ function EnterCoordsWindow(props) {
   };
 
   return (
-    <>
-      <Table bordered size="sm">
-        <thead>
-          <tr>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th style={{ width: "5%" }}></th>
-          </tr>
-        </thead>
-        <tbody>{tableEntries}</tbody>
-      </Table>
+    <div className="EnterCoordsWindow">
+      <div className="table-container">
+        <Table bordered size="sm">
+          <thead>
+            <tr>
+              <th>Latitude</th>
+              <th>Longitude</th>
+              <th style={{ width: "5%" }}></th>
+            </tr>
+          </thead>
+          <tbody>{tableEntries}</tbody>
+        </Table>
 
-      <form onSubmit={submitHandler}>
-        <div className="table-button-container">
-          <label>Latitude:</label>
-          <input
-            type="number"
-            min="-90"
-            max="90"
-            step="0.0001"
-            value={enteredLat}
-            onChange={latChangeHandler}
-          />
-          <label>Longitude:</label>
-          <input
-            type="number"
-            min="-180"
-            max="180"
-            step="0.0001"
-            value={enteredLon}
-            onChange={lonChangeHandler}
-          />
-          <button type="submit">Add</button>
-          <button type="button" onClick={handleClear}>
-            Clear
-          </button>
-        </div>
-      </form>
+        <form onSubmit={submitHandler}>
+          <div className="table-button-container">
+            <label>Latitude:</label>
+            <input
+              type="number"
+              min="-90"
+              max="90"
+              step="0.0001"
+              value={enteredLat}
+              onChange={latChangeHandler}
+            />
+            <label>Longitude:</label>
+            <input
+              type="number"
+              min="-180"
+              max="180"
+              step="0.0001"
+              value={enteredLon}
+              onChange={lonChangeHandler}
+            />
+            <button type="submit">Add</button>
+            <button type="button" onClick={handleClear}>
+              Clear
+            </button>
+          </div>
+        </form>
+      </div>
+
       <div className="plot-button-container">
         <div className="toggle-button-container">
-        {radios.map((radio, idx) => (
-          <ToggleButton
-            className="plot-toggle"
-            key={idx}
-            id={`radio-${idx}`}
-            type="radio"
-            name="radio"
-            value={radio.value}
-            checked={props.drawingType === radio.value}
-            onChange={handleRadio}
-          >
-            {radio.name}
-          </ToggleButton>
-        ))}
+          {radios.map((radio, idx) => (
+            <ToggleButton
+              className="plot-toggle"
+              key={idx}
+              id={`radio-${idx}`}
+              type="radio"
+              name="radio"
+              value={radio.value}
+              checked={props.drawingType === radio.value}
+              onChange={handleRadio}
+            >
+              {radio.name}
+            </ToggleButton>
+          ))}
         </div>
         <Button className="plot-button" onClick={handleUpload}>
           Upload csv
@@ -238,7 +241,7 @@ function EnterCoordsWindow(props) {
           accept=".csv,.CSV"
         />
       </form>
-    </>
+    </div>
   );
 }
 

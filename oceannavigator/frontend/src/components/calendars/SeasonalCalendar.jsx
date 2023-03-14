@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { forwardRef, useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
@@ -9,15 +9,14 @@ const SEASONS = [
   ["Fall", 3],
 ];
 
-
-function SeasonalCalendar(props) {
+const SeasonalCalendar = forwardRef((props, ref) => {
   const [year, setYear] = useState(props.selected.getFullYear());
   const [seasonBounds, setSeasonBounds] = useState([]);
   const [datesEnabled, setDatesEnabled] = useState([]);
 
   useEffect(() => {
     // determine seasons using meterological bounds
-    let currentYear = props.selected.getFullYear()
+    let currentYear = props.selected.getFullYear();
     let bounds = [
       new Date(currentYear, 1, year % 4 === 1 ? 28 : 29).getTime(), // winter end
       new Date(currentYear, 4, 31).getTime(), // spring end
@@ -29,7 +28,7 @@ function SeasonalCalendar(props) {
       return date.getFullYear() === currentYear;
     });
 
-    setYear(currentYear)
+    setYear(currentYear);
     setSeasonBounds(bounds);
     setDatesEnabled(datesEnabled);
   }, [year]);
@@ -47,26 +46,27 @@ function SeasonalCalendar(props) {
 
   const dateInSeason = (date, seasonIdx) => {
     if (seasonIdx === 0) {
-      return date.getTime() <= seasonBounds[seasonIdx]
-    } else { 
-      return (date.getTime() > seasonBounds[seasonIdx-1] && date.getTime() <= seasonBounds[seasonIdx])
+      return date.getTime() <= seasonBounds[seasonIdx];
+    } else {
+      return (
+        date.getTime() > seasonBounds[seasonIdx - 1] &&
+        date.getTime() <= seasonBounds[seasonIdx]
+      );
     }
-  }
+  };
 
   const seasonButtons = SEASONS.map((season) => {
     let style = "date-button-disabled";
     let disabled = true;
 
-    let seasonDates = datesEnabled.filter((date)=>{
-      return dateInSeason(date, season[1])
-    })
+    let seasonDates = datesEnabled.filter((date) => {
+      return dateInSeason(date, season[1]);
+    });
 
-    if ( dateInSeason(props.selected, season[1])) {
+    if (dateInSeason(props.selected, season[1])) {
       style = "date-selected";
       disabled = false;
-    } else if (
-      seasonDates.length > 0
-    ) {
+    } else if (seasonDates.length > 0) {
       style = "date-button-enabled";
       disabled = false;
     }
@@ -97,7 +97,7 @@ function SeasonalCalendar(props) {
   }
 
   return (
-    <div className="calendar-container">
+    <div ref={ref} className="calendar-container">
       <div className="calendar-header">
         <Button disabled={prevDisabled} onClick={prevYear}>
           <ChevronLeft />
@@ -110,6 +110,6 @@ function SeasonalCalendar(props) {
       <div className="calendar">{seasonButtons}</div>
     </div>
   );
-}
+});
 
 export default SeasonalCalendar;

@@ -1,10 +1,3 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image corresponding to a Selected Point
-
-*/
-
 import React from "react";
 import { Card, Nav, Row, Col } from "react-bootstrap";
 import Accordion from "react-bootstrap/Accordion";

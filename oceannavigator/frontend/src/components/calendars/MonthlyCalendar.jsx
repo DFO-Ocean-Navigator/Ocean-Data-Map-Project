@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { forwardRef, useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
@@ -17,9 +17,7 @@ const MONTHS = [
   ["December", 11],
 ];
 
-const MONTH_OBJ = {};
-
-function MonthlyCalendar(props) {
+const MonthlyCalendar = forwardRef((props, ref) => {
   const [year, setYear] = useState(props.selected.getFullYear());
   const [monthsEnabled, setMonthsEnabled] = useState([]);
 
@@ -89,7 +87,7 @@ function MonthlyCalendar(props) {
   }
 
   return (
-    <div className="calendar-container">
+    <div ref={ref} className="calendar-container">
       <div className="calendar-header">
         <Button disabled={prevDisabled} onClick={prevYear}>
           <ChevronLeft />
@@ -102,6 +100,6 @@ function MonthlyCalendar(props) {
       <div className="calendar">{monthButtons}</div>
     </div>
   );
-}
+});
 
 export default MonthlyCalendar;

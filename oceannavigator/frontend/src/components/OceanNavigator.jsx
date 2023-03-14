@@ -12,6 +12,7 @@ import ScaleViewer from "./ScaleViewer.jsx";
 import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
 import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
+import LineWindow from "./LineWindow.jsx";
 
 import {
   GetPresetPointsPromise,
@@ -47,7 +48,7 @@ function OceanNavigator() {
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
-    showModal: false,
+    showModal: true,
     modalType: "",
     showDrawingTools: false,
     busy: false, // Controls if the busyModal is visible
@@ -58,6 +59,7 @@ function OceanNavigator() {
     observationArea: [],
   });
   const [pointCoordinates, setPointCoordinates] = useState([]);
+  const [names, setNames] = useState([])
   const [drawingType, setDrawingType] = useState("point");
   const [pointFiles, setPointFiles] = useState([]);
   const [lineFiles, setLineFiles] = useState([]);
@@ -144,14 +146,6 @@ function OceanNavigator() {
     setUiSettings(newUISettings);
   };
 
-  const updateMap = (key, value) => {
-    let newMapSettings = {
-      ...mapSettings,
-      [key]: value,
-    };
-    setMapSettings(newMapSettings);
-  };
-
   const closeModal = () => [
     setUiSettings({
       ...uiSettings,
@@ -159,6 +153,14 @@ function OceanNavigator() {
       modalType: "",
     }),
   ];
+
+  const updateMap = (key, value) => {
+    let newMapSettings = {
+      ...mapSettings,
+      [key]: value,
+    };
+    setMapSettings(newMapSettings);
+  };
 
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
@@ -204,6 +206,36 @@ function OceanNavigator() {
       );
       modalTitle = pointCoordinates.map((p) => formatLatLon(p[0], p[1]));
       modalTitle = modalTitle.join(", ");
+      break;
+    case "line":
+      modalContent = (
+        <LineWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          line={pointCoordinates}
+          mapSettings={mapSettings}
+          // colormap={this.state.colormap}
+          names={names}
+          onUpdate={updateDataset0}
+          // onUpdateOptions={this.updateOptions}
+          // init={this.state.subquery}
+          // dataset_compare={this.state.dataset_compare}
+          
+          action={action}
+          // showHelp={this.toggleCompareHelp}
+          // swapViews={this.swapViews}
+          // options={this.state.options}
+        />
+      );
+
+      modalTitle =
+        "(" +
+        pointCoordinates
+          .map(function (ll) {
+            return formatLatLon(ll[0], ll[1]);
+          })
+          .join("), (") +
+        ")";
       break;
     case "presetFeatures":
       modalContent = (

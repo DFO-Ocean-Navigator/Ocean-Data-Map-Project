@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
-import {
-  ChevronLeft,
-  ChevronRight,
-} from "react-bootstrap-icons";
+import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
 import DailyCalendar from "./calendars/DailyCalendar.jsx";
 import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
 import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
+
+import useOutsideClick from "./lib/useOutsideClick.jsx";
 
 function TimePicker(props) {
   const [data, setData] = useState([]);
@@ -16,6 +15,8 @@ function TimePicker(props) {
   const [revMap, setRevMap] = useState({});
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateHours, setDateHours] = useState([]);
+
+  const ref = useOutsideClick(handleClickOutside);
 
   useEffect(() => {
     let data = props.timestamps;
@@ -97,38 +98,10 @@ function TimePicker(props) {
     }
   };
 
-  const getMinMaxTimestamps = (data) => {
-    let min = data[0].id;
-    let max = data[data.length - 1].id;
-
-    if ("min" in props) {
-      min = getNextTimestamp(parseInt(props.min));
-    }
-    if ("max" in props) {
-      max = getPrevTimestamp(parseInt(props.max));
-    }
-
-    if (!min) {
-      min = data[0].id;
-    }
-    if (!max) {
-      max = data[data.length - 1].id;
-    }
-
-    return [min, max];
-  };
-
-  const getNextTimestamp = (timestamp) => {
-    const keys = Object.keys(map);
-    const nextIndex = keys.indexOf(timestamp.toString()) + 1;
-    return keys[nextIndex];
-  };
-
-  const getPrevTimestamp = (timestamp) => {
-    const keys = Object.keys(map);
-    const prevIndex = keys.indexOf(timestamp.toString()) - 1;
-    return keys[prevIndex];
-  };
+  function handleClickOutside() {
+    console.log("clicked outside");
+    setShowCalendar((showCalendar) => !showCalendar);
+  }
 
   const getIndexFromTimestamp = (timestamp) => {
     return props.timestamps.findIndex((ts) => {
@@ -146,7 +119,7 @@ function TimePicker(props) {
   };
 
   const handleDateClick = () => {
-    setShowCalendar(!showCalendar);
+    setShowCalendar((showCalendar) => !showCalendar);
   };
 
   const hourChanged = (e) => {
@@ -181,7 +154,7 @@ function TimePicker(props) {
         props.onUpdate(props.id, revMap[utcDate.toUTCString()]);
         break;
     }
-    setShowCalendar(!showCalendar)
+    setShowCalendar((showCalendar) => !showCalendar);
   };
 
   let buttonText = "";
@@ -199,6 +172,7 @@ function TimePicker(props) {
 
         calendar = showCalendar ? (
           <DailyCalendar
+            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
@@ -213,6 +187,7 @@ function TimePicker(props) {
 
         calendar = showCalendar ? (
           <MonthlyCalendar
+            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
@@ -227,6 +202,7 @@ function TimePicker(props) {
 
         calendar = showCalendar ? (
           <SeasonalCalendar
+            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
