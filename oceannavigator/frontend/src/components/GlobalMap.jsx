@@ -192,7 +192,7 @@ const GlobalMap = forwardRef((props, ref) => {
               }),
               new Style({
                 geometry: new olgeom.Point(
-                  olproj.transform(
+                  olProj.transform(
                     f.get("centroid"),
                     "EPSG:4326",
                     props.mapSettings.projection
@@ -363,6 +363,7 @@ const GlobalMap = forwardRef((props, ref) => {
                     return [o[1], o[0]];
                   })
               );
+              content = content[0]
               break;
             case "drifter":
               content.push(feature.get("name"));
@@ -397,18 +398,9 @@ const GlobalMap = forwardRef((props, ref) => {
         }
       });
 
-
-      switch (t) {
-        case "point":
-          props.action("selectPoints", content);
-          break;
-      }
+      props.action("selectPoints", content);
       props.updateUI("modalType", t);
       props.updateState("names", names);
-      // props.updateState(t, content);
-      // props.updateState("modal", t);
-      // props.updateState("names", names);
-      // props.updateState("plotEnabled", false);
     };
 
     select.on("select", function (e) {
