@@ -16,7 +16,7 @@ function EnterCoordsWindow(props) {
 
   useEffect(() => {
     setTableEntries(
-      props.pointCoordinates.map((coord, index) => {
+      props.vectorCoordinates.map((coord, index) => {
         return (
           <tr key={`row_${index}`}>
             <td>
@@ -58,8 +58,7 @@ function EnterCoordsWindow(props) {
   ];
 
   const handleRadio = (e) => {
-    let type = e.currentTarget.value;
-    props.action("drawingType", type);
+    props.action("vectorType", e.currentTarget.value);
   };
 
   const submitHandler = (e) => {
@@ -214,13 +213,13 @@ function EnterCoordsWindow(props) {
         <div className="toggle-button-container">
           {radios.map((radio, idx) => (
             <ToggleButton
-              className="plot-toggle"
+              className="plot-toggle" 
               key={idx}
               id={`radio-${idx}`}
               type="radio"
               name="radio"
               value={radio.value}
-              checked={props.drawingType === radio.value}
+              checked={props.vectorType === radio.value}
               onChange={handleRadio}
             >
               {radio.name}

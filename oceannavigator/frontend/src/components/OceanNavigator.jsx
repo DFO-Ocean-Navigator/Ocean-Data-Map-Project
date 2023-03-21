@@ -42,8 +42,6 @@ function OceanNavigator() {
   const [mapSettings, setMapSettings] = useState({
     plotEnabled: false, // "Plot" button in MapToolbar
     projection: "EPSG:3857", // Map projection
-    vectortype: null,
-    vectorid: null,
     basemap: "topo",
     extent: [],
     ...MAP_DEFAULTS,
@@ -59,9 +57,11 @@ function OceanNavigator() {
     showObservationSelect: false,
     observationArea: [],
   });
-  const [pointCoordinates, setPointCoordinates] = useState([]);
+  const [vectorId, setVectorId] = useState(null);
+  const [vectorType, setVectorType] = useState("point");
+  const [vectorCoordinates, setVectorCoordinates] = useState([]);
+  const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
-  const [drawingType, setDrawingType] = useState("point");
   const [pointFiles, setPointFiles] = useState([]);
   const [lineFiles, setLineFiles] = useState([]);
   const [areaFiles, setAreaFiles] = useState([]);
@@ -103,29 +103,62 @@ function OceanNavigator() {
       case "stopDrawing":
         mapRef0.current.stopDrawing();
         break;
-      case "drawingType":
-        setDrawingType(arg);
+      case "vectorType":
+        setVectorType(arg);
         break;
       case "undoPoints":
-        setPointCoordinates(
-          pointCoordinates.slice(0, pointCoordinates.length - 1)
+        setVectorCoordinates(
+          vectorCoordinates.slice(0, vectorCoordinates.length - 1)
         );
         break;
       case "clearPoints":
-        setPointCoordinates([]);
+        setVectorCoordinates([]);
         break;
       case "addPoints":
-        setPointCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
+        setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
       case "removePoint":
-        let coords = pointCoordinates.filter((coord, index) => index !== arg);
-        setPointCoordinates(coords);
+        let coords = vectorCoordinates.filter((coord, index) => index !== arg);
+        setVectorCoordinates(coords);
         break;
       case "updatePoint":
-        const newCoords = [...pointCoordinates];
+        const newCoords = [...vectorCoordinates];
         newCoords[arg][arg2] = arg3;
-        setPointCoordinates(newCoords);
+        setVectorCoordinates(newCoords);
         break;
+      case "selectPoints":
+        if (!arg) {
+          setSelectedCoordinates(vectorCoordinates)
+        } else {
+          setSelectedCoordinates(arg)
+        }
+        break;
+      
+      case "show":
+        closeModal()
+        mapRef0.current.show(arg, arg2);
+        // if (this.mapComponent2) {
+        //   this.mapComponent2.show(arg, arg2);
+        // }
+        // if (arg === 'class4') {
+        //   this.setState({class4type : arg3})
+        // }
+        break;
+    }
+  };
+
+  const updateState = (key, value) => {
+    for (let i = 0; i < key.length; ++i) {
+      switch (key[i]) {
+        case "vectorId":
+          setVectorId(value[i]);
+          break;
+        case "vectorType":
+          setVectorType(value[i]);
+          break;
+        case "names":
+          setNames(value[i])
+      }
     }
   };
 
@@ -168,7 +201,7 @@ function OceanNavigator() {
       uiSettings={uiSettings}
       updateUI={updateUI}
       action={action}
-      drawingType={drawingType}
+      vectorType={vectorType}
     />
   ) : null;
 
@@ -177,10 +210,13 @@ function OceanNavigator() {
       ref={mapRef0}
       mapSettings={mapSettings}
       dataset={dataset0}
-      drawingType={drawingType}
+      vectorId={vectorId}
+      vectorType={vectorType}
+      vectorCoordinates={vectorCoordinates}
+      updateState={updateState}
       action={action}
       updateMapSettings={updateMap}
-      pointCoordinates={pointCoordinates}
+      updateUI={updateUI}
     />
   );
 
@@ -191,9 +227,9 @@ function OceanNavigator() {
       modalContent = (
         <PointWindow
           dataset_0={dataset0}
-          point={pointCoordinates}
+          point={selectedCoordinates}
           mapSettings={mapSettings}
-          // names={this.state.names}
+          names={names}
           // onUpdate={this.updateState}
           // onUpdateOptions={this.updateOptions}
           // init={this.state.subquery}
@@ -205,7 +241,7 @@ function OceanNavigator() {
           // options={this.state.options}
         />
       );
-      modalTitle = pointCoordinates.map((p) => formatLatLon(p[0], p[1]));
+      modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
       modalTitle = modalTitle.join(", ");
       break;
     case "line":
@@ -213,7 +249,7 @@ function OceanNavigator() {
         <LineWindow
           dataset_0={dataset0}
           dataset_1={dataset1}
-          line={pointCoordinates}
+          line={selectedCoordinates}
           mapSettings={mapSettings}
           // colormap={this.state.colormap}
           names={names}
@@ -221,7 +257,6 @@ function OceanNavigator() {
           // onUpdateOptions={this.updateOptions}
           // init={this.state.subquery}
           // dataset_compare={this.state.dataset_compare}
-
           action={action}
           // showHelp={this.toggleCompareHelp}
           // swapViews={this.swapViews}
@@ -231,7 +266,7 @@ function OceanNavigator() {
 
       modalTitle =
         "(" +
-        pointCoordinates
+        selectedCoordinates
           .map(function (ll) {
             return formatLatLon(ll[0], ll[1]);
           })
@@ -243,7 +278,7 @@ function OceanNavigator() {
         <AreaWindow
           dataset_0={dataset0}
           dataset_1={dataset1}
-          area={pointCoordinates}
+          area={selectedCoordinates}
           mapSettings={mapSettings}
           // colormap={this.state.colormap}
           names={names}
@@ -266,6 +301,7 @@ function OceanNavigator() {
           points={pointFiles}
           lines={lineFiles}
           areas={areaFiles}
+          action={action}
         />
       );
       modalTitle = "Preset Features";
@@ -273,9 +309,9 @@ function OceanNavigator() {
     case "enterCoords":
       modalContent = (
         <EnterCoordsWindow
-          pointCoordinates={pointCoordinates}
           action={action}
-          drawingType={drawingType}
+          vectorType={vectorType}
+          vectorCoordinates={vectorCoordinates}
         />
       );
       modalTitle = "Enter Coordinates";
@@ -300,8 +336,8 @@ function OceanNavigator() {
         uiSettings={uiSettings}
         updateUI={updateUI}
         action={action}
-        pointCoordinates={pointCoordinates}
-        drawingType={drawingType}
+        vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
       />
       {mapComponent0}
       <Modal

@@ -5,9 +5,11 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
+import axios from "axios";
 import { Map, View } from "ol";
 import Feature from "ol/Feature.js";
 import TileLayer from "ol/layer/Tile";
+import Overlay from "ol/Overlay.js";
 import { Style, Circle, Stroke, Fill, Text, RegularShape } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile.js";
@@ -19,6 +21,7 @@ import XYZ from "ol/source/XYZ";
 import Draw from "ol/interaction/Draw";
 import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
+import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
@@ -42,11 +45,24 @@ const MAX_ZOOM = {
 
 const GlobalMap = forwardRef((props, ref) => {
   const mapRef = useRef();
-  const [map, setMap] = useState(null);
-  const [view, setView] = useState({});
+  const popupElement = useRef(null);
+  const [map, setMap] = useState(new Map());
   const [vectorSource, setVectorSource] = useState();
 
+  useImperativeHandle(ref, () => ({
+    startDrawing: draw,
+    stopDrawing: removeMapInteractions,
+    show: show,
+  }));
+
   useEffect(() => {
+    let overlay = new Overlay({
+      element: popupElement.current,
+      autoPan: false,
+      offset: [0, -10],
+      positioning: "bottom-center",
+    });
+
     let center = [-50, 53];
     if (props.mapSettings.center) {
       center = props.mapSettings.center.map(parseFloat);
@@ -77,8 +93,18 @@ const GlobalMap = forwardRef((props, ref) => {
         // layer_quiver,
       ],
       controls: [],
-      overlays: [],
+      overlays: [overlay],
     };
+
+    let newVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+      loader: loader,
+    });
+
+    setVectorSource(newVectorSource);
+
     let mapObject = new Map(options);
     mapObject.setTarget(mapRef.current);
 
@@ -103,16 +129,311 @@ const GlobalMap = forwardRef((props, ref) => {
       }
     });
 
-    setMap(mapObject);
+    let selected = null;
+    mapObject.on("pointermove", function (e) {
+      if (selected !== null) {
+        selected.setStyle(undefined);
+        selected = null;
+      }
+      const feature = mapObject.forEachFeatureAtPixel(
+        mapObject.getEventPixel(e.originalEvent),
+        function (feature, layer) {
+          return feature;
+        }
+      );
+      if (feature && feature.get("name")) {
+        overlay.setPosition(e.coordinate);
+        if (feature.get("data")) {
+          let bearing = feature.get("bearing");
+          popupElement.current.innerHTML = ReactDOMServer.renderToString(
+            <table>
+              <tr>
+                <td>Variable</td>
+                <td>{feature.get("name")}</td>
+              </tr>
+              <tr>
+                <td>Data</td>
+                <td>{feature.get("data")}</td>
+              </tr>
+              <tr>
+                <td>Units</td>
+                <td>{feature.get("units")}</td>
+              </tr>
+              {bearing && (
+                <tr>
+                  <td>Bearing (+ve deg clockwise N)</td>
+                  <td>{bearing}</td>
+                </tr>
+              )}
+            </table>
+          );
+        } else {
+          popupElement.current.innerHTML = feature.get("name");
+        }
 
-    let newVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-      // loader: this.loader.bind(this),
+        if (feature.get("type") == "area") {
+          mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
+            selected = f;
+            f.setStyle([
+              new Style({
+                stroke: new Stroke({
+                  color: "#FFFFFF",
+                  width: 2,
+                }),
+                fill: new Fill({
+                  color: "#FFFFFF80",
+                }),
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: "#000000",
+                  width: 1,
+                }),
+              }),
+              new Style({
+                geometry: new olgeom.Point(
+                  olproj.transform(
+                    f.get("centroid"),
+                    "EPSG:4326",
+                    props.mapSettings.projection
+                  )
+                ),
+                text: new Text({
+                  text: f.get("name"),
+                  font: "14px sans-serif",
+                  fill: new Fill({
+                    color: "#000000",
+                  }),
+                  stroke: new Stroke({
+                    color: "#FFFFFF",
+                    width: 2,
+                  }),
+                }),
+              }),
+            ]);
+            return true;
+          });
+        }
+      } else if (feature && feature.get("class") == "observation") {
+        if (feature.get("meta")) {
+          overlay.setPosition(e.coordinate);
+          popupElement.current.innerHTML = feature.get("meta");
+        } else {
+          let type = "station";
+          if (feature.getGeometry() instanceof olgeom.LineString) {
+            type = "platform";
+          }
+          axios
+            .get(
+              `/api/v2.0/observation/meta/${type}/${feature.get("id")}}.json`
+            )
+            .then(function (response) {
+              overlay.setPosition(e.coordinate);
+              feature.set(
+                "meta",
+                ReactDOMServer.renderToString(
+                  <table>
+                    {Object.keys(response).map((key) => (
+                      <tr key={key}>
+                        <td>{key}</td>
+                        <td>{response[key]}</td>
+                      </tr>
+                    ))}
+                  </table>
+                )
+              );
+              popupElement.current.innerHTML = feature.get("meta");
+            })
+            .catch();
+          // $.ajax({
+          //   url: `/api/v2.0/observation/meta/${type}/${feature.get(
+          //     "id"
+          //   )}}.json`,
+          //   success: function (response) {
+          //     overlay.setPosition(e.coordinate);
+          //     feature.set(
+          //       "meta",
+          //       ReactDOMServer.renderToString(
+          //         <table>
+          //           {Object.keys(response).map((key) => (
+          //             <tr key={key}>
+          //               <td>{key}</td>
+          //               <td>{response[key]}</td>
+          //             </tr>
+          //           ))}
+          //         </table>
+          //       )
+          //     );
+          //     popupElement.current.innerHTML = feature.get("meta");
+          //   },
+          // });
+        }
+      } else {
+        overlay.setPosition(undefined);
+      }
     });
 
-    setVectorSource(newVectorSource);
+    mapObject.on("pointermove", function (e) {
+      var pixel = mapObject.getEventPixel(e.originalEvent);
+      var hit = mapObject.hasFeatureAtPixel(pixel);
+      mapObject.getViewport().style.cursor = hit ? "pointer" : "";
+    });
+
+    const select = new olinteraction.Select({
+      style: function (feat, res) {
+        if (feat.get("type") != "area") {
+          return new Style({
+            stroke: new Stroke({
+              color: "#0099ff",
+              width: 4,
+            }),
+            image: new Circle({
+              radius: 4,
+              fill: new Fill({
+                color: "#0099ff",
+              }),
+              stroke: new Stroke({
+                color: "#ffffff",
+                width: 1,
+              }),
+            }),
+          });
+        }
+      },
+      filter: function (feature) {
+        return newVectorSource.forEachFeature(function (f) {
+          if (f == feature) {
+            return true;
+          }
+        });
+      },
+    });
+
+    let selectedFeatures = select.getFeatures();
+    mapObject.addInteraction(select);
+
+    const dragBox = new olinteraction.DragBox({
+      condition: olcondition.platformModifierKeyOnly,
+    });
+    mapObject.addInteraction(dragBox);
+
+    const pushSelection = function () {
+      var t = undefined;
+      var content = [];
+      selectedFeatures;
+      var names = [];
+      selectedFeatures.forEach(function (feature) {
+        console.log(feature);
+        if (feature.get("class") == "observation") {
+          if (feature.getGeometry() instanceof olgeom.LineString) {
+            t = "track";
+            content.push(feature.get("id"));
+          } else {
+            t = "point";
+            let c = feature
+              .getGeometry()
+              .clone()
+              .transform(props.mapSettings.projection, "EPSG:4326")
+              .getCoordinates();
+            content.push([c[1], c[0], feature.get("id")]);
+          }
+        } else if (feature.get("type") != null) {
+          switch (feature.get("type")) {
+            case "class4":
+              // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
+              const class4id = feature.get("id").replace("/", "_");
+              content.push(class4id);
+              break;
+            case "point":
+              var c = feature
+                .getGeometry()
+                .clone()
+                .transform(props.mapSettings.projection, "EPSG:4326")
+                .getCoordinates();
+              content.push([c[1], c[0], feature.get("observation")]);
+              break;
+            case "line":
+              content.push(
+                feature
+                  .getGeometry()
+                  .clone()
+                  .transform(props.mapSettings.projection, "EPSG:4326")
+                  .getCoordinates()
+                  .map(function (o) {
+                    return [o[1], o[0]];
+                  })
+              );
+              break;
+            case "drifter":
+              content.push(feature.get("name"));
+              break;
+            case "area":
+              if (feature.get("key")) {
+                content.push(feature.get("key"));
+              } else {
+                var points = feature
+                  .getGeometry()
+                  .clone()
+                  .transform(props.mapSettings.projection, "EPSG:4326")
+                  .getCoordinates()
+                  .map(function (o) {
+                    return o.map(function (p) {
+                      return [p[1], p[0]];
+                    });
+                  });
+                var area = {
+                  polygons: points,
+                  innerrings: [],
+                  name: "",
+                };
+                content.push(area);
+              }
+              break;
+          }
+          t = feature.get("type");
+        }
+        if (feature.get("name")) {
+          names.push(feature.get("name").replace(/<span>.*>/, ""));
+        }
+      });
+
+
+      switch (t) {
+        case "point":
+          props.action("selectPoints", content);
+          break;
+      }
+      props.updateUI("modalType", t);
+      props.updateState("names", names);
+      // props.updateState(t, content);
+      // props.updateState("modal", t);
+      // props.updateState("names", names);
+      // props.updateState("plotEnabled", false);
+    };
+
+    select.on("select", function (e) {
+      if (
+        e.selected.length > 0 &&
+        (e.selected[0].line || e.selected[0].drifter)
+      ) {
+        selectedFeatures.clear();
+        selectedFeatures.push(e.selected[0]);
+      }
+      if (e.selected.length == 0) {
+        props.updateState("plotEnabled", true);
+        props.action("point", props.vectorCoordinates);
+      }
+      pushSelection();
+
+      // if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
+      //   props.action("plot");
+      // }
+      if (e.selected[0].get("type") == "area") {
+        selectedFeatures.clear();
+      }
+    });
+
+    setMap(mapObject);
   }, []);
 
   useEffect(() => {
@@ -129,12 +450,128 @@ const GlobalMap = forwardRef((props, ref) => {
       let vectorLayer = map.getLayers().getArray()[5];
       vectorLayer.setSource(vectorSource);
     }
-  }, [props.pointCoordinates, props.drawingType]);
+  }, [props.vectorCoordinates, props.vectorType]);
 
-  useImperativeHandle(ref, () => ({
-    startDrawing: draw,
-    stopDrawing: removeMapInteractions,
-  }));
+  useEffect(() => {
+    if (vectorSource && props.vectorId && props.vectorType) {
+      vectorSource.clear();
+      vectorSource.setLoader(loader);
+      vectorSource.refresh();
+      let vectorLayer = map.getLayers().getArray()[5];
+      vectorLayer.setSource(vectorSource);
+    }
+  }, [props.vectorId, props.vectorType]);
+
+  const loader = (extent, resolution, projection) => {
+    if (props.vectorType && props.vectorId) {
+      let url = "";
+      switch (props.vectorType) {
+        case "observation_points":
+          url = `/api/v2.0/observation/point/` + `${props.vectorId}.json`;
+          break;
+        case "observation_tracks":
+          url = `/api/v2.0/observation/track/` + `${props.vectorId}.json`;
+          break;
+        case "class4":
+          url =
+            `/api/v2.0/class4` +
+            `/${props.class4type}` +
+            `?projection=${projection.getCode()}` +
+            `&resolution=${Math.round(resolution)}` +
+            `&extent=${extent.map(function (i) {
+              return Math.round(i);
+            })}` +
+            `&id=${props.vectorId}`;
+          break;
+        case "points":
+        case "lines":
+          url =
+            `/api/v2.0/kml/${props.vectorType}` +
+            `/${props.vectorId}` +
+            `?projection=${projection.getCode()}` +
+            `&view_bounds=${extent.map(function (i) {
+              return Math.round(i);
+            })}`;
+          break;
+        case "areas":
+          url =
+            `/api/v2.0/kml/${props.vectorType}` +
+            `/${props.vectorId}` +
+            `?projection=${projection.getCode()}` +
+            `&resolution=${Math.round(resolution)}` +
+            `&view_bounds=${extent.map(function (i) {
+              return Math.round(i);
+            })}`;
+          break;
+        default:
+          url =
+            `/api/v2.0/${props.vectorType}` +
+            `/${projection.getCode()}` +
+            `/${Math.round(resolution)}` +
+            `/${extent.map(function (i) {
+              return Math.round(i);
+            })}` +
+            `/${props.vectorId}.json`;
+          break;
+      }
+      axios
+        .get(url)
+        .then((response) => {
+          var features = new GeoJSON().readFeatures(response.data, {
+            featureProjection: props.mapSettings.projection,
+          });
+          var featToAdd = [];
+          for (let feat of features) {
+            if ("observation" == feat.get("class")) {
+              featToAdd.push(feat);
+            } else {
+              var id = feat.get("name");
+              feat.setId(id);
+              if (feat.get("error") != null) {
+                feat.set(
+                  "name",
+                  feat.get("name") +
+                    "<span>" +
+                    "RMS Error: " +
+                    feat.get("error").toPrecision(3) +
+                    "</span>"
+                );
+              }
+              if (id) {
+                var oldfeat = vectorSource.getFeatureById(id);
+                if (
+                  oldfeat != null &&
+                  oldfeat.get("resolution") > feat.get("resolution")
+                ) {
+                  oldfeat.setGeometry(feat.getGeometry());
+                  oldfeat.set("resolution", feat.get("resolution"));
+                } else {
+                  featToAdd.push(feat);
+                }
+              } else {
+                featToAdd.push(feat);
+              }
+            }
+          }
+          vectorSource.addFeatures(featToAdd);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  };
+
+  const resetMap = () => {
+    // this.removeMapInteractions("all");
+    // this.props.updateState("vectortype", null);
+    // this.props.updateState("vectorid", null);
+    // this.selectedFeatures.clear();
+    // this.vectorSource.clear();
+    // this.obsDrawSource.clear();
+    // this.overlay.setPosition(undefined);
+    // this.infoOverlay.setPosition(undefined);
+    // this.setState({latlon: []});
+  };
 
   const removeMapInteractions = (type) => {
     const interactions = map.getInteractions();
@@ -153,14 +590,9 @@ const GlobalMap = forwardRef((props, ref) => {
     return stat.ret;
   };
 
-  const controlDoubleClickZoom = (active) => {
-    const interactions = map.getInteractions();
-    for (let i = 0; i < interactions.getLength(); i++) {
-      const interaction = interactions.item(i);
-      if (interaction instanceof olinteraction.DoubleClickZoom) {
-        interaction.setActive(active);
-      }
-    }
+  const show = (type, key) => {
+    resetMap();
+    props.updateState(["vectorId", "vectorType"], [key, type]);
   };
 
   const getBasemap = (source, projection, attribution) => {
@@ -332,11 +764,12 @@ const GlobalMap = forwardRef((props, ref) => {
     const drawAction = new Draw({
       source: vectorSource,
       type: "Point",
+      stopClick: true,
     });
-    drawAction.set("type", props.drawingType);
+
+    drawAction.set("type", props.vectorType);
     drawAction.on("drawend", function (e) {
       // Disable zooming when drawing
-      controlDoubleClickZoom(false);
       const latlon = olProj
         .transform(
           e.feature.getGeometry().getCoordinates(),
@@ -346,32 +779,31 @@ const GlobalMap = forwardRef((props, ref) => {
         .reverse();
       // Draw point on map(s)
       props.action("addPoints", [latlon]);
-      setTimeout(() => {
-        controlDoubleClickZoom(true);
-      }, 251);
     });
+
     map.addInteraction(drawAction);
   };
 
   const drawPoints = () => {
+    
     let geom;
     let feat;
-    switch (props.drawingType) {
+    switch (props.vectorType) {
       case "point":
-        for (let c of props.pointCoordinates) {
+        for (let c of props.vectorCoordinates) {
           geom = new olgeom.Point([c[1], c[0]]);
           geom = geom.transform("EPSG:4326", props.mapSettings.projection);
           feat = new Feature({
             geometry: geom,
             name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-            type: "point",
+            type: "points",
           });
           vectorSource.addFeature(feat);
         }
         break;
       case "line":
         geom = new olgeom.LineString(
-          props.pointCoordinates.map(function (c) {
+          props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];
           })
         );
@@ -386,7 +818,7 @@ const GlobalMap = forwardRef((props, ref) => {
         break;
       case "area":
         geom = new olgeom.Polygon([
-          props.pointCoordinates.map(function (c) {
+          props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];
           }),
         ]);
@@ -403,12 +835,17 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   return (
-    <div
-      style={{ height: "100vh", width: "100%" }}
-      ref={mapRef}
-      id="map-container"
-      className="map-container"
-    />
+    <>
+      <div
+        style={{ height: "100vh", width: "100%" }}
+        ref={mapRef}
+        id="map-container"
+        className="map-container GlobalMap"
+      />
+      <div className="title ol-popup" ref={popupElement}>
+        Empty
+      </div>
+    </>
   );
 });
 
