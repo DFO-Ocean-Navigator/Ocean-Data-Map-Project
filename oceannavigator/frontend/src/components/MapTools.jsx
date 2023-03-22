@@ -34,6 +34,10 @@ function MapTools(props) {
     props.updateUI("modalType", "presetFeatures");
   };
 
+  const handleObservations = () => {
+    props.updateUI("modalType", "observationSelect");
+  };
+
   return (
     <>
       <div className="MapTools" ref={mapToolsRef}>
@@ -47,7 +51,7 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faTableList} />
         </Button>
         <Button className="tool-button">
-          <FontAwesomeIcon icon={faSatelliteDish} />
+          <FontAwesomeIcon icon={faSatelliteDish} onClick={handleObservations}/>
         </Button>
         <Button className="tool-button">
           <FontAwesomeIcon icon={faGear} />

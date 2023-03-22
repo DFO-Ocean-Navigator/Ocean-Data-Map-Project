@@ -14,6 +14,7 @@ import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
+import ObservationSelector from "./ObservationSelector.jsx";
 
 import {
   GetPresetPointsPromise,
@@ -62,6 +63,8 @@ function OceanNavigator() {
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
   const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
+  const [observationSelection] = useState({});
+  const [observationArea] = useState([]);
   const [pointFiles, setPointFiles] = useState([]);
   const [lineFiles, setLineFiles] = useState([]);
   const [areaFiles, setAreaFiles] = useState([]);
@@ -128,14 +131,14 @@ function OceanNavigator() {
         break;
       case "selectPoints":
         if (!arg) {
-          setSelectedCoordinates(vectorCoordinates)
+          setSelectedCoordinates(vectorCoordinates);
         } else {
-          setSelectedCoordinates(arg)
+          setSelectedCoordinates(arg);
         }
         break;
-      
+
       case "show":
-        closeModal()
+        closeModal();
         mapRef0.current.show(arg, arg2);
         // if (this.mapComponent2) {
         //   this.mapComponent2.show(arg, arg2);
@@ -157,7 +160,7 @@ function OceanNavigator() {
           setVectorType(value[i]);
           break;
         case "names":
-          setNames(value[i])
+          setNames(value[i]);
       }
     }
   };
@@ -195,6 +198,10 @@ function OceanNavigator() {
     };
     setMapSettings(newMapSettings);
   };
+
+  function obsSelect() {
+    return;
+  }
 
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
@@ -316,6 +323,15 @@ function OceanNavigator() {
       );
       modalTitle = "Enter Coordinates";
       break;
+    case "observationSelect":
+      modalContent = (
+        <ObservationSelector
+          select={obsSelect}
+          state={observationSelection}
+          area={observationArea}
+        />
+      );
+      modalTitle = "Select Observations";
   }
 
   return (
