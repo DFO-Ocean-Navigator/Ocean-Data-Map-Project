@@ -4,7 +4,7 @@ import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function DrawingTools(props) {
-  const [vectorType, setVectorType] = useState("point")
+  const [vectorType, setVectorType] = useState("point");
 
   const radios = [
     { name: "Point", value: "point" },
@@ -14,7 +14,7 @@ function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    setVectorType(type)
+    setVectorType(type);
     props.action("vectorType", type);
   };
 
@@ -26,14 +26,14 @@ function DrawingTools(props) {
     props.action("undoPoints");
   };
 
-  const handleCancel = () => {
-    props.updateUI("showDrawingTools", !props.uiSettings.showDrawingTools);
+  const handleClose = () => {
+    props.updateUI({ showDrawingTools: false });
     props.action("stopDrawing");
   };
 
   const handlePlot = () => {
     props.action("selectPoints");
-    props.updateUI("modalType", vectorType);
+    props.updateUI({ modalType: vectorType });
   };
 
   return (
@@ -55,7 +55,9 @@ function DrawingTools(props) {
         ))}
       </div>
 
-      <Button className="plot-button" onClick={handlePlot}>Plot</Button>
+      <Button className="plot-button" onClick={handlePlot}>
+        Plot
+      </Button>
       <Button className="plot-button" onClick={handleClear}>
         Clear
       </Button>
@@ -63,8 +65,8 @@ function DrawingTools(props) {
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
       </Button>
-      <Button className="cancel-button" onClick={handleCancel}>
-        Cancel
+      <Button className="close-button" onClick={handleClose}>
+        Close
       </Button>
     </div>
   );

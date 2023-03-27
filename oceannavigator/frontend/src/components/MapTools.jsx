@@ -14,28 +14,35 @@ import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 function MapTools(props) {
   const mapToolsRef = useRef(null);
-  const [showEnterPointsModal, setShowEnterPointsModal] = useState(false);
 
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
-      props.updateUI("showDrawingTools", true);
+      props.updateUI({ showDrawingTools: true, showObservationTools: false });
       props.action("startDrawing");
     } else {
-      props.updateUI("showDrawingTools", false);
+      props.updateUI({ showDrawingTools: false, showObservationTools: false });
       props.action("stopDrawing");
     }
   };
 
   const handleEnterPoints = () => {
-    props.updateUI("modalType", "enterCoords");
+    props.updateUI({ modalType: "enterCoords", showModal: true });
   };
 
   const handlePresetFeatures = () => {
-    props.updateUI("modalType", "presetFeatures");
+    props.updateUI({ modalType: "presetFeatures", showModal: true });
   };
 
   const handleObservations = () => {
-    props.updateUI("modalType", "observationSelect");
+    if (!props.uiSettings.showObservationTools) {
+      props.updateUI({ showDrawingTools: false, showObservationTools: true });
+    } else {
+      props.updateUI({ showDrawingTools: false, showObservationTools: false });
+    }
+  };
+
+  const handleSettings = () => {
+    props.updateUI({ modalType: "settings", showModal: true });
   };
 
   return (
@@ -51,10 +58,13 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faTableList} />
         </Button>
         <Button className="tool-button">
-          <FontAwesomeIcon icon={faSatelliteDish} onClick={handleObservations}/>
+          <FontAwesomeIcon
+            icon={faSatelliteDish}
+            onClick={handleObservations}
+          />
         </Button>
         <Button className="tool-button">
-          <FontAwesomeIcon icon={faGear} />
+          <FontAwesomeIcon icon={faGear} onClick={handleSettings} />
         </Button>
         <Button className="tool-button">
           <FontAwesomeIcon icon={faInfo} />

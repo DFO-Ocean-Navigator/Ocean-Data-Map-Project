@@ -2,61 +2,92 @@ import React, { useState, useEffect } from "react";
 
 import { Card, ListGroup } from "react-bootstrap";
 
+import {
+  GetPresetPointsPromise,
+  GetPresetLinesPromise,
+  GetPresetAreasPromise,
+} from "../remote/OceanNavigator.js";
+
+const LOADING_IMAGE = require("../images/spinner.gif").default;
+
 function PresetFeaturesWindow(props) {
-  const [pointItems, setPointItems] = useState([]);
-  const [lineItems, setLineItems] = useState([]);
-  const [areaItems, setAreaItems] = useState([]);
+  const [pointItems, setPointItems] = useState(null);
+  const [lineItems, setLineItems] = useState(null);
+  const [areaItems, setAreaItems] = useState(null);
 
   useEffect(() => {
-    setPointItems(
-      props.points.map(function (d) {
-        return (
-          <ListGroup.Item
-            key={d.id}
-            id={d.id}
-            action
-            onClick={(e) => {
-              handleClick(e, "points");
-            }}
-          >
-            {d.name}
-          </ListGroup.Item>
+    GetPresetPointsPromise().then(
+      (result) => {
+        setPointItems(
+          result.data.map(function (d) {
+            return (
+              <ListGroup.Item
+                key={d.id}
+                id={d.id}
+                action
+                onClick={(e) => {
+                  handleClick(e, "points");
+                }}
+              >
+                {d.name}
+              </ListGroup.Item>
+            );
+          })
         );
-      })
+      },
+      (error) => {
+        console.error(error);
+      }
     );
-    setLineItems(
-      props.lines.map(function (d) {
-        return (
-          <ListGroup.Item
-            key={d.id}
-            id={d.id}
-            action
-            onClick={(e) => {
-              handleClick(e, "lines");
-            }}
-          >
-            {d.name}
-          </ListGroup.Item>
+
+    GetPresetLinesPromise().then(
+      (result) => {
+        setLineItems(
+          result.data.map(function (d) {
+            return (
+              <ListGroup.Item
+                key={d.id}
+                id={d.id}
+                action
+                onClick={(e) => {
+                  handleClick(e, "lines");
+                }}
+              >
+                {d.name}
+              </ListGroup.Item>
+            );
+          })
         );
-      })
+      },
+      (error) => {
+        console.error(error);
+      }
     );
-    setAreaItems(
-      props.areas.map(function (d) {
-        return (
-          <ListGroup.Item
-            key={d.id}
-            id={d.id}
-            action
-            onClick={(e) => {
-              handleClick(e, "areas");
-            }}
-          >
-            {d.name}
-          </ListGroup.Item>
+
+    GetPresetAreasPromise().then(
+      (result) => {
+        setAreaItems(
+          result.data.map(function (d) {
+            return (
+              <ListGroup.Item
+                key={d.id}
+                id={d.id}
+                action
+                onClick={(e) => {
+                  handleClick(e, "areas");
+                }}
+              >
+                {d.name}
+              </ListGroup.Item>
+            );
+          })
         );
-      })
+      },
+      (error) => {
+        console.error(error);
+      }
     );
-  }, [props]);
+  }, []);
 
   const handleClick = (e, type) => {
     props.action("show", type, e.target.id);
@@ -66,15 +97,27 @@ function PresetFeaturesWindow(props) {
     <div className="PresetFeaturesWindow">
       <Card className="features-card">
         <Card.Header>Points</Card.Header>
-        <ListGroup variant="flush">{pointItems}</ListGroup>
+        {pointItems ? (
+          <ListGroup variant="flush">{pointItems}</ListGroup>
+        ) : (
+          <img src={LOADING_IMAGE} />
+        )}
       </Card>
       <Card className="features-card">
         <Card.Header>Lines</Card.Header>
-        <ListGroup variant="flush">{lineItems}</ListGroup>
+        {lineItems ? (
+          <ListGroup variant="flush">{lineItems}</ListGroup>
+        ) : (
+          <img src={LOADING_IMAGE} />
+        )}
       </Card>
       <Card className="features-card">
         <Card.Header>Areas</Card.Header>
-        <ListGroup variant="flush">{areaItems}</ListGroup>
+        {areaItems ? (
+          <ListGroup variant="flush">{areaItems}</ListGroup>
+        ) : (
+          <img src={LOADING_IMAGE} />
+        )}
       </Card>
     </div>
   );

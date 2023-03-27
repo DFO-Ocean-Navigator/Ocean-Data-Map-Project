@@ -5,6 +5,7 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
+import { renderToString } from "react-dom/server";
 import axios from "axios";
 import { Map, View } from "ol";
 import Feature from "ol/Feature.js";
@@ -48,11 +49,13 @@ const GlobalMap = forwardRef((props, ref) => {
   const popupElement = useRef(null);
   const [map, setMap] = useState(new Map());
   const [vectorSource, setVectorSource] = useState();
+  const [obsDrawSource, setObsDrawSource] = useState();
 
   useImperativeHandle(ref, () => ({
     startDrawing: draw,
     stopDrawing: removeMapInteractions,
     show: show,
+    drawObsArea: drawObsArea,
   }));
 
   useEffect(() => {
@@ -89,12 +92,18 @@ const GlobalMap = forwardRef((props, ref) => {
         layer_bath,
         layer_bathshapes,
         layer_vector,
-        // layer_obsDraw,
+        layer_obsDraw,
         // layer_quiver,
       ],
       controls: [],
       overlays: [overlay],
     };
+
+    let newObsDrawSource = new VectorSource({
+      features: [],
+    });
+
+    setObsDrawSource(newObsDrawSource);
 
     let newVectorSource = new VectorSource({
       features: [],
@@ -145,7 +154,7 @@ const GlobalMap = forwardRef((props, ref) => {
         overlay.setPosition(e.coordinate);
         if (feature.get("data")) {
           let bearing = feature.get("bearing");
-          popupElement.current.innerHTML = ReactDOMServer.renderToString(
+          popupElement.current.innerHTML = renderToString(
             <table>
               <tr>
                 <td>Variable</td>
@@ -231,42 +240,20 @@ const GlobalMap = forwardRef((props, ref) => {
               overlay.setPosition(e.coordinate);
               feature.set(
                 "meta",
-                ReactDOMServer.renderToString(
+                renderToString(
                   <table>
-                    {Object.keys(response).map((key) => (
-                      <tr key={key}>
-                        <td>{key}</td>
-                        <td>{response[key]}</td>
-                      </tr>
-                    ))}
+                  {Object.keys(response.data).map((key) => (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>{response.data[key]}</td>
+                    </tr>
+                  ))}
                   </table>
                 )
               );
               popupElement.current.innerHTML = feature.get("meta");
             })
             .catch();
-          // $.ajax({
-          //   url: `/api/v2.0/observation/meta/${type}/${feature.get(
-          //     "id"
-          //   )}}.json`,
-          //   success: function (response) {
-          //     overlay.setPosition(e.coordinate);
-          //     feature.set(
-          //       "meta",
-          //       ReactDOMServer.renderToString(
-          //         <table>
-          //           {Object.keys(response).map((key) => (
-          //             <tr key={key}>
-          //               <td>{key}</td>
-          //               <td>{response[key]}</td>
-          //             </tr>
-          //           ))}
-          //         </table>
-          //       )
-          //     );
-          //     popupElement.current.innerHTML = feature.get("meta");
-          //   },
-          // });
         }
       } else {
         overlay.setPosition(undefined);
@@ -363,7 +350,7 @@ const GlobalMap = forwardRef((props, ref) => {
                     return [o[1], o[0]];
                   })
               );
-              content = content[0]
+              content = content[0];
               break;
             case "drifter":
               content.push(feature.get("name"));
@@ -399,7 +386,7 @@ const GlobalMap = forwardRef((props, ref) => {
       });
 
       props.action("selectPoints", content);
-      props.updateUI("modalType", t);
+      props.updateUI({modalType: t});
       props.updateState("names", names);
     };
 
@@ -554,6 +541,7 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
+    removeMapInteractions("all");
     // this.removeMapInteractions("all");
     // this.props.updateState("vectortype", null);
     // this.props.updateState("vectorid", null);
@@ -688,6 +676,9 @@ const GlobalMap = forwardRef((props, ref) => {
     }),
   });
 
+  const layer_obsDraw = new VectorLayer({
+    source: obsDrawSource,
+  });
   const layer_vector = new VectorLayer({
     source: vectorSource,
     style: function (feat, res) {
@@ -752,6 +743,41 @@ const GlobalMap = forwardRef((props, ref) => {
     },
   });
 
+  const drawObsArea = () => {
+    if (removeMapInteractions("Polygon")) {
+      return;
+    }
+
+    resetMap();
+    const draw = new Draw({
+      source: obsDrawSource,
+      type: "Polygon",
+      stopClick: true,
+    });
+    draw.set("type", "Polygon");
+    draw.on("drawend", function (e) {
+      // Disable zooming when drawing
+      const points = e.feature
+        .getGeometry()
+        .getCoordinates()[0]
+        .map(function (c) {
+          const lonlat = olProj.transform(
+            c,
+            props.mapSettings.projection,
+            "EPSG:4326"
+          );
+          return [lonlat[1], lonlat[0]];
+        });
+      // Send area to Observation Selector
+      props.action("setObsArea", points);
+      map.removeInteraction(draw);
+      setTimeout(function () {
+        obsDrawSource.clear();
+      }, 251);
+    });
+    map.addInteraction(draw);
+  };
+
   const draw = () => {
     const drawAction = new Draw({
       source: vectorSource,
@@ -777,7 +803,6 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const drawPoints = () => {
-    
     let geom;
     let feat;
     switch (props.vectorType) {

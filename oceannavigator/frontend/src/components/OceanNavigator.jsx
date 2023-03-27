@@ -14,13 +14,9 @@ import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
+import ObservationTools from "./ObservationTools.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
-
-import {
-  GetPresetPointsPromise,
-  GetPresetLinesPromise,
-  GetPresetAreasPromise,
-} from "../remote/OceanNavigator.js";
+import SettingsWindow from "./SettingsWindow.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -51,52 +47,21 @@ function OceanNavigator() {
     showModal: false,
     modalType: "",
     showDrawingTools: false,
+    showObservationTools: false,
     busy: false, // Controls if the busyModal is visible
     showHelp: false,
     showCompareHelp: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
-    showObservationSelect: false,
-    observationArea: [],
   });
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
   const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
-  const [observationSelection] = useState({});
-  const [observationArea] = useState([]);
+  const [observationArea, setObservationArea] = useState([]);
   const [pointFiles, setPointFiles] = useState([]);
   const [lineFiles, setLineFiles] = useState([]);
   const [areaFiles, setAreaFiles] = useState([]);
-
-  useEffect(() => {
-    GetPresetPointsPromise().then(
-      (result) => {
-        setPointFiles(result.data);
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-
-    GetPresetLinesPromise().then(
-      (result) => {
-        setLineFiles(result.data);
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-
-    GetPresetAreasPromise().then(
-      (result) => {
-        setAreaFiles(result.data);
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-  }, []);
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
@@ -136,7 +101,6 @@ function OceanNavigator() {
           setSelectedCoordinates(arg);
         }
         break;
-
       case "show":
         closeModal();
         mapRef0.current.show(arg, arg2);
@@ -146,6 +110,27 @@ function OceanNavigator() {
         // if (arg === 'class4') {
         //   this.setState({class4type : arg3})
         // }
+        break;
+      case "obs_point":
+        // Enable point selection in both maps
+        mapRef0.current.obs_point();
+        // if (this.mapComponent2) {
+        //   this.mapComponent2.obs_point();
+        // }
+        updateUI({ modalType: "observationSelect", showModal: true });
+        break;
+
+      case "drawObsArea":
+        mapRef0.current.drawObsArea();
+        // if (this.mapComponent2) {
+        //   this.mapComponent2.obs_area();
+        // }
+        break;
+      case "setObsArea":
+        if (arg) {
+          setObservationArea(arg);
+          updateUI({ modalType: "observationSelect", showModal: true });
+        }
         break;
     }
   };
@@ -175,12 +160,18 @@ function OceanNavigator() {
     }
   };
 
-  const updateUI = (key, value) => {
-    let newUISettings = {
-      ...uiSettings,
-      [key]: value,
-    };
-    setUiSettings(newUISettings);
+  const updateDataset1 = (key, value) => {
+    switch (key) {
+      case "dataset":
+        setDataset1(value);
+        break;
+      default:
+        setDataset1({ ...dataset0, [key]: value });
+    }
+  };
+
+  const updateUI = (newSettings) => {
+    setUiSettings({ ...uiSettings, ...newSettings });
   };
 
   const closeModal = () => [
@@ -191,7 +182,7 @@ function OceanNavigator() {
     }),
   ];
 
-  const updateMap = (key, value) => {
+  const updateMapSettings = (key, value) => {
     let newMapSettings = {
       ...mapSettings,
       [key]: value,
@@ -199,16 +190,20 @@ function OceanNavigator() {
     setMapSettings(newMapSettings);
   };
 
-  function obsSelect() {
-    return;
-  }
-
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={uiSettings}
       updateUI={updateUI}
       action={action}
       vectorType={vectorType}
+    />
+  ) : null;
+
+  const observationTools = uiSettings.showObservationTools ? (
+    <ObservationTools
+      action={action}
+      uiSettings={uiSettings}
+      updateUI={updateUI}
     />
   ) : null;
 
@@ -222,16 +217,16 @@ function OceanNavigator() {
       vectorCoordinates={vectorCoordinates}
       updateState={updateState}
       action={action}
-      updateMapSettings={updateMap}
+      updateMapSettings={updateMapSettings}
       updateUI={updateUI}
     />
   );
 
-  let modalContent = null;
+  let modalBodyContent = null;
   let modalTitle = "";
   switch (uiSettings.modalType) {
     case "point":
-      modalContent = (
+      modalBodyContent = (
         <PointWindow
           dataset_0={dataset0}
           point={selectedCoordinates}
@@ -252,7 +247,7 @@ function OceanNavigator() {
       modalTitle = modalTitle.join(", ");
       break;
     case "line":
-      modalContent = (
+      modalBodyContent = (
         <LineWindow
           dataset_0={dataset0}
           dataset_1={dataset1}
@@ -281,7 +276,7 @@ function OceanNavigator() {
         ")";
       break;
     case "area":
-      modalContent = (
+      modalBodyContent = (
         <AreaWindow
           dataset_0={dataset0}
           dataset_1={dataset1}
@@ -303,18 +298,15 @@ function OceanNavigator() {
       modalTitle = "";
       break;
     case "presetFeatures":
-      modalContent = (
+      modalBodyContent = (
         <PresetFeaturesWindow
-          points={pointFiles}
-          lines={lineFiles}
-          areas={areaFiles}
           action={action}
         />
       );
       modalTitle = "Preset Features";
       break;
     case "enterCoords":
-      modalContent = (
+      modalBodyContent = (
         <EnterCoordsWindow
           action={action}
           vectorType={vectorType}
@@ -324,19 +316,29 @@ function OceanNavigator() {
       modalTitle = "Enter Coordinates";
       break;
     case "observationSelect":
-      modalContent = (
+      modalBodyContent = (
         <ObservationSelector
-          select={obsSelect}
-          state={observationSelection}
           area={observationArea}
+          action={action}
         />
       );
       modalTitle = "Select Observations";
+      break;
+    case "settings":
+      modalBodyContent = (
+        <SettingsWindow
+          mapSettings={mapSettings}
+          updateMapSettings={updateMapSettings}
+        />
+      );
+      modalTitle = "Settings";
+      break;
   }
 
   return (
     <div>
       {drawingTools}
+      {observationTools}
       <ScaleViewer
         dataset={dataset0}
         mapSettings={mapSettings}
@@ -357,7 +359,7 @@ function OceanNavigator() {
       />
       {mapComponent0}
       <Modal
-        show={uiSettings.modalType}
+        show={uiSettings.showModal}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
         size="lg"
@@ -365,7 +367,7 @@ function OceanNavigator() {
         <Modal.Header closeButton closeVariant="white" closeLabel={"Close"}>
           <Modal.Title>{modalTitle}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{modalContent}</Modal.Body>
+        <Modal.Body>{modalBodyContent}</Modal.Body>
         <Modal.Footer>
           <Button onClick={closeModal}>Close</Button>
         </Modal.Footer>

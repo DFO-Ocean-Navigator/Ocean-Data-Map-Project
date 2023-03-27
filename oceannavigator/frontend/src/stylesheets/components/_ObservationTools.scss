@@ -1,4 +1,4 @@
-Div.drawing-tools {
+Div.obs-tools {
   position: absolute;
   z-index: 10;
   width: 100%;
@@ -8,19 +8,8 @@ Div.drawing-tools {
   justify-content: center;
   gap: 10px;
 
-  .plot-toggle {
-    background-color: #008cba;
-    border-radius: 5px;
-    border-color: #fff;
-  }
-
   .plot-button {
     border-radius: 5px;
-    border-color: #fff;
-  }
-
-  .undo-button {
-    border-radius: 50%;
     border-color: #fff;
   }
 
