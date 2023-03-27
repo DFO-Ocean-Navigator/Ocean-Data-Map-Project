@@ -59,13 +59,12 @@ function OceanNavigator() {
   const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
-  const [pointFiles, setPointFiles] = useState([]);
-  const [lineFiles, setLineFiles] = useState([]);
-  const [areaFiles, setAreaFiles] = useState([]);
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
       case "startDrawing":
+        setVectorId(null)
+        mapRef0.current.resetMap();
         mapRef0.current.startDrawing();
         break;
       case "stopDrawing":
@@ -102,6 +101,8 @@ function OceanNavigator() {
         }
         break;
       case "show":
+        setVectorCoordinates([]);
+        setSelectedCoordinates([]);
         closeModal();
         mapRef0.current.show(arg, arg2);
         // if (this.mapComponent2) {
@@ -298,11 +299,7 @@ function OceanNavigator() {
       modalTitle = "";
       break;
     case "presetFeatures":
-      modalBodyContent = (
-        <PresetFeaturesWindow
-          action={action}
-        />
-      );
+      modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
       break;
     case "enterCoords":
@@ -317,10 +314,7 @@ function OceanNavigator() {
       break;
     case "observationSelect":
       modalBodyContent = (
-        <ObservationSelector
-          area={observationArea}
-          action={action}
-        />
+        <ObservationSelector area={observationArea} action={action} />
       );
       modalTitle = "Select Observations";
       break;

@@ -56,6 +56,7 @@ const GlobalMap = forwardRef((props, ref) => {
     stopDrawing: removeMapInteractions,
     show: show,
     drawObsArea: drawObsArea,
+    resetMap: resetMap,
   }));
 
   useEffect(() => {
@@ -242,12 +243,12 @@ const GlobalMap = forwardRef((props, ref) => {
                 "meta",
                 renderToString(
                   <table>
-                  {Object.keys(response.data).map((key) => (
-                    <tr key={key}>
-                      <td>{key}</td>
-                      <td>{response.data[key]}</td>
-                    </tr>
-                  ))}
+                    {Object.keys(response.data).map((key) => (
+                      <tr key={key}>
+                        <td>{key}</td>
+                        <td>{response.data[key]}</td>
+                      </tr>
+                    ))}
                   </table>
                 )
               );
@@ -386,7 +387,7 @@ const GlobalMap = forwardRef((props, ref) => {
       });
 
       props.action("selectPoints", content);
-      props.updateUI({modalType: t});
+      props.updateUI({ modalType: t });
       props.updateState("names", names);
     };
 
@@ -542,6 +543,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const resetMap = () => {
     removeMapInteractions("all");
+    vectorSource.clear();
     // this.removeMapInteractions("all");
     // this.props.updateState("vectortype", null);
     // this.props.updateState("vectorid", null);

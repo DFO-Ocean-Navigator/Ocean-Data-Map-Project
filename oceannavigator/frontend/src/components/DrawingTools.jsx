@@ -33,7 +33,7 @@ function DrawingTools(props) {
 
   const handlePlot = () => {
     props.action("selectPoints");
-    props.updateUI({ modalType: vectorType });
+    props.updateUI({ modalType: vectorType, showModal: true });
   };
 
   return (
