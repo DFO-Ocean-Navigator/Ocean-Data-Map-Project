@@ -298,8 +298,7 @@ class LineWindow extends React.Component {
             showTimeRange={this.state.selected == 2}
             showVariableRange={false}
             mapSettings={this.props.mapSettings}
-            mountedDataset={this.props.dataset_0.dataset}
-            mountedVariable={this.props.dataset_0.variable}
+            mountedDataset={this.props.dataset_0}
           />
 
           <ComboBox
@@ -333,8 +332,7 @@ class LineWindow extends React.Component {
               showTimeRange={this.state.selected == 2}
               showVariableRange={false}
               options={this.props.options}
-              mountedDataset={this.props.dataset_1.dataset}
-              mountedVariable={this.props.dataset_1.variable}
+              mountedDataset={this.props.dataset_1}
             />
 
             <ComboBox

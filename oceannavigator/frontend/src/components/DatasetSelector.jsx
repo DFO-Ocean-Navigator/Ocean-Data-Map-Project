@@ -25,7 +25,7 @@ function DatasetSelector(props) {
   const [datasetTimestamps, setDatasetTimestamps] = useState([]);
   const [datasetDepths, setDatasetDepths] = useState([]);
   const [options, setOptions] = useState(props.options);
-  const [dataset, setDataset] = useState(DATASET_DEFAULTS);
+  const [dataset, setDataset] = useState(props.mountedDataset ? props.mountedDataset : DATASET_DEFAULTS);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [quiverVariable, setQuiverVariable] = useState("none");
   const [updateParent, setUpdateParent] = useState(false);
@@ -38,8 +38,8 @@ function DatasetSelector(props) {
 
   useEffect(() => {
     if (availableDatasets.length > 0) {
-      if (props.mountedDataset && props.mountedVariable) {
-        changeDataset(props.mountedDataset, props.mountedVariable);
+      if (props.mountedDataset) {
+        changeDataset(props.mountedDataset.id, props.mountedDataset.variable);
       } else {
         // Use defaults in DATASET_DEFAULTS
         changeDataset(dataset.id, dataset.variable, true);
@@ -389,7 +389,7 @@ function DatasetSelector(props) {
         id="time"
         dataset={dataset}
         timestamps={datasetTimestamps}
-        initialValue={dataset.time}
+        selected={dataset.time}
         onChange={updateDataset}
         loading={loading}
       />
@@ -491,8 +491,7 @@ DatasetSelector.propTypes = {
   showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
-  mountedDataset: PropTypes.string,
-  mountedVariable: PropTypes.string,
+  mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
 };
 

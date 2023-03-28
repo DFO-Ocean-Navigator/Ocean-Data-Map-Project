@@ -117,7 +117,7 @@ class PointWindow extends React.Component {
           },
         }));
         return;
-      } else if (key === "point") {
+      } else if (key === "points") {
         this.props.action("clearPoints")
         this.props.action("addPoints", value)
       }
@@ -243,8 +243,7 @@ class PointWindow extends React.Component {
             showVariableSelector={showVariableSelector}
             showDepthsAll={showDepthsAll}
             multipleVariables={showMultiVariableSelector}
-            mountedDataset={this.props.dataset_0.id}
-            mountedVariable={this.props.dataset_0.variable}
+            mountedDataset={this.props.dataset_0}
           />
 
           <CheckBox
@@ -263,8 +262,8 @@ class PointWindow extends React.Component {
             }}
           >
             <LocationInput
-              key="point"
-              id="point"
+              key="points"
+              id="points"
               state={this.props.point}
               title={"Location"}
               onUpdate={this.onLocalUpdate}

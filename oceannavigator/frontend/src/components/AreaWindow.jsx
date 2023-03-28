@@ -313,8 +313,7 @@ class AreaWindow extends React.Component {
             showQuiverSelector={false}
             showVariableRange={false}
             mapSettings={this.props.mapSettings}
-            mountedDataset={this.props.dataset_0.dataset}
-            mountedVariable={this.props.dataset_0.variable}
+            mountedDataset={this.props.dataset_0}
           />
 
           <div
@@ -355,8 +354,7 @@ class AreaWindow extends React.Component {
                 showQuiverSelector={false}
                 showVariableRange={false}
                 options={this.props.options}
-                mountedDataset={this.props.dataset_1.dataset}
-                mountedVariable={this.props.dataset_1.variable}
+                mountedDataset={this.props.dataset_1}
               />
 
               <div
