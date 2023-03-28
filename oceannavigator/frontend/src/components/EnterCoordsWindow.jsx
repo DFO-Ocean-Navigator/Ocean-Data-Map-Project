@@ -9,52 +9,14 @@ import { X } from "react-bootstrap-icons";
 function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
   const [enteredLon, setEnteredLon] = useState("");
-  const [tableEntries, setTableEntries] = useState([]);
   const [timer, setTimer] = useState(null);
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
-  useEffect(() => {
-    setTableEntries(
-      props.vectorCoordinates.map((coord, index) => {
-        return (
-          <tr key={`row_${index}`}>
-            <td>
-              <input
-                id={index}
-                key={`row_${index}_lat`}
-                className="cord-input"
-                value={coord[0]}
-                onChange={updateLat}
-              />
-            </td>
-            <td>
-              <input
-                id={index}
-                key={`row_${index}_lon`}
-                className="cord-input"
-                value={coord[1]}
-                onChange={updateLon}
-              />
-            </td>
-            <td>
-              <button
-                className="remove-button"
-                onClick={() => props.action("removePoint", index)}
-              >
-                <X />
-              </button>
-            </td>
-          </tr>
-        );
-      })
-    );
-  }, [props.pointCoordinates]);
-
   const radios = [
-    { name: "Point", value: "point" },
-    { name: "Line", value: "line" },
-    { name: "Area", value: "area" },
+    { name: "Point", value: "points" },
+    { name: "Line", value: "lines" },
+    { name: "Area", value: "areas" },
   ];
 
   const handleRadio = (e) => {
@@ -115,6 +77,41 @@ function EnterCoordsWindow(props) {
   const handleUpload = () => {
     fileInput.current.click();
   };
+
+  const tableEntries = props.vectorCoordinates.map((coord, index) => {
+    return (
+      <tr key={`row_${index}`}>
+        <td>
+          <input
+            type="number"
+            id={index}
+            key={`row_${index}_lat`}
+            className="cord-input"
+            value={coord[0]}
+            onChange={updateLat}
+          />
+        </td>
+        <td>
+          <input
+            type="number"
+            id={index}
+            key={`row_${index}_lon`}
+            className="cord-input"
+            value={coord[1]}
+            onChange={updateLon}
+          />
+        </td>
+        <td>
+          <button
+            className="remove-button"
+            onClick={() => props.action("removePoint", index)}
+          >
+            <X />
+          </button>
+        </td>
+      </tr>
+    );
+  })
 
   const parseCSV = (e) => {
     if (e.target.files.length == 1) {
