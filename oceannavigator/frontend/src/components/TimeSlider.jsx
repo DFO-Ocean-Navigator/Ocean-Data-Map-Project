@@ -12,20 +12,23 @@ import {
 function TimeSlider(props) {
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(1);
-  const [selected, setSelected] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(1);
   const containerRef = useRef();
 
   useEffect(() => {
     setMin(props.timestamps.length < 50 ? 0 : props.timestamps.length - 50);
     setMax(props.timestamps.length);
-    setSelected(props.timestamps.length - 1);
+    let newIndex = props.timestamps.findIndex((timestamp) => {
+      return timestamp.id === props.selected;
+    });
+    setSelectedIndex(newIndex);
   }, [props.timestamps]);
 
   useEffect(() => {
     if (props.timestamps.length > 0) {
-      props.onChange(props.id, parseInt(props.timestamps[selected].id));
+      props.onChange(props.id, parseInt(props.timestamps[selectedIndex].id));
     }
-  }, [selected]);
+  }, [selectedIndex]);
 
   const getFormattedTime = (time) => {
     let formatter = {};
@@ -89,26 +92,15 @@ function TimeSlider(props) {
     }
   };
 
-  const onDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const onDrop = (e) => {
-    let newValue = Number(e.target.id);
-    if (!isNaN(newValue)) {
-      setSelected(newValue);
-    }
-  };
-
   const handleClick = (e) => {
     let newValue = Number(e.target.id);
     if (!isNaN(newValue) && e.target.className !== "slider-handle") {
-      setSelected(newValue);
+      setSelectedIndex(newValue);
     }
   };
 
   const SliderHandle = () => {
-    let time = new Date(props.timestamps[selected].value);
+    let time = new Date(props.timestamps[selectedIndex].value);
 
     return (
       <OverlayTrigger
@@ -131,13 +123,14 @@ function TimeSlider(props) {
     let tickLabel = null;
     let tickClass = "slider-minor-tick";
     let tooltipLabel = getFormattedTime(time);
+    index = index + min
     if (setMajorTick(time)) {
       tickLabel = tooltipLabel;
       tickClass = "slider-major-tick";
     }
 
     let thumb = null;
-    if (index === selected) {
+    if (timestamp.id === props.selected) {
       thumb = <SliderHandle />;
     }
 
@@ -151,10 +144,6 @@ function TimeSlider(props) {
         <div
           key={`span-${index}`}
           id={index}
-          onDragOver={onDragOver}
-          onTouchMove={onDragOver}
-          onTouchEnd={onDrop}
-          onDrop={onDrop}
           onClick={handleClick}
           className="slider-span"
         >
@@ -196,11 +185,11 @@ function TimeSlider(props) {
   };
 
   const prevValue = () => {
-    setSelected(selected - 1);
+    setSelectedIndex(selectedIndex - 1);
   };
 
   const nextValue = () => {
-    setSelected(selected + 1);
+    setSelected(selectedIndex + 1);
   };
 
   return (
@@ -216,7 +205,7 @@ function TimeSlider(props) {
         <Button
           className="slider-button"
           onClick={prevValue}
-          disabled={selected === 0 || props.loading}
+          disabled={selectedIndex === 0 || props.loading}
         >
           <ChevronLeft />
         </Button>
@@ -229,7 +218,9 @@ function TimeSlider(props) {
         <Button
           className="slider-button"
           onClick={nextValue}
-          disabled={selected === props.timestamps.length - 1 || props.loading}
+          disabled={
+            selectedIndex === props.timestamps.length - 1 || props.loading
+          }
         >
           <ChevronRight />
         </Button>
