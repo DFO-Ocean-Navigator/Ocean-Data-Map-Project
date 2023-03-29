@@ -6,7 +6,10 @@ Div.LocationInput {
     font-size: 10pt;
     margin: 0;
   }
-  
+
   .location-table {
+    .location-input {
+      width: 125px;
+    }
   }
 }

@@ -79,15 +79,13 @@ function ColormapRange(props) {
   };
 
   const autoCheck = (
-    <Form.Check>
-      <input
+    <Form.Check
         type="checkbox"
         id={props.id + "_auto"}
         checked={useAuto}
         onChange={autoChanged}
+        label={"Auto Range"}
       />
-      {"Auto Range"}
-    </Form.Check>
   );
 
   let autobuttons = null;

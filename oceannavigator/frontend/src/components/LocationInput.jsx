@@ -49,6 +49,7 @@ function LocationInput(props) {
               </td>
               <td>
                 <input
+                  className="location-input"
                   type="number"
                   value={latitude}
                   step={0.01}
@@ -63,6 +64,7 @@ function LocationInput(props) {
               </td>
               <td>
                 <input
+                  className="location-input"
                   type="number"
                   value={longitude}
                   step={0.01}

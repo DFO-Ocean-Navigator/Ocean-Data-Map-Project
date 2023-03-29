@@ -1,0 +1,12 @@
+div.axis-range {
+  display: flex;
+  flex-direction: column;
+
+  .range-table {
+    display: flex;
+  }
+
+  .range-input {
+    width: 90px;
+  }
+}

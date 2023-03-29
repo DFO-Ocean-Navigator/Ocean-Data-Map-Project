@@ -64,7 +64,6 @@ function OceanNavigator() {
     switch (name) {
       case "startDrawing":
         setVectorId(null)
-        mapRef0.current.resetMap();
         mapRef0.current.startDrawing();
         break;
       case "stopDrawing":

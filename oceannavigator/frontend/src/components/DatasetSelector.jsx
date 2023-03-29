@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ProgressBar, Button } from "react-bootstrap";
 
+import AxisRange from "./AxisRange.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -446,6 +447,36 @@ function DatasetSelector(props) {
     </Button>
   );
 
+  function updateAxisRange(key, value) {
+    let range = dataset.variable_range;
+    range[value[0]] = value[1]
+    setDataset({...dataset, variable_range: range})
+  }
+
+  let axisRange = [];
+    if (
+      props.showAxisRange &&
+      datasetVariables &&
+      datasetVariables.length > 0 &&
+      !loading
+    ) {
+      let axisVariables = Array.isArray(dataset.variable) ? dataset.variable : [dataset.variable];
+      let variableData = datasetVariables.filter((v) => axisVariables.includes(v.id));
+      let axisVariableRanges = variableData.map((v) => v.scale);
+      let axisVariableNames = variableData.map((v) => v.value);
+      for (let i = 0; i < axisVariables.length; ++i) {
+        let range = <AxisRange
+          key={axisVariables[i] + "_axis_range"}
+          id={axisVariables[i] + "_axis_range"}
+          title={axisVariableNames[i] + " Range"}
+          variable={axisVariables[i]}
+          range={axisVariableRanges[i]}
+          onUpdate={updateAxisRange}
+        />
+        axisRange.push(range)
+      }
+    }
+
   return (
     <>
       <div
@@ -464,6 +495,7 @@ function DatasetSelector(props) {
       </div>
       {timeSelector}
 
+      {axisRange}
       {props.horizontalLayout ? null : goButton}
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
