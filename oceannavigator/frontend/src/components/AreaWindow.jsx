@@ -69,9 +69,9 @@ class AreaWindow extends React.Component {
       dpi: 144, // Plot DPI
     };
 
-    // if (props.init !== null) {
-    //   $.extend(this.state, props.init);
-    // }
+    if (props.init !== null) {
+      this.state = { ...this.state, ...props.init };
+    }
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);

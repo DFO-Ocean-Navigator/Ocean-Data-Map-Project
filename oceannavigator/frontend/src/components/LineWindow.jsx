@@ -38,9 +38,9 @@ class LineWindow extends React.Component {
       selectedPlots: [0, 1, 1],
     };
 
-    // if (props.init !== null) {
-    //   $.extend(this.state, props.init);
-    // }
+    if (props.init !== null) {
+      this.state = { ...this.state, ...props.init };
+    }
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
@@ -420,7 +420,9 @@ class LineWindow extends React.Component {
           </Nav.Item>
         </Nav>
         <Row>
-          <Col className="settings-col" lg={2}>{leftInputs}</Col>
+          <Col className="settings-col" lg={2}>
+            {leftInputs}
+          </Col>
           <Col className="plot-col" lg={8}>
             <PlotImage
               query={plot_query}
@@ -428,7 +430,9 @@ class LineWindow extends React.Component {
               action={this.props.action}
             />
           </Col>
-          <Col className="settings-col" lg={2}>{rightInputs}</Col>
+          <Col className="settings-col" lg={2}>
+            {rightInputs}
+          </Col>
         </Row>
       </div>
     );

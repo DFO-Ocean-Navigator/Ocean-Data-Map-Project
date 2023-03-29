@@ -9,7 +9,7 @@ class QuiverSelector extends React.Component {
     super(props);
   }
   onUpdate(key, value) {
-    if (!$.isArray(key)) {
+    if (!Array.isArray(key)) {
       key = [key];
       value = [value];
     }
@@ -21,7 +21,7 @@ class QuiverSelector extends React.Component {
       }
       state[key[i]] = value[i];
     }
-    const newState = jQuery.extend({}, this.props.state, state);
+    const newState = {...this.props.state, ...state};
     this.props.onUpdate(this.props.id, newState);
   }
 
