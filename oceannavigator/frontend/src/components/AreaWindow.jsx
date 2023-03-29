@@ -174,8 +174,8 @@ class AreaWindow extends React.Component {
       <Card variant="primary" key="map_settings">
         <Card.Header>{_("Area Settings")}</Card.Header>
         <Card.Body>
-          <Row>
-            <Col xs={9}>
+          {/* <Row> */}
+            {/* <Col xs={9}> */}
               <CheckBox
                 id="dataset_compare"
                 key="dataset_compare"
@@ -185,8 +185,8 @@ class AreaWindow extends React.Component {
                 }}
                 title={_("Compare Datasets")}
               />
-            </Col>
-            <Col xs={3}>
+            {/* </Col> */}
+            {/* <Col xs={3}>
               <Button
                 variant="link"
                 key="show_help"
@@ -194,8 +194,8 @@ class AreaWindow extends React.Component {
               >
                 {_("Help")}
               </Button>
-            </Col>
-          </Row>
+            </Col> */}
+          {/* </Row> */}
 
           {/* Displays Options for Compare Datasets */}
           <Button
@@ -258,7 +258,7 @@ class AreaWindow extends React.Component {
             {_("showarea_help")}
           </CheckBox>
 
-          {/* Arror Selector Drop Down menu */}
+          {/* Arrow Selector Drop Down menu */}
           <QuiverSelector
             key="quiver"
             id="quiver"
@@ -268,7 +268,7 @@ class AreaWindow extends React.Component {
             dataset={this.state.dataset_0.id}
             title={_("Arrows")}
           >
-            {_("arrows_help")}
+            {/* {_("arrows_help")} */}
           </QuiverSelector>
 
           {/* Contour Selector drop down menu */}
@@ -281,7 +281,7 @@ class AreaWindow extends React.Component {
             dataset={this.state.dataset_0.id}
             title={_("Additional Contours")}
           >
-            {_("contour_help")}
+            {/* {_("contour_help")} */}
           </ContourSelector>
           <Accordion>
             <Accordion.Header>Plot Options</Accordion.Header>

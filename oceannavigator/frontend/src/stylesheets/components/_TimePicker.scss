@@ -13,31 +13,39 @@ Div.timepicker {
     justify-content: space-between;
     align-items: center;
 
-    .date-label {
-      font-size: medium;
-      width: 70%;
-      height: 30px;
-      border: none;
-      border: 1px solid #000;
-      background-color: #fff;
-      color: #000;
-    }
+    .selector-container {
+      display: flex;
+      align-items: center;
 
-    .hour-selector {
-      font-size: medium;
-      width: 30%;
-      height: 30px;
-      border: 1px solid #000;
-      border-left: none;
-      background-color: #fff;
-      color: #000;
+      .date-label {
+        font-size: small;
+        width: fit-content;
+        height: 30px;
+        border: none;
+        border: 1px solid #000;
+        background-color: #fff;
+        color: #000;
+        white-space: nowrap;
+      }
+
+      .hour-selector {
+        font-size: small;
+        width: fit-content;
+        height: 30px;
+        border: 1px solid #000;
+        border-left: none;
+        background-color: #fff;
+        color: #000;
+        white-space: nowrap;
+        margin: 0px;
+      }
     }
 
     .header-button {
       color: #008cba;
       background-color: #fff;
       border: none;
-      border-radius: 50%;
+      padding: 0px;
     }
   }
 }

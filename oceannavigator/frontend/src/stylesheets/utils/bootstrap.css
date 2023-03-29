@@ -2244,10 +2244,11 @@ textarea.form-control-lg {
 }
 
 .form-check {
-  display: block;
+  display: flex;
   min-height: 1.5rem;
   padding-left: 1.5em;
   margin-bottom: 0.125rem;
+  align-items: center;
 }
 .form-check .form-check-input {
   float: left;

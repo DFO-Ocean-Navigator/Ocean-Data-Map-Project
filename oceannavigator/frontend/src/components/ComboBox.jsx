@@ -283,12 +283,12 @@ class ComboBox extends React.Component {
         <div key={this.props.url} className="ComboBox input">
           <h1>
             {this.props.title}
-            <span
+            {/* <span
               onClick={this.showHelp}
               style={{ display: hasHelp ? "block" : "none" }}
             >
               ?
-            </span>
+            </span> */}
           </h1>
 
           <Modal

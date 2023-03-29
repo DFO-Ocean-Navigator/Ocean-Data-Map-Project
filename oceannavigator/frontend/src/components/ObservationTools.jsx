@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Button, ToggleButton } from "react-bootstrap";
 
 function ObservationTools(props) {
-  const [vectorType, setVectorType] = useState("point");
-
   const observationSelect = (selection) => {
     let type = selection["type"];
     delete selection["type"];

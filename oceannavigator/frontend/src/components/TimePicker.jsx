@@ -31,7 +31,6 @@ function TimePicker(props) {
     } else {
       setTimestamps(props.timestamps);
     }
-    
   }, [props]);
 
   useEffect(() => {
@@ -257,10 +256,12 @@ function TimePicker(props) {
       >
         <ChevronLeft />
       </Button>
-      <Button className="date-label" onClick={handleDateClick}>
-        {buttonText}
-      </Button>
-      {hourDropdown}
+      <div className="selector-container">
+        <Button className="date-label" onClick={handleDateClick}>
+          {buttonText}
+        </Button>
+        {hourDropdown}
+      </div>
       <Button
         className="header-button"
         disabled={currentIndex === data.length - 1}
@@ -274,7 +275,7 @@ function TimePicker(props) {
   return (
     <div className="timepicker">
       <label className="timepicker-label">{props.title}</label>
-      <div className="button-container">{headerButtons}</div>
+      {headerButtons}
       {calendar}
     </div>
   );
