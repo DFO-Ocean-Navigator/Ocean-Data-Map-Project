@@ -54,17 +54,17 @@ class SubsetPanel extends React.Component {
 
   // Find max extents of drawn area
   calculateAreaBoundingBox(area) {
-    let lat_min = area.polygons[0][0][0];
-    let lat_max = area.polygons[0][0][1];
-    let long_min = area.polygons[0][0][0];
-    let long_max = area.polygons[0][0][1];
+    let lat_min = area[0][0];
+    let long_min = area[0][1];
+    let lat_max= area[0][0];
+    let long_max = area[0][1];
 
-    for (let i = 0; i < area.polygons[0].length; ++i) {
-      lat_min = Math.min(lat_min, area.polygons[0][i][0]);
-      long_min = Math.min(long_min, area.polygons[0][i][1]);
+    for (let i = 0; i < area.length; ++i) {
+      lat_min = Math.min(lat_min, area[i][0]);
+      long_min = Math.min(long_min, area[i][1]);
 
-      lat_max = Math.max(lat_max, area.polygons[0][i][0]);
-      long_max = Math.max(long_max, area.polygons[0][i][1]);
+      lat_max = Math.max(lat_max, area[i][0]);
+      long_max = Math.max(long_max, area[i][1]);
     }
 
     return [lat_min, lat_max, long_min, long_max];
@@ -74,12 +74,12 @@ class SubsetPanel extends React.Component {
     var queryString = [];
     // check if predefined area
     if (
-      typeof this.props.area[0] === "string" ||
-      this.props.area[0] instanceof String
+      typeof this.props.area === "string" ||
+      this.props.area instanceof String
     ) {
-      queryString = "&area=" + this.props.area[0];
+      queryString = "&area=" + this.props.area;
     } else {
-      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
+      const AABB = this.calculateAreaBoundingBox(this.props.area);
       const min_range = [AABB[0], AABB[2]].join();
       const max_range = [AABB[1], AABB[3]].join();
       queryString = "&min_range=" + min_range + "&max_range=" + max_range;
@@ -110,12 +110,12 @@ class SubsetPanel extends React.Component {
     };
     // check if predefined area
     if (
-      typeof this.props.area[0] === "string" ||
-      this.props.area[0] instanceof String
+      typeof this.props.area === "string" ||
+      this.props.area instanceof String
     ) {
-      query["area"] = this.props.area[0];
+      query["area"] = this.props.area;
     } else {
-      const AABB = this.calculateAreaBoundingBox(this.props.area[0]);
+      const AABB = this.calculateAreaBoundingBox(this.props.area);
       query["min_range"] = [AABB[0], AABB[2]].join();
       query["max_range"] = [AABB[1], AABB[3]].join();
     }
