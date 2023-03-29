@@ -93,10 +93,10 @@ class ComboBox extends React.Component {
       axios
         .get(props.url)
         .then(
-          function (data) {
+          function (response) {
             if (this._mounted) {
               //Combobox is mounted
-
+              let data = response.data;
               const ids = data.map(function (d) {
                 return d.id;
               }); //stores data id
