@@ -54,7 +54,7 @@ function OceanNavigator() {
     syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
   const [vectorId, setVectorId] = useState(null);
-  const [vectorType, setVectorType] = useState("point");
+  const [vectorType, setVectorType] = useState("points");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
   const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
@@ -226,7 +226,7 @@ function OceanNavigator() {
   let modalBodyContent = null;
   let modalTitle = "";
   switch (uiSettings.modalType) {
-    case "point":
+    case "points":
       modalBodyContent = (
         <PointWindow
           dataset_0={dataset0}
@@ -247,7 +247,7 @@ function OceanNavigator() {
       modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
       modalTitle = modalTitle.join(", ");
       break;
-    case "line":
+    case "lines":
       modalBodyContent = (
         <LineWindow
           dataset_0={dataset0}
@@ -276,7 +276,7 @@ function OceanNavigator() {
           .join("), (") +
         ")";
       break;
-    case "area":
+    case "areas":
       modalBodyContent = (
         <AreaWindow
           dataset_0={dataset0}

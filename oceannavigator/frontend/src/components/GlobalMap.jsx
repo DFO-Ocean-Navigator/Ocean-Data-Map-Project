@@ -187,11 +187,11 @@ const GlobalMap = forwardRef((props, ref) => {
             f.setStyle([
               new Style({
                 stroke: new Stroke({
-                  color: "#FFFFFF",
+                  color: "#ffffff",
                   width: 2,
                 }),
                 fill: new Fill({
-                  color: "#FFFFFF80",
+                  color: "#ffffff80",
                 }),
               }),
               new Style({
@@ -215,7 +215,7 @@ const GlobalMap = forwardRef((props, ref) => {
                     color: "#000000",
                   }),
                   stroke: new Stroke({
-                    color: "#FFFFFF",
+                    color: "#ffffff",
                     width: 2,
                   }),
                 }),
@@ -311,13 +311,12 @@ const GlobalMap = forwardRef((props, ref) => {
       selectedFeatures;
       var names = [];
       selectedFeatures.forEach(function (feature) {
-        console.log(feature);
         if (feature.get("class") == "observation") {
           if (feature.getGeometry() instanceof olgeom.LineString) {
             t = "track";
             content.push(feature.get("id"));
           } else {
-            t = "point";
+            t = "points";
             let c = feature
               .getGeometry()
               .clone()
@@ -332,7 +331,7 @@ const GlobalMap = forwardRef((props, ref) => {
               const class4id = feature.get("id").replace("/", "_");
               content.push(class4id);
               break;
-            case "point":
+            case "points":
               var c = feature
                 .getGeometry()
                 .clone()
@@ -401,7 +400,7 @@ const GlobalMap = forwardRef((props, ref) => {
       }
       if (e.selected.length == 0) {
         props.updateState("plotEnabled", true);
-        props.action("point", props.vectorCoordinates);
+        props.action("points", props.vectorCoordinates);
       }
       pushSelection();
 
@@ -543,7 +542,12 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const resetMap = () => {
     removeMapInteractions("all");
+    props.updateState(["vectorType", "vectorId"], ["points", null]);
     vectorSource.clear();
+    obsDrawSource.clear();
+    props.action("clearPoints");
+    props.action("selectPoints");
+
     // this.removeMapInteractions("all");
     // this.props.updateState("vectortype", null);
     // this.props.updateState("vectorid", null);
@@ -685,51 +689,78 @@ const GlobalMap = forwardRef((props, ref) => {
     source: vectorSource,
     style: function (feat, res) {
       switch (feat.get("type")) {
-        case "area": {
+        case "area":
+          if (props.vectorId) {
+            return [
+              new Style({
+                stroke: new Stroke({
+                  color: "#ffffff",
+                  width: 2,
+                }),
+                fill: new Fill({
+                  color: "#ffffff00",
+                }),
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: "#000000",
+                  width: 1,
+                }),
+              }),
+              new Style({
+                geometry: new olgeom.Point(
+                  olProj.transform(
+                    feat.get("centroid"),
+                    "EPSG:4326",
+                    props.mapSettings.projection
+                  )
+                ),
+                text: new Text({
+                  text: feat.get("name"),
+                  font: "14px sans-serif",
+                  fill: new Fill({
+                    color: "#000",
+                  }),
+                  stroke: new Stroke({
+                    color: "#ffffff",
+                    width: 2,
+                  }),
+                }),
+              }),
+            ];
+          } else {
+            return [
+              new Style({
+                stroke: new Stroke({
+                  color: "#ffffff",
+                  width: 5,
+                }),
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: "#ff0000",
+                  width: 3,
+                }),
+              }),
+            ];
+          }
+        case "line":
           return [
             new Style({
               stroke: new Stroke({
-                color: "#FFFFFF",
-                width: 2,
-              }),
-              fill: new Fill({
-                color: "#FFFFFF00",
+                color: "#ffffff",
+                width: 5,
               }),
             }),
             new Style({
               stroke: new Stroke({
-                color: "#000000",
-                width: 1,
-              }),
-            }),
-            new Style({
-              geometry: new olgeom.Point(
-                olProj.transform(
-                  feat.get("centroid"),
-                  "EPSG:4326",
-                  props.mapSettings.projection
-                )
-              ),
-              text: new Text({
-                text: feat.get("name"),
-                font: "14px sans-serif",
-                fill: new Fill({
-                  color: "#000",
-                }),
-                stroke: new Stroke({
-                  color: "#FFFFFF",
-                  width: 2,
-                }),
+                color: "#ff0000",
+                width: 3,
               }),
             }),
           ];
-        }
-        default:
+        case "points":
           return new Style({
-            stroke: new Stroke({
-              color: "#ff0000",
-              width: 4,
-            }),
             image: new Circle({
               radius: 4,
               fill: new Fill({
@@ -808,7 +839,7 @@ const GlobalMap = forwardRef((props, ref) => {
     let geom;
     let feat;
     switch (props.vectorType) {
-      case "point":
+      case "points":
         for (let c of props.vectorCoordinates) {
           geom = new olgeom.Point([c[1], c[0]]);
           geom = geom.transform("EPSG:4326", props.mapSettings.projection);
@@ -820,7 +851,7 @@ const GlobalMap = forwardRef((props, ref) => {
           vectorSource.addFeature(feat);
         }
         break;
-      case "line":
+      case "lines":
         geom = new olgeom.LineString(
           props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];
@@ -835,7 +866,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
         vectorSource.addFeature(feat);
         break;
-      case "area":
+      case "areas":
         geom = new olgeom.Polygon([
           props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];
