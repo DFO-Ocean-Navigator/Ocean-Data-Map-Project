@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
@@ -7,118 +7,98 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { withTranslation } from "react-i18next";
 
-class AxisRange extends React.Component {
-  constructor(props) {
-    super(props);
+function AxisRange(props) {
+  const [auto, setAuto] = useState(true);
+  const [min, setMin] = useState(props.range[0]);
+  const [max, setMax] = useState(props.range[1]);
+  const timerRef = useRef(null);
 
-    this.state = {
-      auto: true,
-      min: this.props.range[0],
-      max: this.props.range[1],
-    };
+  useEffect(() => {
+    let newMin = parseFloat(min);
+    let newMax = parseFloat(max);
 
-    // Function bindings
-    this.updateParent = this.updateParent.bind(this);
-    this.keyPress = this.keyPress.bind(this);
-    this.autoChanged = this.autoChanged.bind(this);
-    this.handleResetButton = this.handleResetButton.bind(this);
-    this.updateParent = this.updateParent.bind(this);
-  }
-
-  updateParent() {
-    this.props.onUpdate("variable_range", [
-      this.props.variable,
-      [this.state.min, this.state.max],
-    ]);
-  }
-
-  changed(key, value) {
-    clearTimeout(this.timeout);
-
-    let state = {};
-    state[key] = value;
-    this.setState(state);
-
-    this.timeout = setTimeout(this.updateParent, 500);
-  }
-
-  keyPress(e) {
-    const key = e.which || e.keyCode;
-    if (key == 13) {
-      this.updateParent();
-      return false;
-    } else {
-      return true;
+    if (!isNaN(newMin) && !isNaN(newMax)) {
+      updateParent([newMin, newMax]);
     }
-  }
+  }, [min, max]);
 
-  autoChanged(e) {
-    this.setState({
-      auto: e.target.checked,
-    });
+  const updateParent = (newRange) => {
+    props.onUpdate("variable_range", [props.variable, newRange]);
+  };
+
+  const changed = (key, e) => {
+    let value = e.target.value;
+    if (key === "min") {
+      setMin(value);
+    } else if (key === "max") {
+      setMax(value);
+    }
+  };
+
+  const autoChanged = (e) => {
+    setAuto(e.target.checked);
     if (e.target.checked) {
-      this.props.onUpdate("variable_range", [this.props.variable, null]);
+      props.onUpdate("variable_range", [props.variable, null]);
     } else {
-      this.updateParent();
+      updateParent([min, max]);
     }
-  }
+  };
 
-  handleResetButton() {
-    clearTimeout(this.timeout);
+  const handleResetButton = () => {
+    clearTimeout(timerRef.current);
 
-    this.setState({
-      min: this.props.range[0],
-      max: this.props.range[1],
-    });
+    setMin(props.range[0]);
+    setMax(props.range[1]);
 
-    this.timeout = setTimeout(this.updateParent, 500);
-  }
-
-  render() {
-    return (
-      <div className="axis-range">
-        <Form.Label className="range-label">{this.props.title}</Form.Label>
-        <Form.Check
-          type="checkbox"
-          id={this.props.id + "_auto"}
-          checked={this.state.auto}
-          onChange={this.autoChanged.bind(this)}
-          label={_("Auto")}
-        />
-        <table className="range-table">
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  className="range-input"
-                  type="number"
-                  value={this.state.min}
-                  onChange={(n, s) => this.changed("min", n)}
-                  step={0.1}
-                  disabled={this.state.auto}
-                />
-              </td>
-              <td>
-                <input
-                  className="range-input"
-                  type="number"
-                  value={this.state.max}
-                  onChange={(n, s) => this.changed("max", n)}
-                  step={0.1}
-                  disabled={this.state.auto}
-                />
-              </td>
-              <td>
-                <Button name="default" onClick={this.handleResetButton}>
-                  <FontAwesomeIcon icon={faRotateLeft} />
-                </Button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    timerRef.current = setTimeout(
+      updateParent([props.range[0], props.range[1]]),
+      500
     );
-  }
+  };
+
+  return (
+    <div className="axis-range">
+      <Form.Label className="range-label">{props.title}</Form.Label>
+      <Form.Check
+        type="checkbox"
+        id={props.id + "_auto"}
+        checked={auto}
+        onChange={autoChanged}
+        label={"Auto"}
+      />
+      <table className="range-table">
+        <tbody>
+          <tr>
+            <td>
+              <input
+                className="range-input"
+                type="number"
+                value={min}
+                onChange={(n, s) => changed("min", n)}
+                step={0.1}
+                disabled={auto}
+              />
+            </td>
+            <td>
+              <input
+                className="range-input"
+                type="number"
+                value={max}
+                onChange={(n, s) => changed("max", n)}
+                step={0.1}
+                disabled={auto}
+              />
+            </td>
+            <td>
+              <Button name="default" onClick={handleResetButton}>
+                <FontAwesomeIcon icon={faRotateLeft} />
+              </Button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 //***********************************************************************
