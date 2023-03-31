@@ -2,6 +2,10 @@ div.axis-range {
   display: flex;
   flex-direction: column;
 
+  .range-label {
+    font-size: small;
+  }
+
   .range-table {
     display: flex;
   }

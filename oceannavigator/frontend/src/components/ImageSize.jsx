@@ -1,5 +1,4 @@
 import React from "react";
-// import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -44,9 +43,9 @@ class ImageSize extends React.Component {
     _("inches");
     const _inches = _("inches");
     return (
-      <div className="ImageSize">
-        <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
-        <table>
+      <div className="image-size">
+        <h1 className="image-title" onClick={this.show.bind(this)}>{this.props.title}</h1>
+        <table className="image-table">
           <tbody>
             <tr>
               <td>
@@ -54,6 +53,7 @@ class ImageSize extends React.Component {
               </td>
               <td>
                 <input
+                  className="size-input"
                   id={this.props.id + "_width"}
                   type="number"
                   value={this.state.width}
@@ -61,14 +61,6 @@ class ImageSize extends React.Component {
                   step={0.25}
                   precision={2}
                 />
-                {/* <NumericInput
-                  id={this.props.id + "_width"}
-                  step={0.25}
-                  value={this.state.width}
-                  precision={2}
-                  onChange={(n, s) => this.changed("width", n)}
-                  format={(num) => { return `${num} ${_inches}`; }}
-                /> */}
               </td>
             </tr>
             <tr>
@@ -79,6 +71,7 @@ class ImageSize extends React.Component {
               </td>
               <td>
                 <input
+                  className="size-input"
                   id={this.props.id + "_height"}
                   type="number"
                   value={this.state.width}
@@ -86,14 +79,6 @@ class ImageSize extends React.Component {
                   step={0.25}
                   precision={2}
                 />
-                {/* <NumericInput
-                  id={this.props.id + "_height"}
-                  step={0.25}
-                  value={this.state.height}
-                  precision={2}
-                  onChange={(n, s) => this.changed("height", n)}
-                  format={(num) => { return `${num} ${_inches}`; }}
-                /> */}
               </td>
             </tr>
             <tr>
@@ -102,6 +87,7 @@ class ImageSize extends React.Component {
               </td>
               <td>
                 <input
+                  className="size-input"
                   id={this.props.id + "_dpi"}
                   type="number"
                   value={this.state.dpi}
@@ -109,13 +95,6 @@ class ImageSize extends React.Component {
                   step={1}
                   precision={0}
                 />
-                {/* <NumericInput
-                  id={this.props.id + "_dpi"}
-                  step={1}
-                  value={this.state.dpi}
-                  precision={0}
-                  onChange={(n, s) => this.changed("dpi", n)}
-                /> */}
               </td>
             </tr>
           </tbody>

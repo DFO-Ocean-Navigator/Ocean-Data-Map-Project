@@ -7,10 +7,13 @@ div.DatasetSelector {
 }
 
 div.DatasetSelector-horizontal {
-  padding: 5px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+}
+
+.go-button{
+  margin: 5px;
 }
 
 .loading-modal {

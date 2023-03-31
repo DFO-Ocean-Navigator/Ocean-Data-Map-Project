@@ -438,6 +438,7 @@ function DatasetSelector(props) {
 
   const goButton = (
     <Button
+      className="go-button"
       variant="primary"
       type="submit"
       onClick={handleGoButton}

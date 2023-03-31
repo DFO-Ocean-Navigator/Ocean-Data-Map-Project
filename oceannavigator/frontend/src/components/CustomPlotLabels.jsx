@@ -51,9 +51,9 @@ class CustomPlotLabels extends React.PureComponent {
 
   render() {
     return (
-      <div className="CustomPlotLabels">
+      <div className="custom-plot-labels">
         <div>
-          <h1>{this.props.title}</h1>
+          <h1 className="plot-label-title">{this.props.title}</h1>
           <Row>
             <Form //Keeps everything in the same row
               style={{

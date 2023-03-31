@@ -184,9 +184,9 @@ class PointWindow extends React.Component {
   }
 
   render() {
-    // // _("Location");
-    // // _("Colourmap");
-    // // _("Saved Image Size");
+    _("Location");
+    _("Colourmap");
+    _("Saved Image Size");
 
     const only3dVariables =
       this.state.selected == TabEnum.PROFILE ||
@@ -272,7 +272,7 @@ class PointWindow extends React.Component {
 
           <Accordion>
             <Accordion.Header>Plot Options</Accordion.Header>
-            <Accordion.Body>{plotOptions}</Accordion.Body>
+            <Accordion.Body className="plot-accordion">{plotOptions}</Accordion.Body>
           </Accordion>
         </Card.Body>
       </Card>

@@ -1,3 +1,13 @@
-Div.ImageSize {
-  margin: 10px;
+Div.image-size {
+  .image-title {
+    font-size: small;
+  }
+
+  .image-table {
+    margin: 5px;
+  }
+  
+  .size-input {
+    max-width: 100px;
+  }
 }

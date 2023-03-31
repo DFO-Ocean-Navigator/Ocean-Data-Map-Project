@@ -2,7 +2,8 @@ import React from "react";
 import { Button, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
-import Icon from "./lib/Icon.jsx";
+import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { withTranslation } from "react-i18next";
 
@@ -76,14 +77,14 @@ class AxisRange extends React.Component {
   render() {
     return (
       <div className="axis-range">
-        <h1>{this.props.title}</h1>
+        <Form.Label className="range-label">{this.props.title}</Form.Label>
         <Form.Check
-            type="checkbox"
-            id={this.props.id + "_auto"}
-            checked={this.state.auto}
-            onChange={this.autoChanged.bind(this)}
-            label={_("Auto")}
-          />
+          type="checkbox"
+          id={this.props.id + "_auto"}
+          checked={this.state.auto}
+          onChange={this.autoChanged.bind(this)}
+          label={_("Auto")}
+        />
         <table className="range-table">
           <tbody>
             <tr>
@@ -109,7 +110,7 @@ class AxisRange extends React.Component {
               </td>
               <td>
                 <Button name="default" onClick={this.handleResetButton}>
-                  <Icon icon="undo" alt={_("Reset")} />
+                  <FontAwesomeIcon icon={faRotateLeft} />
                 </Button>
               </td>
             </tr>

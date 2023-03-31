@@ -1,13 +1,17 @@
 .PointWindow {
-    .settings-col{
-        padding: unset;
-        display: flex;
-        flex-direction: column;
-    }
+  .settings-col {
+    padding: unset;
+    display: flex;
+    flex-direction: column;
 
-    .plot-col{
-        padding: unset;
-        display: flex;
-        justify-content: center;
+    .plot-accordion {
+      padding: 5px;
     }
+  }
+
+  .plot-col {
+    padding: unset;
+    display: flex;
+    justify-content: center;
+  }
 }
