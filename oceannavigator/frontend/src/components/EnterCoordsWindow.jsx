@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 
-import { Button, Modal, ToggleButton } from "react-bootstrap";
-import Card from "react-bootstrap/Card";
+import { Button, ToggleButton } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
@@ -10,6 +9,7 @@ function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
   const [enteredLon, setEnteredLon] = useState("");
   const [timer, setTimer] = useState(null);
+  const [vectorType, setVectorType] = useState(props.vectorType);
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
@@ -20,7 +20,9 @@ function EnterCoordsWindow(props) {
   ];
 
   const handleRadio = (e) => {
-    props.action("vectorType", e.currentTarget.value);
+    let type = e.currentTarget.value;
+    setVectorType(type);
+    props.action("vectorType", type);
   };
 
   const submitHandler = (e) => {
@@ -76,6 +78,11 @@ function EnterCoordsWindow(props) {
 
   const handleUpload = () => {
     fileInput.current.click();
+  };
+
+  const handlePlot = () => {
+    props.action("selectPoints");
+    props.updateUI({ modalType: vectorType, showModal: true });
   };
 
   const tableEntries = props.vectorCoordinates.map((coord, index) => {
@@ -226,7 +233,7 @@ function EnterCoordsWindow(props) {
         <Button className="plot-button" onClick={handleUpload}>
           Upload csv
         </Button>
-        <Button className="plot-button">Plot</Button>
+        <Button className="plot-button" onClick={handlePlot}>Plot</Button>
       </div>
       <form ref={fileForm}>
         <input

@@ -305,6 +305,7 @@ function OceanNavigator() {
       modalBodyContent = (
         <EnterCoordsWindow
           action={action}
+          updateUI={updateUI}
           vectorType={vectorType}
           vectorCoordinates={vectorCoordinates}
         />

@@ -4,7 +4,7 @@ import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function DrawingTools(props) {
-  const [vectorType, setVectorType] = useState("points");
+  const [vectorType, setVectorType] = useState(props.vectorType);
 
   const radios = [
     { name: "Point", value: "points" },
