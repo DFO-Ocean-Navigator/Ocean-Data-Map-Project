@@ -690,7 +690,7 @@ const GlobalMap = forwardRef((props, ref) => {
     style: function (feat, res) {
       switch (feat.get("type")) {
         case "area":
-          if (props.vectorId) {
+          if (feat.get("key")) {
             return [
               new Style({
                 stroke: new Stroke({
