@@ -10,7 +10,9 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 function MapTools(props) {
   const mapToolsRef = useRef(null);
@@ -48,27 +50,78 @@ function MapTools(props) {
   return (
     <>
       <div className="MapTools" ref={mapToolsRef}>
-        <Button className="tool-button" onClick={handleDrawing}>
-          <FontAwesomeIcon icon={faDrawPolygon} />
-        </Button>
-        <Button className="tool-button" onClick={handleEnterPoints}>
-          <FontAwesomeIcon icon={faKeyboard} />
-        </Button>
-        <Button className="tool-button" onClick={handlePresetFeatures}>
-          <FontAwesomeIcon icon={faTableList} />
-        </Button>
-        <Button className="tool-button">
-          <FontAwesomeIcon
-            icon={faSatelliteDish}
-            onClick={handleObservations}
-          />
-        </Button>
-        <Button className="tool-button">
-          <FontAwesomeIcon icon={faGear} onClick={handleSettings} />
-        </Button>
-        <Button className="tool-button">
-          <FontAwesomeIcon icon={faInfo} />
-        </Button>
+        <OverlayTrigger
+          key={"draw-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={
+            <Tooltip id={"draw-tooltip"}>Draw Point Coordinates</Tooltip>
+          }
+        >
+          <Button className="tool-button" onClick={handleDrawing}>
+            <FontAwesomeIcon icon={faDrawPolygon} />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"enter-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={
+            <Tooltip id={"enter-tooltip"}>Enter Point Coordinates</Tooltip>
+          }
+        >
+          <Button className="tool-button" onClick={handleEnterPoints}>
+            <FontAwesomeIcon icon={faKeyboard} />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"preset-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"preset-tooltip"}>Preset Features</Tooltip>}
+        >
+          <Button className="tool-button" onClick={handlePresetFeatures}>
+            <FontAwesomeIcon icon={faTableList} />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"obs-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"obs-tooltip"}>Observations</Tooltip>}
+        >
+          <Button className="tool-button">
+            <FontAwesomeIcon
+              icon={faSatelliteDish}
+              onClick={handleObservations}
+            />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"settings-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"settings-tooltip"}>Settings</Tooltip>}
+        >
+          <Button className="tool-button">
+            <FontAwesomeIcon icon={faGear} onClick={handleSettings} />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"info-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"info-tooltip"}>Info/Help</Tooltip>}
+        >
+          <Button className="tool-button">
+            <FontAwesomeIcon icon={faInfo} />
+          </Button>
+        </OverlayTrigger>
       </div>
     </>
   );
