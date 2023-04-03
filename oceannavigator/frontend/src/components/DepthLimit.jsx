@@ -1,6 +1,6 @@
 import React from "react";
 import NumberBox from "./NumberBox.jsx";
-import {Form} from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -8,7 +8,7 @@ import { withTranslation } from "react-i18next";
 class DepthLimit extends React.Component {
   constructor(props) {
     super(props);
-        
+
     if (isNaN(this.props.state) || this.props.state == false) {
       this.state = {
         limit: false,
@@ -25,7 +25,7 @@ class DepthLimit extends React.Component {
     this.enableChecked = this.enableChecked.bind(this);
     this.onUpdate = this.onUpdate.bind(this);
   }
-  
+
   enableChecked(e) {
     this.setState({
       limit: e.target.checked,
@@ -49,16 +49,20 @@ class DepthLimit extends React.Component {
     _("Depth Limit");
     _("Limit Depth");
     return (
-      <div className='DepthLimit input'>
-        <h1>{_("Depth Limit")}</h1>
+      <div className="DepthLimit">
+        <h1 className="depthlimit-title">{_("Depth Limit")}</h1>
 
-        <Form.Check onChange={this.enableChecked}>
-          {_("Limit Depth")}
-        </Form.Check>
-        <div style={{ "display": this.state.limit ? "block" : "none" }}>
+        <Form.Check
+          type="checkbox"
+          checked={this.state.limit}
+          onChange={this.enableChecked}
+          label={_("Limit Depth")}
+        />
+
+        <div style={{ display: this.state.limit ? "block" : "none" }}>
           <NumberBox
-            key='depth'
-            id='depth'
+            key="depth"
+            id="depth"
             state={this.state.value}
             onUpdate={this.onUpdate}
             title={_("Depth Limit")}

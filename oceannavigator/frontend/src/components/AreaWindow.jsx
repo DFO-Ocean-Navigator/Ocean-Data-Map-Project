@@ -173,7 +173,7 @@ class AreaWindow extends React.Component {
     const mapSettings = (
       <Card variant="primary" key="map_settings">
         <Card.Header>{_("Area Settings")}</Card.Header>
-        <Card.Body>
+        <Card.Body className="global-settings-card">
           {/* <Row> */}
             {/* <Col xs={9}> */}
               <CheckBox
@@ -305,7 +305,7 @@ class AreaWindow extends React.Component {
         <Card.Header>
           {this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="global-settings-card">
           <DatasetSelector
             key="area_window_dataset_0"
             id="dataset_0"
@@ -346,7 +346,7 @@ class AreaWindow extends React.Component {
             variant="primary"
           >
             <Card.Header>{_("Right Map")}</Card.Header>
-            <Card.Body>
+            <Card.Body className="global-settings-card">
               <DatasetSelector
                 key="area_window_dataset_1"
                 id="dataset_1"

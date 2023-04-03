@@ -281,20 +281,14 @@ class ComboBox extends React.Component {
 
       return (
         <div key={this.props.url} className="ComboBox input">
-          <h1>
+          <h1 className="combobox-title">
             {this.props.title}
-            {/* <span
-              onClick={this.showHelp}
-              style={{ display: hasHelp ? "block" : "none" }}
-            >
-              ?
-            </span> */}
           </h1>
 
           <Modal
             show={this.state.showHelp}
             onHide={this.closeHelp}
-            bsSize="large"
+            variant="large"
             dialogClassName="helpdialog"
             backdrop={true}
           >

@@ -1,0 +1,27 @@
+div.NumberBox {
+  margin: 5px 0px;
+
+  .numberbox-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: small;
+
+    .help-button {
+      border: 1px solid;
+      cursor: pointer;
+    }
+  }
+
+  .numberbox-table {
+    margin-left: 5px;
+
+    .table-label {
+      font-size: small;
+    }
+
+    .table-input {
+      max-width: 100px;
+    }
+  }
+}

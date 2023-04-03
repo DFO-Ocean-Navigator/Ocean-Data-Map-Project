@@ -153,28 +153,14 @@ class LineWindow extends React.Component {
     const global = (
       <Card key="global_settings" id="global_settings" variant="primary">
         <Card.Header>{_("Global Settings")}</Card.Header>
-        <Card.Body>
-          <Row>
-            <Col xs={9}>
-              <CheckBox
-                id="dataset_compare"
-                key="dataset_compare"
-                checked={this.props.dataset_compare}
-                onUpdate={this.props.onUpdate}
-                title={_("Compare Datasets")}
-              />
-            </Col>
-            <Col xs={3}>
-              <Button
-                variant="link"
-                key="show_help"
-                id="show_help"
-                onClick={this.props.showHelp}
-              >
-                {_("Help")}
-              </Button>
-            </Col>
-          </Row>
+        <Card.Body className="global-settings-card">
+          <CheckBox
+            id="dataset_compare"
+            key="dataset_compare"
+            checked={this.props.dataset_compare}
+            onUpdate={this.props.onUpdate}
+            title={_("Compare Datasets")}
+          />
           <Button
             key="swap_views"
             id="swap_views"
@@ -227,7 +213,7 @@ class LineWindow extends React.Component {
     const transectSettings = (
       <Card key="transect_settings" id="transect_settings" variant="primary">
         <Card.Header>{_("Transect Settings")}</Card.Header>
-        <Card.Body>
+        <Card.Body className="global-settings-card">
           <ComboBox
             key="surfacevariable"
             id="surfacevariable"
@@ -287,7 +273,7 @@ class LineWindow extends React.Component {
         <Card.Header>
           {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
         </Card.Header>
-        <Card.Body>
+        <Card.Body className="global-settings-card">
           <DatasetSelector
             key="line_window_dataset_0"
             id="dataset_0"
@@ -321,7 +307,7 @@ class LineWindow extends React.Component {
       <div key="compare_dataset">
         <Card key="right_map" id="right_map" variant="primary">
           <Card.Header>{_("Right Map")}</Card.Header>
-          <Card.Body>
+          <Card.Body className="global-settings-card">
             <DatasetSelector
               key="line_window_dataset_1"
               id="dataset_1"
