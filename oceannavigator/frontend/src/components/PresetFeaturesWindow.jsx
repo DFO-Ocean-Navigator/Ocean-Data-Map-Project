@@ -26,7 +26,7 @@ function PresetFeaturesWindow(props) {
                 id={d.id}
                 action
                 onClick={(e) => {
-                  handleClick(e, "points");
+                  handleClick(e, "point");
                 }}
               >
                 {d.name}
@@ -50,7 +50,7 @@ function PresetFeaturesWindow(props) {
                 id={d.id}
                 action
                 onClick={(e) => {
-                  handleClick(e, "lines");
+                  handleClick(e, "line");
                 }}
               >
                 {d.name}
@@ -74,7 +74,7 @@ function PresetFeaturesWindow(props) {
                 id={d.id}
                 action
                 onClick={(e) => {
-                  handleClick(e, "areas");
+                  handleClick(e, "area");
                 }}
               >
                 {d.name}

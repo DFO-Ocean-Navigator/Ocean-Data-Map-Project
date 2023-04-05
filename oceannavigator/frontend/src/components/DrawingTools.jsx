@@ -7,9 +7,9 @@ function DrawingTools(props) {
   const [vectorType, setVectorType] = useState(props.vectorType);
 
   const radios = [
-    { name: "Point", value: "points" },
-    { name: "Line", value: "lines" },
-    { name: "Area", value: "areas" },
+    { name: "Point", value: "point" },
+    { name: "Line", value: "line" },
+    { name: "Area", value: "area" },
   ];
 
   const handleRadio = (e) => {

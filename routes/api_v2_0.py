@@ -756,7 +756,7 @@ async def plot(
     return response
 
 
-@router.get("/kml/points")
+@router.get("/kml/point")
 def kml_points():
     """
     Returns the KML groups containing points of interest from hard-coded KML files
@@ -767,7 +767,7 @@ def kml_points():
     )
 
 
-@router.get("/kml/points/{id}")
+@router.get("/kml/point/{id}")
 def kml_point(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
@@ -792,7 +792,7 @@ def kml_point(
     )
 
 
-@router.get("/kml/lines")
+@router.get("/kml/line")
 def kml_lines():
     """
     Returns the KML groups containing lines of interest from hard-coded KML files
@@ -803,7 +803,7 @@ def kml_lines():
     )
 
 
-@router.get("/kml/lines/{id}")
+@router.get("/kml/line/{id}")
 def kml_line(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(
@@ -827,7 +827,7 @@ def kml_line(
     )
 
 
-@router.get("/kml/areas")
+@router.get("/kml/area")
 def kml_areas():
     """
     Returns the KML groups containing areas of interest from hard-coded KML files
@@ -838,7 +838,7 @@ def kml_areas():
     )
 
 
-@router.get("/kml/areas/{id}")
+@router.get("/kml/area/{id}")
 def kml_area(
     id: str = Path(..., example="NL-AZMP_Stations"),
     projection: str = Query(

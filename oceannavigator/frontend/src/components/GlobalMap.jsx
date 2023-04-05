@@ -28,6 +28,7 @@ import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import Draw from "ol/interaction/Draw";
+import { defaults as defaultControls } from "ol/control/defaults";
 import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
 import * as olcondition from "ol/events/condition";
@@ -444,7 +445,9 @@ const GlobalMap = forwardRef((props, ref) => {
         newLayerObsDraw,
         newLayerQuiver,
       ],
-      controls: [],
+      controls: defaultControls({
+        zoom: true,
+      }),
       overlays: [overlay],
     };
 
@@ -719,7 +722,7 @@ const GlobalMap = forwardRef((props, ref) => {
       });
 
       props.action("selectPoints", content);
-      props.updateUI({ modalType: t });
+      props.updateUI({ modalType: t, showModal: true });
       props.updateState("names", names);
     };
 
@@ -733,7 +736,7 @@ const GlobalMap = forwardRef((props, ref) => {
       }
       if (e.selected.length == 0) {
         props.updateState("plotEnabled", true);
-        props.action("points", props.vectorCoordinates);
+        props.action("point", props.vectorCoordinates);
       }
       pushSelection();
 
@@ -814,8 +817,8 @@ const GlobalMap = forwardRef((props, ref) => {
             })}` +
             `&id=${props.vectorId}`;
           break;
-        case "points":
-        case "lines":
+        case "point":
+        case "line":
           url =
             `/api/v2.0/kml/${props.vectorType}` +
             `/${props.vectorId}` +
@@ -824,7 +827,7 @@ const GlobalMap = forwardRef((props, ref) => {
               return Math.round(i);
             })}`;
           break;
-        case "areas":
+        case "area":
           url =
             `/api/v2.0/kml/${props.vectorType}` +
             `/${props.vectorId}` +
@@ -895,7 +898,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const resetMap = () => {
     removeMapInteractions("all");
-    props.updateState(["vectorType", "vectorId"], ["points", null]);
+    props.updateState(["vectorType", "vectorId"], ["point", null]);
     vectorSource.clear();
     obsDrawSource.clear();
     props.action("clearPoints");
@@ -1124,7 +1127,7 @@ const GlobalMap = forwardRef((props, ref) => {
     let geom;
     let feat;
     switch (props.vectorType) {
-      case "points":
+      case "point":
         for (let c of props.vectorCoordinates) {
           geom = new olgeom.Point([c[1], c[0]]);
           geom = geom.transform("EPSG:4326", props.mapSettings.projection);
@@ -1136,7 +1139,7 @@ const GlobalMap = forwardRef((props, ref) => {
           vectorSource.addFeature(feat);
         }
         break;
-      case "lines":
+      case "line":
         geom = new olgeom.LineString(
           props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];
@@ -1151,7 +1154,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
         vectorSource.addFeature(feat);
         break;
-      case "areas":
+      case "area":
         geom = new olgeom.Polygon([
           props.vectorCoordinates.map(function (c) {
             return [c[1], c[0]];

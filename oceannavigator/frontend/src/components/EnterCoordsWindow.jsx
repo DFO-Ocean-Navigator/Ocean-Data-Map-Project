@@ -14,9 +14,9 @@ function EnterCoordsWindow(props) {
   const fileInput = useRef(null);
 
   const radios = [
-    { name: "Point", value: "points" },
-    { name: "Line", value: "lines" },
-    { name: "Area", value: "areas" },
+    { name: "Point", value: "point" },
+    { name: "Line", value: "line" },
+    { name: "Area", value: "area" },
   ];
 
   const handleRadio = (e) => {

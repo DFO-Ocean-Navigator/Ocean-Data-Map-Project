@@ -34,15 +34,15 @@ export function GetDepthsPromise(dataset, variable) {
 }
 
 export function GetPresetPointsPromise() {
-  return instance.get("/api/v2.0/kml/points");
+  return instance.get("/api/v2.0/kml/point");
 }
 
 export function GetPresetLinesPromise() {
-  return instance.get("/api/v2.0/kml/lines");
+  return instance.get("/api/v2.0/kml/line");
 }
 
 export function GetPresetAreasPromise() {
-  return instance.get("/api/v2.0/kml/areas");
+  return instance.get("/api/v2.0/kml/area");
 }
 
 export function GetClass4Promise() {
