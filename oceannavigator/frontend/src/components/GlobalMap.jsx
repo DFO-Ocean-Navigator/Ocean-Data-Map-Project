@@ -11,7 +11,15 @@ import { Map, View } from "ol";
 import Feature from "ol/Feature.js";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill, Text, RegularShape } from "ol/style";
+import {
+  Style,
+  Circle,
+  Icon,
+  Stroke,
+  Fill,
+  Text,
+  RegularShape,
+} from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile.js";
 import VectorSource from "ol/source/Vector";
@@ -29,8 +37,38 @@ import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
 import { useGeographic } from "ol/proj.js";
+import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
+
+// CHS S111 standard arrows for quiver layer
+const I0 = require("../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
+const I1 = require("../images/s111/I1.svg").default;
+const I2 = require("../images/s111/I2.svg").default;
+const I3 = require("../images/s111/I3.svg").default;
+const I4 = require("../images/s111/I4.svg").default;
+const I5 = require("../images/s111/I5.svg").default;
+const I6 = require("../images/s111/I6.svg").default;
+const I7 = require("../images/s111/I7.svg").default;
+const I8 = require("../images/s111/I8.svg").default;
+const I9 = require("../images/s111/I9.svg").default;
+
+const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
+
+function deg2rad(deg) {
+  return (deg * Math.PI) / 180.0;
+}
+
+const COLORS = [
+  [0, 0, 255],
+  [0, 128, 0],
+  [255, 0, 0],
+  [0, 255, 255],
+  [255, 0, 255],
+  [255, 255, 0],
+  [0, 0, 0],
+  [255, 255, 255],
+];
 
 const MIN_ZOOM = {
   "EPSG:3857": 1,
@@ -44,12 +82,17 @@ const MAX_ZOOM = {
   "EPSG:3031": 5,
 };
 
+var drifter_color = {};
+
 const GlobalMap = forwardRef((props, ref) => {
+  const [map, setMap] = useState();
+  const [layerData, setLayerData] = useState();
+  const [layerVector, setLayerVector] = useState();
+  const [vectorSource, setVectorSource] = useState();
+  const [layerObsDraw, setLayerObsDraw] = useState();
+  const [layerQuiver, setLayerQuiver] = useState();
   const mapRef = useRef();
   const popupElement = useRef(null);
-  const [map, setMap] = useState(new Map());
-  const [vectorSource, setVectorSource] = useState();
-  const [obsDrawSource, setObsDrawSource] = useState();
 
   useImperativeHandle(ref, () => ({
     startDrawing: draw,
@@ -71,10 +114,12 @@ const GlobalMap = forwardRef((props, ref) => {
     if (props.mapSettings.center) {
       center = props.mapSettings.center.map(parseFloat);
     }
+
     let zoom = 4;
     if (props.mapSettings.zoom) {
       zoom = props.mapSettings.zoom;
     }
+
     let projection = props.mapSettings.projection;
     const mapView = new View({
       center: olProj.transform(center, "EPSG:4326", projection),
@@ -84,27 +129,9 @@ const GlobalMap = forwardRef((props, ref) => {
       minZoom: MIN_ZOOM[projection],
     });
 
-    let options = {
-      view: mapView,
-      layers: [
-        layer_basemap,
-        layer_data,
-        layer_landshapes,
-        layer_bath,
-        layer_bathshapes,
-        layer_vector,
-        layer_obsDraw,
-        // layer_quiver,
-      ],
-      controls: [],
-      overlays: [overlay],
-    };
-
-    let newObsDrawSource = new VectorSource({
-      features: [],
+    const newLayerData = new TileLayer({
+      preload: 1,
     });
-
-    setObsDrawSource(newObsDrawSource);
 
     let newVectorSource = new VectorSource({
       features: [],
@@ -113,7 +140,319 @@ const GlobalMap = forwardRef((props, ref) => {
       loader: loader,
     });
 
-    setVectorSource(newVectorSource);
+    const newLayerVector = new VectorLayer({
+      source: newVectorSource,
+      style: function (feat, res) {
+        if (feat.get("class") == "observation") {
+          if (feat.getGeometry() instanceof olgeom.LineString) {
+            let color = drifter_color[feat.get("id")];
+
+            if (color === undefined) {
+              color = COLORS[Object.keys(drifter_color).length % COLORS.length];
+              drifter_color[feat.get("id")] = color;
+            }
+            const styles = [
+              new Style({
+                stroke: new Stroke({
+                  color: [color[0], color[1], color[2], 0.004],
+                  width: 8,
+                }),
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: color,
+                  width: isMobile ? 4 : 2,
+                }),
+              }),
+            ];
+
+            return styles;
+          }
+
+          let image = new Circle({
+            radius: isMobile ? 6 : 4,
+            fill: new Fill({
+              color: "#ff0000",
+            }),
+            stroke: new Stroke({
+              color: "#000000",
+              width: 1,
+            }),
+          });
+          let stroke = new Stroke({ color: "#000000", width: 1 });
+          let radius = isMobile ? 9 : 6;
+          switch (feat.get("type")) {
+            case "argo":
+              image = new Circle({
+                radius: isMobile ? 6 : 4,
+                fill: new Fill({ color: "#ff0000" }),
+                stroke: stroke,
+              });
+              break;
+            case "mission":
+              image = new RegularShape({
+                points: 3,
+                radius: radius,
+                fill: new Fill({ color: "#ffff00" }),
+                stroke: stroke,
+              });
+              break;
+            case "drifter":
+              image = new RegularShape({
+                points: 4,
+                radius: radius,
+                fill: new Fill({ color: "#00ff00" }),
+                stroke: stroke,
+              });
+              break;
+            case "glider":
+              image = new RegularShape({
+                points: 5,
+                radius: radius,
+                fill: new Fill({ color: "#00ffff" }),
+                stroke: stroke,
+              });
+              break;
+            case "animal":
+              image = new RegularShape({
+                points: 6,
+                radius: radius,
+                fill: new Fill({ color: "#0000ff" }),
+                stroke: stroke,
+              });
+              break;
+          }
+          return new Style({ image: image });
+        } else {
+          switch (feat.get("type")) {
+            case "area":
+              if (feat.get("key")) {
+                return [
+                  new Style({
+                    stroke: new Stroke({
+                      color: "#ffffff",
+                      width: 2,
+                    }),
+                    fill: new Fill({
+                      color: "#ffffff00",
+                    }),
+                  }),
+                  new Style({
+                    stroke: new Stroke({
+                      color: "#000000",
+                      width: 1,
+                    }),
+                  }),
+                  new Style({
+                    geometry: new olgeom.Point(
+                      olProj.transform(
+                        feat.get("centroid"),
+                        "EPSG:4326",
+                        props.mapSettings.projection
+                      )
+                    ),
+                    text: new Text({
+                      text: feat.get("name"),
+                      font: "14px sans-serif",
+                      fill: new Fill({
+                        color: "#000",
+                      }),
+                      stroke: new Stroke({
+                        color: "#ffffff",
+                        width: 2,
+                      }),
+                    }),
+                  }),
+                ];
+              } else {
+                return [
+                  new Style({
+                    stroke: new Stroke({
+                      color: "#ffffff",
+                      width: 5,
+                    }),
+                  }),
+                  new Style({
+                    stroke: new Stroke({
+                      color: "#ff0000",
+                      width: 3,
+                    }),
+                  }),
+                ];
+              }
+            case "line":
+              return [
+                new Style({
+                  stroke: new Stroke({
+                    color: "#ffffff",
+                    width: 5,
+                  }),
+                }),
+                new Style({
+                  stroke: new Stroke({
+                    color: "#ff0000",
+                    width: 3,
+                  }),
+                }),
+              ];
+            case "point":
+              return new Style({
+                image: new Circle({
+                  radius: 4,
+                  fill: new Fill({
+                    color: "#ff0000",
+                  }),
+                  stroke: new Stroke({
+                    color: "#ffffff",
+                    width: 2,
+                  }),
+                }),
+              });
+            case "GKHdrifter": {
+              const start = feat.getGeometry().getCoordinateAt(0);
+              const end = feat.getGeometry().getCoordinateAt(1);
+              let endImage;
+              let color = drifter_color[feat.get("name")];
+
+              if (color === undefined) {
+                color =
+                  COLORS[Object.keys(drifter_color).length % COLORS.length];
+                drifter_color[feat.get("name")] = color;
+              }
+              if (
+                feat.get("status") == "inactive" ||
+                feat.get("status") == "not responding"
+              ) {
+                endImage = new Icon({
+                  src: X_IMAGE,
+                  scale: 0.75,
+                });
+              } else {
+                endImage = new Circle({
+                  radius: isMobile ? 6 : 4,
+                  fill: new Fill({
+                    color: "#ff0000",
+                  }),
+                  stroke: new Stroke({
+                    color: "#000000",
+                    width: 1,
+                  }),
+                });
+              }
+
+              const styles = [
+                new Style({
+                  stroke: new Stroke({
+                    color: [color[0], color[1], color[2], 0.004],
+                    width: 8,
+                  }),
+                }),
+                new Style({
+                  stroke: new Stroke({
+                    color: color,
+                    width: isMobile ? 4 : 2,
+                  }),
+                }),
+                new Style({
+                  geometry: new olgeom.Point(end),
+                  image: endImage,
+                }),
+                new Style({
+                  geometry: new olgeom.Point(start),
+                  image: new Circle({
+                    radius: isMobile ? 6 : 4,
+                    fill: new Fill({
+                      color: "#008000",
+                    }),
+                    stroke: new Stroke({
+                      color: "#000000",
+                      width: 1,
+                    }),
+                  }),
+                }),
+              ];
+
+              return styles;
+            }
+
+            case "class4": {
+              const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
+              const green = Math.min(
+                255,
+                (255 * (1 - feat.get("error_norm"))) / 0.5
+              );
+
+              return new Style({
+                image: new Circle({
+                  radius: isMobile ? 6 : 4,
+                  fill: new Fill({
+                    color: [red, green, 0, 1],
+                  }),
+                  stroke: new Stroke({
+                    color: "#000000",
+                    width: 1,
+                  }),
+                }),
+              });
+            }
+          }
+        }
+      },
+    });
+
+    const newLayerObsDraw = new VectorLayer({});
+
+    const anchor = [0.5, 0.5];
+    const newLayerQuiver = new VectorLayer({
+      source: null, // set source during update function below
+      style: function (feature, resolution) {
+        let scale = feature.get("scale");
+        let rotation = null;
+        if (!feature.get("bearing")) {
+          // bearing-only variable (no magnitude)
+          rotation = deg2rad(parseFloat(feature.get("data")));
+        } else {
+          rotation = deg2rad(parseFloat(feature.get("bearing")));
+        }
+        return new Style({
+          image: new Icon({
+            scale: 0.2 + (scale + 1) / 16,
+            src: arrowImages[scale],
+            opacity: 1,
+            anchor: anchor,
+            rotation: rotation,
+          }),
+        });
+        // return new Style({
+        //   image: new Circle({
+        //     radius: 4,
+        //     fill: new Fill({
+        //       color: "#ff0000",
+        //     }),
+        //     stroke: new Stroke({
+        //       color: "#ffffff",
+        //       width: 2,
+        //     }),
+        //   }),
+        // });
+      },
+    });
+
+    let options = {
+      view: mapView,
+      layers: [
+        layerBasemap,
+        newLayerData,
+        layerLandShapes,
+        layerBath,
+        layerBathShapes,
+        newLayerVector,
+        newLayerObsDraw,
+        newLayerQuiver,
+      ],
+      controls: [],
+      overlays: [overlay],
+    };
 
     let mapObject = new Map(options);
     mapObject.setTarget(mapRef.current);
@@ -316,7 +655,7 @@ const GlobalMap = forwardRef((props, ref) => {
             t = "track";
             content.push(feature.get("id"));
           } else {
-            t = "points";
+            t = "point";
             let c = feature
               .getGeometry()
               .clone()
@@ -331,7 +670,7 @@ const GlobalMap = forwardRef((props, ref) => {
               const class4id = feature.get("id").replace("/", "_");
               content.push(class4id);
               break;
-            case "points":
+            case "point":
               var c = feature
                 .getGeometry()
                 .clone()
@@ -413,31 +752,49 @@ const GlobalMap = forwardRef((props, ref) => {
     });
 
     setMap(mapObject);
+    setLayerData(newLayerData);
+    setLayerVector(newLayerVector);
+    setVectorSource(newVectorSource);
+    setLayerObsDraw(newLayerObsDraw);
+    setLayerQuiver(newLayerQuiver);
+
+    return () => mapObject.setTarget(null);
   }, []);
 
   useEffect(() => {
     if (props.dataset.time > 0) {
-      let dataLayer = map.getLayers().getArray()[1];
-      dataLayer.setSource(new XYZ(getDataSource()));
+      layerData.setSource(new XYZ(getDataSource()));
     }
-  }, [props.dataset]);
+  }, [props.dataset.id, props.dataset.variable, props.dataset.time]);
+
+  useEffect(() => {
+    if (layerQuiver) {
+      let source = null;
+      if (props.dataset.quiverVariable !== "none") {
+        source = new VectorSource({
+          url: `/api/v2.0/data?dataset=${props.dataset.id}&variable=${props.dataset.quiverVariable}&time=${props.dataset.time}&depth=${props.dataset.depth}&geometry_type=area`,
+          format: new GeoJSON({
+            featureProjection: olProj.get("EPSG:3857"),
+            dataProjection: olProj.get("EPSG:4326"),
+          }),
+        });
+      }
+      layerQuiver.setSource(source);
+    }
+  }, [props.dataset.quiverVariable]);
 
   useEffect(() => {
     if (vectorSource) {
       vectorSource.clear();
       drawPoints();
-      let vectorLayer = map.getLayers().getArray()[5];
-      vectorLayer.setSource(vectorSource);
     }
   }, [props.vectorCoordinates, props.vectorType]);
 
   useEffect(() => {
-    if (vectorSource && props.vectorId && props.vectorType) {
+    if (props.vectorId && props.vectorType) {
       vectorSource.clear();
       vectorSource.setLoader(loader);
       vectorSource.refresh();
-      let vectorLayer = map.getLayers().getArray()[5];
-      vectorLayer.setSource(vectorSource);
     }
   }, [props.vectorId, props.vectorType]);
 
@@ -533,6 +890,7 @@ const GlobalMap = forwardRef((props, ref) => {
             }
           }
           vectorSource.addFeatures(featToAdd);
+          layerVector.setSource(vectorSource);
         })
         .catch((error) => {
           console.error(error);
@@ -541,10 +899,16 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
+    let vectorSource = layerVector.getSource();
+    let obsDrawSource = layerObsDraw.getSource();
     removeMapInteractions("all");
     props.updateState(["vectorType", "vectorId"], ["points", null]);
-    vectorSource.clear();
-    obsDrawSource.clear();
+    if (vectorSource) {
+      vectorSource.clear();
+    }
+    if (obsDrawSource) {
+      obsDrawSource.celar();
+    }
     props.action("clearPoints");
     props.action("selectPoints");
 
@@ -622,17 +986,13 @@ const GlobalMap = forwardRef((props, ref) => {
     return dataSource;
   };
 
-  const layer_basemap = getBasemap(
+  const layerBasemap = getBasemap(
     props.mapSettings.basemap,
     props.mapSettings.projection,
     props.mapSettings.basemap_attribution
   );
 
-  const layer_data = new TileLayer({
-    preload: 1,
-  });
-
-  const layer_bath = new TileLayer({
+  const layerBath = new TileLayer({
     source: new XYZ({
       url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
       projection: props.mapSettings.projection,
@@ -647,7 +1007,7 @@ const GlobalMap = forwardRef((props, ref) => {
     maxZoom: MAX_ZOOM[props.mapSettings.projection],
   });
 
-  const layer_bathshapes = new VectorTileLayer({
+  const layerBathShapes = new VectorTileLayer({
     opacity: props.mapSettings.mapBathymetryOpacity,
     visible: props.mapSettings.bathymetry,
     style: new Style({
@@ -663,7 +1023,7 @@ const GlobalMap = forwardRef((props, ref) => {
     }),
   });
 
-  const layer_landshapes = new VectorTileLayer({
+  const layerLandShapes = new VectorTileLayer({
     opacity: 1,
     style: new Style({
       stroke: new Stroke({
@@ -682,100 +1042,6 @@ const GlobalMap = forwardRef((props, ref) => {
     }),
   });
 
-  const layer_obsDraw = new VectorLayer({
-    source: obsDrawSource,
-  });
-  const layer_vector = new VectorLayer({
-    source: vectorSource,
-    style: function (feat, res) {
-      switch (feat.get("type")) {
-        case "area":
-          if (feat.get("key")) {
-            return [
-              new Style({
-                stroke: new Stroke({
-                  color: "#ffffff",
-                  width: 2,
-                }),
-                fill: new Fill({
-                  color: "#ffffff00",
-                }),
-              }),
-              new Style({
-                stroke: new Stroke({
-                  color: "#000000",
-                  width: 1,
-                }),
-              }),
-              new Style({
-                geometry: new olgeom.Point(
-                  olProj.transform(
-                    feat.get("centroid"),
-                    "EPSG:4326",
-                    props.mapSettings.projection
-                  )
-                ),
-                text: new Text({
-                  text: feat.get("name"),
-                  font: "14px sans-serif",
-                  fill: new Fill({
-                    color: "#000",
-                  }),
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 2,
-                  }),
-                }),
-              }),
-            ];
-          } else {
-            return [
-              new Style({
-                stroke: new Stroke({
-                  color: "#ffffff",
-                  width: 5,
-                }),
-              }),
-              new Style({
-                stroke: new Stroke({
-                  color: "#ff0000",
-                  width: 3,
-                }),
-              }),
-            ];
-          }
-        case "line":
-          return [
-            new Style({
-              stroke: new Stroke({
-                color: "#ffffff",
-                width: 5,
-              }),
-            }),
-            new Style({
-              stroke: new Stroke({
-                color: "#ff0000",
-                width: 3,
-              }),
-            }),
-          ];
-        case "points":
-          return new Style({
-            image: new Circle({
-              radius: 4,
-              fill: new Fill({
-                color: "#ff0000",
-              }),
-              stroke: new Stroke({
-                color: "#ffffff",
-                width: 2,
-              }),
-            }),
-          });
-      }
-    },
-  });
-
   const drawObsArea = () => {
     if (removeMapInteractions("Polygon")) {
       return;
@@ -783,7 +1049,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
     resetMap();
     const draw = new Draw({
-      source: obsDrawSource,
+      source: layerObsDraw.getSource(),
       type: "Polygon",
       stopClick: true,
     });
@@ -805,7 +1071,7 @@ const GlobalMap = forwardRef((props, ref) => {
       props.action("setObsArea", points);
       map.removeInteraction(draw);
       setTimeout(function () {
-        obsDrawSource.clear();
+        layerObsDraw.getSource().clear();
       }, 251);
     });
     map.addInteraction(draw);
@@ -813,7 +1079,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const draw = () => {
     const drawAction = new Draw({
-      source: vectorSource,
+      source: layerVector.getSource(),
       type: "Point",
       stopClick: true,
     });
@@ -846,7 +1112,7 @@ const GlobalMap = forwardRef((props, ref) => {
           feat = new Feature({
             geometry: geom,
             name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-            type: "points",
+            type: "point",
           });
           vectorSource.addFeature(feat);
         }
