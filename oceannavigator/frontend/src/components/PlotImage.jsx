@@ -14,7 +14,6 @@ import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
-// const stringify = require("fast-stable-stringify");
 
 const FAIL_IMAGE = require("./fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif").default;

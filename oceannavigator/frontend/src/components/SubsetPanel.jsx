@@ -11,7 +11,6 @@ import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
 import { withTranslation } from "react-i18next";
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
-// const stringify = require("fast-stable-stringify");
 
 class SubsetPanel extends React.Component {
   constructor(props) {
@@ -56,7 +55,7 @@ class SubsetPanel extends React.Component {
   calculateAreaBoundingBox(area) {
     let lat_min = area[0][0];
     let long_min = area[0][1];
-    let lat_max= area[0][0];
+    let lat_max = area[0][0];
     let long_max = area[0][1];
 
     for (let i = 0; i < area.length; ++i) {

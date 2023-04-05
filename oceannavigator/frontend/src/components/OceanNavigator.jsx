@@ -111,13 +111,12 @@ function OceanNavigator() {
         //   this.setState({class4type : arg3})
         // }
         break;
-      case "obs_point":
+      case "drawObsPoint":
         // Enable point selection in both maps
-        mapRef0.current.obs_point();
+        mapRef0.current.drawObsPoint();
         // if (this.mapComponent2) {
         //   this.mapComponent2.obs_point();
         // }
-        updateUI({ modalType: "observationSelect", showModal: true });
         break;
 
       case "drawObsArea":

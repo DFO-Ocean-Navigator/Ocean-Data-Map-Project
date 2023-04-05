@@ -137,7 +137,7 @@ function ObservationSelector(props) {
     };
 
     if (props.area.length > 0) {
-      newSelection["area"] = stringify(props.area);
+      newSelection["area"] = JSON.stringify(props.area);
     }
     if (props.area.length == 1) {
       newSelection["radius"] = radius;

@@ -90,6 +90,7 @@ const GlobalMap = forwardRef((props, ref) => {
   const [layerVector, setLayerVector] = useState();
   const [vectorSource, setVectorSource] = useState();
   const [layerObsDraw, setLayerObsDraw] = useState();
+  const [obsDrawSource, setObsDrawSource] = useState();
   const [layerQuiver, setLayerQuiver] = useState();
   const mapRef = useRef();
   const popupElement = useRef(null);
@@ -98,6 +99,7 @@ const GlobalMap = forwardRef((props, ref) => {
     startDrawing: draw,
     stopDrawing: removeMapInteractions,
     show: show,
+    drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
   }));
@@ -400,7 +402,11 @@ const GlobalMap = forwardRef((props, ref) => {
       },
     });
 
-    const newLayerObsDraw = new VectorLayer({});
+    const newObsDrawSource = new VectorSource({
+      features: [],
+    });
+
+    const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
 
     const anchor = [0.5, 0.5];
     const newLayerQuiver = new VectorLayer({
@@ -423,18 +429,6 @@ const GlobalMap = forwardRef((props, ref) => {
             rotation: rotation,
           }),
         });
-        // return new Style({
-        //   image: new Circle({
-        //     radius: 4,
-        //     fill: new Fill({
-        //       color: "#ff0000",
-        //     }),
-        //     stroke: new Stroke({
-        //       color: "#ffffff",
-        //       width: 2,
-        //     }),
-        //   }),
-        // });
       },
     });
 
@@ -756,6 +750,7 @@ const GlobalMap = forwardRef((props, ref) => {
     setLayerVector(newLayerVector);
     setVectorSource(newVectorSource);
     setLayerObsDraw(newLayerObsDraw);
+    setObsDrawSource(newObsDrawSource);
     setLayerQuiver(newLayerQuiver);
 
     return () => mapObject.setTarget(null);
@@ -899,16 +894,10 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
-    let vectorSource = layerVector.getSource();
-    let obsDrawSource = layerObsDraw.getSource();
     removeMapInteractions("all");
     props.updateState(["vectorType", "vectorId"], ["points", null]);
-    if (vectorSource) {
-      vectorSource.clear();
-    }
-    if (obsDrawSource) {
-      obsDrawSource.celar();
-    }
+    vectorSource.clear();
+    obsDrawSource.clear();
     props.action("clearPoints");
     props.action("selectPoints");
 
@@ -1042,6 +1031,36 @@ const GlobalMap = forwardRef((props, ref) => {
     }),
   });
 
+  const drawObsPoint = () => {
+    if (removeMapInteractions("Point")) {
+      return;
+    }
+
+    //Resets map (in case other plots have been drawn)
+    resetMap();
+    const draw = new olinteraction.Draw({
+      source: obsDrawSource,
+      type: "Point",
+      stopClick: true,
+    });
+    draw.set("type", "Point");
+    draw.on("drawend", function (e) {
+      // Disable zooming when drawing
+      const lonlat = olProj.transform(
+        e.feature.getGeometry().getCoordinates(),
+        props.mapSettings.projection,
+        "EPSG:4326"
+      );
+
+      // Send area to Observation Selector
+      obsDrawSource.clear();
+      props.action("setObsArea", [[lonlat[1], lonlat[0]]]);
+
+      map.removeInteraction(draw);
+    });
+    map.addInteraction(draw);
+  };
+
   const drawObsArea = () => {
     if (removeMapInteractions("Polygon")) {
       return;
@@ -1049,7 +1068,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
     resetMap();
     const draw = new Draw({
-      source: layerObsDraw.getSource(),
+      source: obsDrawSource,
       type: "Polygon",
       stopClick: true,
     });
@@ -1071,7 +1090,7 @@ const GlobalMap = forwardRef((props, ref) => {
       props.action("setObsArea", points);
       map.removeInteraction(draw);
       setTimeout(function () {
-        layerObsDraw.getSource().clear();
+        obsDrawSource.clear();
       }, 251);
     });
     map.addInteraction(draw);
