@@ -29,6 +29,7 @@
     "react-bootstrap": "^2.7.1",
     "react-bootstrap-icons": "^1.10.2",
     "react-datepicker": "^4.10.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-draggable": "^4.4.5",
     "react-fontawesome": "^1.7.1",

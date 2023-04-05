@@ -28,7 +28,6 @@ function DatasetSelector(props) {
   const [options, setOptions] = useState(props.options);
   const [dataset, setDataset] = useState(props.mountedDataset ? props.mountedDataset : DATASET_DEFAULTS);
   const [availableDatasets, setAvailableDatasets] = useState([]);
-  const [quiverVariable, setQuiverVariable] = useState("none");
   const [updateParent, setUpdateParent] = useState(false);
 
   useEffect(() => {
@@ -126,6 +125,7 @@ function DatasetSelector(props) {
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
+                  quiverVariable: "None"
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -339,7 +339,7 @@ function DatasetSelector(props) {
         placeholder={"Quiver Variable"}
         options={quiverVariables}
         onChange={updateDataset}
-        selected={quiverVariable}
+        selected={dataset.quiverVariable}
         loading={loading}
         horizontalLayout={props.horizontalLayout}
       />
