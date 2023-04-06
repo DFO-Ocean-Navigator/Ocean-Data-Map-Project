@@ -644,7 +644,6 @@ const GlobalMap = forwardRef((props, ref) => {
     const pushSelection = function () {
       var t = undefined;
       var content = [];
-      selectedFeatures;
       var names = [];
       selectedFeatures.forEach(function (feature) {
         if (feature.get("class") == "observation") {
@@ -792,7 +791,6 @@ const GlobalMap = forwardRef((props, ref) => {
     if (props.vectorId && props.vectorType) {
       vectorSource.clear();
       vectorSource.setLoader(loader);
-      vectorSource.refresh();
     }
   }, [props.vectorId, props.vectorType]);
 
@@ -888,7 +886,6 @@ const GlobalMap = forwardRef((props, ref) => {
             }
           }
           vectorSource.addFeatures(featToAdd);
-          layerVector.setSource(vectorSource);
         })
         .catch((error) => {
           console.error(error);
@@ -898,21 +895,24 @@ const GlobalMap = forwardRef((props, ref) => {
 
   const resetMap = () => {
     removeMapInteractions("all");
-    props.updateState(["vectorType", "vectorId"], ["point", null]);
-    vectorSource.clear();
-    obsDrawSource.clear();
+    props.updateState(["vectorType", "vectorId", "names"], ["point", null, []]);
     props.action("clearPoints");
-    props.action("selectPoints");
 
-    // this.removeMapInteractions("all");
-    // this.props.updateState("vectortype", null);
-    // this.props.updateState("vectorid", null);
-    // this.selectedFeatures.clear();
-    // this.vectorSource.clear();
-    // this.obsDrawSource.clear();
-    // this.overlay.setPosition(undefined);
-    // this.infoOverlay.setPosition(undefined);
-    // this.setState({latlon: []});
+    let newVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+      loader: loader,
+    });
+    layerVector.setSource(newVectorSource);
+    setVectorSource(newVectorSource);
+
+    let newObsDrawSource = new VectorSource({
+      features: [],
+    });
+
+    layerObsDraw.setSource(newObsDrawSource);
+    setObsDrawSource(newObsDrawSource);
   };
 
   const removeMapInteractions = (type) => {

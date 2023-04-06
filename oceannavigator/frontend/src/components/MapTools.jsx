@@ -8,6 +8,8 @@ import {
   faKeyboard,
   faSatelliteDish,
   faInfo,
+  faRotateLeft,
+  faChartLine,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Button from "react-bootstrap/Button";
@@ -41,6 +43,14 @@ function MapTools(props) {
     } else {
       props.updateUI({ showDrawingTools: false, showObservationTools: false });
     }
+  };
+
+  const handlePlot = () => {
+    props.action("plot");
+  };
+
+  const handleReset = () => {
+    props.action("resetMap");
   };
 
   const handleSettings = () => {
@@ -98,6 +108,28 @@ function MapTools(props) {
               icon={faSatelliteDish}
               onClick={handleObservations}
             />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"plot-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"plot-tooltip"}>Plot</Tooltip>}
+        >
+          <Button className="tool-button">
+            <FontAwesomeIcon icon={faChartLine} onClick={handlePlot} />
+          </Button>
+        </OverlayTrigger>
+
+        <OverlayTrigger
+          key={"reset-overlay"}
+          placement="left"
+          container={mapToolsRef}
+          overlay={<Tooltip id={"reset-tooltip"}>Reset Map</Tooltip>}
+        >
+          <Button className="tool-button">
+            <FontAwesomeIcon icon={faRotateLeft} onClick={handleReset} />
           </Button>
         </OverlayTrigger>
 

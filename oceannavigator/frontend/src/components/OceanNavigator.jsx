@@ -63,7 +63,7 @@ function OceanNavigator() {
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
       case "startDrawing":
-        setVectorId(null)
+        setVectorId(null);
         mapRef0.current.startDrawing();
         break;
       case "stopDrawing":
@@ -79,6 +79,11 @@ function OceanNavigator() {
         break;
       case "clearPoints":
         setVectorCoordinates([]);
+        setSelectedCoordinates([]);
+        setVectorId(null);
+        break;
+      case "resetMap":
+        mapRef0.current.resetMap();
         break;
       case "addPoints":
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
@@ -98,6 +103,16 @@ function OceanNavigator() {
         } else {
           setSelectedCoordinates(arg);
         }
+        break;
+      case "plot":
+        if (!vectorId) {
+          setSelectedCoordinates(vectorCoordinates);
+        }
+        setUiSettings({
+          ...uiSettings,
+          showModal: true,
+          modalType: vectorType,
+        });
         break;
       case "show":
         setVectorCoordinates([]);

@@ -79,10 +79,13 @@
     background-color: #fff;
   }
 
-//   .ol-zoom-in:hover,
-//   .ol-zoom-out:hover {
-//     background-color: #fff;
-//   }
+  .ol-reset-button {
+    right: 8px;
+    left: auto;
+    top: 78px;
+    background-color: #fff;
+    border: 2px solid #008cba;    
+  }
 
   // Reset pan button
   .reset-pan {
