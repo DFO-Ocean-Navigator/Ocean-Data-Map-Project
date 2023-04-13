@@ -8,7 +8,7 @@ from hypercorn.config import Config
 from oceannavigator import create_app
 
 config = Config()
-config.bind = ["0.0.0.0:5000"]
+config.bind = ["0.0.0.0:8443"]
 config.accesslog = "-"
 config.errorlog = "-"
 config.use_reloader = True
