@@ -342,7 +342,7 @@ function OceanNavigator() {
       );
       modalTitle = "Settings";
       break;
-    case "info":
+    case "info-help":
       modalBodyContent = <InfoHelpWindow />;
       modalTitle = "Settings";
       break;
