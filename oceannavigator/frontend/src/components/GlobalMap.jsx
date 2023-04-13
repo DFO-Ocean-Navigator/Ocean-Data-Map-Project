@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { renderToString } from "react-dom/server";
 import axios from "axios";
+import proj4 from "proj4";
 import { Map, View } from "ol";
 import Feature from "ol/Feature.js";
 import TileLayer from "ol/layer/Tile";
@@ -27,6 +28,7 @@ import VectorLayer from "ol/layer/Vector.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
+import TileWMS from "ol/source/TileWMS";
 import Draw from "ol/interaction/Draw";
 import { defaults as defaultControls } from "ol/control/defaults";
 import * as olExtent from "ol/extent";
@@ -71,6 +73,18 @@ const COLORS = [
   [255, 255, 255],
 ];
 
+const DEF_CENTER = {
+  "EPSG:3857": [-50, 53],
+  "EPSG:32661": [0, 90],
+  "EPSG:3031": [0, -90],
+};
+
+const DEF_ZOOM = {
+  "EPSG:3857": 4,
+  "EPSG:32661": 2,
+  "EPSG:3031": 2,
+};
+
 const MIN_ZOOM = {
   "EPSG:3857": 1,
   "EPSG:32661": 2,
@@ -85,9 +99,38 @@ const MAX_ZOOM = {
 
 var drifter_color = {};
 
+proj4.defs(
+  "EPSG:32661",
+  "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+);
+proj4.defs(
+  "EPSG:3031",
+  "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+);
+olProj4.register(proj4);
+
+var proj32661 = olProj.get("EPSG:32661");
+proj32661.setWorldExtent([-180.0, 60.0, 180.0, 90.0]);
+proj32661.setExtent([
+  -1154826.7379766018, -1154826.7379766018, 5154826.737976602,
+  5154826.737976601,
+]);
+
+var proj3031 = olProj.get("EPSG:3031");
+proj3031.setWorldExtent([-180.0, -90.0, 180.0, -60.0]);
+proj3031.setExtent([
+  -3087442.3458218463, -3087442.3458218463, 3087442.345821846,
+  3087442.345821846,
+]);
+
 const GlobalMap = forwardRef((props, ref) => {
   const [map, setMap] = useState();
+  const [mapView, setMapView] = useState();
+  const [layerBasemap, setLayerBasemap] = useState();
   const [layerData, setLayerData] = useState();
+  const [layerLandShapes, setLayerLandShapes] = useState();
+  const [layerBath, setLayerBath] = useState();
+  const [layerBathShapes, setLayerBathShapes] = useState();
   const [layerVector, setLayerVector] = useState();
   const [vectorSource, setVectorSource] = useState();
   const [layerObsDraw, setLayerObsDraw] = useState();
@@ -124,16 +167,73 @@ const GlobalMap = forwardRef((props, ref) => {
     }
 
     let projection = props.mapSettings.projection;
-    const mapView = new View({
-      center: olProj.transform(center, "EPSG:4326", projection),
+    const newMapView = new View({
+      center: olProj.transform(DEF_CENTER[projection], "EPSG:4326", projection),
       projection: projection,
       zoom: zoom,
       maxZoom: MAX_ZOOM[projection],
       minZoom: MIN_ZOOM[projection],
     });
 
+    const newLayerBasemap = getBasemap(
+      props.mapSettings.basemap,
+      props.mapSettings.projection,
+      props.mapSettings.basemap_attribution
+    );
+
     const newLayerData = new TileLayer({
       preload: 1,
+    });
+
+    const vectorTileGrid = new olTilegrid.createXYZ({
+      tileSize: 512,
+      maxZoom: MAX_ZOOM[props.mapSettings.projection],
+    });
+
+    const newLayerLandShapes = new VectorTileLayer({
+      opacity: 1,
+      style: new Style({
+        stroke: new Stroke({
+          color: "rgba(0, 0, 0, 1)",
+        }),
+        fill: new Fill({
+          color: "white",
+        }),
+      }),
+      source: new VectorTile({
+        format: new MVT(),
+        tileGrid: vectorTileGrid,
+        tilePixelRatio: 8,
+        url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+        projection: props.mapSettings.projection,
+      }),
+    });
+
+    const newLayerBath = new TileLayer({
+      source: new XYZ({
+        url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+        projection: props.mapSettings.projection,
+      }),
+      opacity: props.mapSettings.mapBathymetryOpacity,
+      visible: props.mapSettings.bathymetry,
+      preload: 1,
+    });
+
+    const newLayerBathShapes = new VectorTileLayer({
+      opacity: props.mapSettings.mapBathymetryOpacity,
+      visible: props.mapSettings.bathymetry,
+      style: new Style({
+        stroke: new Stroke({
+          color: "rgba(0, 0, 0, 1)",
+        }),
+      }),
+      source: new VectorTile({
+        format: new MVT(),
+        tileGrid: vectorTileGrid,
+        tilePixelRatio: 8,
+        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+        projection: props.mapSettings.projection,
+      }),
     });
 
     let newVectorSource = new VectorSource({
@@ -434,13 +534,13 @@ const GlobalMap = forwardRef((props, ref) => {
     });
 
     let options = {
-      view: mapView,
+      view: newMapView,
       layers: [
-        layerBasemap,
+        newLayerBasemap,
         newLayerData,
-        layerLandShapes,
-        layerBath,
-        layerBathShapes,
+        newLayerLandShapes,
+        newLayerBath,
+        newLayerBathShapes,
         newLayerVector,
         newLayerObsDraw,
         newLayerQuiver,
@@ -457,7 +557,7 @@ const GlobalMap = forwardRef((props, ref) => {
     mapObject.on("moveend", function () {
       const c = olProj
         .transform(
-          mapView.getCenter(),
+          newMapView.getCenter(),
           props.mapSettings.projection,
           "EPSG:4326"
         )
@@ -465,13 +565,13 @@ const GlobalMap = forwardRef((props, ref) => {
           return c.toFixed(4);
         });
       props.updateMapSettings("center", c);
-      props.updateMapSettings("zoom", mapView.getZoom());
-      const extent = mapView.calculateExtent(mapObject.getSize());
+      props.updateMapSettings("zoom", newMapView.getZoom());
+      const extent = newMapView.calculateExtent(mapObject.getSize());
       props.updateMapSettings("extent", extent);
       mapObject.render();
       if (props.partner) {
-        props.partner.mapView.setCenter(mapView.getCenter());
-        props.partner.mapView.setZoom(mapView.getZoom());
+        props.partner.newMapView.setCenter(newMapView.getCenter());
+        props.partner.newMapView.setZoom(newMapView.getZoom());
       }
     });
 
@@ -748,7 +848,12 @@ const GlobalMap = forwardRef((props, ref) => {
     });
 
     setMap(mapObject);
+    setMapView(newMapView);
+    setLayerBasemap(newLayerBasemap);
     setLayerData(newLayerData);
+    setLayerLandShapes(newLayerLandShapes);
+    setLayerBath(newLayerBath);
+    setLayerBathShapes(newLayerBathShapes);
     setLayerVector(newLayerVector);
     setVectorSource(newVectorSource);
     setLayerObsDraw(newLayerObsDraw);
@@ -793,6 +898,185 @@ const GlobalMap = forwardRef((props, ref) => {
       vectorSource.setLoader(loader);
     }
   }, [props.vectorId, props.vectorType]);
+
+  useEffect(() => {
+    if (map) {
+      resetMap();
+
+      const dataSource = layerData.getSource();
+      const dataProps = dataSource.getProperties();
+      const newProps = { ...dataProps, ...getDataSource() };
+      const newSource = new XYZ(newProps);
+
+      layerData.setSource(newSource);
+      newSource.refresh();
+
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
+
+      const newMapView = new View({
+        projection: props.mapSettings.projection,
+        center: olProj.transform(
+          DEF_CENTER[props.mapSettings.projection],
+          "EPSG:4326",
+          props.mapSettings.projection
+        ),
+        zoom: DEF_ZOOM[props.mapSettings.projection],
+        minZoom: MIN_ZOOM[props.mapSettings.projection],
+        maxZoom: MAX_ZOOM[props.mapSettings.projection],
+      });
+
+      map.setView(newMapView);
+      setMapView(newMapView);
+
+      const vectorTileGrid = new olTilegrid.createXYZ({
+        tileSize: 512,
+        maxZoom: MAX_ZOOM[props.mapSettings.projection],
+      });
+
+      layerLandShapes.setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+
+      layerBathShapes.setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+
+      let bathySource = null;
+      switch (props.mapSettings.bathyContour) {
+        case "etopo1":
+        default:
+          bathySource = new XYZ({
+            url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          });
+          break;
+      }
+
+      layerBath.setSource(bathySource);
+
+      vectorSource.refresh();
+
+      if (layerQuiver.getSource()) {
+        layerQuiver.getSource().refresh();
+      }
+    }
+  }, [props.mapSettings.projection]);
+
+  useEffect(() => {
+    if (map) {
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
+
+      if (props.mapSettings.basemap === "chs") {
+        setZIndices(1, 0);
+
+        layerBathShapes.setSource(null);
+        layerLandShapes.setSource(null);
+      } else {
+        // Update Hi-res bath layer
+        setZIndices(0, 1);
+
+        const vectorTileGrid = new olTilegrid.createXYZ({
+          tileSize: 512,
+          maxZoom: MAX_ZOOM[props.mapSettings.projection],
+        });
+
+        layerLandShapes.setSource(
+          new VectorTile({
+            format: new MVT(),
+            tileGrid: vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          })
+        );
+
+        layerBathShapes.setSource(
+          new VectorTile({
+            format: new MVT(),
+            tileGrid: vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          })
+        );
+      }
+    }
+  }, [props.mapSettings.basemap]);
+
+  useEffect(() => {
+    if (map) {
+      const dataSource = layerData.getSource();
+      const dataProps = dataSource.getProperties();
+      const newProps = { ...dataProps, ...getDataSource() };
+      const newSource = new XYZ(newProps);
+
+      layerData.setSource(newSource);
+      newSource.refresh();
+    }
+  }, [
+    props.mapSettings.interpType,
+    props.mapSettings.interpRadius,
+    props.mapSettings.interpNeighbours,
+  ]);
+
+  useEffect(() => {
+    if (map) {
+    const newLayerBasemap = getBasemap(
+      props.mapSettings.basemap,
+      props.mapSettings.projection,
+      props.mapSettings.basemap_attribution
+    );
+    map.getLayers().setAt(0, newLayerBasemap);
+    setLayerBasemap(newLayerBasemap);
+
+    layerBath.setVisible(props.mapSettings.bathymetry);
+    layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity)
+
+    layerBathShapes.setVisible(props.mapSettings.bathymetry);
+    layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity)
+
+    }
+  }, [
+    props.mapSettings.bathymetry,
+    props.mapSettings.mapBathymetryOpacity,
+    props.mapSettings.bathyContour,
+    props.mapSettings.topoShadedRelief,
+  ]);
+
+  const setZIndices = (basemapIdx, dataIdx) => {
+    layerBasemap.setZIndex(basemapIdx);
+    layerData.setZIndex(dataIdx);
+    layerLandShapes.setZIndex(2);
+    layerBath.setZIndex(3);
+    layerBathShapes.setZIndex(4);
+    layerVector.setZIndex(5);
+    layerObsDraw.setZIndex(6);
+    layerQuiver.setZIndex(100);
+  };
 
   const loader = (extent, resolution, projection) => {
     if (props.vectorType && props.vectorId) {
@@ -943,12 +1227,37 @@ const GlobalMap = forwardRef((props, ref) => {
         const shadedRelief = props.mapSettings.topoShadedRelief
           ? "true"
           : "false";
-
         return new TileLayer({
           preload: 1,
           source: new XYZ({
             url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
             projection: projection,
+          }),
+        });
+      case "ocean":
+        return new TileLayer({
+          preload: 1,
+          source: new XYZ({
+            url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+          }),
+        });
+      case "world":
+        return new TileLayer({
+          preload: 1,
+          source: new XYZ({
+            url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            projection: "EPSG:3857",
+          }),
+        });
+      case "chs":
+        return new TileLayer({
+          source: new TileWMS({
+            url: "https://gisp.dfo-mpo.gc.ca/arcgis/rest/services/CHS/ENC_MaritimeChartService/MapServer/exts/MaritimeChartService/WMSServer",
+            params: {
+              LAYERS: "1:1",
+            },
+            projection: "EPSG:3857",
           }),
         });
     }
@@ -977,62 +1286,6 @@ const GlobalMap = forwardRef((props, ref) => {
 
     return dataSource;
   };
-
-  const layerBasemap = getBasemap(
-    props.mapSettings.basemap,
-    props.mapSettings.projection,
-    props.mapSettings.basemap_attribution
-  );
-
-  const layerBath = new TileLayer({
-    source: new XYZ({
-      url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-      projection: props.mapSettings.projection,
-    }),
-    opacity: props.mapSettings.mapBathymetryOpacity,
-    visible: props.mapSettings.bathymetry,
-    preload: 1,
-  });
-
-  const vectorTileGrid = new olTilegrid.createXYZ({
-    tileSize: 512,
-    maxZoom: MAX_ZOOM[props.mapSettings.projection],
-  });
-
-  const layerBathShapes = new VectorTileLayer({
-    opacity: props.mapSettings.mapBathymetryOpacity,
-    visible: props.mapSettings.bathymetry,
-    style: new Style({
-      stroke: new Stroke({
-        color: "rgba(0, 0, 0, 1)",
-      }),
-    }),
-    source: new VectorTile({
-      format: new MVT(),
-      tileGrid: vectorTileGrid,
-      tilePixelRatio: 8,
-      url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-    }),
-  });
-
-  const layerLandShapes = new VectorTileLayer({
-    opacity: 1,
-    style: new Style({
-      stroke: new Stroke({
-        color: "rgba(0, 0, 0, 1)",
-      }),
-      fill: new Fill({
-        color: "white",
-      }),
-    }),
-    source: new VectorTile({
-      format: new MVT(),
-      tileGrid: vectorTileGrid,
-      tilePixelRatio: 8,
-      url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-      projection: props.mapSettings.projection,
-    }),
-  });
 
   const drawObsPoint = () => {
     if (removeMapInteractions("Point")) {

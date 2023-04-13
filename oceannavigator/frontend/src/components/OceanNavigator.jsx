@@ -37,7 +37,6 @@ function OceanNavigator() {
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
   const [mapSettings, setMapSettings] = useState({
-    plotEnabled: false, // "Plot" button in MapToolbar
     projection: "EPSG:3857", // Map projection
     basemap: "topo",
     extent: [],
@@ -48,9 +47,6 @@ function OceanNavigator() {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
-    busy: false, // Controls if the busyModal is visible
-    showHelp: false,
-    showCompareHelp: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
   const [vectorId, setVectorId] = useState(null);
@@ -197,11 +193,13 @@ function OceanNavigator() {
   ];
 
   const updateMapSettings = (key, value) => {
-    let newMapSettings = {
-      ...mapSettings,
-      [key]: value,
-    };
-    setMapSettings(newMapSettings);
+    setMapSettings((prevMapSettings) => {
+      let newMapSettings = {
+        ...prevMapSettings,
+        [key]: value,
+      };
+      return newMapSettings;
+    });
   };
 
   const drawingTools = uiSettings.showDrawingTools ? (
