@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Button } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
@@ -13,7 +13,6 @@ function TimeSlider(props) {
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(1);
-  const containerRef = useRef();
 
   useEffect(() => {
     setMin(props.timestamps.length < 50 ? 0 : props.timestamps.length - 50);
@@ -106,7 +105,6 @@ function TimeSlider(props) {
       <OverlayTrigger
         key={`handle-overlay`}
         placement="top"
-        container={containerRef}
         overlay={
           <Tooltip id={`handle-tooltip`}>{getFormattedTime(time)}</Tooltip>
         }
@@ -138,7 +136,6 @@ function TimeSlider(props) {
       <OverlayTrigger
         key={`overlay-${index}`}
         placement="top"
-        container={containerRef}
         overlay={<Tooltip id={`tooltip-${index}`}>{tooltipLabel}</Tooltip>}
       >
         <div
@@ -210,7 +207,7 @@ function TimeSlider(props) {
           <ChevronLeft />
         </Button>
       </div>
-      <div className="slider-container" ref={containerRef}>
+      <div className="slider-container">
         {sliderRail}
         {props.loading ? null : ticks}
       </div>
