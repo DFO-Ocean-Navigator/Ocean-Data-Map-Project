@@ -94,6 +94,7 @@ function SettingsWindow(props) {
           <InputGroup>
             <Form.Label>Basemap</Form.Label>
             <Form.Select
+              value={props.mapSettings.basemap}
               onChange={(e) => {
                 props.updateMapSettings("basemap", e.target.value);
               }}
