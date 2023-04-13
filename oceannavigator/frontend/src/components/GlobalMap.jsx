@@ -847,6 +847,15 @@ const GlobalMap = forwardRef((props, ref) => {
       }
     });
 
+    newLayerBasemap.setZIndex(0);
+    newLayerData.setZIndex(1);
+    newLayerLandShapes.setZIndex(2);
+    newLayerBath.setZIndex(3);
+    newLayerBathShapes.setZIndex(4);
+    newLayerVector.setZIndex(5);
+    newLayerObsDraw.setZIndex(6);
+    newLayerQuiver.setZIndex(100);
+
     setMap(mapObject);
     setMapView(newMapView);
     setLayerBasemap(newLayerBasemap);
@@ -991,14 +1000,9 @@ const GlobalMap = forwardRef((props, ref) => {
       setLayerBasemap(newLayerBasemap);
 
       if (props.mapSettings.basemap === "chs") {
-        setZIndices(1, 0);
-
         layerBathShapes.setSource(null);
         layerLandShapes.setSource(null);
       } else {
-        // Update Hi-res bath layer
-        setZIndices(0, 1);
-
         const vectorTileGrid = new olTilegrid.createXYZ({
           tileSize: 512,
           maxZoom: MAX_ZOOM[props.mapSettings.projection],
@@ -1045,20 +1049,19 @@ const GlobalMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map) {
-    const newLayerBasemap = getBasemap(
-      props.mapSettings.basemap,
-      props.mapSettings.projection,
-      props.mapSettings.basemap_attribution
-    );
-    map.getLayers().setAt(0, newLayerBasemap);
-    setLayerBasemap(newLayerBasemap);
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
 
-    layerBath.setVisible(props.mapSettings.bathymetry);
-    layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity)
+      layerBath.setVisible(props.mapSettings.bathymetry);
+      layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity);
 
-    layerBathShapes.setVisible(props.mapSettings.bathymetry);
-    layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity)
-
+      layerBathShapes.setVisible(props.mapSettings.bathymetry);
+      layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity);
     }
   }, [
     props.mapSettings.bathymetry,
@@ -1066,17 +1069,6 @@ const GlobalMap = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
-
-  const setZIndices = (basemapIdx, dataIdx) => {
-    layerBasemap.setZIndex(basemapIdx);
-    layerData.setZIndex(dataIdx);
-    layerLandShapes.setZIndex(2);
-    layerBath.setZIndex(3);
-    layerBathShapes.setZIndex(4);
-    layerVector.setZIndex(5);
-    layerObsDraw.setZIndex(6);
-    layerQuiver.setZIndex(100);
-  };
 
   const loader = (extent, resolution, projection) => {
     if (props.vectorType && props.vectorId) {
@@ -1424,6 +1416,16 @@ const GlobalMap = forwardRef((props, ref) => {
         break;
     }
   };
+
+  if (map) {
+    if (props.mapSettings.basemap === "chs") {
+      layerBasemap.setZIndex(1);
+      layerData.setZIndex(0);
+    } else {
+      layerBasemap.setZIndex(0);
+      layerData.setZIndex(1);
+    }
+  }
 
   return (
     <>
