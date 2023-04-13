@@ -57,105 +57,105 @@ function MapTools(props) {
     props.updateUI({ modalType: "settings", showModal: true });
   };
 
+  const handleInfo = () => {
+    props.updateUI({ modalType: "info", showModal: true });
+  };
+
   return (
-    <>
-      <div className="MapTools" ref={mapToolsRef}>
-        <OverlayTrigger
-          key={"draw-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={
-            <Tooltip id={"draw-tooltip"}>Draw Point Coordinates</Tooltip>
-          }
-        >
-          <Button className="tool-button" onClick={handleDrawing}>
-            <FontAwesomeIcon icon={faDrawPolygon} />
-          </Button>
-        </OverlayTrigger>
+    <div className="MapTools" ref={mapToolsRef}>
+      <OverlayTrigger
+        key={"draw-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"draw-tooltip"}>Draw Point Coordinates</Tooltip>}
+      >
+        <Button className="tool-button" onClick={handleDrawing}>
+          <FontAwesomeIcon icon={faDrawPolygon} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"enter-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={
-            <Tooltip id={"enter-tooltip"}>Enter Point Coordinates</Tooltip>
-          }
-        >
-          <Button className="tool-button" onClick={handleEnterPoints}>
-            <FontAwesomeIcon icon={faKeyboard} />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"enter-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={
+          <Tooltip id={"enter-tooltip"}>Enter Point Coordinates</Tooltip>
+        }
+      >
+        <Button className="tool-button" onClick={handleEnterPoints}>
+          <FontAwesomeIcon icon={faKeyboard} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"preset-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"preset-tooltip"}>Preset Features</Tooltip>}
-        >
-          <Button className="tool-button" onClick={handlePresetFeatures}>
-            <FontAwesomeIcon icon={faTableList} />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"preset-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"preset-tooltip"}>Preset Features</Tooltip>}
+      >
+        <Button className="tool-button" onClick={handlePresetFeatures}>
+          <FontAwesomeIcon icon={faTableList} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"obs-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"obs-tooltip"}>Observations</Tooltip>}
-        >
-          <Button className="tool-button">
-            <FontAwesomeIcon
-              icon={faSatelliteDish}
-              onClick={handleObservations}
-            />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"obs-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"obs-tooltip"}>Observations</Tooltip>}
+      >
+        <Button className="tool-button">
+          <FontAwesomeIcon
+            icon={faSatelliteDish}
+            onClick={handleObservations}
+          />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"plot-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"plot-tooltip"}>Plot</Tooltip>}
-        >
-          <Button className="tool-button">
-            <FontAwesomeIcon icon={faChartLine} onClick={handlePlot} />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"plot-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"plot-tooltip"}>Plot</Tooltip>}
+      >
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faChartLine} onClick={handlePlot} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"reset-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"reset-tooltip"}>Reset Map</Tooltip>}
-        >
-          <Button className="tool-button">
-            <FontAwesomeIcon icon={faRotateLeft} onClick={handleReset} />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"reset-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"reset-tooltip"}>Reset Map</Tooltip>}
+      >
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faRotateLeft} onClick={handleReset} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"settings-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"settings-tooltip"}>Settings</Tooltip>}
-        >
-          <Button className="tool-button">
-            <FontAwesomeIcon icon={faGear} onClick={handleSettings} />
-          </Button>
-        </OverlayTrigger>
+      <OverlayTrigger
+        key={"settings-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"settings-tooltip"}>Settings</Tooltip>}
+      >
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faGear} onClick={handleSettings} />
+        </Button>
+      </OverlayTrigger>
 
-        <OverlayTrigger
-          key={"info-overlay"}
-          placement="left"
-          container={mapToolsRef}
-          overlay={<Tooltip id={"info-tooltip"}>Info/Help</Tooltip>}
-        >
-          <Button className="tool-button">
-            <FontAwesomeIcon icon={faInfo} />
-          </Button>
-        </OverlayTrigger>
-      </div>
-    </>
+      <OverlayTrigger
+        key={"info-overlay"}
+        placement="left"
+        container={mapToolsRef}
+        overlay={<Tooltip id={"info-tooltip"}>Info/Help</Tooltip>}
+      >
+        <Button className="tool-button">
+          <FontAwesomeIcon icon={faInfo} onClick={handleInfo} />
+        </Button>
+      </OverlayTrigger>
+    </div>
   );
 }
 

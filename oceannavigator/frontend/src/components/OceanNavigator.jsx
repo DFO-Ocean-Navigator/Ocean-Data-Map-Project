@@ -17,6 +17,7 @@ import AreaWindow from "./AreaWindow.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
+import InfoHelpWindow from "./InfoHelpWindow.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -101,14 +102,16 @@ function OceanNavigator() {
         }
         break;
       case "plot":
-        if (!vectorId) {
-          setSelectedCoordinates(vectorCoordinates);
+        if (vectorCoordinates.length > 0 || vectorId) {
+          if (!vectorId) {
+            setSelectedCoordinates(vectorCoordinates);
+          }
+          setUiSettings({
+            ...uiSettings,
+            showModal: true,
+            modalType: vectorType,
+          });
         }
-        setUiSettings({
-          ...uiSettings,
-          showModal: true,
-          modalType: vectorType,
-        });
         break;
       case "show":
         setVectorCoordinates([]);
@@ -337,6 +340,10 @@ function OceanNavigator() {
           updateMapSettings={updateMapSettings}
         />
       );
+      modalTitle = "Settings";
+      break;
+    case "info":
+      modalBodyContent = <InfoHelpWindow />;
       modalTitle = "Settings";
       break;
   }

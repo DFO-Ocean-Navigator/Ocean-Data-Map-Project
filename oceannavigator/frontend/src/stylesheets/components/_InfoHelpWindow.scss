@@ -1,0 +1,13 @@
+.InfoHelpWindow {
+  .options-col {
+    padding: unset;
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+    overflow: auto;
+  }
+
+  .content-iframe {
+    height: -webkit-fill-available;
+  }
+}
