@@ -1083,7 +1083,7 @@ const GlobalMap = forwardRef((props, ref) => {
         case "class4":
           url =
             `/api/v2.0/class4` +
-            `/${props.class4type}` +
+            `/${props.class4Type}` +
             `?projection=${projection.getCode()}` +
             `&resolution=${Math.round(resolution)}` +
             `&extent=${extent.map(function (i) {

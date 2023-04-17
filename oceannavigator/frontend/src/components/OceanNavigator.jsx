@@ -18,6 +18,7 @@ import ObservationTools from "./ObservationTools.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
+import Class4Window from "./Class4WIndow.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -44,12 +45,13 @@ function OceanNavigator() {
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
-    showModal: false,
-    modalType: "",
+    showModal: true,
+    modalType: "class4",
     showDrawingTools: false,
     showObservationTools: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
+  const [class4Type, setClass4Type] = useState("ocean_predict")
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
@@ -118,6 +120,7 @@ function OceanNavigator() {
         setSelectedCoordinates([]);
         closeModal();
         mapRef0.current.show(arg, arg2);
+        setClass4Type(arg3)
         // if (this.mapComponent2) {
         //   this.mapComponent2.show(arg, arg2);
         // }
@@ -230,6 +233,7 @@ function OceanNavigator() {
       vectorId={vectorId}
       vectorType={vectorType}
       vectorCoordinates={vectorCoordinates}
+      class4Type={class4Type}
       updateState={updateState}
       action={action}
       updateMapSettings={updateMapSettings}
@@ -239,6 +243,7 @@ function OceanNavigator() {
 
   let modalBodyContent = null;
   let modalTitle = "";
+  let modalSize = "lg";
   switch (uiSettings.modalType) {
     case "point":
       modalBodyContent = (
@@ -333,6 +338,11 @@ function OceanNavigator() {
       );
       modalTitle = "Select Observations";
       break;
+    case "class4":
+      modalBodyContent = <Class4Window action={action} updateUI={updateUI} />;
+      modalTitle = "Select Class4";
+      modalSize = "sm";
+      break;
     case "settings":
       modalBodyContent = (
         <SettingsWindow
@@ -375,7 +385,7 @@ function OceanNavigator() {
         show={uiSettings.showModal}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
-        size="lg"
+        size={modalSize}
       >
         <Modal.Header closeButton closeVariant="white" closeLabel={"Close"}>
           <Modal.Title>{modalTitle}</Modal.Title>

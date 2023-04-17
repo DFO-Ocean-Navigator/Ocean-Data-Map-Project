@@ -21,13 +21,14 @@ function TimePicker(props) {
   const ref = useOutsideClick(handleClickOutside);
 
   useEffect(() => {
-    let timestamps = [];
     if (!props.timestamps) {
-      GetTimestampsPromise(props.dataset.id, props.dataset.variable).then(
-        (result) => {
-          setTimestamps(result.data);
-        }
-      );
+      if (props.dataset.id && props.dataset.variable) {
+        GetTimestampsPromise(props.dataset.id, props.dataset.variable).then(
+          (result) => {
+            setTimestamps(result.data);
+          }
+        );
+      }
     } else {
       setTimestamps(props.timestamps);
     }

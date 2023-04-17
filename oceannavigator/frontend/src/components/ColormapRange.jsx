@@ -103,7 +103,7 @@ function ColormapRange(props) {
   }
 
   return (
-    <div className="Range input">
+    <div className="ColormapRange">
       <h1>{props.title}</h1>
       {props.auto ? autoCheck : null}
       <table style={{ display: useAuto ? "none" : "table" }}>
@@ -115,6 +115,7 @@ function ColormapRange(props) {
             <td>
               <input
                 type="number"
+                className="range-input"
                 value={min}
                 onChange={(e) => changed("min", e)}
                 step={0.1}
@@ -128,6 +129,7 @@ function ColormapRange(props) {
             <td>
               <input
                 type="number"
+                className="range-input"
                 value={max}
                 onChange={(e) => changed("max", e)}
                 step={0.1}

@@ -173,7 +173,7 @@ function SettingsWindow(props) {
               max={1.0}
               step={0.05}
               value={bathyOpacity}
-              onChange={(value) => setBathyOpacity(value)}
+              onChange={(e) => setBathyOpacity(e.target.value)}
             />
           </InputGroup>
 

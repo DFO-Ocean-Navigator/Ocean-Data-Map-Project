@@ -1,0 +1,46 @@
+Div.class4-calendar-container {
+    border: 1px solid #aeaeae;
+    width: 300px;
+    justify-content: center;
+  
+    .class4-calendar-header {
+      width: 100%;
+      color: #ffffff;
+      background-color: #008cba;
+      font-size: large;
+      font-weight: bold;
+      padding: 2px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  
+    .class4-calendar {
+      display: grid;
+      grid-template: repeat(7, auto) / repeat(7, auto);
+      column-gap: 2px;
+      row-gap: 2px;
+      background-color: #ffffff;
+      padding: 2px;
+  
+      .day-label {
+        display: flex;
+        justify-content: center;
+        font-weight: bold;
+      }
+  
+      .date-selected {
+        color: #ffffff;
+        background-color: #008cba;
+      }
+  
+      .date-button-enabled {
+        background-color: lightgray;
+      }
+  
+      .date-button-disabled {
+        color: lightgray;
+      }
+    }
+  }
+  

@@ -145,10 +145,7 @@ function MapTools(props) {
         <Button key="info-button" className="tool-button">
           <FontAwesomeIcon
             icon={faInfo}
-            onClick={() => {
-              console.log("clicked");
-              handleShowModal("info-help");
-            }}
+            onClick={() => handleShowModal("info-help")}
           />
         </Button>
       </OverlayTrigger>
