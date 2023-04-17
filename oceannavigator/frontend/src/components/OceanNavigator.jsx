@@ -45,8 +45,8 @@ function OceanNavigator() {
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
-    showModal: true,
-    modalType: "class4",
+    showModal: false,
+    modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled

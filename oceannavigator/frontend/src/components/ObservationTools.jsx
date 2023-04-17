@@ -45,7 +45,9 @@ function ObservationTools(props) {
     });
   };
 
-  const handleClass4 = () => {};
+  const handleClass4 = () => {
+    props.updateUI({ modalType: "class4", showModal: true });
+  };
 
   return (
     <div className="obs-tools">
