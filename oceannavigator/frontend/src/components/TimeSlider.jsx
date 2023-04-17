@@ -186,7 +186,7 @@ function TimeSlider(props) {
   };
 
   const nextValue = () => {
-    setSelected(selectedIndex + 1);
+    setSelectedIndex(selectedIndex + 1);
   };
 
   return (

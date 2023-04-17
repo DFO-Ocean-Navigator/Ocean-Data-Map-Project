@@ -51,7 +51,7 @@ function OceanNavigator() {
     showObservationTools: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
-  const [class4Type, setClass4Type] = useState("ocean_predict")
+  const [class4Type, setClass4Type] = useState("ocean_predict");
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
@@ -120,7 +120,7 @@ function OceanNavigator() {
         setSelectedCoordinates([]);
         closeModal();
         mapRef0.current.show(arg, arg2);
-        setClass4Type(arg3)
+        setClass4Type(arg3);
         // if (this.mapComponent2) {
         //   this.mapComponent2.show(arg, arg2);
         // }
@@ -172,7 +172,13 @@ function OceanNavigator() {
         setDataset0(value);
         break;
       default:
-        setDataset0({ ...dataset0, [key]: value });
+        setDataset0((prevDataset) => {
+          let newDataset = {
+            ...prevDataset,
+            [key]: value,
+          };
+          return newDataset;
+        });
     }
   };
 
@@ -182,7 +188,13 @@ function OceanNavigator() {
         setDataset1(value);
         break;
       default:
-        setDataset1({ ...dataset0, [key]: value });
+        setDataset1((prevDataset) => {
+          let newDataset = {
+            ...prevDataset,
+            [key]: value,
+          };
+          return newDataset;
+        });
     }
   };
 

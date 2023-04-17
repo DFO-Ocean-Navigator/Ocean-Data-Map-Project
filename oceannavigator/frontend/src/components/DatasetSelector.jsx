@@ -245,6 +245,12 @@ function DatasetSelector(props) {
     setDataset(newDataset);
   };
 
+  const handleTimeChange = (key, value) => {
+    let newDataset = { ...dataset, [key]: value };
+    setDataset(newDataset);
+    props.onUpdate(key, value)
+  }
+
   const handleGoButton = () => {
     props.onUpdate("dataset", dataset);
   };
@@ -391,7 +397,7 @@ function DatasetSelector(props) {
         dataset={dataset}
         timestamps={datasetTimestamps}
         selected={dataset.time}
-        onChange={updateDataset}
+        onChange={handleTimeChange}
         loading={loading}
       />
     );
@@ -427,7 +433,7 @@ function DatasetSelector(props) {
           key="time"
           id="time"
           state={dataset.time}
-          onUpdate={updateDataset}
+          onChange={handleTimeChange}
           title={"Time (UTC)"}
           dataset={dataset}
           timestamps={datasetTimestamps}
@@ -494,10 +500,9 @@ function DatasetSelector(props) {
         {depthSelector}
         {props.horizontalLayout ? goButton : null}
       </div>
-      {timeSelector}
-
-      {axisRange}
       {props.horizontalLayout ? null : goButton}
+      {timeSelector}
+      {axisRange}
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
