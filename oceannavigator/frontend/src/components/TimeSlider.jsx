@@ -13,6 +13,7 @@ function TimeSlider(props) {
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(1);
+  const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
     setMin(props.timestamps.length < 50 ? 0 : props.timestamps.length - 50);
@@ -21,6 +22,10 @@ function TimeSlider(props) {
       return timestamp.id === props.selected;
     });
     setSelectedIndex(newIndex);
+
+    if (props.dataset.id.includes("climatology")) {
+      setClimatology(true);
+    }
   }, [props.timestamps]);
 
   useEffect(() => {
@@ -52,10 +57,12 @@ function TimeSlider(props) {
         };
         break;
       case "month":
-        formatter = {
-          year: "numeric",
-          month: "short",
-        };
+        formatter = climatology
+          ? { month: "long" }
+          : {
+              year: "numeric",
+              month: "short",
+            };
         break;
       case "year":
         formatter = {
@@ -81,13 +88,13 @@ function TimeSlider(props) {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 11, 22) <= time && time <= new Date(year, 2, 20)) {
-      return `Winter ${year - 1}`;
+      return climatology ? "Winter" : `Winter ${year - 1}`;
     } else if (new Date(year, 2, 20) <= time && time <= new Date(year, 5, 20)) {
-      return `Spring ${year}`;
+      return climatology ? "Spring" : `Spring ${year}`;
     } else if (new Date(year, 5, 21) <= time && time <= new Date(year, 8, 22)) {
-      return `Summer ${year}`;
+      return climatology ? "Summer" : `Summer ${year}`;
     } else {
-      return `Fall ${year}`;
+      return climatology ? "Fall" : `Fall ${year}`;
     }
   };
 
@@ -121,7 +128,7 @@ function TimeSlider(props) {
     let tickLabel = null;
     let tickClass = "slider-minor-tick";
     let tooltipLabel = getFormattedTime(time);
-    index = index + min
+    index = index + min;
     if (setMajorTick(time)) {
       tickLabel = tooltipLabel;
       tickClass = "slider-major-tick";
