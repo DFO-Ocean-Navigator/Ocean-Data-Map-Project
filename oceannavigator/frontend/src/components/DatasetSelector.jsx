@@ -250,12 +250,6 @@ function DatasetSelector(props) {
     setDataset(newDataset);
   };
 
-  const handleTimeChange = (key, value) => {
-    let newDataset = { ...dataset, [key]: value };
-    setDataset(newDataset);
-    props.onUpdate(key, value);
-  };
-
   const handleGoButton = () => {
     props.onUpdate("dataset", dataset);
   };
@@ -402,7 +396,7 @@ function DatasetSelector(props) {
         dataset={dataset}
         timestamps={datasetTimestamps}
         selected={dataset.time}
-        onChange={handleTimeChange}
+        onChange={updateDataset}
         loading={loading}
       />
     );
@@ -438,7 +432,7 @@ function DatasetSelector(props) {
           key="time"
           id="time"
           state={dataset.time}
-          onChange={handleTimeChange}
+          onChange={updateDataset}
           title={"Time (UTC)"}
           dataset={dataset}
           timestamps={datasetTimestamps}
