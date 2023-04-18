@@ -106,19 +106,21 @@ function TimeSlider(props) {
   };
 
   const SliderHandle = () => {
-    let time = new Date(props.timestamps[selectedIndex].value);
+    if (selectedIndex < props.timestamps.length) {
+      let time = new Date(props.timestamps[selectedIndex].value);
 
-    return (
-      <OverlayTrigger
-        key={`handle-overlay`}
-        placement="top"
-        overlay={
-          <Tooltip id={`handle-tooltip`}>{getFormattedTime(time)}</Tooltip>
-        }
-      >
-        <div className="slider-handle" />
-      </OverlayTrigger>
-    );
+      return (
+        <OverlayTrigger
+          key={`handle-overlay`}
+          placement="top"
+          overlay={
+            <Tooltip id={`handle-tooltip`}>{getFormattedTime(time)}</Tooltip>
+          }
+        >
+          <div className="slider-handle" />
+        </OverlayTrigger>
+      );
+    }
   };
 
   const sliderRail = <div className="slider-rail" />;
