@@ -26,7 +26,9 @@ function DatasetSelector(props) {
   const [datasetTimestamps, setDatasetTimestamps] = useState([]);
   const [datasetDepths, setDatasetDepths] = useState([]);
   const [options, setOptions] = useState(props.options);
-  const [dataset, setDataset] = useState(props.mountedDataset ? props.mountedDataset : DATASET_DEFAULTS);
+  const [dataset, setDataset] = useState(
+    props.mountedDataset ? props.mountedDataset : DATASET_DEFAULTS
+  );
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
 
@@ -125,7 +127,7 @@ function DatasetSelector(props) {
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
-                  quiverVariable: "None"
+                  quiverVariable: "None",
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -169,7 +171,6 @@ function DatasetSelector(props) {
     if (datasetDepths.length === 0) {
       GetDepthsPromise(dataset.id, newVariable).then((depthResult) => {
         setDatasetDepths(depthResult.data);
-        setDataset({ ...dataset, depth: 0 });
       });
     }
 
@@ -210,8 +211,12 @@ function DatasetSelector(props) {
       };
     }
 
-    setDataset({ ...dataset, ...newDataset });
-    setOptions({ ...options, ...newOptions });
+    setDataset((prevDataset) => {
+      return { ...prevDataset, ...newDataset };
+    });
+    setOptions((prevOptions) => {
+      return { ...prevOptions, ...newOptions };
+    });
   };
 
   const nothingChanged = (key, value) => {
@@ -248,8 +253,8 @@ function DatasetSelector(props) {
   const handleTimeChange = (key, value) => {
     let newDataset = { ...dataset, [key]: value };
     setDataset(newDataset);
-    props.onUpdate(key, value)
-  }
+    props.onUpdate(key, value);
+  };
 
   const handleGoButton = () => {
     props.onUpdate("dataset", dataset);
@@ -456,23 +461,28 @@ function DatasetSelector(props) {
 
   function updateAxisRange(key, value) {
     let range = dataset.variable_range;
-    range[value[0]] = value[1]
-    setDataset({...dataset, variable_range: range})
+    range[value[0]] = value[1];
+    setDataset({ ...dataset, variable_range: range });
   }
 
   let axisRange = [];
-    if (
-      props.showAxisRange &&
-      datasetVariables &&
-      datasetVariables.length > 0 &&
-      !loading
-    ) {
-      let axisVariables = Array.isArray(dataset.variable) ? dataset.variable : [dataset.variable];
-      let variableData = datasetVariables.filter((v) => axisVariables.includes(v.id));
-      let axisVariableRanges = variableData.map((v) => v.scale);
-      let axisVariableNames = variableData.map((v) => v.value);
-      for (let i = 0; i < axisVariables.length; ++i) {
-        let range = <AxisRange
+  if (
+    props.showAxisRange &&
+    datasetVariables &&
+    datasetVariables.length > 0 &&
+    !loading
+  ) {
+    let axisVariables = Array.isArray(dataset.variable)
+      ? dataset.variable
+      : [dataset.variable];
+    let variableData = datasetVariables.filter((v) =>
+      axisVariables.includes(v.id)
+    );
+    let axisVariableRanges = variableData.map((v) => v.scale);
+    let axisVariableNames = variableData.map((v) => v.value);
+    for (let i = 0; i < axisVariables.length; ++i) {
+      let range = (
+        <AxisRange
           key={axisVariables[i] + "_axis_range"}
           id={axisVariables[i] + "_axis_range"}
           title={axisVariableNames[i] + " Range"}
@@ -480,9 +490,10 @@ function DatasetSelector(props) {
           range={axisVariableRanges[i]}
           onUpdate={updateAxisRange}
         />
-        axisRange.push(range)
-      }
+      );
+      axisRange.push(range);
     }
+  }
 
   return (
     <>

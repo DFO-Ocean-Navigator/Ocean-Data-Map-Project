@@ -876,7 +876,12 @@ const GlobalMap = forwardRef((props, ref) => {
     if (props.dataset.time > 0) {
       layerData.setSource(new XYZ(getDataSource()));
     }
-  }, [props.dataset.id, props.dataset.variable, props.dataset.time]);
+  }, [
+    props.dataset.id,
+    props.dataset.variable,
+    props.dataset.time,
+    props.dataset.depth,
+  ]);
 
   useEffect(() => {
     if (layerQuiver) {
