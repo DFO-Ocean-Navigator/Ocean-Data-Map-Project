@@ -888,7 +888,12 @@ const GlobalMap = forwardRef((props, ref) => {
       let source = null;
       if (props.dataset.quiverVariable !== "none") {
         source = new VectorSource({
-          url: `/api/v2.0/data?dataset=${props.dataset.id}&variable=${props.dataset.quiverVariable}&time=${props.dataset.time}&depth=${props.dataset.depth}&geometry_type=area`,
+          url:
+            `/api/v2.0/data?dataset=${props.dataset.id}` +
+            `&variable=${props.dataset.quiverVariable}` +
+            `&time=${props.dataset.time}` +
+            `&depth=${props.dataset.depth}` +
+            `&geometry_type=area`,
           format: new GeoJSON({
             featureProjection: olProj.get("EPSG:3857"),
             dataProjection: olProj.get("EPSG:4326"),

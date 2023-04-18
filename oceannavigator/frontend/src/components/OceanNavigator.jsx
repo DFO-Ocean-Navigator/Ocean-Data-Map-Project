@@ -173,11 +173,10 @@ function OceanNavigator() {
         break;
       default:
         setDataset0((prevDataset) => {
-          let newDataset = {
+          return {
             ...prevDataset,
             [key]: value,
           };
-          return newDataset;
         });
     }
   };
@@ -189,26 +188,29 @@ function OceanNavigator() {
         break;
       default:
         setDataset1((prevDataset) => {
-          let newDataset = {
+          return {
             ...prevDataset,
             [key]: value,
           };
-          return newDataset;
         });
     }
   };
 
   const updateUI = (newSettings) => {
-    setUiSettings({ ...uiSettings, ...newSettings });
+    setUiSettings((prevUISettings) => {
+      return { ...prevUISettings, ...newSettings };
+    });
   };
 
-  const closeModal = () => [
-    setUiSettings({
-      ...uiSettings,
-      showModal: false,
-      modalType: "",
-    }),
-  ];
+  const closeModal = () => {
+    setUiSettings((prevUiSettings) => {
+      return {
+        ...prevUiSettings,
+        showModal: false,
+        modalType: "",
+      };
+    });
+  };
 
   const updateMapSettings = (key, value) => {
     setMapSettings((prevMapSettings) => {

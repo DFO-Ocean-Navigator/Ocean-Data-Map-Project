@@ -90,11 +90,12 @@ function MapTools(props) {
         placement="left"
         overlay={<Tooltip id={"obs-tooltip"}>Observations</Tooltip>}
       >
-        <Button key="obs-button" className="tool-button">
-          <FontAwesomeIcon
-            icon={faSatelliteDish}
-            onClick={handleObservations}
-          />
+        <Button
+          key="obs-button"
+          className="tool-button"
+          onClick={handleObservations}
+        >
+          <FontAwesomeIcon icon={faSatelliteDish} />
         </Button>
       </OverlayTrigger>
 
@@ -103,11 +104,12 @@ function MapTools(props) {
         placement="left"
         overlay={<Tooltip id={"plot-tooltip"}>Plot</Tooltip>}
       >
-        <Button key="plot-button" className="tool-button">
-          <FontAwesomeIcon
-            icon={faChartLine}
-            onClick={() => props.action("plot")}
-          />
+        <Button
+          key="plot-button"
+          className="tool-button"
+          onClick={() => props.action("plot")}
+        >
+          <FontAwesomeIcon icon={faChartLine} />
         </Button>
       </OverlayTrigger>
 
@@ -116,11 +118,12 @@ function MapTools(props) {
         placement="left"
         overlay={<Tooltip id={"reset-tooltip"}>Reset Map</Tooltip>}
       >
-        <Button key="reset-button" className="tool-button">
-          <FontAwesomeIcon
-            icon={faRotateLeft}
-            onClick={() => props.action("resetMap")}
-          />
+        <Button
+          key="reset-button"
+          className="tool-button"
+          onClick={() => props.action("resetMap")}
+        >
+          <FontAwesomeIcon icon={faRotateLeft} />
         </Button>
       </OverlayTrigger>
 
@@ -129,11 +132,12 @@ function MapTools(props) {
         placement="left"
         overlay={<Tooltip id={"settings-tooltip"}>Settings</Tooltip>}
       >
-        <Button key="settings-button" className="tool-button">
-          <FontAwesomeIcon
-            icon={faGear}
-            onClick={() => handleShowModal("settings")}
-          />
+        <Button
+          key="settings-button"
+          className="tool-button"
+          onClick={() => handleShowModal("settings")}
+        >
+          <FontAwesomeIcon icon={faGear} />
         </Button>
       </OverlayTrigger>
 
@@ -142,11 +146,12 @@ function MapTools(props) {
         placement="left"
         overlay={<Tooltip id={"info-tooltip"}>Info/Help</Tooltip>}
       >
-        <Button key="info-button" className="tool-button">
-          <FontAwesomeIcon
-            icon={faInfo}
-            onClick={() => handleShowModal("info-help")}
-          />
+        <Button
+          key="info-button"
+          className="tool-button"
+          onClick={() => handleShowModal("info-help")}
+        >
+          <FontAwesomeIcon icon={faInfo} />
         </Button>
       </OverlayTrigger>
     </div>
