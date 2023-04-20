@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Modal, ProgressBar, Button } from "react-bootstrap";
 
 import AxisRange from "./AxisRange.jsx";
+import DatasetDropdown from "./DatasetDropdown.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
@@ -267,18 +268,28 @@ function DatasetSelector(props) {
     });
 
     datasetSelector = (
-      <SelectBox
-        id={`dataset-selector-dataset-selector-${props.id}`}
-        key={`dataset-selector-dataset-selector-${props.id}`}
-        name={"dataset"}
-        label={"Dataset"}
-        options={availableDatasets}
-        onChange={updateDataset}
-        selected={dataset.id}
-        helpContent={helpContent}
-        loading={loading}
-        horizontalLayout={props.horizontalLayout}
-      />
+      // <SelectBox
+      //   id={`dataset-selector-dataset-selector-${props.id}`}
+      //   key={`dataset-selector-dataset-selector-${props.id}`}
+      //   name={"dataset"}
+      //   label={"Dataset"}
+      //   options={availableDatasets}
+      //   onChange={updateDataset}
+      //   selected={dataset.id}
+      //   helpContent={helpContent}
+      //   loading={loading}
+      //   horizontalLayout={props.horizontalLayout}
+      // />
+      <DatasetDropdown
+          id={`dataset-selector-dataset-selector-${props.id}`}
+          key={`dataset-selector-dataset-selector-${props.id}`}
+          options={availableDatasets}
+          label={"Dataset"}
+          placeholder={"Dataset"}
+          onChange={updateDataset}
+          selected={dataset.id}
+          horizontalLayout={props.horizontalLayout}
+        />
     );
   }
 

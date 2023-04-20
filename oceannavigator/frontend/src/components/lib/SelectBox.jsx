@@ -69,7 +69,7 @@ export class SelectBox extends React.Component {
           multiple={this.props.multiple}
           className={
             this.props.horizontalLayout
-              ? "form-select-hotizontal"
+              ? "form-select-horizontal"
               : "form-select"
           }
         >
