@@ -268,18 +268,6 @@ function DatasetSelector(props) {
     });
 
     datasetSelector = (
-      // <SelectBox
-      //   id={`dataset-selector-dataset-selector-${props.id}`}
-      //   key={`dataset-selector-dataset-selector-${props.id}`}
-      //   name={"dataset"}
-      //   label={"Dataset"}
-      //   options={availableDatasets}
-      //   onChange={updateDataset}
-      //   selected={dataset.id}
-      //   helpContent={helpContent}
-      //   loading={loading}
-      //   horizontalLayout={props.horizontalLayout}
-      // />
       <DatasetDropdown
           id={`dataset-selector-dataset-selector-${props.id}`}
           key={`dataset-selector-dataset-selector-${props.id}`}

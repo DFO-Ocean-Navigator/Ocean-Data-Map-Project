@@ -126,6 +126,7 @@ proj3031.setExtent([
 const GlobalMap = forwardRef((props, ref) => {
   const [map, setMap] = useState();
   const [mapView, setMapView] = useState();
+  const [select, setSelect] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
   const [layerData, setLayerData] = useState();
   const [layerLandShapes, setLayerLandShapes] = useState();
@@ -703,7 +704,7 @@ const GlobalMap = forwardRef((props, ref) => {
       mapObject.getViewport().style.cursor = hit ? "pointer" : "";
     });
 
-    const select = new olinteraction.Select({
+    const newSelect = new olinteraction.Select({
       style: function (feat, res) {
         if (feat.get("type") != "area") {
           return new Style({
@@ -724,108 +725,10 @@ const GlobalMap = forwardRef((props, ref) => {
           });
         }
       },
-      filter: function (feature) {
-        return newVectorSource.forEachFeature(function (f) {
-          if (f == feature) {
-            return true;
-          }
-        });
-      },
     });
 
-    let selectedFeatures = select.getFeatures();
-    mapObject.addInteraction(select);
-
-    const dragBox = new olinteraction.DragBox({
-      condition: olcondition.platformModifierKeyOnly,
-    });
-    mapObject.addInteraction(dragBox);
-
-    const pushSelection = function () {
-      var t = undefined;
-      var content = [];
-      var names = [];
-      selectedFeatures.forEach(function (feature) {
-        if (feature.get("class") == "observation") {
-          if (feature.getGeometry() instanceof olgeom.LineString) {
-            t = "track";
-            content.push(feature.get("id"));
-          } else {
-            t = "point";
-            let c = feature
-              .getGeometry()
-              .clone()
-              .transform(props.mapSettings.projection, "EPSG:4326")
-              .getCoordinates();
-            content.push([c[1], c[0], feature.get("id")]);
-          }
-        } else if (feature.get("type") != null) {
-          switch (feature.get("type")) {
-            case "class4":
-              // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
-              const class4id = feature.get("id").replace("/", "_");
-              content.push(class4id);
-              break;
-            case "point":
-              var c = feature
-                .getGeometry()
-                .clone()
-                .transform(props.mapSettings.projection, "EPSG:4326")
-                .getCoordinates();
-              content.push([c[1], c[0], feature.get("observation")]);
-              break;
-            case "line":
-              content.push(
-                feature
-                  .getGeometry()
-                  .clone()
-                  .transform(props.mapSettings.projection, "EPSG:4326")
-                  .getCoordinates()
-                  .map(function (o) {
-                    return [o[1], o[0]];
-                  })
-              );
-              content = content[0];
-              break;
-            case "drifter":
-              content.push(feature.get("name"));
-              break;
-            case "area":
-              if (feature.get("key")) {
-                content.push(feature.get("key"));
-              } else {
-                var points = feature
-                  .getGeometry()
-                  .clone()
-                  .transform(props.mapSettings.projection, "EPSG:4326")
-                  .getCoordinates()
-                  .map(function (o) {
-                    return o.map(function (p) {
-                      return [p[1], p[0]];
-                    });
-                  });
-                var area = {
-                  polygons: points,
-                  innerrings: [],
-                  name: "",
-                };
-                content.push(area);
-              }
-              break;
-          }
-          t = feature.get("type");
-        }
-        if (feature.get("name")) {
-          names.push(feature.get("name").replace(/<span>.*>/, ""));
-        }
-      });
-
-      props.action("selectPoints", content);
-      props.updateUI({ modalType: t, showModal: true });
-      props.updateState("names", names);
-    };
-
-    select.on("select", function (e) {
+    newSelect.on("select", function (e) {
+      let selectedFeatures = this.getFeatures();
       if (
         e.selected.length > 0 &&
         (e.selected[0].line || e.selected[0].drifter)
@@ -837,7 +740,7 @@ const GlobalMap = forwardRef((props, ref) => {
         props.updateState("plotEnabled", true);
         props.action("point", props.vectorCoordinates);
       }
-      pushSelection();
+      pushSelection(selectedFeatures);
 
       // if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
       //   props.action("plot");
@@ -846,6 +749,14 @@ const GlobalMap = forwardRef((props, ref) => {
         selectedFeatures.clear();
       }
     });
+
+    // let selectedFeatures = newSelect.getFeatures();
+    mapObject.addInteraction(newSelect);
+
+    const dragBox = new olinteraction.DragBox({
+      condition: olcondition.platformModifierKeyOnly,
+    });
+    mapObject.addInteraction(dragBox);
 
     newLayerBasemap.setZIndex(0);
     newLayerData.setZIndex(1);
@@ -858,6 +769,7 @@ const GlobalMap = forwardRef((props, ref) => {
 
     setMap(mapObject);
     setMapView(newMapView);
+    setSelect(newSelect);
     setLayerBasemap(newLayerBasemap);
     setLayerData(newLayerData);
     setLayerLandShapes(newLayerLandShapes);
@@ -908,6 +820,7 @@ const GlobalMap = forwardRef((props, ref) => {
     if (vectorSource) {
       vectorSource.clear();
       drawPoints();
+      updateSelectFilter();
     }
   }, [props.vectorCoordinates, props.vectorType]);
 
@@ -915,6 +828,7 @@ const GlobalMap = forwardRef((props, ref) => {
     if (props.vectorId && props.vectorType) {
       vectorSource.clear();
       vectorSource.setLoader(loader);
+      updateSelectFilter();
     }
   }, [props.vectorId, props.vectorType]);
 
@@ -1425,6 +1339,102 @@ const GlobalMap = forwardRef((props, ref) => {
         vectorSource.addFeature(feat);
         break;
     }
+  };
+
+  const pushSelection = function (selectedFeatures) {
+    var t = undefined;
+    var content = [];
+    var names = [];
+    selectedFeatures.forEach(function (feature) {
+      if (feature.get("class") == "observation") {
+        if (feature.getGeometry() instanceof olgeom.LineString) {
+          t = "track";
+          content.push(feature.get("id"));
+        } else {
+          t = "point";
+          let c = feature
+            .getGeometry()
+            .clone()
+            .transform(props.mapSettings.projection, "EPSG:4326")
+            .getCoordinates();
+          content.push([c[1], c[0], feature.get("id")]);
+        }
+      } else if (feature.get("type") != null) {
+        switch (feature.get("type")) {
+          case "class4":
+            // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
+            const class4id = feature.get("id").replace("/", "_");
+            content.push(class4id);
+            break;
+          case "point":
+            var c = feature
+              .getGeometry()
+              .clone()
+              .transform(props.mapSettings.projection, "EPSG:4326")
+              .getCoordinates();
+            content.push([c[1], c[0], feature.get("observation")]);
+            break;
+          case "line":
+            content.push(
+              feature
+                .getGeometry()
+                .clone()
+                .transform(props.mapSettings.projection, "EPSG:4326")
+                .getCoordinates()
+                .map(function (o) {
+                  return [o[1], o[0]];
+                })
+            );
+            content = content[0];
+            break;
+          case "drifter":
+            content.push(feature.get("name"));
+            break;
+          case "area":
+            if (feature.get("key")) {
+              content.push(feature.get("key"));
+            } else {
+              var points = feature
+                .getGeometry()
+                .clone()
+                .transform(props.mapSettings.projection, "EPSG:4326")
+                .getCoordinates()
+                .map(function (o) {
+                  return o.map(function (p) {
+                    return [p[1], p[0]];
+                  });
+                });
+              var area = {
+                polygons: points,
+                innerrings: [],
+                name: "",
+              };
+              content.push(area);
+            }
+            break;
+        }
+        t = feature.get("type");
+      }
+      if (feature.get("name")) {
+        names.push(feature.get("name").replace(/<span>.*>/, ""));
+      }
+    });
+
+    props.action("selectPoints", content);
+    props.updateUI({ modalType: t, showModal: true });
+    props.updateState("names", names);
+  };
+
+  const updateSelectFilter = () => {
+    select.setProperties({
+      filter: function (feature) {
+        return vectorSource.forEachFeature(function (f) {
+          if (f == feature) {
+            return true;
+          }
+        });
+      },
+    });
   };
 
   if (map) {
