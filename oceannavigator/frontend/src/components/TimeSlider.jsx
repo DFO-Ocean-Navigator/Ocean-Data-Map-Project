@@ -12,11 +12,20 @@ import {
 function TimeSlider(props) {
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(1);
+  const [nTicks, setNTicks] = useState(48);
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
-    setMin(props.timestamps.length < 50 ? 0 : props.timestamps.length - 50);
+    let newNTicks = 48;
+    if (props.dataset.quantum === "day") {
+      newNTicks = 24;
+    }
+    setMin(
+      props.timestamps.length < newNTicks
+        ? 0
+        : props.timestamps.length - newNTicks
+    );
     setMax(props.timestamps.length);
     let newIndex = props.timestamps.findIndex((timestamp) => {
       return timestamp.id === props.selected;
@@ -26,6 +35,8 @@ function TimeSlider(props) {
     if (props.dataset.id.includes("climatology")) {
       setClimatology(true);
     }
+
+    setNTicks(newNTicks);
   }, [props.timestamps]);
 
   useEffect(() => {
@@ -165,12 +176,12 @@ function TimeSlider(props) {
   });
 
   const prevFrame = () => {
-    if (min >= 50) {
-      setMin(min - 50);
+    if (min >= nTicks) {
+      setMin(min - nTicks);
       setMax(min);
-    } else if (props.timestamps.length > 50) {
+    } else if (props.timestamps.length > nTicks) {
       setMin(0);
-      setMax(50);
+      setMax(nTicks);
     } else {
       setMin(0);
       setMax(props.timestamps.length);
@@ -178,11 +189,11 @@ function TimeSlider(props) {
   };
 
   const nextFrame = () => {
-    if (props.timestamps.length - max >= 50) {
+    if (props.timestamps.length - max >= nTicks) {
       setMin(max);
-      setMax(max + 50);
-    } else if (props.timestamps.length - 50 > 0) {
-      setMin(props.timestamps.length - 50);
+      setMax(max + nTicks);
+    } else if (props.timestamps.length - nTicks > 0) {
+      setMin(props.timestamps.length - nTicks);
       setMax(props.timestamps.length);
     } else {
       setMin(0);

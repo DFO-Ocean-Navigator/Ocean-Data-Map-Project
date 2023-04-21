@@ -91,4 +91,9 @@
     overflow-y: scroll;
     height: 50vh;
   }
+
+  .dd-group {
+    display: flex;
+    flex-direction: column;
+  }
 }

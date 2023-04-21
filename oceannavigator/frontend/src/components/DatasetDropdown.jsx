@@ -7,37 +7,22 @@ import { Accordion, Row, Col } from "react-bootstrap";
 
 import { withTranslation } from "react-i18next";
 
-// const CustomToggle = React.forwardRef(({ children, onClick, value }, ref) => (
-//   <Form.Select
-//     href=""
-//     ref={ref}
-//     label={value}
-//     onClick={(e) => {
-//       e.preventDefault();
-//       onClick(e);
-//     }}
-//     defaultValue="0"
-//   >
-//     <option value="0" hidden>{value}</option>
-//     {children}
-//   </Form.Select>
-// ));
-
-const CustomToggle = React.forwardRef(({ children, className, onClick }, ref) => (
-  <button
-    href=""
-    ref={ref}
-    className={className}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-
-  >
-    <label className="dd-toggle-label">{children}</label>
-    <div className="dd-toggle-caret"/>
-  </button>
-));
+const CustomToggle = React.forwardRef(
+  ({ children, className, onClick }, ref) => (
+    <button
+      href=""
+      ref={ref}
+      className={className}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+    >
+      <label className="dd-toggle-label">{children}</label>
+      <div className="dd-toggle-caret" />
+    </button>
+  )
+);
 
 const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   <button
@@ -93,7 +78,7 @@ function DatasetDropdown(props) {
       dropdownItems.push(
         <Accordion id={`accordion_${menu}`} key={`accordion_${menu}`}>
           <Accordion.Header>{menu}</Accordion.Header>
-          <Accordion.Body>{options}</Accordion.Body>
+          <Accordion.Body className="dd-group">{options}</Accordion.Body>
         </Accordion>
       );
     }
@@ -122,18 +107,15 @@ function DatasetDropdown(props) {
 
   return (
     <div className="dd-group">
-    <InputGroup  as={formLayout}>
-      <Form.Label column>{props.label}</Form.Label>
-      <Dropdown>
-        <Dropdown.Toggle
-          className={"dd-toggle"}
-          as={CustomToggle}
-        >
-          {title}
-        </Dropdown.Toggle>
-        <Dropdown.Menu className="dd-menu">{options}</Dropdown.Menu>
-      </Dropdown>
-    </InputGroup>
+      <InputGroup as={formLayout}>
+        <Form.Label column>{props.label}</Form.Label>
+        <Dropdown>
+          <Dropdown.Toggle className={"dd-toggle"} as={CustomToggle}>
+            {title}
+          </Dropdown.Toggle>
+          <Dropdown.Menu className="dd-menu">{options}</Dropdown.Menu>
+        </Dropdown>
+      </InputGroup>
     </div>
   );
 }
