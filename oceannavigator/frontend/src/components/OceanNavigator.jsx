@@ -18,7 +18,8 @@ import ObservationTools from "./ObservationTools.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
-import Class4Window from "./Class4WIndow.jsx";
+import Class4Selector from "./Class4Selector.jsx";
+import Class4Window from "./Class4Window.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -51,6 +52,7 @@ function OceanNavigator() {
     showObservationTools: false,
     syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
+  const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
@@ -147,6 +149,9 @@ function OceanNavigator() {
           setObservationArea(arg);
           updateUI({ modalType: "observationSelect", showModal: true });
         }
+        break;
+      case "class4Id":
+        setClass4Id(arg);
         break;
     }
   };
@@ -352,10 +357,22 @@ function OceanNavigator() {
       );
       modalTitle = "Select Observations";
       break;
-    case "class4":
-      modalBodyContent = <Class4Window action={action} updateUI={updateUI} />;
+    case "class4Selector":
+      modalBodyContent = <Class4Selector action={action} updateUI={updateUI} />;
       modalTitle = "Select Class4";
       modalSize = "sm";
+      break;
+    case "class4":
+      modalBodyContent = (
+        <Class4Window
+          dataset={dataset0.id}
+          class4id={class4Id}
+          class4type={class4Type}
+          // init={this.state.subquery}
+          action={action}
+        />
+      );
+      modalTitle = "Class4";
       break;
     case "settings":
       modalBodyContent = (

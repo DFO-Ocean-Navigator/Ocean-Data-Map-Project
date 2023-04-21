@@ -1345,6 +1345,7 @@ const GlobalMap = forwardRef((props, ref) => {
     var t = undefined;
     var content = [];
     var names = [];
+    let actionType = "selectPoints"
     selectedFeatures.forEach(function (feature) {
       if (feature.get("class") == "observation") {
         if (feature.getGeometry() instanceof olgeom.LineString) {
@@ -1365,6 +1366,7 @@ const GlobalMap = forwardRef((props, ref) => {
             // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
             const class4id = feature.get("id").replace("/", "_");
             content.push(class4id);
+            actionType = "class4Id"
             break;
           case "point":
             var c = feature
@@ -1420,7 +1422,7 @@ const GlobalMap = forwardRef((props, ref) => {
       }
     });
 
-    props.action("selectPoints", content);
+    props.action(actionType, content);
     props.updateUI({ modalType: t, showModal: true });
     props.updateState("names", names);
   };

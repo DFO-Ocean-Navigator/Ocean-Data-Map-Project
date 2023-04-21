@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 
 import Class4Calendar from "./calendars/Class4Calendar.jsx";
-import { GetClass4Promise } from "../remote/OceanNavigator";
+import { GetClass4Promise } from "../remote/OceanNavigator.js";
 
-function Class4Window(props) {
+function Class4Selector(props) {
   const [class4OPFiles, setClass4OPFiles] = useState([]);
   const [class4RAOFiles, setClass4RAOFiles] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
@@ -56,7 +56,7 @@ function Class4Window(props) {
     ) : null;
 
   return (
-    <div className="Class4Window">
+    <div className="Class4Selector">
       <Form.Select
         value={class4Type}
         onChange={(e) => {
@@ -71,4 +71,4 @@ function Class4Window(props) {
   );
 }
 
-export default Class4Window;
+export default Class4Selector;
