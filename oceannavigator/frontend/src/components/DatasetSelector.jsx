@@ -497,7 +497,7 @@ function DatasetSelector(props) {
       onClick={() => {
         props.action("toggleCompare");
       }}
-    /> 
+    />
   ) : null;
 
   return (
@@ -515,12 +515,13 @@ function DatasetSelector(props) {
         {quiverSelector}
         {depthSelector}
 
+        {axisRange}
+        {props.horizontalLayout ? null : timeSelector}
         {props.horizontalLayout ? goButton : null}
-        {props.horizontalLayout ? compareSwitch : null}
+        {props.showCompare ? compareSwitch : null}
       </div>
+      {props.horizontalLayout ? timeSelector : null}
       {props.horizontalLayout ? null : goButton}
-      {timeSelector}
-      {axisRange}
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>

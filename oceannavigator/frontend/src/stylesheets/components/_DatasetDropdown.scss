@@ -11,7 +11,7 @@
   }
 
   .dd-label{
-    margin: 0;
+    margin: 0 !important;
     padding: 0;
   }
 
@@ -32,7 +32,7 @@
     appearance: none;
     max-width: 250px;
     padding: 0;
-    margin: 5px;
+    margin: 5px !important;
     flex-direction: row;
     align-items: center;
   }

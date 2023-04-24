@@ -2,7 +2,7 @@
   max-width: 300px;
   margin-top: 5px;
   margin-bottom: 5px;
-  width: min-content;
+  width: -webkit-fill-available;
 
   .timepicker-label {
     margin-top: 5px;

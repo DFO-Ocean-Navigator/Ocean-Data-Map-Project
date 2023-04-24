@@ -108,7 +108,7 @@ function DatasetDropdown(props) {
   return (
     <div className="dd-group">
       <InputGroup as={formLayout}>
-        <Form.Label column>{props.label}</Form.Label>
+        <Form.Label column className="dd-label">{props.label}</Form.Label>
         <Dropdown>
           <Dropdown.Toggle className={"dd-toggle"} as={CustomToggle}>
             {title}

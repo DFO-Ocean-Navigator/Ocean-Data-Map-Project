@@ -316,22 +316,18 @@ class AreaWindow extends React.Component {
             mountedDataset={this.props.dataset_0}
           />
 
-          <div
-            style={{ display: this.state.currentTab == 1 ? "block" : "none" }}
+          <ComboBox
+            key="leftColormap"
+            id="leftColormap"
+            state={this.state.leftColormap}
+            def="default"
+            onUpdate={this.onLocalUpdate}
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colourmap")}
           >
-            <ComboBox
-              key="leftColormap"
-              id="leftColormap"
-              state={this.state.leftColormap}
-              def="default"
-              onUpdate={this.onLocalUpdate}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Colourmap")}
-            >
-              {_("colourmap_help")}
-              <img src="/api/v2.0/plot/colormaps.png/" />
-            </ComboBox>
-          </div>
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" />
+          </ComboBox>
         </Card.Body>
       </Card>
     );
@@ -357,24 +353,18 @@ class AreaWindow extends React.Component {
                 mountedDataset={this.props.dataset_1}
               />
 
-              <div
-                style={{
-                  display: this.state.currentTab == 1 ? "block" : "none",
-                }}
+              <ComboBox
+                key="rightColormap"
+                id="rightColormap"
+                state={this.state.rightColormap}
+                def="default"
+                onUpdate={this.onLocalUpdate}
+                url="/api/v2.0/plot/colormaps"
+                title={_("Colourmap")}
               >
-                <ComboBox
-                  key="rightColormap"
-                  id="rightColormap"
-                  state={this.state.rightColormap}
-                  def="default"
-                  onUpdate={this.onLocalUpdate}
-                  url="/api/v2.0/plot/colormaps"
-                  title={_("Colourmap")}
-                >
-                  {_("colourmap_help")}
-                  <img src="/api/v2.0/plot/colormaps.png/" />
-                </ComboBox>
-              </div>
+                {_("colourmap_help")}
+                <img src="/api/v2.0/plot/colormaps.png/" />
+              </ComboBox>
             </Card.Body>
           </Card>
         </div>
