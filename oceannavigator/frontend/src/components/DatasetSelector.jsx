@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal, ProgressBar, Button } from "react-bootstrap";
+import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 
 import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
@@ -269,15 +269,15 @@ function DatasetSelector(props) {
 
     datasetSelector = (
       <DatasetDropdown
-          id={`dataset-selector-dataset-selector-${props.id}`}
-          key={`dataset-selector-dataset-selector-${props.id}`}
-          options={availableDatasets}
-          label={"Dataset"}
-          placeholder={"Dataset"}
-          onChange={updateDataset}
-          selected={dataset.id}
-          horizontalLayout={props.horizontalLayout}
-        />
+        id={`dataset-selector-dataset-selector-${props.id}`}
+        key={`dataset-selector-dataset-selector-${props.id}`}
+        options={availableDatasets}
+        label={"Dataset"}
+        placeholder={"Dataset"}
+        onChange={updateDataset}
+        selected={dataset.id}
+        horizontalLayout={props.horizontalLayout}
+      />
     );
   }
 
@@ -387,7 +387,7 @@ function DatasetSelector(props) {
   }
 
   let timeSelector = null;
-  if (props.showTimeSlider) {
+  if (props.showTimeSlider && !props.compareDatasets) {
     timeSelector = (
       <TimeSlider
         key="time"
@@ -431,10 +431,11 @@ function DatasetSelector(props) {
           key="time"
           id="time"
           state={dataset.time}
-          onChange={updateDataset}
+          onUpdate={updateDataset}
           title={"Time (UTC)"}
           dataset={dataset}
           timestamps={datasetTimestamps}
+          horizontalLayout={props.horizontalLayout}
         />
       );
     }
@@ -488,6 +489,17 @@ function DatasetSelector(props) {
     }
   }
 
+  const compareSwitch = props.showCompare ? (
+    <Form.Check
+      type="switch"
+      id="custom-switch"
+      label="Compare Datasets"
+      onClick={() => {
+        props.action("toggleCompare");
+      }}
+    /> 
+  ) : null;
+
   return (
     <>
       <div
@@ -502,7 +514,9 @@ function DatasetSelector(props) {
         {variableSelector}
         {quiverSelector}
         {depthSelector}
+
         {props.horizontalLayout ? goButton : null}
+        {props.horizontalLayout ? compareSwitch : null}
       </div>
       {props.horizontalLayout ? null : goButton}
       {timeSelector}

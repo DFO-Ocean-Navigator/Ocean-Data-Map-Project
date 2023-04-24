@@ -317,7 +317,7 @@ class LineWindow extends React.Component {
               showDepthSelector={this.state.selected == 2}
               showTimeRange={this.state.selected == 2}
               showVariableRange={false}
-              options={this.props.options}
+              mapSettings={this.props.mapSettings}
               mountedDataset={this.props.dataset_1}
             />
 
@@ -368,6 +368,7 @@ class LineWindow extends React.Component {
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.colormap_right;
@@ -382,6 +383,7 @@ class LineWindow extends React.Component {
         plot_query.depth = this.props.dataset_0.depth;
         if (this.props.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.colormap_right;

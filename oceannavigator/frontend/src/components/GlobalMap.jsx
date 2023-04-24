@@ -128,7 +128,11 @@ const GlobalMap = forwardRef((props, ref) => {
   const [mapView, setMapView] = useState();
   const [select, setSelect] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
-  const [layerData, setLayerData] = useState();
+  const [layerData, setLayerData] = useState(
+    new TileLayer({
+      preload: 1,
+    })
+  );
   const [layerLandShapes, setLayerLandShapes] = useState();
   const [layerBath, setLayerBath] = useState();
   const [layerBathShapes, setLayerBathShapes] = useState();
@@ -181,10 +185,6 @@ const GlobalMap = forwardRef((props, ref) => {
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution
     );
-
-    const newLayerData = new TileLayer({
-      preload: 1,
-    });
 
     const vectorTileGrid = new olTilegrid.createXYZ({
       tileSize: 512,
@@ -538,7 +538,7 @@ const GlobalMap = forwardRef((props, ref) => {
       view: newMapView,
       layers: [
         newLayerBasemap,
-        newLayerData,
+        layerData,
         newLayerLandShapes,
         newLayerBath,
         newLayerBathShapes,
@@ -759,7 +759,7 @@ const GlobalMap = forwardRef((props, ref) => {
     mapObject.addInteraction(dragBox);
 
     newLayerBasemap.setZIndex(0);
-    newLayerData.setZIndex(1);
+    layerData.setZIndex(1);
     newLayerLandShapes.setZIndex(2);
     newLayerBath.setZIndex(3);
     newLayerBathShapes.setZIndex(4);
@@ -771,7 +771,6 @@ const GlobalMap = forwardRef((props, ref) => {
     setMapView(newMapView);
     setSelect(newSelect);
     setLayerBasemap(newLayerBasemap);
-    setLayerData(newLayerData);
     setLayerLandShapes(newLayerLandShapes);
     setLayerBath(newLayerBath);
     setLayerBathShapes(newLayerBathShapes);
@@ -1345,7 +1344,7 @@ const GlobalMap = forwardRef((props, ref) => {
     var t = undefined;
     var content = [];
     var names = [];
-    let actionType = "selectPoints"
+    let actionType = "selectPoints";
     selectedFeatures.forEach(function (feature) {
       if (feature.get("class") == "observation") {
         if (feature.getGeometry() instanceof olgeom.LineString) {
@@ -1366,7 +1365,7 @@ const GlobalMap = forwardRef((props, ref) => {
             // openlayers' ids have /s that cause conflicts with the python backend. This replaces them.
             const class4id = feature.get("id").replace("/", "_");
             content.push(class4id);
-            actionType = "class4Id"
+            actionType = "class4Id";
             break;
           case "point":
             var c = feature

@@ -1,13 +1,15 @@
-Div.timepicker {
+.timepicker {
   max-width: 300px;
   margin-top: 5px;
   margin-bottom: 5px;
+  width: min-content;
 
   .timepicker-label {
     margin-top: 5px;
     margin-bottom: 15px;
     font-size: 10pt;
     font-weight: bold;
+    width: min-content;
   }
 
   .button-container {

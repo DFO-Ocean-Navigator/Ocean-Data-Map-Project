@@ -37,8 +37,10 @@ function formatLatLon(latitude, longitude) {
 
 function OceanNavigator() {
   const mapRef0 = useRef(null);
+  const mapRef1 = useRef(null);
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
+  const [compareDatasets, setCompareDatasets] = useState(false);
   const [mapSettings, setMapSettings] = useState({
     projection: "EPSG:3857", // Map projection
     basemap: "topo",
@@ -50,7 +52,6 @@ function OceanNavigator() {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
-    syncRanges: false, // Clones the variable range from one view to the other when enabled
   });
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
@@ -66,9 +67,15 @@ function OceanNavigator() {
       case "startDrawing":
         setVectorId(null);
         mapRef0.current.startDrawing();
+        if (compareDatasets) {
+          mapRef1.current.startDrawing();
+        }
         break;
       case "stopDrawing":
         mapRef0.current.stopDrawing();
+        if (compareDatasets) {
+          mapRef1.current.stopDrawing();
+        }
         break;
       case "vectorType":
         setVectorType(arg);
@@ -85,6 +92,9 @@ function OceanNavigator() {
         break;
       case "resetMap":
         mapRef0.current.resetMap();
+        if (compareDatasets) {
+          mapRef1.current.resetMap();
+        }
         break;
       case "addPoints":
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
@@ -121,28 +131,25 @@ function OceanNavigator() {
         setVectorCoordinates([]);
         setSelectedCoordinates([]);
         closeModal();
-        mapRef0.current.show(arg, arg2);
         setClass4Type(arg3);
-        // if (this.mapComponent2) {
-        //   this.mapComponent2.show(arg, arg2);
-        // }
-        // if (arg === 'class4') {
-        //   this.setState({class4type : arg3})
-        // }
+        mapRef0.current.show(arg, arg2);
+        if (compareDatasets) {
+          mapRef1.current.show(arg, arg2);
+        }
         break;
       case "drawObsPoint":
         // Enable point selection in both maps
         mapRef0.current.drawObsPoint();
-        // if (this.mapComponent2) {
-        //   this.mapComponent2.obs_point();
-        // }
+        if (compareDatasets) {
+          mapRef1.current.drawObsPoint();
+        }
         break;
 
       case "drawObsArea":
         mapRef0.current.drawObsArea();
-        // if (this.mapComponent2) {
-        //   this.mapComponent2.obs_area();
-        // }
+        if (compareDatasets) {
+          mapRef1.current.drawObsArea();
+        }
         break;
       case "setObsArea":
         if (arg) {
@@ -153,6 +160,10 @@ function OceanNavigator() {
       case "class4Id":
         setClass4Id(arg);
         break;
+      case "toggleCompare":
+        setCompareDatasets((prevCompare) => {
+          return !prevCompare;
+        });
     }
   };
 
@@ -233,6 +244,7 @@ function OceanNavigator() {
       updateUI={updateUI}
       action={action}
       vectorType={vectorType}
+      compareDatasets={compareDatasets}
     />
   ) : null;
 
@@ -241,24 +253,9 @@ function OceanNavigator() {
       action={action}
       uiSettings={uiSettings}
       updateUI={updateUI}
+      compareDatasets={compareDatasets}
     />
   ) : null;
-
-  const mapComponent0 = (
-    <GlobalMap
-      ref={mapRef0}
-      mapSettings={mapSettings}
-      dataset={dataset0}
-      vectorId={vectorId}
-      vectorType={vectorType}
-      vectorCoordinates={vectorCoordinates}
-      class4Type={class4Type}
-      updateState={updateState}
-      action={action}
-      updateMapSettings={updateMapSettings}
-      updateUI={updateUI}
-    />
-  );
 
   let modalBodyContent = null;
   let modalTitle = "";
@@ -297,7 +294,7 @@ function OceanNavigator() {
           onUpdate={updateDataset0}
           // onUpdateOptions={this.updateOptions}
           // init={this.state.subquery}
-          // dataset_compare={this.state.dataset_compare}
+          dataset_compare={compareDatasets}
           action={action}
           // showHelp={this.toggleCompareHelp}
           // swapViews={this.swapViews}
@@ -324,6 +321,7 @@ function OceanNavigator() {
           // colormap={this.state.colormap}
           names={names}
           onUpdate={updateDataset0}
+          dataset_compare={compareDatasets}
           // onUpdateOptions={this.updateOptions}
           // init={this.state.subquery}
           // dataset_compare={this.state.dataset_compare}
@@ -389,10 +387,8 @@ function OceanNavigator() {
       break;
   }
 
-  return (
-    <div>
-      {drawingTools}
-      {observationTools}
+  const mapContainer0 = (
+    <div className={`map-container${compareDatasets ? "-compare" : ""}`}>
       <ScaleViewer
         dataset={dataset0}
         mapSettings={mapSettings}
@@ -403,7 +399,63 @@ function OceanNavigator() {
         mapSettings={mapSettings}
         changeHandler={updateDataset0}
         updateUI={updateUI}
+        compareDatasets={compareDatasets}
+        action={action}
+        showCompare={true}
       />
+      <GlobalMap
+        ref={mapRef0}
+        mapSettings={mapSettings}
+        dataset={dataset0}
+        vectorId={vectorId}
+        vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
+        class4Type={class4Type}
+        updateState={updateState}
+        action={action}
+        updateMapSettings={updateMapSettings}
+        updateUI={updateUI}
+      />
+    </div>
+  );
+
+  const mapContainer1 = compareDatasets ? (
+    <div className={"map-container-compare"}>
+      <ScaleViewer
+        dataset={dataset1}
+        mapSettings={mapSettings}
+        onUpdate={updateDataset1}
+      />
+      <MapInputs
+        dataset={dataset1}
+        mapSettings={mapSettings}
+        changeHandler={updateDataset1}
+        updateUI={updateUI}
+        showCompare={false}
+        compareDatasets={true}
+      />
+      <GlobalMap
+        ref={mapRef1}
+        mapSettings={mapSettings}
+        dataset={dataset1}
+        vectorId={vectorId}
+        vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
+        class4Type={class4Type}
+        updateState={updateState}
+        action={action}
+        updateMapSettings={updateMapSettings}
+        updateUI={updateUI}
+      />
+    </div>
+  ) : null;
+
+  return (
+    <div className="OceanNavigator">
+      {drawingTools}
+      {observationTools}
+      {mapContainer0}
+      {mapContainer1}
       <MapTools
         uiSettings={uiSettings}
         updateUI={updateUI}
@@ -411,7 +463,6 @@ function OceanNavigator() {
         vectorType={vectorType}
         vectorCoordinates={vectorCoordinates}
       />
-      {mapComponent0}
       <Modal
         show={uiSettings.showModal}
         onHide={closeModal}

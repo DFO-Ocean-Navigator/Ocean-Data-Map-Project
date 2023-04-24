@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
 const MONTHS = [
@@ -16,6 +16,25 @@ const MONTHS = [
   "November",
   "December",
 ];
+
+const dateButton = React.forwardRef(
+  ({ children, className, disabled, onClick, date }, ref) => (
+    <button
+      href=""
+      ref={ref}
+      id={date.join("-")}
+      key={date.join("-")}
+      className={className}
+      disabled={disabled}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+    >
+      {children}
+    </button>
+  )
+);
 
 const DailyCalendar = React.forwardRef((props, ref) => {
   // Helper functions sourced from https://blog.logrocket.com/react-custom-datepicker-step-by-step/
@@ -143,6 +162,15 @@ const DailyCalendar = React.forwardRef((props, ref) => {
       >
         {date[2]}
       </button>
+      // <Dropdown.Item
+      //   as={dateButton}
+      //   className={style}
+      //   disabled={disabled}
+      //   date={date}
+      //   onClick={() => handleDateClick(date)}
+      // >
+      //   {date[2]}
+      // </Dropdown.Item>
     );
   });
 

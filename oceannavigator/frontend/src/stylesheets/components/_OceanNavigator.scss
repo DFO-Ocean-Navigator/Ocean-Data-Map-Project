@@ -12,31 +12,20 @@ body {
   }
 }
 .OceanNavigator {
-  .MapInputs {
-    width: 0;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    transition: left 0.3s ease-in-out;
-  }
-  > .content {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0; // Map view takes up full screen width when sidebar closed
-    right: 0;
-    display: flex;
-    flex-flow: column;
-    transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #008cba;
 
-    .MapToolbar {
-      flex: 0 1 auto;
-    }
-
-    .Map {
-      flex: 1 1 auto;
-    }
+  .map-container {
+    width: 100%;
   }
+
+  .map-container-compare {
+    width: calc(50% - 1px);
+    position: relative;
+  }
+
 }
 
 .checkbox,

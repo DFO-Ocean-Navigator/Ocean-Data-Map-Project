@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "react-bootstrap";
+import React, { useState, useEffect, forwardRef } from "react";
+import { Button, Col, Row } from "react-bootstrap";
+import Dropdown from "react-bootstrap/Dropdown";
+import { InputGroup } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
@@ -8,17 +10,26 @@ import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
 import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
 
 import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
-import useOutsideClick from "./lib/useOutsideClick.jsx";
+
+const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+  <div
+    href=""
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+  >
+    {children}
+  </div>
+));
 
 function TimePicker(props) {
   const [timestamps, setTimestamps] = useState([]);
   const [data, setData] = useState([]);
   const [map, setMap] = useState({});
   const [revMap, setRevMap] = useState({});
-  const [showCalendar, setShowCalendar] = useState(false);
   const [dateHours, setDateHours] = useState([]);
-
-  const ref = useOutsideClick(handleClickOutside);
 
   useEffect(() => {
     if (!props.timestamps) {
@@ -114,10 +125,6 @@ function TimePicker(props) {
     }
   };
 
-  function handleClickOutside() {
-    setShowCalendar((showCalendar) => !showCalendar);
-  }
-
   const getIndexFromTimestamp = (timestamp) => {
     return timestamps.findIndex((ts) => {
       return ts.id === timestamp;
@@ -131,10 +138,6 @@ function TimePicker(props) {
     }
 
     return parseInt(keys[index]);
-  };
-
-  const handleDateClick = () => {
-    setShowCalendar((showCalendar) => !showCalendar);
   };
 
   const hourChanged = (e) => {
@@ -169,7 +172,6 @@ function TimePicker(props) {
         props.onUpdate(props.id, revMap[utcDate.toUTCString()]);
         break;
     }
-    setShowCalendar((showCalendar) => !showCalendar);
   };
 
   let buttonText = "";
@@ -185,14 +187,13 @@ function TimePicker(props) {
           day: "numeric",
         });
 
-        calendar = showCalendar ? (
+        calendar = (
           <DailyCalendar
-            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
           />
-        ) : null;
+        );
         break;
       case "month":
         buttonText = selectedDate.toLocaleDateString(undefined, {
@@ -200,14 +201,13 @@ function TimePicker(props) {
           month: "long",
         });
 
-        calendar = showCalendar ? (
+        calendar = (
           <MonthlyCalendar
-            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
           />
-        ) : null;
+        );
         break;
       case "year":
         buttonText = selectedDate.getUTCFullYear();
@@ -215,14 +215,13 @@ function TimePicker(props) {
       case "season":
         buttonText = getSeason(selectedDate);
 
-        calendar = showCalendar ? (
+        calendar = (
           <SeasonalCalendar
-            ref={ref}
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
           />
-        ) : null;
+        );
         break;
     }
   }
@@ -248,37 +247,42 @@ function TimePicker(props) {
       </Form.Select>
     );
   }
-  let headerButtons = (
-    <div className="button-container">
-      <Button
-        className="header-button"
-        disabled={currentIndex === 0}
-        onClick={handlePrevTime}
-      >
-        <ChevronLeft />
-      </Button>
-      <div className="selector-container">
-        <Button className="date-label" onClick={handleDateClick}>
-          {buttonText}
-        </Button>
-        {hourDropdown}
-      </div>
-      <Button
-        className="header-button"
-        disabled={currentIndex === data.length - 1}
-        onClick={handleNextTime}
-      >
-        <ChevronRight />
-      </Button>
+  let dateSelector = (
+    <div className="selector-container">
+      <Button className="date-label">{buttonText}</Button>
+      {hourDropdown}
     </div>
   );
 
+  const formLayout = props.horizontalLayout ? Row : Col;
+
   return (
-    <div className="timepicker">
+    <InputGroup className="timepicker" as={formLayout}>
       <label className="timepicker-label">{props.title}</label>
-      {headerButtons}
-      {calendar}
-    </div>
+      <Dropdown drop={props.horizontalLayout ? "up" : "down"}>
+        <div className="button-container">
+          <Button
+            className="header-button"
+            disabled={currentIndex === 0}
+            onClick={handlePrevTime}
+          >
+            {" "}
+            <ChevronLeft />
+          </Button>
+          <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
+          <Dropdown.Menu className="dropdown-menu">
+            {calendar}
+          </Dropdown.Menu>
+          <Button
+            className="header-button"
+            disabled={currentIndex === data.length - 1}
+            onClick={handleNextTime}
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+      </Dropdown>
+    </InputGroup>
   );
 }
 

@@ -24,8 +24,8 @@ class AreaWindow extends React.Component {
 
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.scale + ",auto",
-      scale_1: props.scale_1 + ",auto",
+      scale: props.dataset_0.scale + ",auto",
+      scale_1: props.dataset_1.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
@@ -175,18 +175,18 @@ class AreaWindow extends React.Component {
         <Card.Header>{_("Area Settings")}</Card.Header>
         <Card.Body className="global-settings-card">
           {/* <Row> */}
-            {/* <Col xs={9}> */}
-              <CheckBox
-                id="dataset_compare"
-                key="dataset_compare"
-                checked={this.state.dataset_compare}
-                onUpdate={(_, checked) => {
-                  this.setState({ dataset_compare: checked });
-                }}
-                title={_("Compare Datasets")}
-              />
-            {/* </Col> */}
-            {/* <Col xs={3}>
+          {/* <Col xs={9}> */}
+          <CheckBox
+            id="dataset_compare"
+            key="dataset_compare"
+            checked={this.state.dataset_compare}
+            onUpdate={(_, checked) => {
+              this.setState({ dataset_compare: checked });
+            }}
+            title={_("Compare Datasets")}
+          />
+          {/* </Col> */}
+          {/* <Col xs={3}>
               <Button
                 variant="link"
                 key="show_help"
@@ -353,7 +353,7 @@ class AreaWindow extends React.Component {
                 onUpdate={this.props.onUpdate}
                 showQuiverSelector={false}
                 showVariableRange={false}
-                options={this.props.options}
+                mapSettings={this.props.mapSettings}
                 mountedDataset={this.props.dataset_1}
               />
 
@@ -425,6 +425,7 @@ class AreaWindow extends React.Component {
         plot_query.plotTitle = this.state.plotTitle;
         if (this.state.dataset_compare) {
           plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.rightColormap;

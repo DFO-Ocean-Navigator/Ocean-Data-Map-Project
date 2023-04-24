@@ -2,7 +2,7 @@ Div.drawing-tools {
   position: absolute;
   z-index: 10;
   width: 100%;
-  bottom: 108px;
+  bottom: 118px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -29,4 +29,8 @@ Div.drawing-tools {
     background-color: #ff0000;
     border-color: #fff;
   }
+}
+
+.compare {
+  bottom: 158px !important;
 }

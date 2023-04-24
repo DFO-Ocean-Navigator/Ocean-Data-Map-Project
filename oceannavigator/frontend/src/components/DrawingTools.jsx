@@ -37,7 +37,7 @@ function DrawingTools(props) {
   };
 
   return (
-    <div className="drawing-tools">
+    <div className={`drawing-tools ${props.compareDatasets? "compare" : ""}`}>
       <div>
         {radios.map((radio, idx) => (
           <ToggleButton
