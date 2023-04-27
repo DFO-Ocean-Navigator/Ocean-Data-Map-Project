@@ -73,7 +73,7 @@ function OceanNavigator() {
           decodeURIComponent(window.location.search.replace("?query=", ""))
         );
         updateUI({ modalType: query.modalType, showModal: query.showModal });
-        setSubquery(query.subquery)
+        setSubquery(query.subquery);
         setNames(query.names);
         setVectorId(query.vectorId);
         setVectorType(query.vectorType);
@@ -142,7 +142,7 @@ function OceanNavigator() {
         break;
       case "updatePoint":
         let newCoords = null;
-        if (arg2 && arg3) {
+        if (!isNaN(arg2) && !isNaN(arg3)) {
           newCoords = [...vectorCoordinates];
           newCoords[arg][arg2] = arg3;
         } else {
