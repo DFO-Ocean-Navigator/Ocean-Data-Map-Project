@@ -20,6 +20,8 @@ import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
 import Class4Selector from "./Class4Selector.jsx";
 import Class4Window from "./Class4Window.jsx";
+import Icon from "./lib/Icon.jsx";
+import Permalink from "./Permalink.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -61,6 +63,41 @@ function OceanNavigator() {
   const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
+  const [subquery, setSubquery] = useState();
+  const [showPermalink, setShowPermalink] = useState(false);
+
+  useEffect(() => {
+    if (window.location.search.length > 0) {
+      try {
+        const query = JSON.parse(
+          decodeURIComponent(window.location.search.replace("?query=", ""))
+        );
+        updateUI({ modalType: query.modalType, showModal: query.showModal });
+        setSubquery(query.subquery)
+        setNames(query.names);
+        setVectorId(query.vectorId);
+        setVectorType(query.vectorType);
+        setVectorCoordinates(query.vectorCoordinates);
+        setSelectedCoordinates(query.selectedCoordinates);
+        for (let key in query) {
+          switch (key) {
+            case "dataset0":
+              setDataset0(query.dataset0);
+              break;
+            case "dataset1":
+              setDataset1(query.dataset1);
+              setCompareDatasets(query.compareDatasets);
+              break;
+            case "mapSettings":
+              setMapSettings(query.mapSettings);
+              break;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }, []);
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
@@ -104,8 +141,13 @@ function OceanNavigator() {
         setVectorCoordinates(coords);
         break;
       case "updatePoint":
-        const newCoords = [...vectorCoordinates];
-        newCoords[arg][arg2] = arg3;
+        let newCoords = null;
+        if (arg2 && arg3) {
+          newCoords = [...vectorCoordinates];
+          newCoords[arg][arg2] = arg3;
+        } else {
+          newCoords = arg;
+        }
         setVectorCoordinates(newCoords);
         break;
       case "selectPoints":
@@ -164,6 +206,15 @@ function OceanNavigator() {
         setCompareDatasets((prevCompare) => {
           return !prevCompare;
         });
+        break;
+      case "permalink":
+        if (arg !== null) {
+          setSubquery(arg);
+          setShowPermalink(true);
+        } else {
+          setShowPermalink(true);
+        }
+        break;
     }
   };
 
@@ -238,6 +289,44 @@ function OceanNavigator() {
     });
   };
 
+  const generatePermLink = (permalinkSettings) => {
+    let query = {};
+    // We have a request from Point/Line/AreaWindow component.
+    if (subquery !== undefined) {
+      query.subquery = subquery;
+      query.showModal = true;
+      query.modalType = uiSettings.modalType;
+      query.names = names;
+      query.vectorId = vectorId;
+      query.vectorType = vectorType;
+      query.vectorCoordinates = vectorCoordinates;
+      query.selectedCoordinates = selectedCoordinates;
+    }
+    // We have a request from the Permalink component.
+    for (let setting in permalinkSettings) {
+      if (permalinkSettings[setting] === true) {
+        switch (setting) {
+          case "dataset0":
+            query.dataset0 = dataset0;
+            break;
+          case "dataset1":
+            query.dataset1 = dataset1;
+            query.compareDatasets = compareDatasets;
+            break;
+          case "mapSettings":
+            query.mapSettings = mapSettings;
+            break;
+        }
+      }
+    }
+
+    return (
+      window.location.origin +
+      window.location.pathname +
+      `?query=${encodeURIComponent(JSON.stringify(query))}`
+    );
+  };
+
   const drawingTools = uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={uiSettings}
@@ -268,15 +357,9 @@ function OceanNavigator() {
           point={selectedCoordinates}
           mapSettings={mapSettings}
           names={names}
-          // onUpdate={this.updateState}
-          // onUpdateOptions={this.updateOptions}
-          // init={this.state.subquery}
-          // dataset_compare={this.state.dataset_compare}
-          // dataset_1={this.state.dataset_1}
+          updateDataset={updateDataset0}
+          init={subquery}
           action={action}
-          // showHelp={this.toggleCompareHelp}
-          // swapViews={this.swapViews}
-          // options={this.state.options}
         />
       );
       modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
@@ -289,16 +372,14 @@ function OceanNavigator() {
           dataset_1={dataset1}
           line={selectedCoordinates}
           mapSettings={mapSettings}
-          // colormap={this.state.colormap}
           names={names}
           onUpdate={updateDataset0}
-          // onUpdateOptions={this.updateOptions}
-          // init={this.state.subquery}
-          dataset_compare={compareDatasets}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset0}
+          init={subquery}
           action={action}
-          // showHelp={this.toggleCompareHelp}
-          // swapViews={this.swapViews}
-          // options={this.state.options}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
         />
       );
 
@@ -318,17 +399,13 @@ function OceanNavigator() {
           dataset_1={dataset1}
           area={selectedCoordinates}
           mapSettings={mapSettings}
-          // colormap={this.state.colormap}
           names={names}
-          onUpdate={updateDataset0}
-          dataset_compare={compareDatasets}
-          // onUpdateOptions={this.updateOptions}
-          // init={this.state.subquery}
-          // dataset_compare={this.state.dataset_compare}
-          // showHelp={this.toggleCompareHelp}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset1}
+          init={subquery}
           action={action}
-          // swapViews={this.swapViews}
-          // options={this.state.options}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
         />
       );
 
@@ -366,7 +443,7 @@ function OceanNavigator() {
           dataset={dataset0.id}
           class4id={class4Id}
           class4type={class4Type}
-          // init={this.state.subquery}
+          init={subquery}
           action={action}
         />
       );
@@ -475,6 +552,30 @@ function OceanNavigator() {
         <Modal.Body>{modalBodyContent}</Modal.Body>
         <Modal.Footer>
           <Button onClick={closeModal}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={showPermalink}
+        onHide={() => setShowPermalink(false)}
+        dialogClassName="permalink-modal"
+        backdrop={true}
+      >
+        <Modal.Header closeButton closeLabel={"Close"}>
+          <Modal.Title>
+            <Icon icon="link" alt={"Share Link"} /> {"Share Link"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Permalink
+            modalType={uiSettings.modalType}
+            compareDatasets={compareDatasets}
+            generatePermLink={generatePermLink}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setShowPermalink(false)}>
+            <Icon icon="close" alt={"Close"} /> {"Close"}
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

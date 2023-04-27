@@ -30,7 +30,6 @@ class AreaWindow extends React.Component {
       leftColormap: "default",
       rightColormap: "default",
       colormap_diff: "default",
-      dataset_compare: props.dataset_compare,
       dataset_0: {
         id: props.dataset_0.id,
         variable: props.dataset_0.variable,
@@ -174,34 +173,19 @@ class AreaWindow extends React.Component {
       <Card variant="primary" key="map_settings">
         <Card.Header>{_("Area Settings")}</Card.Header>
         <Card.Body className="global-settings-card">
-          {/* <Row> */}
-          {/* <Col xs={9}> */}
           <CheckBox
             id="dataset_compare"
             key="dataset_compare"
-            checked={this.state.dataset_compare}
-            onUpdate={(_, checked) => {
-              this.setState({ dataset_compare: checked });
-            }}
+            checked={this.props.dataset_compare}
+            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
             title={_("Compare Datasets")}
           />
-          {/* </Col> */}
-          {/* <Col xs={3}>
-              <Button
-                variant="link"
-                key="show_help"
-                onClick={this.props.showHelp}
-              >
-                {_("Help")}
-              </Button>
-            </Col> */}
-          {/* </Row> */}
 
           {/* Displays Options for Compare Datasets */}
           <Button
             variant="default"
             key="swap_views"
-            style={{ display: this.state.dataset_compare ? "block" : "none" }}
+            style={{ display: this.props.dataset_compare ? "block" : "none" }}
             onClick={this.props.swapViews}
           >
             {_("Swap Views")}
@@ -210,7 +194,7 @@ class AreaWindow extends React.Component {
           <div
             style={{
               display:
-                this.state.dataset_compare &&
+                this.props.dataset_compare &&
                 this.state.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
@@ -267,9 +251,7 @@ class AreaWindow extends React.Component {
             onUpdate={this.onLocalUpdate}
             dataset={this.state.dataset_0.id}
             title={_("Arrows")}
-          >
-            {/* {_("arrows_help")} */}
-          </QuiverSelector>
+          />
 
           {/* Contour Selector drop down menu */}
           <ContourSelector
@@ -303,13 +285,13 @@ class AreaWindow extends React.Component {
     const dataset = (
       <Card key="left_map" id="left_map" variant="primary">
         <Card.Header>
-          {this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+          {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
         </Card.Header>
         <Card.Body className="global-settings-card">
           <DatasetSelector
             key="area_window_dataset_0"
             id="dataset_0"
-            onUpdate={this.props.onUpdate}
+            onUpdate={this.props.updateDataset0}
             showQuiverSelector={false}
             showVariableRange={false}
             mapSettings={this.props.mapSettings}
@@ -334,11 +316,10 @@ class AreaWindow extends React.Component {
 
     const compare_dataset = (
       <div key="compare_dataset">
-        <div style={{ display: this.state.dataset_compare ? "block" : "none" }}>
+        <div style={{ display: this.props.dataset_compare ? "block" : "none" }}>
           <Card
             key="right_map"
             id="right_map"
-            defaultExpanded
             variant="primary"
           >
             <Card.Header>{_("Right Map")}</Card.Header>
@@ -346,7 +327,7 @@ class AreaWindow extends React.Component {
               <DatasetSelector
                 key="area_window_dataset_1"
                 id="dataset_1"
-                onUpdate={this.props.onUpdate}
+                onUpdate={this.props.updateDataset1}
                 showQuiverSelector={false}
                 showVariableRange={false}
                 mapSettings={this.props.mapSettings}
@@ -413,8 +394,8 @@ class AreaWindow extends React.Component {
         plot_query.radius = this.props.mapSettings.interpRadius;
         plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
-        if (this.state.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = {...this.props.dataset_1};
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -425,7 +406,7 @@ class AreaWindow extends React.Component {
         leftInputs = [mapSettings, subsetPanel]; //Left Sidebar
         rightInputs = [dataset]; //Right Sidebar
 
-        if (this.state.dataset_compare) {
+        if (this.props.dataset_compare) {
           //Adds pane to right sidebar when compare is selected
           rightInputs.push(compare_dataset);
         }

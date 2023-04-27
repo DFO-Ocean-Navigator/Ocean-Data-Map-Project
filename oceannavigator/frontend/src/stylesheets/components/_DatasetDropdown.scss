@@ -1,7 +1,6 @@
 .dd-group {
   .col {
     align-items: center;
-    width: 100%;
     max-width: 235px;
   }
 
@@ -10,7 +9,7 @@
     flex-wrap: nowrap;
   }
 
-  .dd-label{
+  .dd-label {
     margin: 0 !important;
     padding: 0;
   }
@@ -87,13 +86,13 @@
     background-color: #008cba;
   }
 
-  .dd-menu{
+  .dd-menu {
     overflow-y: scroll;
     height: 50vh;
   }
 
-  .dd-group {
-    display: flex;
-    flex-direction: column;
-  }
+}
+
+.vertical {
+  width: -webkit-fill-available;
 }

@@ -106,7 +106,7 @@ function DatasetDropdown(props) {
   const formLayout = props.horizontalLayout ? Row : Col;
 
   return (
-    <div className="dd-group">
+    <div className={`dd-group ${props.horizontalLayout ? "" : "vertical"}`}>
       <InputGroup as={formLayout}>
         <Form.Label column className="dd-label">{props.label}</Form.Label>
         <Dropdown>

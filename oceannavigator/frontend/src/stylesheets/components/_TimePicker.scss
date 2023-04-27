@@ -9,7 +9,11 @@
     margin-bottom: 15px;
     font-size: 10pt;
     font-weight: bold;
-    width: min-content;
+    width: max-content;
+  }
+
+  .horizontal {
+    width: min-content !important;
   }
 
   .button-container {

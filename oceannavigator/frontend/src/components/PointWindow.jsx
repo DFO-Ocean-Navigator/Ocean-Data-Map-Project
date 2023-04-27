@@ -36,7 +36,6 @@ class PointWindow extends React.Component {
       showmap: false,
       colormap: "default",
       datasetVariables: [],
-      variable: [props.variable],
       observation_variable: [0],
       size: "10x7",
       dpi: 144,
@@ -51,6 +50,10 @@ class PointWindow extends React.Component {
         options: props.dataset_0.options,
       },
     };
+
+    if (props.init !== null) {
+      this.state = { ...this.state, ...props.init };
+    }
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
@@ -116,10 +119,13 @@ class PointWindow extends React.Component {
             ...value,
           },
         }));
+        if (value.variable.length === 1) {
+          value.variable = value.variable[0];
+          this.props.updateDataset("dataset", value);
+        }
         return;
       } else if (key === "points") {
-        this.props.action("clearPoints")
-        this.props.action("addPoints", value)
+        this.props.action("updatePoint", value);
       }
 
       let newState = {};
@@ -132,47 +138,6 @@ class PointWindow extends React.Component {
         }
       }
       this.setState(newState);
-
-      let parentKeys = [];
-      let parentValues = [];
-
-      if (newState.hasOwnProperty("depth") && newState.depth != "all") {
-        if (!Array.isArray(newState.depth)) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth);
-        } else if (newState.depth.length > 1) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth[0]);
-        }
-      }
-
-      // if (newState.hasOwnProperty("point")) {
-      //   parentKeys.push("point");
-      //   parentValues.push(newState.point);
-
-      //   parentKeys.push("names");
-      //   parentValues.push([]);
-      // }
-
-      if (
-        newState.hasOwnProperty("variable_scale") &&
-        this.state.variable.length === 1
-      ) {
-        parentKeys.push("variable_scale");
-        parentValues.push(newState.variable_scale);
-      }
-
-      if (
-        newState.hasOwnProperty("variable") &&
-        newState.variable.length == 1
-      ) {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable[0]);
-      }
-
-      if (parentKeys.length > 0) {
-        this.props.onUpdate(parentKeys, parentValues);
-      }
     }
   }
 
@@ -272,7 +237,9 @@ class PointWindow extends React.Component {
 
           <Accordion>
             <Accordion.Header>Plot Options</Accordion.Header>
-            <Accordion.Body className="plot-accordion">{plotOptions}</Accordion.Body>
+            <Accordion.Body className="plot-accordion">
+              {plotOptions}
+            </Accordion.Body>
           </Accordion>
         </Card.Body>
       </Card>
@@ -476,8 +443,6 @@ class PointWindow extends React.Component {
 
     const permlink_subquery = {
       selected: this.state.selected,
-      depth: this.state.dataset_0.depth,
-      colormap: this.state.colormap,
       starttime: this.state.dataset_0.starttime,
     };
 

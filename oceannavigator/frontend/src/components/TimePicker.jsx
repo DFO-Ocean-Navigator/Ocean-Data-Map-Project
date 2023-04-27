@@ -258,7 +258,13 @@ function TimePicker(props) {
 
   return (
     <InputGroup className="timepicker" as={formLayout}>
-      <label className="timepicker-label">{props.title}</label>
+      <label
+        className={`timepicker-label ${
+          props.horizontalLayout ? "horizontal" : ""
+        }`}
+      >
+        {props.title}
+      </label>
       <Dropdown drop={props.horizontalLayout ? "up" : "down"}>
         <div className="button-container">
           <Button
@@ -270,9 +276,7 @@ function TimePicker(props) {
             <ChevronLeft />
           </Button>
           <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
-          <Dropdown.Menu className="dropdown-menu">
-            {calendar}
-          </Dropdown.Menu>
+          <Dropdown.Menu className="dropdown-menu">{calendar}</Dropdown.Menu>
           <Button
             className="header-button"
             disabled={currentIndex === data.length - 1}

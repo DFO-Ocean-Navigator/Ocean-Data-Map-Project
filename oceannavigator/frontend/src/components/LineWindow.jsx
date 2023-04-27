@@ -158,7 +158,7 @@ class LineWindow extends React.Component {
             id="dataset_compare"
             key="dataset_compare"
             checked={this.props.dataset_compare}
-            onUpdate={this.props.onUpdate}
+            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
             title={_("Compare Datasets")}
           />
           <Button
@@ -277,7 +277,7 @@ class LineWindow extends React.Component {
           <DatasetSelector
             key="line_window_dataset_0"
             id="dataset_0"
-            onUpdate={this.props.onUpdate}
+            onUpdate={this.props.updateDataset0}
             variables={this.state.selected == 2 ? "all" : "3d"}
             showQuiverSelector={false}
             showDepthSelector={this.state.selected == 2}
@@ -311,7 +311,7 @@ class LineWindow extends React.Component {
             <DatasetSelector
               key="line_window_dataset_1"
               id="dataset_1"
-              onUpdate={this.props.onUpdate}
+              onUpdate={this.props.updateDataset1}
               variables={this.state.selected == 2 ? "all" : "3d"}
               showQuiverSelector={false}
               showDepthSelector={this.state.selected == 2}
@@ -367,7 +367,7 @@ class LineWindow extends React.Component {
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = {...this.props.dataset_1};
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -382,7 +382,7 @@ class LineWindow extends React.Component {
         plot_query.starttime = this.props.dataset_0.starttime;
         plot_query.depth = this.props.dataset_0.depth;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = {...this.props.dataset_1};
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;

@@ -158,7 +158,7 @@ class PlotImage extends React.PureComponent {
         query.time = q.time;
         if (q.compare_to) {
           query.compare_to = {
-            dataset: q.compare_to.dataset,
+            dataset: q.compare_to.id,
             dataset_quantum: q.compare_to.dataset_quantum,
             variable: q.compare_to.variable,
             time: q.compare_to.time,
