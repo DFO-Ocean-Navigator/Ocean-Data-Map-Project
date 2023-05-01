@@ -30,6 +30,7 @@ function TimePicker(props) {
   const [map, setMap] = useState({});
   const [revMap, setRevMap] = useState({});
   const [dateHours, setDateHours] = useState([]);
+  const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
     if (!props.timestamps) {
@@ -42,6 +43,9 @@ function TimePicker(props) {
       }
     } else {
       setTimestamps(props.timestamps);
+    }
+    if (props.dataset.id.includes("climatology")) {
+      setClimatology(true);
     }
   }, [props]);
 
@@ -115,13 +119,13 @@ function TimePicker(props) {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
-      return `Winter ${year - 1}`;
+      return climatology ? "Winter" : `Winter ${year - 1}`;
     } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
-      return `Spring ${year}`;
+      return climatology ? "Spring" : `Spring ${year}`;
     } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
-      return `Summer ${year}`;
+      return climatology ? "Summer" : `Summer ${year}`;
     } else {
-      return `Fall ${year}`;
+      return climatology ? "Fall" : `Fall ${year}`;
     }
   };
 
@@ -196,16 +200,21 @@ function TimePicker(props) {
         );
         break;
       case "month":
-        buttonText = selectedDate.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-        });
+        buttonText = climatology
+          ? selectedDate.toLocaleDateString(undefined, {
+              month: "long",
+            })
+          : selectedDate.toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+            });
 
         calendar = (
           <MonthlyCalendar
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
+            climatology={climatology}
           />
         );
         break;
@@ -220,6 +229,7 @@ function TimePicker(props) {
             selected={selectedDate}
             availableDates={Object.values(map)}
             onUpdate={handleCalendarInteraction}
+            climatology={climatology}
           />
         );
         break;
@@ -276,7 +286,12 @@ function TimePicker(props) {
             <ChevronLeft />
           </Button>
           <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
-          <Dropdown.Menu className="dropdown-menu">{calendar}</Dropdown.Menu>
+          <Dropdown.Menu
+            className="dropdown-menu"
+            disabled={props.dataset.quantum === "year"}
+          >
+            {calendar}
+          </Dropdown.Menu>
           <Button
             className="header-button"
             disabled={currentIndex === data.length - 1}

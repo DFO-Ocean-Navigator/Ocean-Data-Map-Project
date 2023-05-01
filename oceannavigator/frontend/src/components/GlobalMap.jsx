@@ -742,9 +742,6 @@ const GlobalMap = forwardRef((props, ref) => {
       }
       pushSelection(selectedFeatures);
 
-      // if (!e.mapBrowserEvent.originalEvent.shiftKey && e.selected.length > 0) {
-      //   props.action("plot");
-      // }
       if (e.selected[0].get("type") == "area") {
         selectedFeatures.clear();
       }
@@ -821,7 +818,7 @@ const GlobalMap = forwardRef((props, ref) => {
       drawPoints();
       updateSelectFilter();
     }
-  }, [props.vectorCoordinates, props.vectorType]);
+  }, [props.vectorCoordinates, props.vectorType, layerVector]);
 
   useEffect(() => {
     if (props.vectorId && props.vectorType) {

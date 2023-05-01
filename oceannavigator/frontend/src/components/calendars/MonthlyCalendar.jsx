@@ -86,13 +86,15 @@ const MonthlyCalendar = forwardRef((props, ref) => {
     nextDisabled = false;
   }
 
+  const headerText = props.climatology ? "1993 - 2019" : year
+
   return (
     <div ref={ref} className="calendar-container">
       <div className="calendar-header">
         <Button disabled={prevDisabled} onClick={prevYear}>
           <ChevronLeft />
         </Button>
-        <label className="calendar-header">{year}</label>
+        <label className="calendar-header">{headerText}</label>
         <Button disabled={nextDisabled} onClick={nextYear}>
           <ChevronRight />
         </Button>

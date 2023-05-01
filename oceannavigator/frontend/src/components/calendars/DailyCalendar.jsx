@@ -162,15 +162,6 @@ const DailyCalendar = React.forwardRef((props, ref) => {
       >
         {date[2]}
       </button>
-      // <Dropdown.Item
-      //   as={dateButton}
-      //   className={style}
-      //   disabled={disabled}
-      //   date={date}
-      //   onClick={() => handleDateClick(date)}
-      // >
-      //   {date[2]}
-      // </Dropdown.Item>
     );
   });
 
