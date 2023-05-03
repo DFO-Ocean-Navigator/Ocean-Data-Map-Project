@@ -50,7 +50,7 @@ function ObservationTools(props) {
   };
 
   return (
-    <div className={`obs-tools ${props.compareDatasets? "compare" : ""}`}>
+    <div className={"obs-tools"}>
       <Button className="plot-button" onClick={handleAll}>
         All
       </Button>

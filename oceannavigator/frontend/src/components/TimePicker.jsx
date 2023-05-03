@@ -44,7 +44,7 @@ function TimePicker(props) {
     } else {
       setTimestamps(props.timestamps);
     }
-    if (props.dataset.id.includes("climatology")) {
+    if (props.dataset.id && props.dataset.id.includes("climatology")) {
       setClimatology(true);
     }
   }, [props]);

@@ -1,12 +1,10 @@
 Div.obs-tools {
-  position: absolute;
-  z-index: 10;
   width: 100%;
-  bottom: 118px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   gap: 10px;
+  margin: 8px;
 
   .plot-button {
     border-radius: 5px;
@@ -18,8 +16,4 @@ Div.obs-tools {
     background-color: #ff0000;
     border-color: #fff;
   }
-}
-
-.compare {
-  bottom: 158px !important;
 }

@@ -124,11 +124,18 @@ proj3031.setExtent([
 ]);
 
 const GlobalMap = forwardRef((props, ref) => {
-  const [map, setMap] = useState();
+  const [map0, setMap0] = useState();
+  const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
-  const [select, setSelect] = useState();
+  const [select0, setSelect0] = useState();
+  const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
-  const [layerData, setLayerData] = useState(
+  const [layerData0, setLayerData0] = useState(
+    new TileLayer({
+      preload: 1,
+    })
+  );
+  const [layerData1, setLayerData1] = useState(
     new TileLayer({
       preload: 1,
     })
@@ -141,12 +148,14 @@ const GlobalMap = forwardRef((props, ref) => {
   const [layerObsDraw, setLayerObsDraw] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [layerQuiver, setLayerQuiver] = useState();
-  const mapRef = useRef();
-  const popupElement = useRef(null);
+  const mapRef0 = useRef();
+  const mapRef1 = useRef();
+  const popupElement0 = useRef(null);
+  const popupElement1 = useRef(null);
 
   useImperativeHandle(ref, () => ({
     startDrawing: draw,
-    stopDrawing: removeMapInteractions,
+    stopDrawing: stopDrawing,
     show: show,
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
@@ -155,31 +164,370 @@ const GlobalMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     let overlay = new Overlay({
-      element: popupElement.current,
+      element: popupElement0.current,
       autoPan: false,
       offset: [0, -10],
       positioning: "bottom-center",
     });
 
-    let center = [-50, 53];
-    if (props.mapSettings.center) {
-      center = props.mapSettings.center.map(parseFloat);
-    }
-
-    let zoom = 4;
-    if (props.mapSettings.zoom) {
-      zoom = props.mapSettings.zoom;
-    }
-
     let projection = props.mapSettings.projection;
     const newMapView = new View({
       center: olProj.transform(DEF_CENTER[projection], "EPSG:4326", projection),
       projection: projection,
-      zoom: zoom,
+      zoom: 4,
       maxZoom: MAX_ZOOM[projection],
       minZoom: MIN_ZOOM[projection],
     });
 
+    let newVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+      loader: loader,
+    });
+
+    const newObsDrawSource = new VectorSource({
+      features: [],
+    });
+
+    const newMap = createMap(
+      overlay,
+      popupElement0,
+      newMapView,
+      layerData0,
+      newVectorSource,
+      newObsDrawSource,
+      mapRef0
+    );
+
+    // let newSelect = createSelect();
+    const newSelect = new olinteraction.Select({
+      style: function (feat, res) {
+        if (feat.get("type") != "area") {
+          return new Style({
+            stroke: new Stroke({
+              color: "#0099ff",
+              width: 4,
+            }),
+            image: new Circle({
+              radius: 4,
+              fill: new Fill({
+                color: "#0099ff",
+              }),
+              stroke: new Stroke({
+                color: "#ffffff",
+                width: 1,
+              }),
+            }),
+          });
+        }
+      },
+    });
+
+    newSelect.on("select", function (e) {
+      let selectedFeatures = this.getFeatures();
+      if (
+        e.selected.length > 0 &&
+        (e.selected[0].line || e.selected[0].drifter)
+      ) {
+        selectedFeatures.clear();
+        selectedFeatures.push(e.selected[0]);
+      }
+      if (e.selected.length == 0) {
+        props.updateState("plotEnabled", true);
+        props.action("point", props.vectorCoordinates);
+      }
+      pushSelection(selectedFeatures);
+
+      if (e.selected[0].get("type") == "area") {
+        selectedFeatures.clear();
+      }
+    });
+    newMap.addInteraction(newSelect);
+
+    let mapLayers = newMap.getLayers().getArray();
+
+    setMap0(newMap);
+    setMapView(newMapView);
+    setSelect0(newSelect);
+    setLayerBasemap(mapLayers[0]);
+    setLayerLandShapes(mapLayers[2]);
+    setLayerBath(mapLayers[3]);
+    setLayerBathShapes(mapLayers[4]);
+    setLayerVector(mapLayers[5]);
+    setVectorSource(newVectorSource);
+    setLayerObsDraw(mapLayers[6]);
+    setObsDrawSource(newObsDrawSource);
+    setLayerQuiver(mapLayers[7]);
+
+    // return () => map0.setTarget(null);
+  }, []);
+
+  useEffect(() => {
+    let newMap = null;
+    if (props.compareDatasets) {
+      let overlay = new Overlay({
+        element: popupElement1.current,
+        autoPan: false,
+        offset: [0, -10],
+        positioning: "bottom-center",
+      });
+
+      newMap = createMap(
+        overlay,
+        popupElement1,
+        mapView,
+        layerData1,
+        vectorSource,
+        obsDrawSource,
+        mapRef1
+      );
+
+      let newSelect = createSelect();
+      newMap.addInteraction(newSelect);
+
+      setSelect1(newSelect);
+      drawPoints(vectorSource);
+    }
+    setMap1(newMap);
+  }, [props.compareDatasets]);
+
+  useEffect(() => {
+    if (props.dataset0.time > 0) {
+      layerData0.setSource(new XYZ(getDataSource(props.dataset0)));
+    }
+  }, [
+    props.dataset0.id,
+    props.dataset0.variable,
+    props.dataset0.time,
+    props.dataset0.depth,
+  ]);
+
+  useEffect(() => {
+    if (props.dataset1.time > 0) {
+      layerData1.setSource(new XYZ(getDataSource(props.dataset1)));
+    }
+  }, [
+    props.dataset1.id,
+    props.dataset1.variable,
+    props.dataset1.time,
+    props.dataset1.depth,
+  ]);
+
+  useEffect(() => {
+    if (layerQuiver) {
+      let source = null;
+      if (props.dataset0.quiverVariable !== "none") {
+        source = new VectorSource({
+          url:
+            `/api/v2.0/data?dataset=${props.dataset0.id}` +
+            `&variable=${props.dataset0.quiverVariable}` +
+            `&time=${props.dataset0.time}` +
+            `&depth=${props.dataset0.depth}` +
+            `&geometry_type=area`,
+          format: new GeoJSON({
+            featureProjection: olProj.get("EPSG:3857"),
+            dataProjection: olProj.get("EPSG:4326"),
+          }),
+        });
+      }
+      layerQuiver.setSource(source);
+    }
+  }, [props.dataset0.quiverVariable]);
+
+  useEffect(() => {
+    if (vectorSource) {
+      vectorSource.clear();
+      drawPoints(vectorSource);
+      updateSelectFilter(select0);
+      if (props.compareDatasets) {
+        updateSelectFilter(select1);
+      }
+    }
+  }, [props.vectorCoordinates, props.vectorType, layerVector]);
+
+  useEffect(() => {
+    if (props.vectorId && props.vectorType) {
+      vectorSource.clear();
+      vectorSource.setLoader(loader);
+      updateSelectFilter(select0);
+      if (props.compareDatasets) {
+        updateSelectFilter(select1);
+      }
+    }
+  }, [props.vectorId, props.vectorType]);
+
+  useEffect(() => {
+    if (map0) {
+      resetMap();
+
+      const dataSource = layerData0.getSource();
+      const dataProps = dataSource.getProperties();
+      const newProps = { ...dataProps, ...getDataSource() };
+      const newSource = new XYZ(newProps);
+
+      layerData0.setSource(newSource);
+      newSource.refresh();
+
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map0.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
+
+      const newMapView = new View({
+        projection: props.mapSettings.projection,
+        center: olProj.transform(
+          DEF_CENTER[props.mapSettings.projection],
+          "EPSG:4326",
+          props.mapSettings.projection
+        ),
+        zoom: DEF_ZOOM[props.mapSettings.projection],
+        minZoom: MIN_ZOOM[props.mapSettings.projection],
+        maxZoom: MAX_ZOOM[props.mapSettings.projection],
+      });
+
+      map0.setView(newMapView);
+      setMapView(newMapView);
+
+      const vectorTileGrid = new olTilegrid.createXYZ({
+        tileSize: 512,
+        maxZoom: MAX_ZOOM[props.mapSettings.projection],
+      });
+
+      layerLandShapes.setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+
+      layerBathShapes.setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+
+      let bathySource = null;
+      switch (props.mapSettings.bathyContour) {
+        case "etopo1":
+        default:
+          bathySource = new XYZ({
+            url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          });
+          break;
+      }
+
+      layerBath.setSource(bathySource);
+
+      vectorSource.refresh();
+
+      if (layerQuiver.getSource()) {
+        layerQuiver.getSource().refresh();
+      }
+    }
+  }, [props.mapSettings.projection]);
+
+  useEffect(() => {
+    if (map0) {
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map0.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
+
+      if (props.mapSettings.basemap === "chs") {
+        layerBathShapes.setSource(null);
+        layerLandShapes.setSource(null);
+      } else {
+        const vectorTileGrid = new olTilegrid.createXYZ({
+          tileSize: 512,
+          maxZoom: MAX_ZOOM[props.mapSettings.projection],
+        });
+
+        layerLandShapes.setSource(
+          new VectorTile({
+            format: new MVT(),
+            tileGrid: vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          })
+        );
+
+        layerBathShapes.setSource(
+          new VectorTile({
+            format: new MVT(),
+            tileGrid: vectorTileGrid,
+            tilePixelRatio: 8,
+            url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+            projection: props.mapSettings.projection,
+          })
+        );
+      }
+    }
+  }, [props.mapSettings.basemap]);
+
+  useEffect(() => {
+    if (map0) {
+      const dataSource = layerData0.getSource();
+      const dataProps = dataSource.getProperties();
+      const newProps = { ...dataProps, ...getDataSource() };
+      const newSource = new XYZ(newProps);
+
+      layerData0.setSource(newSource);
+      newSource.refresh();
+    }
+  }, [
+    props.mapSettings.interpType,
+    props.mapSettings.interpRadius,
+    props.mapSettings.interpNeighbours,
+  ]);
+
+  useEffect(() => {
+    if (map0) {
+      const newLayerBasemap = getBasemap(
+        props.mapSettings.basemap,
+        props.mapSettings.projection,
+        props.mapSettings.basemap_attribution
+      );
+      map0.getLayers().setAt(0, newLayerBasemap);
+      setLayerBasemap(newLayerBasemap);
+
+      layerBath.setVisible(props.mapSettings.bathymetry);
+      layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity);
+
+      layerBathShapes.setVisible(props.mapSettings.bathymetry);
+      layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity);
+    }
+  }, [
+    props.mapSettings.bathymetry,
+    props.mapSettings.mapBathymetryOpacity,
+    props.mapSettings.bathyContour,
+    props.mapSettings.topoShadedRelief,
+  ]);
+
+  const createMap = (
+    overlay,
+    popupElement,
+    newMapView,
+    newLayerData,
+    newVectorSource,
+    newObsDrawSource,
+    mapRef
+  ) => {
     const newLayerBasemap = getBasemap(
       props.mapSettings.basemap,
       props.mapSettings.projection,
@@ -235,13 +583,6 @@ const GlobalMap = forwardRef((props, ref) => {
         url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
         projection: props.mapSettings.projection,
       }),
-    });
-
-    let newVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-      loader: loader,
     });
 
     const newLayerVector = new VectorLayer({
@@ -504,10 +845,6 @@ const GlobalMap = forwardRef((props, ref) => {
       },
     });
 
-    const newObsDrawSource = new VectorSource({
-      features: [],
-    });
-
     const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
 
     const anchor = [0.5, 0.5];
@@ -538,7 +875,7 @@ const GlobalMap = forwardRef((props, ref) => {
       view: newMapView,
       layers: [
         newLayerBasemap,
-        layerData,
+        newLayerData,
         newLayerLandShapes,
         newLayerBath,
         newLayerBathShapes,
@@ -554,27 +891,6 @@ const GlobalMap = forwardRef((props, ref) => {
 
     let mapObject = new Map(options);
     mapObject.setTarget(mapRef.current);
-
-    mapObject.on("moveend", function () {
-      const c = olProj
-        .transform(
-          newMapView.getCenter(),
-          props.mapSettings.projection,
-          "EPSG:4326"
-        )
-        .map(function (c) {
-          return c.toFixed(4);
-        });
-      props.updateMapSettings("center", c);
-      props.updateMapSettings("zoom", newMapView.getZoom());
-      const extent = newMapView.calculateExtent(mapObject.getSize());
-      props.updateMapSettings("extent", extent);
-      mapObject.render();
-      if (props.partner) {
-        props.partner.newMapView.setCenter(newMapView.getCenter());
-        props.partner.newMapView.setZoom(newMapView.getZoom());
-      }
-    });
 
     let selected = null;
     mapObject.on("pointermove", function (e) {
@@ -704,6 +1020,24 @@ const GlobalMap = forwardRef((props, ref) => {
       mapObject.getViewport().style.cursor = hit ? "pointer" : "";
     });
 
+    const dragBox = new olinteraction.DragBox({
+      condition: olcondition.platformModifierKeyOnly,
+    });
+    mapObject.addInteraction(dragBox);
+
+    newLayerBasemap.setZIndex(0);
+    layerData0.setZIndex(1);
+    newLayerLandShapes.setZIndex(2);
+    newLayerBath.setZIndex(3);
+    newLayerBathShapes.setZIndex(4);
+    newLayerVector.setZIndex(5);
+    newLayerObsDraw.setZIndex(6);
+    newLayerQuiver.setZIndex(100);
+
+    return mapObject;
+  };
+
+  const createSelect = () => {
     const newSelect = new olinteraction.Select({
       style: function (feat, res) {
         if (feat.get("type") != "area") {
@@ -747,248 +1081,8 @@ const GlobalMap = forwardRef((props, ref) => {
       }
     });
 
-    // let selectedFeatures = newSelect.getFeatures();
-    mapObject.addInteraction(newSelect);
-
-    const dragBox = new olinteraction.DragBox({
-      condition: olcondition.platformModifierKeyOnly,
-    });
-    mapObject.addInteraction(dragBox);
-
-    newLayerBasemap.setZIndex(0);
-    layerData.setZIndex(1);
-    newLayerLandShapes.setZIndex(2);
-    newLayerBath.setZIndex(3);
-    newLayerBathShapes.setZIndex(4);
-    newLayerVector.setZIndex(5);
-    newLayerObsDraw.setZIndex(6);
-    newLayerQuiver.setZIndex(100);
-
-    setMap(mapObject);
-    setMapView(newMapView);
-    setSelect(newSelect);
-    setLayerBasemap(newLayerBasemap);
-    setLayerLandShapes(newLayerLandShapes);
-    setLayerBath(newLayerBath);
-    setLayerBathShapes(newLayerBathShapes);
-    setLayerVector(newLayerVector);
-    setVectorSource(newVectorSource);
-    setLayerObsDraw(newLayerObsDraw);
-    setObsDrawSource(newObsDrawSource);
-    setLayerQuiver(newLayerQuiver);
-
-    return () => mapObject.setTarget(null);
-  }, []);
-
-  useEffect(() => {
-    if (props.dataset.time > 0) {
-      layerData.setSource(new XYZ(getDataSource()));
-    }
-  }, [
-    props.dataset.id,
-    props.dataset.variable,
-    props.dataset.time,
-    props.dataset.depth,
-  ]);
-
-  useEffect(() => {
-    if (layerQuiver) {
-      let source = null;
-      if (props.dataset.quiverVariable !== "none") {
-        source = new VectorSource({
-          url:
-            `/api/v2.0/data?dataset=${props.dataset.id}` +
-            `&variable=${props.dataset.quiverVariable}` +
-            `&time=${props.dataset.time}` +
-            `&depth=${props.dataset.depth}` +
-            `&geometry_type=area`,
-          format: new GeoJSON({
-            featureProjection: olProj.get("EPSG:3857"),
-            dataProjection: olProj.get("EPSG:4326"),
-          }),
-        });
-      }
-      layerQuiver.setSource(source);
-    }
-  }, [props.dataset.quiverVariable]);
-
-  useEffect(() => {
-    if (vectorSource) {
-      vectorSource.clear();
-      drawPoints();
-      updateSelectFilter();
-    }
-  }, [props.vectorCoordinates, props.vectorType, layerVector]);
-
-  useEffect(() => {
-    if (props.vectorId && props.vectorType) {
-      vectorSource.clear();
-      vectorSource.setLoader(loader);
-      updateSelectFilter();
-    }
-  }, [props.vectorId, props.vectorType]);
-
-  useEffect(() => {
-    if (map) {
-      resetMap();
-
-      const dataSource = layerData.getSource();
-      const dataProps = dataSource.getProperties();
-      const newProps = { ...dataProps, ...getDataSource() };
-      const newSource = new XYZ(newProps);
-
-      layerData.setSource(newSource);
-      newSource.refresh();
-
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      const newMapView = new View({
-        projection: props.mapSettings.projection,
-        center: olProj.transform(
-          DEF_CENTER[props.mapSettings.projection],
-          "EPSG:4326",
-          props.mapSettings.projection
-        ),
-        zoom: DEF_ZOOM[props.mapSettings.projection],
-        minZoom: MIN_ZOOM[props.mapSettings.projection],
-        maxZoom: MAX_ZOOM[props.mapSettings.projection],
-      });
-
-      map.setView(newMapView);
-      setMapView(newMapView);
-
-      const vectorTileGrid = new olTilegrid.createXYZ({
-        tileSize: 512,
-        maxZoom: MAX_ZOOM[props.mapSettings.projection],
-      });
-
-      layerLandShapes.setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        })
-      );
-
-      layerBathShapes.setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        })
-      );
-
-      let bathySource = null;
-      switch (props.mapSettings.bathyContour) {
-        case "etopo1":
-        default:
-          bathySource = new XYZ({
-            url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          });
-          break;
-      }
-
-      layerBath.setSource(bathySource);
-
-      vectorSource.refresh();
-
-      if (layerQuiver.getSource()) {
-        layerQuiver.getSource().refresh();
-      }
-    }
-  }, [props.mapSettings.projection]);
-
-  useEffect(() => {
-    if (map) {
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      if (props.mapSettings.basemap === "chs") {
-        layerBathShapes.setSource(null);
-        layerLandShapes.setSource(null);
-      } else {
-        const vectorTileGrid = new olTilegrid.createXYZ({
-          tileSize: 512,
-          maxZoom: MAX_ZOOM[props.mapSettings.projection],
-        });
-
-        layerLandShapes.setSource(
-          new VectorTile({
-            format: new MVT(),
-            tileGrid: vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          })
-        );
-
-        layerBathShapes.setSource(
-          new VectorTile({
-            format: new MVT(),
-            tileGrid: vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          })
-        );
-      }
-    }
-  }, [props.mapSettings.basemap]);
-
-  useEffect(() => {
-    if (map) {
-      const dataSource = layerData.getSource();
-      const dataProps = dataSource.getProperties();
-      const newProps = { ...dataProps, ...getDataSource() };
-      const newSource = new XYZ(newProps);
-
-      layerData.setSource(newSource);
-      newSource.refresh();
-    }
-  }, [
-    props.mapSettings.interpType,
-    props.mapSettings.interpRadius,
-    props.mapSettings.interpNeighbours,
-  ]);
-
-  useEffect(() => {
-    if (map) {
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      layerBath.setVisible(props.mapSettings.bathymetry);
-      layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity);
-
-      layerBathShapes.setVisible(props.mapSettings.bathymetry);
-      layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity);
-    }
-  }, [
-    props.mapSettings.bathymetry,
-    props.mapSettings.mapBathymetryOpacity,
-    props.mapSettings.bathyContour,
-    props.mapSettings.topoShadedRelief,
-  ]);
+    return newSelect;
+  };
 
   const loader = (extent, resolution, projection) => {
     if (props.vectorType && props.vectorId) {
@@ -1090,7 +1184,10 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
-    removeMapInteractions("all");
+    removeMapInteractions(map0, "all");
+    if (props.compareDatasets) {
+      removeMapInteractions(map1, "all");
+    }
     props.updateState(["vectorType", "vectorId", "names"], ["point", null, []]);
     props.action("clearPoints");
 
@@ -1106,12 +1203,17 @@ const GlobalMap = forwardRef((props, ref) => {
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-
     layerObsDraw.setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
+
+    if (props.compareDatasets) {
+      let map1layers = map1.getLayers().getArray();
+      map1layers[5].setSource(newVectorSource);
+      map1layers[6].setSource(newObsDrawSource);
+    }
   };
 
-  const removeMapInteractions = (type) => {
+  const removeMapInteractions = (map, type) => {
     const interactions = map.getInteractions();
     const stat = {
       coll: interactions,
@@ -1175,8 +1277,8 @@ const GlobalMap = forwardRef((props, ref) => {
     }
   };
 
-  const getDataSource = () => {
-    let scale = props.dataset.variable_scale;
+  const getDataSource = (dataset) => {
+    let scale = dataset.variable_scale;
     if (Array.isArray(scale)) {
       scale = scale.join(",");
     }
@@ -1184,10 +1286,10 @@ const GlobalMap = forwardRef((props, ref) => {
     let dataSource = {};
     dataSource.url =
       "/api/v2.0/tiles" +
-      `/${props.dataset.id}` +
-      `/${props.dataset.variable}` +
-      `/${props.dataset.time}` +
-      `/${props.dataset.depth}` +
+      `/${dataset.id}` +
+      `/${dataset.variable}` +
+      `/${dataset.time}` +
+      `/${dataset.depth}` +
       "/{z}/{x}/{y}" +
       `?projection=${props.mapSettings.projection}` +
       `&scale=${scale}` +
@@ -1200,7 +1302,7 @@ const GlobalMap = forwardRef((props, ref) => {
   };
 
   const drawObsPoint = () => {
-    if (removeMapInteractions("Point")) {
+    if (removeMapInteractions(map0, "Point")) {
       return;
     }
 
@@ -1224,13 +1326,13 @@ const GlobalMap = forwardRef((props, ref) => {
       obsDrawSource.clear();
       props.action("setObsArea", [[lonlat[1], lonlat[0]]]);
 
-      map.removeInteraction(draw);
+      map0.removeInteraction(draw);
     });
-    map.addInteraction(draw);
+    map0.addInteraction(draw);
   };
 
   const drawObsArea = () => {
-    if (removeMapInteractions("Polygon")) {
+    if (removeMapInteractions(map0, "Polygon")) {
       return;
     }
 
@@ -1256,39 +1358,45 @@ const GlobalMap = forwardRef((props, ref) => {
         });
       // Send area to Observation Selector
       props.action("setObsArea", points);
-      map.removeInteraction(draw);
+      map0.removeInteraction(draw);
       setTimeout(function () {
         obsDrawSource.clear();
       }, 251);
     });
-    map.addInteraction(draw);
+    map0.addInteraction(draw);
   };
 
   const draw = () => {
-    const drawAction = new Draw({
-      source: layerVector.getSource(),
-      type: "Point",
-      stopClick: true,
-    });
+    const addDrawInteraction = (map) => {
+      const drawAction = new Draw({
+        source: vectorSource,
+        type: "Point",
+        stopClick: true,
+      });
 
-    drawAction.set("type", props.vectorType);
-    drawAction.on("drawend", function (e) {
-      // Disable zooming when drawing
-      const latlon = olProj
-        .transform(
-          e.feature.getGeometry().getCoordinates(),
-          props.mapSettings.projection,
-          "EPSG:4326"
-        )
-        .reverse();
-      // Draw point on map(s)
-      props.action("addPoints", [latlon]);
-    });
+      drawAction.set("type", props.vectorType);
+      drawAction.on("drawend", function (e) {
+        // Disable zooming when drawing
+        const latlon = olProj
+          .transform(
+            e.feature.getGeometry().getCoordinates(),
+            props.mapSettings.projection,
+            "EPSG:4326"
+          )
+          .reverse();
+        // Draw point on map(s)
+        props.action("addPoints", [latlon]);
+      });
+      map.addInteraction(drawAction);
+    };
 
-    map.addInteraction(drawAction);
+    addDrawInteraction(map0);
+    if (props.compareDatasets) {
+      addDrawInteraction(map1);
+    }
   };
 
-  const drawPoints = () => {
+  const drawPoints = (vectorSource) => {
     let geom;
     let feat;
     switch (props.vectorType) {
@@ -1334,6 +1442,13 @@ const GlobalMap = forwardRef((props, ref) => {
         });
         vectorSource.addFeature(feat);
         break;
+    }
+  };
+
+  const stopDrawing = () => {
+    removeMapInteractions(map0);
+    if (props.compareDatasets) {
+      removeMapInteractions(map1);
     }
   };
 
@@ -1423,7 +1538,7 @@ const GlobalMap = forwardRef((props, ref) => {
     props.updateState("names", names);
   };
 
-  const updateSelectFilter = () => {
+  const updateSelectFilter = (select) => {
     select.setProperties({
       filter: function (feature) {
         return vectorSource.forEachFeature(function (f) {
@@ -1435,28 +1550,41 @@ const GlobalMap = forwardRef((props, ref) => {
     });
   };
 
-  if (map) {
+  if (map0) {
     if (props.mapSettings.basemap === "chs") {
       layerBasemap.setZIndex(1);
-      layerData.setZIndex(0);
+      layerData0.setZIndex(0);
     } else {
       layerBasemap.setZIndex(0);
-      layerData.setZIndex(1);
+      layerData0.setZIndex(1);
     }
   }
 
   return (
-    <>
+    <div className="map-container">
+      <div className="title ol-popup" ref={popupElement0} />
+      <div className="title ol-popup" ref={popupElement1} />
       <div
-        style={{ height: "100vh", width: "100%" }}
-        ref={mapRef}
-        id="map-container"
+        style={{
+          height: "100vh",
+          width: props.compareDatasets ? "calc(50% - 1px)" : "100%",
+        }}
+        ref={mapRef0}
+        id="map0"
         className="map-container GlobalMap"
       />
-      <div className="title ol-popup" ref={popupElement}>
-        Empty
-      </div>
-    </>
+      
+
+      {props.compareDatasets ? (
+        <div
+          style={{ height: "100vh", width: "calc(50% - 1px)" }}
+          ref={mapRef1}
+          id="map1"
+          className="map-container GlobalMap"
+        />
+      ) : null}
+      
+    </div>
   );
 });
 

@@ -1,16 +1,23 @@
-Div.MapInputs {
+.map-inputs-container {
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  z-index: 10;
+}
+
+.dataset-selector-container {
+  display: flex;
+  justify-content: center;
+}
+
+.map-inputs {
   background-color: #fff;
   opacity: 0.9;
-  position: absolute;
-  z-index: 10;
-  width: 90%;
-  // min-width: 1000px;
-  // height: 90px;
-  left: 5%;
-  bottom: 8px;
+  width: -webkit-fill-available;
+  max-width: 90%; 
   border-radius: 5px;
   border: 2px solid #008cba;
-  margin: auto;
+  margin: 0px 8px;
   margin-bottom: 0;
   padding: 0;
   align-items: center;

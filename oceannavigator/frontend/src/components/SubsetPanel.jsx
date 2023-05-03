@@ -23,7 +23,7 @@ class SubsetPanel extends React.Component {
       output_starttime: props.dataset.starttime,
       output_endtime: props.dataset.time,
       quantum: props.dataset.quantum,
-      dataset: props.dataset.id,
+      dataset: props.dataset,
       variable: props.dataset.variable,
       output_format: "NETCDF4", // Subset output format
       zip: false, // Should subset file(s) be zipped
