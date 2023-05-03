@@ -259,8 +259,6 @@ const GlobalMap = forwardRef((props, ref) => {
     setLayerObsDraw(mapLayers[6]);
     setObsDrawSource(newObsDrawSource);
     setLayerQuiver(mapLayers[7]);
-
-    // return () => map0.setTarget(null);
   }, []);
 
   useEffect(() => {
@@ -318,22 +316,22 @@ const GlobalMap = forwardRef((props, ref) => {
     if (layerQuiver) {
       let source = null;
       if (props.dataset0.quiverVariable !== "none") {
-        source = new VectorSource({
-          url:
-            `/api/v2.0/data?dataset=${props.dataset0.id}` +
-            `&variable=${props.dataset0.quiverVariable}` +
-            `&time=${props.dataset0.time}` +
-            `&depth=${props.dataset0.depth}` +
-            `&geometry_type=area`,
-          format: new GeoJSON({
-            featureProjection: olProj.get("EPSG:3857"),
-            dataProjection: olProj.get("EPSG:4326"),
-          }),
-        });
+        source = getQuiverSource(props.dataset0);
       }
       layerQuiver.setSource(source);
     }
   }, [props.dataset0.quiverVariable]);
+
+  useEffect(() => {
+    if (map1) {
+      let quiverLayer = map1.getLayers().getArray()[7];
+      let source = null;
+      if (props.dataset1.quiverVariable !== "none") {
+        source = getQuiverSource(props.dataset1);
+      }
+      quiverLayer.setSource(source);
+    }
+  }, [props.dataset1.quiverVariable]);
 
   useEffect(() => {
     if (vectorSource) {
@@ -359,136 +357,28 @@ const GlobalMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0) {
-      resetMap();
-
-      const dataSource = layerData0.getSource();
-      const dataProps = dataSource.getProperties();
-      const newProps = { ...dataProps, ...getDataSource() };
-      const newSource = new XYZ(newProps);
-
-      layerData0.setSource(newSource);
-      newSource.refresh();
-
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map0.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      const newMapView = new View({
-        projection: props.mapSettings.projection,
-        center: olProj.transform(
-          DEF_CENTER[props.mapSettings.projection],
-          "EPSG:4326",
-          props.mapSettings.projection
-        ),
-        zoom: DEF_ZOOM[props.mapSettings.projection],
-        minZoom: MIN_ZOOM[props.mapSettings.projection],
-        maxZoom: MAX_ZOOM[props.mapSettings.projection],
-      });
-
-      map0.setView(newMapView);
-      setMapView(newMapView);
-
-      const vectorTileGrid = new olTilegrid.createXYZ({
-        tileSize: 512,
-        maxZoom: MAX_ZOOM[props.mapSettings.projection],
-      });
-
-      layerLandShapes.setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        })
-      );
-
-      layerBathShapes.setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        })
-      );
-
-      let bathySource = null;
-      switch (props.mapSettings.bathyContour) {
-        case "etopo1":
-        default:
-          bathySource = new XYZ({
-            url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          });
-          break;
-      }
-
-      layerBath.setSource(bathySource);
-
-      vectorSource.refresh();
-
-      if (layerQuiver.getSource()) {
-        layerQuiver.getSource().refresh();
+      updateProjection(map0, props.dataset0);
+      if (props.compareDatasets) {
+        updateProjection(map1, props.dataset1);
       }
     }
   }, [props.mapSettings.projection]);
 
   useEffect(() => {
     if (map0) {
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map0.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      if (props.mapSettings.basemap === "chs") {
-        layerBathShapes.setSource(null);
-        layerLandShapes.setSource(null);
-      } else {
-        const vectorTileGrid = new olTilegrid.createXYZ({
-          tileSize: 512,
-          maxZoom: MAX_ZOOM[props.mapSettings.projection],
-        });
-
-        layerLandShapes.setSource(
-          new VectorTile({
-            format: new MVT(),
-            tileGrid: vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          })
-        );
-
-        layerBathShapes.setSource(
-          new VectorTile({
-            format: new MVT(),
-            tileGrid: vectorTileGrid,
-            tilePixelRatio: 8,
-            url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-            projection: props.mapSettings.projection,
-          })
-        );
+      updateBasemap(map0);
+      if (props.compareDatasets) {
+        updateBasemap(map1);
       }
     }
   }, [props.mapSettings.basemap]);
 
   useEffect(() => {
     if (map0) {
-      const dataSource = layerData0.getSource();
-      const dataProps = dataSource.getProperties();
-      const newProps = { ...dataProps, ...getDataSource() };
-      const newSource = new XYZ(newProps);
-
-      layerData0.setSource(newSource);
-      newSource.refresh();
+      updateInterpolation(map0, props.dataset0);
+      if (props.compareDatasets) {
+        updateInterpolation(map1, props.dataset1);
+      }
     }
   }, [
     props.mapSettings.interpType,
@@ -498,19 +388,10 @@ const GlobalMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0) {
-      const newLayerBasemap = getBasemap(
-        props.mapSettings.basemap,
-        props.mapSettings.projection,
-        props.mapSettings.basemap_attribution
-      );
-      map0.getLayers().setAt(0, newLayerBasemap);
-      setLayerBasemap(newLayerBasemap);
-
-      layerBath.setVisible(props.mapSettings.bathymetry);
-      layerBath.setOpacity(props.mapSettings.mapBathymetryOpacity);
-
-      layerBathShapes.setVisible(props.mapSettings.bathymetry);
-      layerBathShapes.setOpacity(props.mapSettings.mapBathymetryOpacity);
+      updateBathy(map0, props.dataset0);
+      if (props.compareDatasets) {
+        updateBathy(map1, props.dataset1);
+      }
     }
   }, [
     props.mapSettings.bathymetry,
@@ -1301,6 +1182,23 @@ const GlobalMap = forwardRef((props, ref) => {
     return dataSource;
   };
 
+  const getQuiverSource = (dataset) => {
+    const quiverSource = new VectorSource({
+      url:
+        `/api/v2.0/data?dataset=${dataset.id}` +
+        `&variable=${dataset.quiverVariable}` +
+        `&time=${dataset.time}` +
+        `&depth=${dataset.depth}` +
+        `&geometry_type=area`,
+      format: new GeoJSON({
+        featureProjection: olProj.get("EPSG:3857"),
+        dataProjection: olProj.get("EPSG:4326"),
+      }),
+    });
+
+    return quiverSource;
+  };
+
   const drawObsPoint = () => {
     if (removeMapInteractions(map0, "Point")) {
       return;
@@ -1550,6 +1448,170 @@ const GlobalMap = forwardRef((props, ref) => {
     });
   };
 
+  const updateProjection = (map, dataset) => {
+    resetMap();
+
+    let mapLayers = map.getLayers().getArray();
+
+    let layerDataIdx = props.mapSettings.basemap === "chs" ? 0 : 1;
+
+    const dataSource = mapLayers[layerDataIdx].getSource();
+    const dataProps = dataSource.getProperties();
+    const newProps = { ...dataProps, ...getDataSource(dataset) };
+    const newSource = new XYZ(newProps);
+
+    mapLayers[layerDataIdx].setSource(newSource);
+    newSource.refresh();
+
+    const newLayerBasemap = getBasemap(
+      props.mapSettings.basemap,
+      props.mapSettings.projection,
+      props.mapSettings.basemap_attribution
+    );
+    map.getLayers().setAt(0, newLayerBasemap);
+    if (map === map0) {
+      setLayerBasemap(newLayerBasemap);
+    }
+    const newMapView = new View({
+      projection: props.mapSettings.projection,
+      center: olProj.transform(
+        DEF_CENTER[props.mapSettings.projection],
+        "EPSG:4326",
+        props.mapSettings.projection
+      ),
+      zoom: DEF_ZOOM[props.mapSettings.projection],
+      minZoom: MIN_ZOOM[props.mapSettings.projection],
+      maxZoom: MAX_ZOOM[props.mapSettings.projection],
+    });
+
+    map.setView(newMapView);
+    if (map === map0) {
+      setMapView(newMapView);
+    }
+
+    const vectorTileGrid = new olTilegrid.createXYZ({
+      tileSize: 512,
+      maxZoom: MAX_ZOOM[props.mapSettings.projection],
+    });
+
+    mapLayers[2].setSource(
+      new VectorTile({
+        format: new MVT(),
+        tileGrid: vectorTileGrid,
+        tilePixelRatio: 8,
+        url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+        projection: props.mapSettings.projection,
+      })
+    );
+
+    mapLayers[4].setSource(
+      new VectorTile({
+        format: new MVT(),
+        tileGrid: vectorTileGrid,
+        tilePixelRatio: 8,
+        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+        projection: props.mapSettings.projection,
+      })
+    );
+
+    let bathySource = null;
+    switch (props.mapSettings.bathyContour) {
+      case "etopo1":
+      default:
+        bathySource = new XYZ({
+          url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        });
+        break;
+    }
+
+    mapLayers[3].setSource(bathySource);
+
+    vectorSource.refresh();
+
+    if (mapLayers[7].getSource()) {
+      mapLayers[7].getSource().refresh();
+    }
+  };
+
+  const updateBasemap = (map) => {
+    let mapLayers = map.getLayers().getArray();
+
+    const newLayerBasemap = getBasemap(
+      props.mapSettings.basemap,
+      props.mapSettings.projection,
+      props.mapSettings.basemap_attribution
+    );
+    map.getLayers().setAt(0, newLayerBasemap);
+    if (map === map0) {
+      setLayerBasemap(newLayerBasemap);
+    }
+
+    if (props.mapSettings.basemap === "chs") {
+      mapLayers[2].setSource(null);
+      mapLayers[4].setSource(null);
+    } else {
+      const vectorTileGrid = new olTilegrid.createXYZ({
+        tileSize: 512,
+        maxZoom: MAX_ZOOM[props.mapSettings.projection],
+      });
+
+      mapLayers[4].setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+
+      mapLayers[2].setSource(
+        new VectorTile({
+          format: new MVT(),
+          tileGrid: vectorTileGrid,
+          tilePixelRatio: 8,
+          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          projection: props.mapSettings.projection,
+        })
+      );
+    }
+  };
+
+  const updateInterpolation = (map, dataset) => {
+    let mapLayers = map.getLayers().getArray();
+
+    let layerDataIdx = props.mapSettings.basemap === "chs" ? 0 : 1;
+
+    const dataSource = mapLayers[layerDataIdx].getSource();
+    const dataProps = dataSource.getProperties();
+    const newProps = { ...dataProps, ...getDataSource(dataset) };
+    const newSource = new XYZ(newProps);
+
+    mapLayers[layerDataIdx].setSource(newSource);
+    newSource.refresh();
+  };
+
+  const updateBathy = (map) => {
+    let mapLayers = map.getLayers().getArray();
+
+    const newLayerBasemap = getBasemap(
+      props.mapSettings.basemap,
+      props.mapSettings.projection,
+      props.mapSettings.basemap_attribution
+    );
+    map.getLayers().setAt(0, newLayerBasemap);
+    if (map === map0) {
+      setLayerBasemap(newLayerBasemap);
+    }
+
+    mapLayers[3].setVisible(props.mapSettings.bathymetry);
+    mapLayers[3].setOpacity(props.mapSettings.mapBathymetryOpacity);
+
+    mapLayers[4].setVisible(props.mapSettings.bathymetry);
+    mapLayers[4].setOpacity(props.mapSettings.mapBathymetryOpacity);
+  };
+
   if (map0) {
     if (props.mapSettings.basemap === "chs") {
       layerBasemap.setZIndex(1);
@@ -1573,7 +1635,6 @@ const GlobalMap = forwardRef((props, ref) => {
         id="map0"
         className="map-container GlobalMap"
       />
-      
 
       {props.compareDatasets ? (
         <div
@@ -1583,7 +1644,6 @@ const GlobalMap = forwardRef((props, ref) => {
           className="map-container GlobalMap"
         />
       ) : null}
-      
     </div>
   );
 });

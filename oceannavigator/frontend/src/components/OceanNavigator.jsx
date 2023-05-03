@@ -431,6 +431,14 @@ function OceanNavigator() {
         mapSettings={mapSettings}
         onUpdate={updateDataset0}
       />
+      {compareDatasets ? (
+        <ScaleViewer
+          dataset={dataset1}
+          mapSettings={mapSettings}
+          onUpdate={updateDataset0}
+          right={true}
+        />
+      ) : null}
       <GlobalMap
         ref={mapRef}
         mapSettings={mapSettings}

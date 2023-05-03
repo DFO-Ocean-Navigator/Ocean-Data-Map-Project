@@ -70,7 +70,7 @@ function ScaleViewer(props) {
   );
 
   return (
-    <div className="ScaleViewer">
+    <div className={`ScaleViewer ${props.right ? "right" : ""}`}>
       {scaleImage}
       {rangeControl}
       {expandIcon}
