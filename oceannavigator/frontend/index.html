@@ -1,188 +1,296 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="Description" content="The Ocean Navigator is a free, user-friendly dynamic map of  
-            scientific ocean data. The tool is developed by scientists but is designed for range of end users. Category: Ocean Maps">
-        <title>Ocean Navigator</title>
-        <link rel="apple-touch-icon" sizes="57x57" href="/static/apple-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="/static/apple-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="/static/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="/static/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="/static/apple-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/static/apple-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="/static/apple-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/static/apple-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-icon-180x180.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="/static/android-icon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="/static/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
-        <link rel="manifest" href="/static/manifest.json">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="/static/ms-icon-144x144.png">
-        <meta name="theme-color" content="#008cba" />
-        <meta name="viewport" content="width=device-width, initial-scale=1 shrink-to-fit=no" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-        <!-- MINIFY THIS -->
-        <link rel="stylesheet" href="/static/grayscale.css" >
-    </head>
-    
-    <body id="page-top">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
-          <div class="container">
-            <a class="navbar-brand js-scroll-trigger" href="#page-top">Ocean Navigator <sup>Beta</sup></a>
-            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-              Menu
-              <i class="fa fa-bars"></i>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarResponsive">
-              <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                  <a class="nav-link js-scroll-trigger" href="#about">About</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link js-scroll-trigger" href="#download">Open Ocean Navigator</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link js-scroll-trigger" href="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/" target="_blank">User Guide <i class="fa fa-external-link"></i></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link js-scroll-trigger" href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/releases/tag/CODE_VERSION">CODE_VERSION</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-    
-        <!-- Intro Header -->
-        <header class="masthead">
-          <div class="intro-body">
-            <div class="container">
-              <div class="row">
-                <div class="col-lg-8 mx-auto">
-                  <h1 class="brand-heading">Ocean Navigator</h1>
-                  <p class="intro-text">Beautiful, interactive ocean data for everyone.</p>
-                  <a href="public/" class="btn btn-default btn-lg"> Open Now <i class="fa fa-external-link"></i></a>
-                  <p></p>
-                  <a href="#about" class="btn btn-circle js-scroll-trigger">
-                    <i class="fa fa-angle-double-down animated"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-    
-        <!-- About Section -->
-        <section id="about" class="content-section text-center">
-          <div class="container">
-            <div class="row">
-              <div class="col-lg-8 mx-auto">
-                <h2>What is the Ocean Navigator</h2>
-                <p>The Ocean Navigator is a modern, user-friendly, interactive online map
-                    displaying scientific ocean data gathered from various models around the world. 
-                    It includes a number of different variables such as temperature and ocean currents. 
-                    The tool is developed by scientists, but is designed for any user; be it a researcher
-                    writing a technical paper, or a hobbyist interested in the oceans.
-                </p>
-                <h2>Objective of Portal</h2>
-                <p>The Ocean Navigator prototype portal is being designed with the goal 
-                    to enable the discovery and accessibility of ocean data from ocean 
-                    prediction systems. Operational prediction systems from Canada and other
-                    global systems are available via this tool. Several other sources of data
-                    are available, including, validation data sources and limited 
-                    observational data. More information on the data available can be 
-                    found in the Ocean Navigator. For help in using the Ocean Navigator
-                    please see our <a href="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/" target="_blank">User Guide</a>.
-                </p>
-                <p>Please note that <strong>this site is still in active development</strong> and 
-                    may have some bugs or other issues in displaying data, for access to raw data please see our 
-                    <a href="http://navigator.oceansdata.ca/thredds/catalog.html">THREDDS server</a>.
-                    To report a bug please e-mail: <a href="mailto:DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca">
-                    DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca</a>
-                </p>
-                <h2>Recommended Use of Data</h2>
-                <p>These datasets are not intended for navigational purposes.  It is expected that users of this portal
-                    will have an interest in oceanographic data and the intention is to provide oceanographic context for a
-                    wide range of users.
-                </p>
-                <h2>Data Producer Responsibility</h2>
-                <p>The developers are not responsible for the use made of
-                    the data made accessible via this portal, or errors or
-                    omissions that potentially may occur in the data sets.
-                    While we aim to make accessible the most recent and up
-                    to date data, occasionally a delay in the data feed to
-                    the portal may be experienced.
-                </p>
-                <h2>Identification of Data Sources</h2>
-                <p>Use of the downloaded data should identify the source
-                    of the data. Plots downloaded from the portal will have
-                    a reference to the data source. 
-                </p>
-                <p>Suggested citation: Dataset, http://navigator.oceansdata.ca (year)
-                    <br />
-                    Example: GIOPS daily averages, http://navigator.oceansdata.ca, 2017
-                </p>
-                <p>If you would like further information about how to reference the data 
-                    sources that the Ocean Navigator uses please feel free to <a class="js-scroll-trigger" href="#contact">Contact Us</a>.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="Description"
+      content="The Ocean Navigator is a free, user-friendly dynamic map of  
+            scientific ocean data. The tool is developed by scientists but is designed for range of end users. Category: Ocean Maps"
+    />
+    <title>Ocean Navigator</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="/static/apple-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="/static/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="/static/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="/static/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="/static/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/static/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="/static/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/static/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/apple-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/static/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/static/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/static/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta
+      name="msapplication-TileImage"
+      content="/static/ms-icon-144x144.png"
+    />
+    <meta name="theme-color" content="#008cba" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1 shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!-- MINIFY THIS -->
+    <link rel="stylesheet" href="/static/grayscale.css" />
+  </head>
 
-        <!-- Launch Section -->
-        <section id="launch" class="launch-section content-section text-center">
-          <div class="container">
+  <body id="page-top">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="#page-top"
+          >Ocean Navigator <sup>Beta</sup></a
+        >
+        <button
+          class="navbar-toggler navbar-toggler-right"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          Menu
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#about">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#download"
+                >Open Ocean Navigator</a
+              >
+            </li>
+            <!-- <li class="nav-item">
+              <a
+                class="nav-link js-scroll-trigger"
+                href="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+                target="_blank"
+                >User Guide <i class="fa fa-external-link"></i
+              ></a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link js-scroll-trigger"
+                href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/releases/tag/update-frontend-packages"
+                >update-frontend-packages</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Intro Header -->
+    <header class="masthead">
+      <div class="intro-body">
+        <div class="container">
+          <div class="row">
             <div class="col-lg-8 mx-auto">
-              <h2>Visit the Ocean Navigator</h2>
-              <p>Ready to have <strong>terabytes</strong> of ocean data at your fingertips?</p>
-              <a href="public/" class="btn btn-default btn-lg">Open <i class="fa fa-external-link"></i></a>
+              <h1 class="brand-heading">Ocean Navigator</h1>
+              <a href="public/" class="btn btn-default btn-lg">
+                Open Now <i class="fa fa-external-link"></i
+              ></a>
+              <p></p>
+              <a href="#about" class="btn btn-circle js-scroll-trigger">
+                <i class="fa fa-angle-double-down animated"></i>
+              </a>
             </div>
           </div>
-        </section>
-    
-        <!-- Contact Section -->
-        <section id="contact" class="content-section text-center">
-          <div class="container">
-            <div class="row">
-              <div class="col-lg-8 mx-auto">
-                <h2>Contact Us</h2>
-                <p>Feel free to contact us with any questions, or potential issues with the Navigator!</p>
-                <ul class="list-inline banner-social-buttons">
-                  <li class="list-inline-item">
-                    <a href="mailto:DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca" target="_blank" class="btn btn-default btn-lg">
-                      <i class="fa fa-envelope-o fa-fw"></i>
-                      <span class="network-name">E-mail</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="content-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>What is the Ocean Navigator</h2>
+            <p>
+              Ocean Navigator is a visualization application for digital ocean
+              information that was developed to make numerical ocean environment
+              prediction estimates and in-situ ocean observation available to
+              end users. It includes a number of different variables such as
+              temperature and ocean currents. The tool is designed for any user;
+              be it a researcher writing a technical paper, or a hobbyist
+              interested in the oceans.
+            </p>
+            <h2>Objective of Portal</h2>
+            <p>
+              This portal is designed to enable the discovery and accessibility
+              of ocean data from ocean prediction systems and ocean
+              observations. Operational prediction systems from Canada and other
+              global systems are available via this tool. Several other sources
+              of data are available, including, CLASS4 validation data sources
+              and limited observational data.
+            </p>
+            <h2>Recommended Use of Data</h2>
+            <p>
+              These datasets are not intended for navigational purposes. It is
+              expected that users of this portal will have an interest in
+              oceanographic data and the intention is to provide oceanographic
+              context for a wide range of users.
+            </p>
+            <h2>Data Producer Responsibility</h2>
+            <p>
+              The developers are not responsible for the use made of the data
+              made accessible via this portal, or errors or omissions that
+              potentially may occur in the data sets. While we aim to make
+              accessible the most recent and up to date data, occasionally a
+              delay in the data feed to the portal may be experienced. It is the
+              responsibility of the user to ensure the data is used
+              appropriately.
+              <br /><br />
+              It is recommended you familiarize yourself with the documentation
+              provided by the data provider. If there are any questions please
+              contact us.
+            </p>
+            <h2>Identification of Data Sources</h2>
+            <p>
+              Use of the downloaded data should identify the original source of
+              the data per data provider citation guidelines. Plots downloaded
+              from the portal will have a reference to the original data source.
+              <br /><br />
+              Suggested citation for products (i.e. plots, spreadsheets)
+              generated by this application:
+              <br />
+              <span class="example-span">
+                (dataset name), https://navigator.oceansdata.ca, (year)
+              </span>
+              Example:
+              <br />
+              <span class="example-span">
+                GIOPS daily averages, https://navigator.oceansdata.ca, 2023
+              </span>
+              <br />
+              If you would like further information about how to reference the
+              data sources that the Ocean Navigator uses please contact us.
+            </p>
+            <h2>Contact Us</h2>
+            <p>
+              Feel free to contact us with any questions, or potential issues
+              with the Navigator!
+            </p>
+            <ul class="list-inline banner-social-buttons">
+              <li class="list-inline-item">
+                <a
+                  href="mailto:DFO.OceanNavigator-NavigateurOcean.MPO@dfo-mpo.gc.ca"
+                  target="_blank"
+                  class="btn btn-default btn-lg"
+                >
+                  <i class="fa fa-envelope-o fa-fw"></i>
+                  <span class="network-name">E-mail</span>
+                </a>
+              </li>
+              <li class="list-inline-item">
+                <a
+                  href="https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/issues/"
+                  target="_blank"
+                  class="btn btn-default btn-lg"
+                >
+                  <img
+                    width="20"
+                    height="20"
+                    src="./static/github-mark-white.svg"
+                  />
+                  <span class="network-name">Issues</span>
+                </a>
+              </li>
+            </ul>
           </div>
-        </section>
-        <!-- Footer -->
-        <footer>
-          <div class="container text-center">
-            <!--<p>Copyright &copy; Your Website 2017</p> -->
-          </div>
-        </footer>
-    
-        <!-- Bootstrap core JavaScript -->
-        <script src="/static/jquery/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
-    
-        <!-- Plugin JavaScript -->
-        <script src="/static/jquery-easing/jquery.easing.min.js"></script>
-    
-        <!-- Custom scripts for this template -->
-        <script src="/static/grayscale.min.js"></script>
-    
-      </body>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container text-center">
+        <!--<p>Copyright &copy; Your Website 2017</p> -->
+      </div>
+    </footer>
+  </body>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="/static/jquery/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+
+  <!-- Plugin JavaScript -->
+  <script src="/static/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom scripts for this template -->
+  <script src="/static/grayscale.min.js"></script>
 </html>
