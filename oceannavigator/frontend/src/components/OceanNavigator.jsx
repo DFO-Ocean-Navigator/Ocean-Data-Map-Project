@@ -4,7 +4,7 @@ import { Button } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-import GlobalMap from "./GlobalMap.jsx";
+import MainMap from "./MainMap.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
@@ -439,7 +439,7 @@ function OceanNavigator() {
           right={true}
         />
       ) : null}
-      <GlobalMap
+      <MainMap
         ref={mapRef}
         mapSettings={mapSettings}
         dataset0={dataset0}

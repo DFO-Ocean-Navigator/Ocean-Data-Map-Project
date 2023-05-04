@@ -258,7 +258,7 @@ function ObservationSelector(props) {
               <ComboBox
                 key="quantum"
                 id="quantum"
-                state={(key, value) => setQuantum(value)}
+                state={quantum}
                 title="Track Simplification"
                 onUpdate={(key, value) => setQuantum(value)}
                 data={[
