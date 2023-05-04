@@ -36,6 +36,11 @@ function DrawingTools(props) {
     props.updateUI({ modalType: vectorType, showModal: true });
   };
 
+  const plotDisabled =
+    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
+    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
+    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
+
   return (
     <div className={"drawing-tools"}>
       <div>
@@ -55,7 +60,11 @@ function DrawingTools(props) {
         ))}
       </div>
 
-      <Button className="plot-button" onClick={handlePlot}>
+      <Button
+        className="plot-button"
+        onClick={handlePlot}
+        disabled={plotDisabled}
+      >
         Plot
       </Button>
       <Button className="plot-button" onClick={handleClear}>

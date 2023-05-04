@@ -466,6 +466,7 @@ function OceanNavigator() {
         action={action}
         showCompare={true}
         vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
       />
       <MapTools
         uiSettings={uiSettings}

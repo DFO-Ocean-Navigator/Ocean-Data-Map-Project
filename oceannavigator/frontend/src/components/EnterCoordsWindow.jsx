@@ -118,7 +118,7 @@ function EnterCoordsWindow(props) {
         </td>
       </tr>
     );
-  })
+  });
 
   const parseCSV = (e) => {
     if (e.target.files.length == 1) {
@@ -171,6 +171,11 @@ function EnterCoordsWindow(props) {
     }
   };
 
+  const plotDisabled =
+    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
+    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
+    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
+
   return (
     <div className="EnterCoordsWindow">
       <div className="table-container">
@@ -217,7 +222,7 @@ function EnterCoordsWindow(props) {
         <div className="toggle-button-container">
           {radios.map((radio, idx) => (
             <ToggleButton
-              className="plot-toggle" 
+              className="plot-toggle"
               key={idx}
               id={`radio-${idx}`}
               type="radio"
@@ -233,7 +238,13 @@ function EnterCoordsWindow(props) {
         <Button className="plot-button" onClick={handleUpload}>
           Upload csv
         </Button>
-        <Button className="plot-button" onClick={handlePlot}>Plot</Button>
+        <Button
+          className="plot-button"
+          onClick={handlePlot}
+          disabled={plotDisabled}
+        >
+          Plot
+        </Button>
       </div>
       <form ref={fileForm}>
         <input

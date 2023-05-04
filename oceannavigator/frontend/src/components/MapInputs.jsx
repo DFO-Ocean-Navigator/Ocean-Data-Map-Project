@@ -12,6 +12,7 @@ function MapInputs(props) {
       updateUI={props.updateUI}
       action={props.action}
       vectorType={props.vectorType}
+      vectorCoordinates={props.vectorCoordinates}
     />
   ) : null;
 
