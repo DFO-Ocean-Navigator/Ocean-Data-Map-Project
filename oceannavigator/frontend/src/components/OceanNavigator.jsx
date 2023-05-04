@@ -465,13 +465,12 @@ function OceanNavigator() {
         compareDatasets={compareDatasets}
         action={action}
         showCompare={true}
+        vectorType={vectorType}
       />
       <MapTools
         uiSettings={uiSettings}
         updateUI={updateUI}
         action={action}
-        vectorType={vectorType}
-        vectorCoordinates={vectorCoordinates}
       />
       <Modal
         show={uiSettings.showModal}

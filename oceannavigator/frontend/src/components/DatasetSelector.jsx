@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 
 import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
@@ -442,15 +444,21 @@ function DatasetSelector(props) {
   }
 
   const goButton = (
-    <Button
-      className="go-button"
-      variant="primary"
-      type="submit"
-      onClick={handleGoButton}
-      disabled={loading}
+    <OverlayTrigger
+      key="draw-overlay"
+      placement={props.horizontalLayout ? "top" : "bottom"}
+      overlay={<Tooltip id={"draw-tooltip"}>Apply Changes</Tooltip>}
     >
-      Go
-    </Button>
+      <Button
+        className="go-button"
+        variant="primary"
+        type="submit"
+        onClick={handleGoButton}
+        disabled={loading}
+      >
+        Go
+      </Button>
+    </OverlayTrigger>
   );
 
   function updateAxisRange(key, value) {
