@@ -3002,8 +3002,8 @@ textarea.form-control.is-invalid {
 .btn.active,
 .btn.show {
   color: var(--bs-btn-active-color);
-  background-color: var(--bs-btn-active-bg);
-  border-color: var(--bs-btn-active-border-color);
+  background-color: #008cba;
+  border-color: #008cba;
 }
 .btn-check:checked + .btn:focus-visible,
 :not(.btn-check) + .btn:active:focus-visible,

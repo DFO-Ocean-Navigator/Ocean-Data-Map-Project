@@ -20,6 +20,7 @@ import Class4Selector from "./Class4Selector.jsx";
 import Class4Window from "./Class4Window.jsx";
 import Icon from "./lib/Icon.jsx";
 import Permalink from "./Permalink.jsx";
+import ToggleLanguage from "./ToggleLanguage.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -468,6 +469,8 @@ function OceanNavigator() {
         vectorType={vectorType}
         vectorCoordinates={vectorCoordinates}
       />
+
+      <ToggleLanguage/>
       <MapTools
         uiSettings={uiSettings}
         updateUI={updateUI}
