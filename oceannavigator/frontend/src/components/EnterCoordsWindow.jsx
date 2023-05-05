@@ -5,6 +5,8 @@ import { Button, ToggleButton } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
+import { withTranslation } from "react-i18next";
+
 function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
   const [enteredLon, setEnteredLon] = useState("");
@@ -14,9 +16,9 @@ function EnterCoordsWindow(props) {
   const fileInput = useRef(null);
 
   const radios = [
-    { name: "Point", value: "point" },
-    { name: "Line", value: "line" },
-    { name: "Area", value: "area" },
+    { name: __("Point"), value: "point" },
+    { name: __("Line"), value: "line" },
+    { name: __("Area"), value: "area" },
   ];
 
   const handleRadio = (e) => {
@@ -148,7 +150,7 @@ function EnterCoordsWindow(props) {
           const lon = findKey(["longitude", "lon"]);
           if (lat == -1 || lon == -1) {
             alert(
-              _(
+              __(
                 "Error: Could not find latitude or longitude column in file: "
               ) + file.name
             );
@@ -182,8 +184,8 @@ function EnterCoordsWindow(props) {
         <Table bordered size="sm">
           <thead>
             <tr>
-              <th>Latitude</th>
-              <th>Longitude</th>
+              <th>{__("Latitude")}</th>
+              <th>{__("Longitude")}</th>
               <th style={{ width: "5%" }}></th>
             </tr>
           </thead>
@@ -192,7 +194,7 @@ function EnterCoordsWindow(props) {
 
         <form onSubmit={submitHandler}>
           <div className="table-button-container">
-            <label>Latitude:</label>
+            <label>{__("Latitude")}:</label>
             <input
               type="number"
               min="-90"
@@ -201,7 +203,7 @@ function EnterCoordsWindow(props) {
               value={enteredLat}
               onChange={latChangeHandler}
             />
-            <label>Longitude:</label>
+            <label>{__("Longitude")}:</label>
             <input
               type="number"
               min="-180"
@@ -210,9 +212,9 @@ function EnterCoordsWindow(props) {
               value={enteredLon}
               onChange={lonChangeHandler}
             />
-            <button type="submit">Add</button>
+            <button type="submit">{__("Add")}</button>
             <button type="button" onClick={handleClear}>
-              Clear
+              {__("Clear")}
             </button>
           </div>
         </form>
@@ -236,14 +238,14 @@ function EnterCoordsWindow(props) {
           ))}
         </div>
         <Button className="plot-button" onClick={handleUpload}>
-          Upload csv
+          {__("Upload CSV")}
         </Button>
         <Button
           className="plot-button"
           onClick={handlePlot}
           disabled={plotDisabled}
         >
-          Plot
+          {__("Plot")}
         </Button>
       </div>
       <form ref={fileForm}>
@@ -259,4 +261,4 @@ function EnterCoordsWindow(props) {
   );
 }
 
-export default EnterCoordsWindow;
+export default withTranslation()(EnterCoordsWindow);

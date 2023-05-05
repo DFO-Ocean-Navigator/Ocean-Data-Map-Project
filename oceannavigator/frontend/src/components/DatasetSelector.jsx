@@ -19,6 +19,8 @@ import {
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 
+import { withTranslation } from "react-i18next";
+
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
 function DatasetSelector(props) {
@@ -260,22 +262,14 @@ function DatasetSelector(props) {
   let datasetSelector = null;
 
   if (availableDatasets && availableDatasets.length > 0) {
-    const helpContent = availableDatasets.map((d) => {
-      return (
-        <p key={`help-${d.id}`}>
-          <em>{d.value}</em>
-          <span dangerouslySetInnerHTML={{ __html: d.help }} />
-        </p>
-      );
-    });
 
     datasetSelector = (
       <DatasetDropdown
         id={`dataset-selector-dataset-selector-${props.id}`}
         key={`dataset-selector-dataset-selector-${props.id}`}
         options={availableDatasets}
-        label={"Dataset"}
-        placeholder={"Dataset"}
+        label={__("Dataset")}
+        placeholder={__("Dataset")}
         onChange={updateDataset}
         selected={dataset.id}
         horizontalLayout={props.horizontalLayout}
@@ -311,9 +305,9 @@ function DatasetSelector(props) {
     variableSelector = stillHasVariablesToShow && (
       <SelectBox
         id={`dataset-selector-variable-selector-${props.id}`}
-        name={"variable"}
-        label={"Variable"}
-        placeholder={"Variable"}
+        name={__("variable")}
+        label={__("Variable")}
+        placeholder={__("Variable")}
         options={options}
         onChange={updateDataset}
         selected={selected}
@@ -341,8 +335,8 @@ function DatasetSelector(props) {
       <SelectBox
         id={`dataset-selector-quiver-selector-${props.id}`}
         name="quiverVariable"
-        label={"Quiver"}
-        placeholder={"Quiver Variable"}
+        label={__("Quiver")}
+        placeholder={__("Quiver Variable")}
         options={quiverVariables}
         onChange={updateDataset}
         selected={dataset.quiverVariable}
@@ -363,8 +357,8 @@ function DatasetSelector(props) {
       <SelectBox
         id={`dataset-selector-depth-selector-${props.id}`}
         name={"depth"}
-        label={"Depth"}
-        placeholder={"Depth"}
+        label={__("Depth")}
+        placeholder={__("Depth")}
         options={
           props.showDepthsAll
             ? datasetDepths
@@ -409,7 +403,7 @@ function DatasetSelector(props) {
             key="starttime"
             id="starttime"
             state={dataset.starttime}
-            title={"Start Time (UTC)"}
+            title={__("Start Time (UTC)")}
             onUpdate={updateDataset}
             max={dataset.time}
             dataset={dataset}
@@ -419,7 +413,7 @@ function DatasetSelector(props) {
             key="time"
             id="time"
             state={dataset.time}
-            title={"End Time (UTC)"}
+            title={__("End Time (UTC)")}
             onUpdate={updateDataset}
             min={dataset.starttime}
             dataset={dataset}
@@ -434,7 +428,7 @@ function DatasetSelector(props) {
           id="time"
           state={dataset.time}
           onUpdate={updateDataset}
-          title={"Time (UTC)"}
+          title={__("Time (UTC)")}
           dataset={dataset}
           timestamps={datasetTimestamps}
           horizontalLayout={props.horizontalLayout}
@@ -447,7 +441,7 @@ function DatasetSelector(props) {
     <OverlayTrigger
       key="draw-overlay"
       placement={props.horizontalLayout ? "top" : "bottom"}
-      overlay={<Tooltip id={"draw-tooltip"}>Apply Changes</Tooltip>}
+      overlay={<Tooltip id={"draw-tooltip"}>{__("Apply Changes")}</Tooltip>}
     >
       <Button
         className="go-button"
@@ -456,7 +450,7 @@ function DatasetSelector(props) {
         onClick={handleGoButton}
         disabled={loading}
       >
-        Go
+        {__("Go")}
       </Button>
     </OverlayTrigger>
   );
@@ -501,7 +495,7 @@ function DatasetSelector(props) {
     <Form.Check
       type="switch"
       id="custom-switch"
-      label="Compare Datasets"
+      label={__("Compare Datasets")}
       onClick={() => {
         props.action("toggleCompare");
       }}
@@ -533,7 +527,7 @@ function DatasetSelector(props) {
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
-          <Modal.Title>Loading {loadingTitle}</Modal.Title>
+          <Modal.Title>{`${__("Loading")} ${loadingTitle}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ProgressBar now={loadingPercent} />
@@ -572,4 +566,4 @@ DatasetSelector.defaultProps = {
   horizontalLayout: false,
 };
 
-export default DatasetSelector;
+export default withTranslation()(DatasetSelector);

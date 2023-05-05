@@ -22,6 +22,8 @@ import Icon from "./lib/Icon.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 
+import { withTranslation } from "react-i18next";
+
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
   latitude = latitude < -90 ? -90 : latitude;
@@ -36,7 +38,7 @@ function formatLatLon(latitude, longitude) {
   return formatted;
 }
 
-function OceanNavigator() {
+function OceanNavigator(props) {
   const mapRef = useRef(null);
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
@@ -482,12 +484,12 @@ function OceanNavigator() {
         dialogClassName="full-screen-modal"
         size={modalSize}
       >
-        <Modal.Header closeButton closeVariant="white" closeLabel={"Close"}>
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
           <Modal.Title>{modalTitle}</Modal.Title>
         </Modal.Header>
         <Modal.Body>{modalBodyContent}</Modal.Body>
         <Modal.Footer>
-          <Button onClick={closeModal}>Close</Button>
+          <Button onClick={closeModal}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
       <Modal
@@ -496,9 +498,9 @@ function OceanNavigator() {
         dialogClassName="permalink-modal"
         backdrop={true}
       >
-        <Modal.Header closeButton closeLabel={"Close"}>
+        <Modal.Header closeButton closeLabel={__("Close")}>
           <Modal.Title>
-            <Icon icon="link" alt={"Share Link"} /> {"Share Link"}
+            <Icon icon="link" alt={"Share Link"} /> {__("Share Link")}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -510,7 +512,7 @@ function OceanNavigator() {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={() => setShowPermalink(false)}>
-            <Icon icon="close" alt={"Close"} /> {"Close"}
+            <Icon icon="close" alt={__("Close")} /> {__("Close")}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -518,4 +520,4 @@ function OceanNavigator() {
   );
 }
 
-export default OceanNavigator;
+export default withTranslation()(OceanNavigator);

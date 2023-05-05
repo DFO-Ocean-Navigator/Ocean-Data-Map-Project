@@ -16,6 +16,8 @@ import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 
+import { withTranslation } from "react-i18next";
+
 function MapTools(props) {
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
@@ -44,7 +46,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="draw-overlay"
         placement="left"
-        overlay={<Tooltip id={"draw-tooltip"}>Draw Point Coordinates</Tooltip>}
+        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Point Coordinates")}</Tooltip>}
       >
         <Button
           key="draw-button"
@@ -59,7 +61,7 @@ function MapTools(props) {
         key="enter-overlay"
         placement="left"
         overlay={
-          <Tooltip id={"enter-tooltip"}>Enter Point Coordinates</Tooltip>
+          <Tooltip id={"enter-tooltip"}>{__("Enter Point Coordinates")}</Tooltip>
         }
       >
         <Button
@@ -74,7 +76,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="preset-overlay"
         placement="left"
-        overlay={<Tooltip id={"preset-tooltip"}>Preset Features</Tooltip>}
+        overlay={<Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>}
       >
         <Button
           key="preset-button"
@@ -88,7 +90,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="obs-overlay"
         placement="left"
-        overlay={<Tooltip id={"obs-tooltip"}>Observations</Tooltip>}
+        overlay={<Tooltip id={"obs-tooltip"}>{__("Observations")}</Tooltip>}
       >
         <Button
           key="obs-button"
@@ -102,7 +104,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="plot-overlay"
         placement="left"
-        overlay={<Tooltip id={"plot-tooltip"}>Plot</Tooltip>}
+        overlay={<Tooltip id={"plot-tooltip"}>{__("Plot")}</Tooltip>}
       >
         <Button
           key="plot-button"
@@ -116,7 +118,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="reset-overlay"
         placement="left"
-        overlay={<Tooltip id={"reset-tooltip"}>Reset Map</Tooltip>}
+        overlay={<Tooltip id={"reset-tooltip"}>{__("Reset Map")}</Tooltip>}
       >
         <Button
           key="reset-button"
@@ -130,7 +132,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="settings-overlay"
         placement="left"
-        overlay={<Tooltip id={"settings-tooltip"}>Settings</Tooltip>}
+        overlay={<Tooltip id={"settings-tooltip"}>{__("Settings")}</Tooltip>}
       >
         <Button
           key="settings-button"
@@ -144,7 +146,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="info-overlay"
         placement="left"
-        overlay={<Tooltip id={"info-tooltip"}>Info/Help</Tooltip>}
+        overlay={<Tooltip id={"info-tooltip"}>{__("Info/Help")}</Tooltip>}
       >
         <Button
           key="info-button"
@@ -158,4 +160,4 @@ function MapTools(props) {
   );
 }
 
-export default MapTools;
+export default withTranslation()(MapTools);

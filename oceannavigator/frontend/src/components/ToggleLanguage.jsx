@@ -5,18 +5,22 @@ import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import { withTranslation } from "react-i18next";
 
 function ToggleLanguage(props) {
-  const [language, setLanguage] = useState("en-CA");
+  const [currentLanguage, setCurrentLanguage] = useState(props.i18n.language);
 
   const toggleUpdate = (newLang) => {
-    setLanguage(newLang);
+    setCurrentLanguage(newLang);
     props.i18n.changeLanguage(newLang);
   };
+
+  if (!props.i18n.language) {
+    toggleUpdate("en-CA")
+  }
 
   return (
     <ToggleButtonGroup
       type="radio"
       name="lang-group"
-      value={language}
+      value={currentLanguage}
       onChange={toggleUpdate}
       className="toggle-group"
     >

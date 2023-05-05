@@ -3,10 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider from "rc-slider";
-import { Accordion, Button, Card } from "react-bootstrap";
-import { useAccordionButton } from "react-bootstrap/AccordionButton";
 import Form from "react-bootstrap/Form";
-import deepEqual from "deep-equal";
 import Autocomplete from "./lib/Autocomplete.jsx";
 
 import "rc-slider/assets/index.css";
@@ -330,7 +327,7 @@ function ObservationSelector(props) {
               key="platformType"
               id="platformType"
               state={platformType}
-              title={"Platform Type"}
+              title={__("Platform Type")}
               onUpdate={(key, value) => setPlatformType(value)}
               data={PLATFORMS}
               multiple

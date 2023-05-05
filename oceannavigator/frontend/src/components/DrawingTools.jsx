@@ -3,13 +3,15 @@ import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { withTranslation } from "react-i18next";
+
 function DrawingTools(props) {
   const [vectorType, setVectorType] = useState(props.vectorType);
 
   const radios = [
-    { name: "Point", value: "point" },
-    { name: "Line", value: "line" },
-    { name: "Area", value: "area" },
+    { name: __("Point"), value: "point" },
+    { name: __("Line"), value: "line" },
+    { name: __("Area"), value: "area" },
   ];
 
   const handleRadio = (e) => {
@@ -65,20 +67,20 @@ function DrawingTools(props) {
         onClick={handlePlot}
         disabled={plotDisabled}
       >
-        Plot
+        {__("Plot")}
       </Button>
       <Button className="plot-button" onClick={handleClear}>
-        Clear
+      {__("Clear")}
       </Button>
 
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
       </Button>
       <Button className="close-button" onClick={handleClose}>
-        Close
+        {__("Close")}
       </Button>
     </div>
   );
 }
 
-export default DrawingTools;
+export default withTranslation()(DrawingTools);

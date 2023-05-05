@@ -8,8 +8,9 @@ import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import DailyCalendar from "./calendars/DailyCalendar.jsx";
 import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
 import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
-
 import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
+
+import { withTranslation } from "react-i18next";
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
   <div
@@ -119,13 +120,13 @@ function TimePicker(props) {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
-      return climatology ? "Winter" : `Winter ${year - 1}`;
+      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
     } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
-      return climatology ? "Spring" : `Spring ${year}`;
+      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
     } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
-      return climatology ? "Summer" : `Summer ${year}`;
+      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
     } else {
-      return climatology ? "Fall" : `Fall ${year}`;
+      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
     }
   };
 
@@ -305,4 +306,4 @@ function TimePicker(props) {
   );
 }
 
-export default TimePicker;
+export default withTranslation()(TimePicker);

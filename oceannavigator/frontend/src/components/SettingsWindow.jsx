@@ -6,6 +6,8 @@ import InputGroup from "react-bootstrap/InputGroup";
 
 import Icon from "./lib/Icon.jsx";
 
+import { withTranslation } from "react-i18next";
+
 const BASEMAPS = [
   {
     id: "topo",
@@ -76,10 +78,10 @@ function SettingsWindow(props) {
   return (
     <>
       <Card>
-        <Card.Header>{"Map"}</Card.Header>
+        <Card.Header>{__("Map")}</Card.Header>
         <Card.Body className="settings-card">
           <InputGroup>
-            <Form.Label>Projection</Form.Label>
+            <Form.Label>{__("Projection")}</Form.Label>
             <Form.Select
               value={props.mapSettings.projection}
               onChange={(e) => {
@@ -92,7 +94,7 @@ function SettingsWindow(props) {
             </Form.Select>
           </InputGroup>
           <InputGroup>
-            <Form.Label>Basemap</Form.Label>
+            <Form.Label>{__("Basemap")}</Form.Label>
             <Form.Select
               value={props.mapSettings.basemap}
               onChange={(e) => {
@@ -106,10 +108,10 @@ function SettingsWindow(props) {
       </Card>
 
       <Card>
-        <Card.Header>{"Colour Interpolation"}</Card.Header>
+        <Card.Header>{__("Colour Interpolation")}</Card.Header>
         <Card.Body className="settings-card">
           <InputGroup>
-            <Form.Label>{"Method"}</Form.Label>
+            <Form.Label>{__("Method")}</Form.Label>
             <Form.Select
               value={interpType}
               onChange={(e) => setInterpType(e.target.value)}
@@ -122,7 +124,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{"Sampling Radius (km)"}</Form.Label>
+            <Form.Label>{__("Sampling Radius (km)")}</Form.Label>
             <input
               type="number"
               value={interpRadius}
@@ -133,7 +135,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{"Nearest Neighbours"}</Form.Label>
+            <Form.Label>{__("Nearest Neighbours")}</Form.Label>
             <input
               type="number"
               min={1}
@@ -149,13 +151,13 @@ function SettingsWindow(props) {
             onClick={handleInterpChange}
           >
             <Icon icon="check" />
-            {"Apply"}
+            {__("Apply")}
           </Button>
         </Card.Body>
       </Card>
 
       <Card>
-        <Card.Header>{"Bathymetry"}</Card.Header>
+        <Card.Header>{__("Bathymetry")}</Card.Header>
         <Card.Body className="settings-card">
           <Form.Check
             type="checkbox"
@@ -166,7 +168,7 @@ function SettingsWindow(props) {
           />
 
           <InputGroup>
-            <Form.Label>{"Bathemetry Opacity"}</Form.Label>
+            <Form.Label>{__("Bathymetry Opacity")}</Form.Label>
             <input
               type="number"
               min={0.0}
@@ -178,7 +180,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{"Bathymetry Layer"}</Form.Label>
+            <Form.Label>{__("Bathymetry Layer")}</Form.Label>
             <Form.Select
               onChange={(e) => setBathyContour(e.target.value)}
               value={bathyContour}
@@ -190,7 +192,7 @@ function SettingsWindow(props) {
           <Form.Check
             type="checkbox"
             id="topoShadedRelief"
-            label="Topography Shaded Relief"
+            label={__("Topography Shaded Relief")}
             checked={topoRelief}
             onChange={(e) => setTopoRelief(e.target.checked)}
           />
@@ -200,7 +202,7 @@ function SettingsWindow(props) {
             onClick={handleBathyChange}
           >
             <Icon icon="check" />
-            {"Apply"}
+            {__("Apply")}
           </Button>
         </Card.Body>
       </Card>
@@ -208,4 +210,4 @@ function SettingsWindow(props) {
   );
 }
 
-export default SettingsWindow;
+export default withTranslation()(SettingsWindow);

@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { Button, ToggleButton } from "react-bootstrap";
+import React from "react";
+import { Button } from "react-bootstrap";
+
+import { withTranslation } from "react-i18next";
 
 function ObservationTools(props) {
   const observationSelect = (selection) => {
@@ -52,25 +54,25 @@ function ObservationTools(props) {
   return (
     <div className={"obs-tools"}>
       <Button className="plot-button" onClick={handleAll}>
-        All
+        {__("All")}
       </Button>
       <Button className="plot-button" onClick={handleArea}>
-        Select Area
+      {__("Select Area")}
       </Button>
       <Button className="plot-button" onClick={handlePoint}>
-        Select point
+        {__("Select point")}
       </Button>
       <Button className="plot-button" onClick={handleDrifters}>
-        Show Active Drifters
+        {__("Show Active Drifters")}
       </Button>
       <Button className="plot-button" onClick={handleClass4}>
-        Class4
+        {__("Class4")}
       </Button>
       <Button className="close-button" onClick={handleClose}>
-        Close
+        {__("Close")}
       </Button>
     </div>
   );
 }
 
-export default ObservationTools;
+export default withTranslation()(ObservationTools);

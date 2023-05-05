@@ -96,7 +96,7 @@ function PresetFeaturesWindow(props) {
   return (
     <div className="PresetFeaturesWindow">
       <Card className="features-card">
-        <Card.Header>Points</Card.Header>
+        <Card.Header>{__("Points")}</Card.Header>
         {pointItems ? (
           <ListGroup variant="flush">{pointItems}</ListGroup>
         ) : (
@@ -104,7 +104,7 @@ function PresetFeaturesWindow(props) {
         )}
       </Card>
       <Card className="features-card">
-        <Card.Header>Lines</Card.Header>
+        <Card.Header>{__("Lines")}</Card.Header>
         {lineItems ? (
           <ListGroup variant="flush">{lineItems}</ListGroup>
         ) : (
@@ -112,7 +112,7 @@ function PresetFeaturesWindow(props) {
         )}
       </Card>
       <Card className="features-card">
-        <Card.Header>Areas</Card.Header>
+        <Card.Header>{__("Areas")}</Card.Header>
         {areaItems ? (
           <ListGroup variant="flush">{areaItems}</ListGroup>
         ) : (

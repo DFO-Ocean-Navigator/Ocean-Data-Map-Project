@@ -1,19 +1,7 @@
-/* eslint react/no-deprecated: 0 */
-/*
-  Created: 05/15/2018 
-  Noah Gallant
-
-  Modified: 05/16/2018
-  
-  Component Allowing for Custom Plot Titles provided by the user
-
-*/
-
 import React from "react";
 import { Row, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
-import Icon from "./lib/Icon.jsx";
 
 import { withTranslation } from "react-i18next";
 

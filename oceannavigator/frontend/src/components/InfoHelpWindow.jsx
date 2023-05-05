@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Nav, Row, Col, ListGroup } from "react-bootstrap";
 
 import { GetDatasetsPromise } from "../remote/OceanNavigator.js";
-import { Filter } from "react-bootstrap-icons";
 
 function InfoHelpWindow(props) {
   const [availableDatasets, setAvailableDatasets] = useState([]);

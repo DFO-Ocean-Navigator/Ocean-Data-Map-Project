@@ -9,6 +9,8 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
+import { withTranslation } from "react-i18next";
+
 function TimeSlider(props) {
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(1);
@@ -82,7 +84,7 @@ function TimeSlider(props) {
         break;
     }
     formatter["timeZone"] = "UTC";
-    return time.toLocaleDateString(undefined, formatter);
+    return time.toLocaleDateString(props.i18n.language, formatter);
   };
 
   const setMajorTick = (time) => {
@@ -98,14 +100,14 @@ function TimeSlider(props) {
   const getSeason = (time) => {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
-    if (new Date(year - 1, 11, 22) <= time && time <= new Date(year, 2, 20)) {
-      return climatology ? "Winter" : `Winter ${year - 1}`;
-    } else if (new Date(year, 2, 20) <= time && time <= new Date(year, 5, 20)) {
-      return climatology ? "Spring" : `Spring ${year}`;
-    } else if (new Date(year, 5, 21) <= time && time <= new Date(year, 8, 22)) {
-      return climatology ? "Summer" : `Summer ${year}`;
+    if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
+      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+    } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
+      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
+    } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
+      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
     } else {
-      return climatology ? "Fall" : `Fall ${year}`;
+      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
     }
   };
 
@@ -253,4 +255,4 @@ function TimeSlider(props) {
   );
 }
 
-export default TimeSlider;
+export default withTranslation()(TimeSlider);
