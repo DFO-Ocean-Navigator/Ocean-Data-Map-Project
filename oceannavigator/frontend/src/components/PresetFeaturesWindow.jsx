@@ -10,6 +10,8 @@ import {
 
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
+import { withTranslation } from "react-i18next";
+
 function PresetFeaturesWindow(props) {
   const [pointItems, setPointItems] = useState(null);
   const [lineItems, setLineItems] = useState(null);
@@ -123,4 +125,4 @@ function PresetFeaturesWindow(props) {
   );
 }
 
-export default PresetFeaturesWindow;
+export default withTranslation()(PresetFeaturesWindow);
