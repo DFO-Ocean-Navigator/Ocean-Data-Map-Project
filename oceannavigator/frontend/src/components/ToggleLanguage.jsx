@@ -5,7 +5,11 @@ import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import { withTranslation } from "react-i18next";
 
 function ToggleLanguage(props) {
-  const [currentLanguage, setCurrentLanguage] = useState(props.i18n.language);
+  const [currentLanguage, setCurrentLanguage] = useState(
+    props.i18n.language === "en-CA" || props.i18n.language === "fr"
+      ? props.i18n.language
+      : "en-CA"
+  );
 
   const toggleUpdate = (newLang) => {
     setCurrentLanguage(newLang);
@@ -13,7 +17,7 @@ function ToggleLanguage(props) {
   };
 
   if (!props.i18n.language) {
-    toggleUpdate("en-CA")
+    toggleUpdate("en-CA");
   }
 
   return (

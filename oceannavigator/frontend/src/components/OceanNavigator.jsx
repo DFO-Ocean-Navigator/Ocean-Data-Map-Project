@@ -21,6 +21,7 @@ import Class4Window from "./Class4Window.jsx";
 import Icon from "./lib/Icon.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
+import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -190,12 +191,8 @@ function OceanNavigator(props) {
         });
         break;
       case "permalink":
-        if (arg !== null) {
-          setSubquery(arg);
-          setShowPermalink(true);
-        } else {
-          setShowPermalink(true);
-        }
+        setSubquery(null);
+        setShowPermalink(true);
         break;
     }
   };
@@ -471,13 +468,9 @@ function OceanNavigator(props) {
         vectorType={vectorType}
         vectorCoordinates={vectorCoordinates}
       />
-
-      <ToggleLanguage/>
-      <MapTools
-        uiSettings={uiSettings}
-        updateUI={updateUI}
-        action={action}
-      />
+      <ToggleLanguage />
+      <LinkButton action={action} />
+      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <Modal
         show={uiSettings.showModal}
         onHide={closeModal}
@@ -498,7 +491,7 @@ function OceanNavigator(props) {
         dialogClassName="permalink-modal"
         backdrop={true}
       >
-        <Modal.Header closeButton closeLabel={__("Close")}>
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
           <Modal.Title>
             <Icon icon="link" alt={"Share Link"} /> {__("Share Link")}
           </Modal.Title>
