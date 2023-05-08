@@ -195,6 +195,10 @@ function DatasetSelector(props) {
         variable_range: variableRanges,
         variable_two_dimensional: false,
       };
+      if (variables.length === 1) {
+        const variable = datasetVariables.find((v) => v.id === variables[0]);
+        newDataset = { ...newDataset, variable_scale: variable.scale };
+      }
     } else {
       const variable = datasetVariables.find((v) => v.id === newVariable);
       let newVariableRange = {};
@@ -262,7 +266,6 @@ function DatasetSelector(props) {
   let datasetSelector = null;
 
   if (availableDatasets && availableDatasets.length > 0) {
-
     datasetSelector = (
       <DatasetDropdown
         id={`dataset-selector-dataset-selector-${props.id}`}
