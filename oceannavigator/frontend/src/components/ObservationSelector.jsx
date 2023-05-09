@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider from "rc-slider";
-import Form from "react-bootstrap/Form";
+import {Card, Button, Form} from 'react-bootstrap';
 import Autocomplete from "./lib/Autocomplete.jsx";
 
 import "rc-slider/assets/index.css";
