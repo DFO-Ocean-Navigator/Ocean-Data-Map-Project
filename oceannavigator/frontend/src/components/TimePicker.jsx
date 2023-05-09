@@ -12,7 +12,7 @@ import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 
-const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+const CustomToggle = forwardRef(({ children, onClick }, ref) => (
   <div
     href=""
     ref={ref}
@@ -51,25 +51,24 @@ function TimePicker(props) {
   }, [props]);
 
   useEffect(() => {
-    let data = timestamps;
+    let newData = timestamps;
 
     if (props.min) {
-      data = data.filter((data) => {
-        return data.id > props.min;
+      newData = newData.filter((item) => {
+        return item.id > props.min;
       });
     }
 
     if (props.max) {
-      data = data.filter((data) => {
-        return data.id < props.max;
+      newData = newData.filter((item) => {
+        return item.id < props.max;
       });
     }
 
-    let map = {};
-    let revMap = {};
-
-    for (let i = 0; i < data.length; ++i) {
-      const d1 = new Date(data[i].value);
+    let newMap = {};
+    let newRevMap = {};
+    for (let i = 0; i < newData.length; ++i) {
+      const d1 = new Date(newData[i].value);
       const d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
       let d3 = d2;
       if (props.dataset.quantum !== "hour") {
@@ -85,8 +84,8 @@ function TimePicker(props) {
           )
         );
       }
-      map[data[i].id] = d2;
-      revMap[d3.toUTCString()] = data[i].id;
+      newMap[newData[i].id] = d2;
+      newRevMap[d3.toUTCString()] = newData[i].id;
     }
 
     if (props.dataset.quantum === "hour") {
@@ -95,10 +94,10 @@ function TimePicker(props) {
       setDateHours(hours);
     }
 
-    setData(data);
-    setMap(map);
-    setRevMap(revMap);
-  }, [timestamps]);
+    setData(newData);
+    setMap(newMap);
+    setRevMap(newRevMap);
+  }, [timestamps, props.min, props.max]);
 
   const zeroPad = (num) => {
     return num.toString().padStart(2, "0");
@@ -131,7 +130,7 @@ function TimePicker(props) {
   };
 
   const getIndexFromTimestamp = (timestamp) => {
-    return timestamps.findIndex((ts) => {
+    return data.findIndex((ts) => {
       return ts.id === timestamp;
     });
   };

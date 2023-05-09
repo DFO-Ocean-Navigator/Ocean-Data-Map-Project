@@ -22,9 +22,6 @@ class SubsetPanel extends React.Component {
       output_variables: [],
       output_starttime: props.dataset.starttime,
       output_endtime: props.dataset.time,
-      quantum: props.dataset.quantum,
-      dataset: props.dataset,
-      variable: props.dataset.variable,
       output_format: "NETCDF4", // Subset output format
       zip: false, // Should subset file(s) be zipped
       subset_variables: [],
@@ -144,9 +141,6 @@ class SubsetPanel extends React.Component {
     newState = {
       output_starttime: this.props.dataset.starttime,
       output_endtime: this.props.dataset.time,
-      quantum: this.props.dataset.quantum,
-      dataset: this.props.dataset.id,
-      variable: this.props.dataset.variable,
     };
     this.setState(newState);
   }
@@ -188,7 +182,7 @@ class SubsetPanel extends React.Component {
           onUpdate={(_, value) => {
             this.setState({ output_starttime: value });
           }}
-          max={this.state.output_endtime}
+          max={this.state.output_timerange ? this.state.output_endtime : null}
         />
         <div
           style={{ display: this.state.output_timerange ? "block" : "none" }}
@@ -197,10 +191,7 @@ class SubsetPanel extends React.Component {
             id="time"
             key="time"
             state={this.state.output_endtime}
-            def=""
-            quantum={this.state.quantum}
-            dataset={this.state.dataset}
-            variable={this.state.variable}
+            dataset={this.props.dataset}
             title={
               this.state.output_timerange
                 ? _("End Time (UTC)")

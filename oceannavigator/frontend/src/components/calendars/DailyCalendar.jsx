@@ -47,7 +47,7 @@ const DailyCalendar = React.forwardRef((props, ref) => {
     const [prevMonth, prevMonthYear] = getPreviousMonth(month, year);
     const [nextMonth, nextMonthYear] = getNextMonth(month, year);
 
-    let datesEnabled = props.availableDates.filter((date) => {
+    let newDatesEnabled = props.availableDates.filter((date) => {
       let dateMonth = date.getMonth();
       let dateYear = date.getFullYear();
 
@@ -57,8 +57,8 @@ const DailyCalendar = React.forwardRef((props, ref) => {
         (dateMonth === nextMonth && dateYear === nextMonthYear)
       );
     });
-    setDatesEnabled(datesEnabled);
-  }, []);
+    setDatesEnabled(newDatesEnabled);
+  }, [props.availableDates]);
 
   const getMonthDays = (month, year) => {
     const months30 = [3, 5, 8, 10];
