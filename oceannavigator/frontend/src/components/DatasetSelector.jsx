@@ -113,11 +113,22 @@ function DatasetSelector(props) {
             setLoadingPercent(66);
             const timeData = timeResult.data;
 
-            const newTime = timeData[timeData.length - 1].id;
-            const newStarttime =
+            let newTime = timeData[timeData.length - 1].id;
+            let newStarttime =
               timeData.length > 20
                 ? timeData[timeData.length - 20].id
                 : timeData[0].id;
+
+            if (props.mountedDataset) {
+              newTime =
+                props.mountedDataset.time > 0
+                  ? props.mountedDataset.time
+                  : newTime;
+              newStarttime =
+                props.mountedDataset.startTime > 0
+                  ? props.mountedDataset.startTime
+                  : newStarttime;
+            }
 
             GetDepthsPromise(newDataset, newVariable).then(
               (depthResult) => {
@@ -126,9 +137,9 @@ function DatasetSelector(props) {
                   id: newDataset,
                   model_class: model_class,
                   quantum: quantum,
-                  time: props.mountedDataset? props.mountedDataset.time : newTime,
+                  time: newTime,
                   depth: 0,
-                  starttime: props.mountedDataset? props.mountedDataset.starttime : newStarttime,
+                  starttime: newStarttime,
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
@@ -499,6 +510,7 @@ function DatasetSelector(props) {
       type="switch"
       id="custom-switch"
       label={__("Compare Datasets")}
+      checked={props.compareDatasets}
       onClick={() => {
         props.action("toggleCompare");
       }}
