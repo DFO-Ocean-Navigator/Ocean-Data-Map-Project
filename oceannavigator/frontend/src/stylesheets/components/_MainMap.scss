@@ -72,7 +72,7 @@
     left: auto;
     top: 78px;
     background-color: #fff;
-    border: 2px solid #008cba;    
+    border: 2px solid #008cba;
   }
 
   // Reset pan button
@@ -83,12 +83,14 @@
 
   // Mouse coordinates
   .ol-mouse-position {
-    top: inherit;
-    bottom: 0;
-    left: 0;
-    right: inherit;
-    background-color: rgba(0, 140, 186, 1);
-    color: #fff;
+    top: 8px;
+    bottom: inherit;
+    left: inherit;
+    right: 178px;
+    border: 2px solid #008cba;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #008cba;
     opacity: 0.95;
     cursor: default;
 
@@ -96,6 +98,10 @@
       display: block;
       padding: 0.5em;
     }
+  }
+
+  .compare {
+    right: 20px !important;
   }
 
   // Popup balloon on map

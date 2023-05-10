@@ -31,6 +31,8 @@ import XYZ from "ol/source/XYZ";
 import TileWMS from "ol/source/TileWMS";
 import Draw from "ol/interaction/Draw";
 import { defaults as defaultControls } from "ol/control/defaults";
+import MousePosition from "ol/control/MousePosition.js";
+import Graticule from "ol/layer/Graticule.js";
 import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
 import * as olcondition from "ol/events/condition";
@@ -766,7 +768,23 @@ const MainMap = forwardRef((props, ref) => {
       ],
       controls: defaultControls({
         zoom: true,
-      }),
+      }).extend([
+        new MousePosition({
+          projection: "EPSG:4326",
+          coordinateFormat: function (c) {
+            return (
+              "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>"
+            );
+          },
+        }),
+        new Graticule({
+          strokeStyle: new Stroke({
+            color: "rgba(128, 128, 128, 0.9)",
+            lineDash: [0.5, 4],
+          }),
+        }),
+      ]),
+
       overlays: [overlay],
     };
 
