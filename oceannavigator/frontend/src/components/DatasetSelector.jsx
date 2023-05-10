@@ -511,7 +511,7 @@ function DatasetSelector(props) {
       id="custom-switch"
       label={__("Compare Datasets")}
       checked={props.compareDatasets}
-      onClick={() => {
+      onChange={() => {
         props.action("toggleCompare");
       }}
     />
