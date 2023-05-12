@@ -119,7 +119,7 @@ function DatasetSelector(props) {
                 ? timeData[timeData.length - 20].id
                 : timeData[0].id;
 
-            if (props.mountedDataset) {
+            if (props.mountedDataset && props.mountedDataset.id === newDataset) {
               newTime =
                 props.mountedDataset.time > 0
                   ? props.mountedDataset.time

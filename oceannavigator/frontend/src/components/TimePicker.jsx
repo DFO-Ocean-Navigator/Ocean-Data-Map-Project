@@ -239,7 +239,13 @@ function TimePicker(props) {
   let currentIndex = getIndexFromTimestamp(props.state);
   let hourDropdown = null;
   if (props.dataset.quantum === "hour") {
-    const hourOptions = dateHours.map((date) => {
+    let hours = dateHours;
+    if (dateHours.length === 0 ) {
+      let currentTime = new Date(map[props.state]);
+      hours = getHoursForDate(currentTime, map);
+    }
+
+    const hourOptions = hours.map((date) => {
       return (
         <option key={date[0]} value={date[0]}>
           {zeroPad(date[1].getHours()) + ":00"}
@@ -260,7 +266,6 @@ function TimePicker(props) {
   let dateSelector = (
     <div className="selector-container">
       <Button className="date-label">{buttonText}</Button>
-      {hourDropdown}
     </div>
   );
 
@@ -286,6 +291,7 @@ function TimePicker(props) {
             <ChevronLeft />
           </Button>
           <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
+          {hourDropdown}
           <Dropdown.Menu
             className="dropdown-menu"
             disabled={props.dataset.quantum === "year"}
