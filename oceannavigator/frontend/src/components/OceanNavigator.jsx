@@ -384,7 +384,7 @@ function OceanNavigator(props) {
           vectorCoordinates={vectorCoordinates}
         />
       );
-      modalTitle = "Enter Coordinates";
+      modalTitle = __("Enter Coordinates");
       break;
     case "observationSelect":
       modalBodyContent = (
@@ -416,11 +416,11 @@ function OceanNavigator(props) {
           updateMapSettings={updateMapSettings}
         />
       );
-      modalTitle = "Settings";
+      modalTitle = __("Settings");
       break;
     case "info-help":
       modalBodyContent = <InfoHelpWindow />;
-      modalTitle = "Settings";
+      modalTitle = __("Info/Help");
       break;
   }
 

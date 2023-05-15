@@ -1,4 +1,9 @@
 .InfoHelpWindow {
+  .new-tab-button {
+    position: absolute;
+    right: 0px;
+    top: 8px;
+  }
   .options-col {
     padding: unset;
     display: flex;

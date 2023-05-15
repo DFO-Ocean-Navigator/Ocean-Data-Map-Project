@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="../../src/stylesheets/utils/bootstrap.css" />
+  </head>
+
+  <body>
+    <h2>Derived Acoustic Variables</h2>
+    <br /><br />
+    <img src="../acoustic_variables.png" />
+    <br /><br />
+
+    <h4>Speed of Sound [m/s]</h4>
+    <p>
+      The speed of sound is the distance [meter] travelled per unit of time
+      [second] by a sound wave as it propagates through water.
+    </p>
+    <br />
+
+    <h4>Sonic layer Depth [m]</h4>
+    <p>
+      Depth of the maximum speed of sound that is higher in the water column
+      than the critical depth. No value where deep sound channel axis does not
+      exist.
+    </p>
+    <br />
+
+    <h4>Sound Channel Axis [m]</h4>
+    <p>
+      Depth of the global minimum in the speed of sound. No value if minimum is
+      at the surface.
+    </p>
+    <br />
+
+    <h4>Critical Depth [m]</h4>
+    <p>
+      Second depth where the speed of sound is equal to the speed at the sonic
+      layer depth. In the application we used a nearest neighbour interpolation.
+    </p>
+
+    <p>
+      Technical note: Due to computer rounding errors, this calculation will
+      select two points within a small tolerance range.
+    </p>
+    <br />
+
+    <h4>Depth Excess [m]</h4>
+    <p>
+      Difference between the Critical Depth and the ocean bottom (defined by
+      model? Bathy later?)
+    </p>
+    <br />
+
+    <h4>Potential Subsurface Sound Channel</h4>
+    <p>
+      This variable represents the potential existence of a sub-surface sound
+      channel. Selecting this variable will yield 0 or 1, where 0 means a
+      sub-surface sound channel does not exist, 1 means a sub-surface sound
+      channel potentially exists.
+    </p>
+    <br />
+
+    <h2>Other Derived Variables</h2>
+    <br />
+
+    <h4>Potential temperature [&deg;C]</h4>
+    <p>
+      Where source potential temperature is variable in degrees Kelvin we
+      convert to Celsius with the following equation, C=K-273.15
+    </p>
+    <br />
+
+    <h4>Water Velocity Magnitude [m/s]</h4>
+    <p>
+      Water velocity is calculated using the variables water east velocity [m/s]
+      and water north velocity [m/s] as input.
+    </p>
+    <br />
+
+    <h4>Water Velocity Bearing [&deg;]</h4>
+    <p>
+      Water velocity is calculated using the variables water east velocity [m/s]
+      and water north velocity [m/s] as input.
+    </p>
+  </body>
+</html>
