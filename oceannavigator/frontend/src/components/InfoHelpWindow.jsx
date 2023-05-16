@@ -101,7 +101,92 @@ const MANUAL_LINKS = [
     id: "Changing Map Settings",
     link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#changing-map-settings-",
   },
+  {
+    id: "Instructional Videos",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#instructional-videos",
+    section_header: true,
+  },
+  {
+    id: "Create Point plot and Virtual Mooring",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#create-point-plot-and-virtual-mooring",
+  },
+  {
+    id: "Create Virtual Mooring for current and bearing data",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#create-virtual-mooring-for-current-and-bearing-data",
+  },
+  {
+    id: "How to modify Point plot range and add multiple variables",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#how-to-modify-point-plot-range-and-add-multiple-variables",
+  },
+  {
+    id: "Create Transect and Hovmöller plot",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#create-transect-and-hovm%C3%B6ller-plot",
+  },
+  {
+    id: "Create Area plot and save *.csv",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#create-area-plot-and-save-csv",
+  },
+  {
+    id: "Subset NetCDF file and save",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#subset-netcdf-file-and-save",
+  },
+  {
+    id: "Creating plots using Enter Point Coordinates and adding quivers",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#creating-plots-using-enter-point-coordinates-and-adding-quivers",
+  },
+  {
+    id: "Creating climatology plots for predefined areas",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#creating-climatology-plots-for-predefined-areas",
+  },
+  {
+    id: "Plot Class4 data",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#plot-class4-data",
+  },
+  {
+    id: "Compare datasets and save plot",
+    link: "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/#compare-datasets-and-save-plot",
+  },
 ];
+
+const INSTRUCTIONAL_VIDEOS = [
+  { id: "gcmjtYSJs8c", title: "Create Point plot and Virtual Mooring" },
+  {
+    id: "pzzFh8cOLog",
+    title: "Create Virtual Mooring for current and bearing data",
+  },
+  {
+    id: "NbB9iOoagiA",
+    title: "How to modify Point plot range and add multiple variables",
+  },
+  { id: "zYoSJq306XI", title: "Create Transect and Hovmöller plot" },
+  { id: "pid28Nuh3CQ", title: "Create Area plot and save *.csv" },
+  { id: "QIDEgiDuUqI", title: "Subset NetCDF file and save" },
+  {
+    id: "PqJ99yOG7WI",
+    title: "Creating plots using Enter Point Coordinates and adding quivers",
+  },
+  {
+    id: "MCCmcexArXA",
+    title: "Creating climatology plots for predefined areas",
+  },
+  { id: "ABid30zxSfc", title: "Plot Class4 data" },
+  { id: "tu44-hjqY0o", title: "Compare datasets and save plot" },
+];
+
+function VideoFrame(props) {
+  return (
+    <div className="video-responsive">
+      <iframe
+        width="853"
+        height="480"
+        src={`https://www.youtube.com/embed/${props.id}`}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        title={props.title}
+      />
+    </div>
+  );
+}
 
 function InfoHelpWindow(props) {
   const [availableDatasets, setAvailableDatasets] = useState([]);
@@ -140,6 +225,13 @@ function InfoHelpWindow(props) {
       );
     } else if (selectedTab === 3) {
       setContent(
+        <VideoFrame
+          id={INSTRUCTIONAL_VIDEOS[0].id}
+          title={INSTRUCTIONAL_VIDEOS[0].title}
+        />
+      );
+    } else if (selectedTab === 4) {
+      setContent(
         <iframe
           className="content-iframe"
           src="https://navigator.oceansdata.ca/docs"
@@ -165,6 +257,13 @@ function InfoHelpWindow(props) {
     setContent(
       <iframe className="content-iframe" src={selected[0].link}></iframe>
     );
+  };
+
+  const videoChanged = (videoId) => {
+    let selected = INSTRUCTIONAL_VIDEOS.filter((link) => {
+      return link.id === videoId;
+    });
+    setContent(<VideoFrame id={selected[0].id} title={selected[0].title} />);
   };
 
   const openNewTab = () => {
@@ -223,6 +322,23 @@ function InfoHelpWindow(props) {
         );
       });
       break;
+
+    case 3:
+      listOptions = INSTRUCTIONAL_VIDEOS.map((video) => {
+        return (
+          <ListGroup.Item
+            key={video.id}
+            id={video.id}
+            active={video.id === selectedItem}
+            action
+            onClick={(e) => {
+              videoChanged(e.target.id);
+            }}
+          >
+            {video.title}
+          </ListGroup.Item>
+        );
+      });
   }
 
   return (
@@ -274,16 +390,3 @@ function InfoHelpWindow(props) {
 }
 
 export default InfoHelpWindow;
-
-
-{/* <div className="video-responsive">
-<iframe
-  width="853"
-  height="480"
-  src={`https://www.youtube.com/embed/dtJKI4qDpWI`}
-  frameBorder="0"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen
-  title="Embedded youtube"
-/>
-</div> */}
