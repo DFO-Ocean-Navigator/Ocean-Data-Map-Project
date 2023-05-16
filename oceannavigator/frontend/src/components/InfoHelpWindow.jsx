@@ -201,42 +201,49 @@ function InfoHelpWindow(props) {
   }, []);
 
   useEffect(() => {
-    if (selectedTab === 0) {
-      setContent(
-        <iframe
-          className="content-iframe"
-          src="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
-        ></iframe>
-      );
-    } else if (selectedTab === 1) {
-      let helpContent = null;
-      if (availableDatasets.length > 0) {
-        helpContent = availableDatasets[0].help;
-      }
-      setContent(
-        <iframe className="content-iframe" src={helpContent}></iframe>
-      );
-    } else if (selectedTab === 2) {
-      setContent(
-        <iframe
-          className="content-iframe"
-          src="./data-help/derived-variables.html"
-        ></iframe>
-      );
-    } else if (selectedTab === 3) {
-      setContent(
-        <VideoFrame
-          id={INSTRUCTIONAL_VIDEOS[0].id}
-          title={INSTRUCTIONAL_VIDEOS[0].title}
-        />
-      );
-    } else if (selectedTab === 4) {
-      setContent(
-        <iframe
-          className="content-iframe"
-          src="https://navigator.oceansdata.ca/docs"
-        ></iframe>
-      );
+    switch (selectedTab) {
+      case 0:
+        setContent(
+          <iframe
+            className="content-iframe"
+            src="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
+          ></iframe>
+        );
+        break;
+      case 1:
+        let helpContent = null;
+        if (availableDatasets.length > 0) {
+          helpContent = availableDatasets[0].help;
+        }
+        setContent(
+          <iframe className="content-iframe" src={helpContent}></iframe>
+        );
+        break;
+      case 2:
+        setContent(
+          <iframe
+            className="content-iframe"
+            src="./data-help/derived-variables.html"
+          ></iframe>
+        );
+        break;
+      case 3:
+        setContent(
+          <VideoFrame
+            id={INSTRUCTIONAL_VIDEOS[0].id}
+            title={INSTRUCTIONAL_VIDEOS[0].title}
+          />
+        );
+        setSelectedItem(INSTRUCTIONAL_VIDEOS[0].id);
+        break;
+      case 4:
+        setContent(
+          <iframe
+            className="content-iframe"
+            src="https://navigator.oceansdata.ca/docs"
+          ></iframe>
+        );
+        break;
     }
   }, [selectedTab]);
 
@@ -264,19 +271,27 @@ function InfoHelpWindow(props) {
       return link.id === videoId;
     });
     setContent(<VideoFrame id={selected[0].id} title={selected[0].title} />);
+    setSelectedItem(selected[0].id);
   };
 
   const openNewTab = () => {
     let url = null;
+    let selected = null;
     switch (selectedTab) {
       case 0:
         url = "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/";
         break;
       case 1:
-        let selected = availableDatasets.filter((ds) => {
+        selected = availableDatasets.filter((ds) => {
           return ds.id === selectedItem;
         });
         url = selected[0].help;
+        break;
+      case 2:
+        url = "./data-help/derived-variables.html";
+        break;
+      case 3:
+        url = `https://youtu.be/${selectedItem}`;
         break;
       case 4:
         url = "https://navigator.oceansdata.ca/docs";
