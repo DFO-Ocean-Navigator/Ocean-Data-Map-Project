@@ -62,9 +62,9 @@ function ObservationTools(props) {
       <Button className="plot-button" onClick={handlePoint}>
         {__("Select point")}
       </Button>
-      <Button className="plot-button" onClick={handleDrifters}>
+      {/* <Button className="plot-button" onClick={handleDrifters}>
         {__("Show Active Drifters")}
-      </Button>
+      </Button> */}
       <Button className="plot-button" onClick={handleClass4}>
         {__("Class4")}
       </Button>

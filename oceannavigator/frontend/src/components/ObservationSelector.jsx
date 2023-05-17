@@ -3,7 +3,7 @@ import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider from "rc-slider";
-import {Card, Button, Form} from 'react-bootstrap';
+import { Alert, Card, Button, Form } from "react-bootstrap";
 import Autocomplete from "./lib/Autocomplete.jsx";
 
 import "rc-slider/assets/index.css";
@@ -161,25 +161,31 @@ function ObservationSelector(props) {
       });
     }
 
-    return newSelection
+    return newSelection;
   };
 
   const observationSelect = () => {
-    let selection = getSelection()
-    let type = selection['type'];
-    delete selection['type'];
-    let result = Object.keys(selection).map(function(key) {
-      return `${key}=${selection[key]}`;
-    }).join(';');
+    let selection = getSelection();
+    let type = selection["type"];
+    delete selection["type"];
+    let result = Object.keys(selection)
+      .map(function (key) {
+        return `${key}=${selection[key]}`;
+      })
+      .join(";");
     if (type == "track") {
       props.action("show", "observation_tracks", result);
     } else {
       props.action("show", "observation_points", result);
     }
-  }
+  };
 
   return (
     <div className="ObservationSelector">
+      <Alert key="obs-warning" variant="warning">
+        Current observations limited to ARGO platform for 2022. Observation for
+        remaining platforms to be included in next release.
+      </Alert>
       <Card className="obs-card">
         <Card.Header>
           <Card.Title>Observation Type</Card.Title>
