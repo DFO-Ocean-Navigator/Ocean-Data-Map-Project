@@ -19,9 +19,9 @@ function TimeSlider(props) {
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
-    let newNTicks = 48;
-    if (props.dataset.quantum === "day") {
-      newNTicks = 24;
+    let newNTicks = 24;
+    if (props.dataset.quantum === "hour") {
+      newNTicks = 48;
     }
     setMin(
       props.timestamps.length < newNTicks

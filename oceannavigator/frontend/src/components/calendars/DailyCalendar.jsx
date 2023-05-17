@@ -38,7 +38,8 @@ const dateButton = React.forwardRef(
 
 const DailyCalendar = React.forwardRef((props, ref) => {
   // Helper functions sourced from https://blog.logrocket.com/react-custom-datepicker-step-by-step/
-
+  const earliestDate = new Date(Math.min(...props.availableDates));
+  const latestDate = new Date(Math.max(...props.availableDates));
   const [month, setMonth] = useState(props.selected.getMonth());
   const [year, setYear] = useState(props.selected.getFullYear());
   const [datesEnabled, setDatesEnabled] = useState([]);
@@ -58,7 +59,7 @@ const DailyCalendar = React.forwardRef((props, ref) => {
       );
     });
     setDatesEnabled(newDatesEnabled);
-  }, [props.availableDates]);
+  }, [props.availableDates, month, year]);
 
   const getMonthDays = (month, year) => {
     const months30 = [3, 5, 8, 10];
@@ -179,19 +180,19 @@ const DailyCalendar = React.forwardRef((props, ref) => {
 
   let prevDisabled = true;
   if (
-    (props.availableDates[0].getMonth() < month &&
-      props.availableDates[0].getFullYear() === year) ||
-    props.availableDates[0].getFullYear() < year
+    (earliestDate.getUTCMonth() < month &&
+    earliestDate.getUTCFullYear() === year) ||
+    earliestDate.getUTCFullYear() < year
   ) {
     prevDisabled = false;
   }
 
   let nextDisabled = true;
   if (
-    (props.availableDates[props.availableDates.length - 1].getMonth() > month &&
-      props.availableDates[props.availableDates.length - 1].getFullYear() ===
+    (latestDate.getUTCMonth() > month &&
+    latestDate.getUTCFullYear() ===
         year) ||
-    props.availableDates[props.availableDates.length - 1].getFullYear() > year
+        latestDate.getUTCFullYear() > year
   ) {
     nextDisabled = false;
   }

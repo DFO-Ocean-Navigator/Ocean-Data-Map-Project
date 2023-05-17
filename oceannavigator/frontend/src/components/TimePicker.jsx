@@ -240,7 +240,7 @@ function TimePicker(props) {
   let hourDropdown = null;
   if (props.dataset.quantum === "hour") {
     let hours = dateHours;
-    if (dateHours.length === 0 ) {
+    if (dateHours.length === 0) {
       let currentTime = new Date(map[props.state]);
       hours = getHoursForDate(currentTime, map);
     }
@@ -290,14 +290,16 @@ function TimePicker(props) {
             {" "}
             <ChevronLeft />
           </Button>
-          <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
-          {hourDropdown}
-          <Dropdown.Menu
-            className="dropdown-menu"
-            disabled={props.dataset.quantum === "year"}
-          >
-            {calendar}
-          </Dropdown.Menu>
+          <div className="dropdown-container">
+            <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
+            <Dropdown.Menu
+              className="dropdown-menu"
+              disabled={props.dataset.quantum === "year"}
+            >
+              {calendar}
+            </Dropdown.Menu>
+            {hourDropdown}
+          </div>
           <Button
             className="header-button"
             disabled={currentIndex === data.length - 1}

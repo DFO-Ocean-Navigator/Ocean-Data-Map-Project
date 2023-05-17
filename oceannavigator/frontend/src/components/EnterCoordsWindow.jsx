@@ -11,7 +11,6 @@ function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
   const [enteredLon, setEnteredLon] = useState("");
   const [timer, setTimer] = useState(null);
-  const [vectorType, setVectorType] = useState(props.vectorType);
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
@@ -23,7 +22,6 @@ function EnterCoordsWindow(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    setVectorType(type);
     props.action("vectorType", type);
   };
 
@@ -84,7 +82,7 @@ function EnterCoordsWindow(props) {
 
   const handlePlot = () => {
     props.action("selectPoints");
-    props.updateUI({ modalType: vectorType, showModal: true });
+    props.updateUI({ modalType: props.vectorType, showModal: true });
   };
 
   const tableEntries = props.vectorCoordinates.map((coord, index) => {

@@ -19,18 +19,15 @@ const MONTHS = [
 
 function Class4Calendar(props) {
   // Helper functions sourced from https://blog.logrocket.com/react-custom-datepicker-step-by-step/
-  const latestDate = props.availableDates[0];
+  const earliestDate = new Date(Math.min(...props.availableDates));
+  const latestDate = new Date(Math.max(...props.availableDates));
   const [month, setMonth] = useState(latestDate.getUTCMonth());
   const [year, setYear] = useState(latestDate.getUTCFullYear());
   const [datesEnabled, setDatesEnabled] = useState([]);
 
   useEffect(() => {
-    const latestDate = props.availableDates[0];
-    let newMonth = latestDate.getUTCMonth()
-    let newYear = latestDate.getUTCFullYear()
-
-    const [prevMonth, prevMonthYear] = getPreviousMonth(newMonth, newYear);
-    const [nextMonth, nextMonthYear] = getNextMonth(newMonth, newYear);
+    const [prevMonth, prevMonthYear] = getPreviousMonth(month, year);
+    const [nextMonth, nextMonthYear] = getNextMonth(month, year);
 
     let datesEnabled = props.availableDates.filter((date) => {
       let dateMonth = date.getUTCMonth();
@@ -38,14 +35,12 @@ function Class4Calendar(props) {
 
       return (
         (dateMonth === prevMonth && dateYear === prevMonthYear) ||
-        (dateMonth === newMonth && dateYear === newYear) ||
+        (dateMonth === month && dateYear === year) ||
         (dateMonth === nextMonth && dateYear === nextMonthYear)
       );
     });
-    setMonth(newMonth);
-    setYear(newYear);
     setDatesEnabled(datesEnabled);
-  }, [props.availableDates]);
+  }, [props.availableDates, month, year]);
 
   const getMonthDays = (month, year) => {
     const months30 = [3, 5, 8, 10];
@@ -157,19 +152,19 @@ function Class4Calendar(props) {
 
   let prevDisabled = true;
   if (
-    (props.availableDates[0].getMonth() < month &&
-      props.availableDates[0].getFullYear() === year) ||
-    props.availableDates[0].getFullYear() < year
+    (earliestDate.getUTCMonth() < month &&
+    earliestDate.getUTCFullYear() === year) ||
+    earliestDate.getUTCFullYear() < year
   ) {
     prevDisabled = false;
   }
 
   let nextDisabled = true;
   if (
-    (props.availableDates[props.availableDates.length - 1].getMonth() > month &&
-      props.availableDates[props.availableDates.length - 1].getFullYear() ===
+    (latestDate.getUTCMonth() > month &&
+    latestDate.getUTCFullYear() ===
         year) ||
-    props.availableDates[props.availableDates.length - 1].getFullYear() > year
+        latestDate.getUTCFullYear() > year
   ) {
     nextDisabled = false;
   }
