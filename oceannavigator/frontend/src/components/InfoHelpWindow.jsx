@@ -344,6 +344,7 @@ const INSTRUCTIONAL_VIDEOS = [
     id: "MCCmcexArXA",
     title: "Creating climatology plots for predefined areas",
   },
+  { id: "9hAgSWPVP9Q", title: "Plotting in-situ ocean Observation" },
   { id: "ABid30zxSfc", title: "Plot Class4 data" },
   { id: "tu44-hjqY0o", title: "Compare datasets and save plot" },
 ];
