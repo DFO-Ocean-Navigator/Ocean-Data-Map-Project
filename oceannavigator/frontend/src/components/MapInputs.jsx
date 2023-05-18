@@ -1,7 +1,7 @@
 import React from "react";
 
 import DatasetSelector from "./DatasetSelector.jsx";
-import DrawingTools from "./DrawingTools.jsx"
+import DrawingTools from "./DrawingTools.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 
 function MapInputs(props) {

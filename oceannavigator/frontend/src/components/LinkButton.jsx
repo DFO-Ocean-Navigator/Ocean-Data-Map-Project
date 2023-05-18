@@ -13,7 +13,7 @@ function LinkButton(props) {
       placement="bottom"
       overlay={<Tooltip id={"link-tooltip"}>{__("Get Link")}</Tooltip>}
     >
-      <Button onClick={()=>{props.action("permalink")}} className="link-button">
+      <Button onClick={()=>{props.action("permalink");}} className="link-button">
         <FontAwesomeIcon icon={faLink} />
       </Button>
     </OverlayTrigger>
