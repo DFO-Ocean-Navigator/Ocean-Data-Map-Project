@@ -223,11 +223,19 @@ function InfoHelpWindow(props) {
         setContent(
           <iframe
             className="content-iframe"
-            src="./data-help/derived-variables.html"
+            src="./data-help/derived_variables.html"
           ></iframe>
         );
         break;
       case 3:
+        setContent(
+          <iframe
+            className="content-iframe"
+            src="./data-help/observation_definitions.html"
+          ></iframe>
+        );
+        break;
+      case 4:
         setContent(
           <VideoFrame
             id={INSTRUCTIONAL_VIDEOS[0].id}
@@ -236,7 +244,7 @@ function InfoHelpWindow(props) {
         );
         setSelectedItem(INSTRUCTIONAL_VIDEOS[0].id);
         break;
-      case 4:
+      case 5:
         setContent(
           <iframe
             className="content-iframe"
@@ -288,12 +296,15 @@ function InfoHelpWindow(props) {
         url = selected[0].help;
         break;
       case 2:
-        url = "./data-help/derived-variables.html";
+        url = "./data-help/derived_variables.html";
         break;
       case 3:
-        url = `https://youtu.be/${selectedItem}`;
+        url = "./data-help/observation_definitions.html";
         break;
       case 4:
+        url = `https://youtu.be/${selectedItem}`;
+        break;
+      case 5:
         url = "https://navigator.oceansdata.ca/docs";
         break;
     }
@@ -337,8 +348,7 @@ function InfoHelpWindow(props) {
         );
       });
       break;
-
-    case 3:
+    case 4:
       listOptions = INSTRUCTIONAL_VIDEOS.map((video) => {
         return (
           <ListGroup.Item
@@ -386,10 +396,13 @@ function InfoHelpWindow(props) {
           <Nav.Link eventKey={2}>{"Derived Variables"}</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={3}>{"Instructional Videos"}</Nav.Link>
+          <Nav.Link eventKey={3}>{"Observation Defintions"}</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={4}>{"API Documentation"}</Nav.Link>
+          <Nav.Link eventKey={4}>{"Instructional Videos"}</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey={5}>{"API Documentation"}</Nav.Link>
         </Nav.Item>
       </Nav>
       <Row>
