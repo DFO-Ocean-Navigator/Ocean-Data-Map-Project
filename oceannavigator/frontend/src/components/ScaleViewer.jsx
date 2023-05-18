@@ -50,7 +50,7 @@ function ScaleViewer(props) {
         "/" +
         props.mapSettings.projection +
         "/" +
-        props.mapSettings.extent.join(",") +
+        props.mapState.extent.join(",") +
         "/" +
         props.dataset.depth +
         "/" +

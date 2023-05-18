@@ -18,7 +18,8 @@ function ColormapRange(props) {
     let prevMax = parseFloat(props.state[1]).toFixed(4);
 
     if (
-      !isNaN(newMin) && !isNaN(newMax) &&
+      !isNaN(newMin) &&
+      !isNaN(newMax) &&
       (newMin !== prevMin || newMax !== prevMax)
     ) {
       const timer = setTimeout(() => {
@@ -64,8 +65,8 @@ function ColormapRange(props) {
     axios
       .get(props.autourl)
       .then(function (data) {
-        setMin(data.data.min);
-        setMax(data.data.max);
+        setMin(parseFloat(data.data.min).toFixed(4));
+        setMax(parseFloat(data.data.max).toFixed(4));
       })
       .catch(function (r, status, err) {
         console.error(props.autourl, status, err.toString());
@@ -74,12 +75,12 @@ function ColormapRange(props) {
 
   const autoCheck = (
     <Form.Check
-        type="checkbox"
-        id={props.id + "_auto"}
-        checked={useAuto}
-        onChange={autoChanged}
-        label={"Auto Range"}
-      />
+      type="checkbox"
+      id={props.id + "_auto"}
+      checked={useAuto}
+      onChange={autoChanged}
+      label={"Auto Range"}
+    />
   );
 
   let autobuttons = null;

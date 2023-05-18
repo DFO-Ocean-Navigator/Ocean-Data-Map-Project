@@ -148,7 +148,182 @@ const MANUAL_LINKS = [
   },
 ];
 
+const DATASET_LINKS = [
+  {
+    id: "Ocean Prediction Systems",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ocean-prediction-systems",
+    section_header: true,
+  },
+  {
+    id: "ECCC Datasets",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#eccc-datasets",
+    section_header: true,
+  },
+  {
+    id: "Global Ice Ocean Prediction System 1/4° Physics Analysis and Forecast Updated Daily (GIOPS)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#global-ice-ocean-prediction-system-14-physics-analysis-and-forecast-updated-daily-giops",
+    sub_header: true,
+  },
+  {
+    id: "GIOPS 10 Day Forecast 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#giops-10-day-forecast-3d--latlon",
+  },
+  {
+    id: "GIOPS 10 Day Forecast Surface – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#giops-10-day-forecast-surface--latlon",
+  },
+  {
+    id: "GIOPS Daily Historical 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#giops-daily-historical-3d--latlon",
+  },
+  {
+    id: "GIOPS 3 hr mean Historical Surface - LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#giops-3-hr-mean-historical-surface---latlon",
+  },
+  {
+    id: "Regional Ice Ocean Prediction System (RIOPS) 1/12°",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#regional-ice-ocean-prediction-system-riops-112",
+    sub_header: true,
+  },
+  {
+    id: "RIOPS Forecast 3D – Polar Stereographic",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#riops-forecast-3d--polar-stereographic",
+  },
+  {
+    id: "RIOPS Forecast Surface – Polar Stereographic",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#riops-forecast-surface--polar-stereographic",
+  },
+  {
+    id: "CCG RIOPS Forecast Surface - LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ccg-riops-forecast-surface---latlon",
+  },
+  {
+    id: "Coastal Ice Ocean Prediction System (CIOPS)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#coastal-ice-ocean-prediction-system-ciops",
+    sub_header: true,
+  },
+  {
+    id: "CIOPS Forecast East 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-east-3d--latlon",
+  },
+  {
+    id: "CIOPS Forecast East Surface – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-east-surface--latlon",
+  },
+  {
+    id: "CIOPS Forecast West 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-west-3d--latlon",
+  },
+  {
+    id: "CIOPS Forecast West Surface – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-west-surface--latlon",
+  },
+  {
+    id: "CIOPS Forecast Salish Sea 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-salish-sea-3d--latlon",
+  },
+  {
+    id: "CIOPS Forecast Salish Sea Surface - LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-forecast-salish-sea-surface---latlon",
+  },
+  {
+    id: "CIOPS Historical Datasets",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-datasets",
+  },
+  {
+    id: "CIOPS Historical East 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-east-3d--latlon",
+  },
+  {
+    id: "CIOPS Historical East Surface – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-east-surface--latlon",
+  },
+  {
+    id: "CIOPS Historical West 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-west-3d--latlon",
+  },
+  {
+    id: "CIOPS Historical West Surface – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-west-surface--latlon",
+  },
+  {
+    id: "CIOPS Historical Salish Sea 3D – LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-salish-sea-3d--latlon",
+  },
+  {
+    id: "CIOPS Historical Salish Sea Surface - LatLon",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-salish-sea-surface---latlon",
+  },
+  {
+    id: "Global Deterministic Wave Prediction System (GDWPS)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#global-deterministic-wave-prediction-system-gdwps",
+    sub_header: true,
+  },
+  {
+    id: "Water Cycle Prediction System (WCPS)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#water-cycle-prediction-system-wcps",
+    sub_header: true,
+  },
+  {
+    id: "Copernicus Marine Service Datasets",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#copernicus-marine-service-datasets",
+    section_header: true,
+  },
+  {
+    id: "Global Ocean Physics Reanalysis (GLOBAL_MULTIYEAR_PHY_001_030)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#global-ocean-physics-reanalysis-global_multiyear_phy_001_030",
+    sub_header: true,
+  },
+  {
+    id: "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Daily)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#copernicus-marine-service-global-ocean-112-deg-physics-reanalysis-daily",
+  },
+  {
+    id: "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#copernicus-marine-service-global-ocean-112-deg-physics-reanalysis-monthly",
+  },
+  {
+    id: "Climatology calculated from GLOBAL REANALYSIS PHY 001_030",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#climatology-calculated-from-global-reanalysis-phy-001_030",
+    sub_header: true,
+  },
+  {
+    id: "CMEMS Global Ocean PHYS Reanalysis Climatology 1/12 deg",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#cmems-global-ocean-phys-reanalysis-climatology-112-deg",
+  },
+  {
+    id: "CMEMS Global Ocean PHYS Reanalysis Climatology (Monthly mean) 1/12 deg",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#cmems-global-ocean-phys-reanalysis-climatology-monthly-mean-112-deg",
+  },
+  {
+    id: "CMEMS Global Ocean PHYS Reanalysis Climatology (Seasonal mean) 1/12 deg",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#cmems-global-ocean-phys-reanalysis-climatology-seasonal-mean-112-deg",
+  },
+  {
+    id: "SalishSeaCast Datasets",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#salishseacast-datasets",
+    section_header: true,
+  },
+  {
+    id: "SalishSeaCast 3D Biology",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#salishseacast-3d-biology",
+  },
+  {
+    id: "SalishSeaCast 3D Currents",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#salishseacast-3d-currents",
+  },
+  {
+    id: "SalishSeaCast 3D Salinity & Temperature",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#salishseacast-3d-salinity--temperature",
+  },
+  {
+    id: "SalishSeaCast 2D Sea Surface Height",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#salishseacast-2d-sea-surface-height",
+  },
+];
+
 const INSTRUCTIONAL_VIDEOS = [
+  { id: "rMVSFRfMrqE", title: "General Introduction" },
   { id: "gcmjtYSJs8c", title: "Create Point plot and Virtual Mooring" },
   {
     id: "pzzFh8cOLog",
@@ -195,12 +370,6 @@ function InfoHelpWindow(props) {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
-    GetDatasetsPromise().then((result) => {
-      setAvailableDatasets(result.data);
-    });
-  }, []);
-
-  useEffect(() => {
     switch (selectedTab) {
       case 0:
         setContent(
@@ -211,12 +380,11 @@ function InfoHelpWindow(props) {
         );
         break;
       case 1:
-        let helpContent = null;
-        if (availableDatasets.length > 0) {
-          helpContent = availableDatasets[0].help;
-        }
         setContent(
-          <iframe className="content-iframe" src={helpContent}></iframe>
+          <iframe
+            className="content-iframe"
+            src="https://dfo-ocean-navigator.github.io/Dataset-Descriptions/"
+          ></iframe>
         );
         break;
       case 2:
@@ -255,14 +423,13 @@ function InfoHelpWindow(props) {
     }
   }, [selectedTab]);
 
-  const helpChanged = (dataset) => {
-    let selected = availableDatasets.filter((ds) => {
-      return ds.id === dataset;
+  const helpChanged = (sectionID) => {
+    let selected = DATASET_LINKS.filter((link) => {
+      return link.id === sectionID;
     });
     setContent(
-      <iframe className="content-iframe" src={selected[0].help}></iframe>
+      <iframe className="content-iframe" src={selected[0].link}></iframe>
     );
-    setSelectedItem(dataset);
   };
 
   const sectionChanged = (sectionID) => {
@@ -290,10 +457,8 @@ function InfoHelpWindow(props) {
         url = "https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/";
         break;
       case 1:
-        selected = availableDatasets.filter((ds) => {
-          return ds.id === selectedItem;
-        });
-        url = selected[0].help;
+        url = "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/";
+        break;
         break;
       case 2:
         url = "./data-help/derived_variables.html";
@@ -332,18 +497,24 @@ function InfoHelpWindow(props) {
       });
       break;
     case 1:
-      listOptions = availableDatasets.map((dataset) => {
+      listOptions = DATASET_LINKS.map((link) => {
+        let variant = null;
+        if (link.section_header === true) {
+          variant = "primary";
+        } else if (link.sub_header === true) {
+          variant = "info";
+        }
         return (
           <ListGroup.Item
-            key={dataset.id}
-            id={dataset.id}
-            active={dataset.id === selectedItem}
+            key={link.id}
+            id={link.id}
+            variant={variant}
             action
             onClick={(e) => {
               helpChanged(e.target.id);
             }}
           >
-            {dataset.value}
+            {link.id}
           </ListGroup.Item>
         );
       });

@@ -56,6 +56,7 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
+  const [mapState, setMapState] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [vectorId, setVectorId] = useState(null);
@@ -211,6 +212,15 @@ function OceanNavigator(props) {
       }
     }
   };
+
+  const updateMapState = (key, value) => {
+    setMapState((prevMapState) => {
+      return {
+        ...prevMapState,
+        [key]: value,
+      };
+    });
+  }
 
   const updateDataset0 = (key, value) => {
     switch (key) {
@@ -430,12 +440,14 @@ function OceanNavigator(props) {
         dataset={dataset0}
         mapSettings={mapSettings}
         onUpdate={updateDataset0}
+        mapState={mapState}
       />
       {compareDatasets ? (
         <ScaleViewer
           dataset={dataset1}
           mapSettings={mapSettings}
           onUpdate={updateDataset0}
+          mapState={mapState}
           right={true}
         />
       ) : null}
@@ -452,6 +464,7 @@ function OceanNavigator(props) {
         action={action}
         updateMapSettings={updateMapSettings}
         updateUI={updateUI}
+        updateMapState={updateMapState}
         compareDatasets={compareDatasets}
       />
       <MapInputs

@@ -247,6 +247,22 @@ const MainMap = forwardRef((props, ref) => {
     });
     newMap.addInteraction(newSelect);
 
+    newMap.on("moveend", function () {
+      const c = olProj
+        .transform(
+          newMapView.getCenter(),
+          props.mapSettings.projection,
+          "EPSG:4326"
+        )
+        .map(function (c) {
+          return c.toFixed(4);
+        });
+      props.updateMapState("center", c);
+      props.updateMapState("zoom", newMapView.getZoom());
+      const extent = newMapView.calculateExtent(newMap.getSize());
+      props.updateMapState("extent", extent);
+    });
+
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
@@ -301,6 +317,7 @@ const MainMap = forwardRef((props, ref) => {
     props.dataset0.variable,
     props.dataset0.time,
     props.dataset0.depth,
+    props.dataset0.variable_scale,
   ]);
 
   useEffect(() => {
@@ -312,6 +329,7 @@ const MainMap = forwardRef((props, ref) => {
     props.dataset1.variable,
     props.dataset1.time,
     props.dataset1.depth,
+    props.dataset1.variable_scale,
   ]);
 
   useEffect(() => {
