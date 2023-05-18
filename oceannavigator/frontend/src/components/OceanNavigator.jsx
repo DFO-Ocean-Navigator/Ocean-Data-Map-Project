@@ -2,6 +2,7 @@ import { nominalTypeHack } from "prop-types";
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import Modal from "react-bootstrap/Modal";
+import ReactGA from "react-ga";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import MainMap from "./MainMap.jsx";
@@ -69,6 +70,8 @@ function OceanNavigator(props) {
   const [showPermalink, setShowPermalink] = useState(false);
 
   useEffect(() => {
+    ReactGA.ga("send", "pageview");
+    
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
