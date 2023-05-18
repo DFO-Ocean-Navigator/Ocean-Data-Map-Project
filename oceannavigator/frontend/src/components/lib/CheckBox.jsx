@@ -1,6 +1,7 @@
 import React from "react";
-import {Checkbox} from "react-bootstrap";
+// import {Checkbox} from "react-bootstrap";
 import PropTypes from "prop-types";
+import Form from "react-bootstrap/Form";
 
 export default class CheckBox extends React.PureComponent {
   constructor(props) {
@@ -13,17 +14,16 @@ export default class CheckBox extends React.PureComponent {
   handleChange(e) {
     this.props.onUpdate(this.props.id, e.target.checked);
   }
-  
+
   render() {
     return (
-      <Checkbox
+      <Form.Check
+        type="checkbox"
         id={this.props.id}
         onChange={this.handleChange}
         checked={this.props.checked}
-        style={this.props.style}
-      >
-        {this.props.title}
-      </Checkbox>
+        label={this.props.title}
+      />
     );
   }
 }

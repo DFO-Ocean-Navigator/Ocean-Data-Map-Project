@@ -32,7 +32,7 @@ class ContourSelector extends React.Component {
       }
       state[key[i]] = value[i];
     }
-    const newState = jQuery.extend({}, this.props.state, state);
+    const newState = {...this.props.state, ...state};
     this.props.onUpdate(this.props.id, newState);
   }
 

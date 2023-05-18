@@ -1,54 +1,41 @@
-
-import React from "react";
-import {NavItem} from "react-bootstrap";
-import PropTypes from "prop-types";
+import React, { useState } from "react";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 
 import { withTranslation } from "react-i18next";
 
-class ToggleLanguage extends React.PureComponent {
+function ToggleLanguage(props) {
+  const [currentLanguage, setCurrentLanguage] = useState(
+    props.i18n.language === "en-CA" || props.i18n.language === "fr"
+      ? props.i18n.language
+      : "en-CA"
+  );
 
-  constructor(props) {
-    super(props);
+  const toggleUpdate = (newLang) => {
+    setCurrentLanguage(newLang);
+    props.i18n.changeLanguage(newLang);
+  };
 
-    this.state = {
-      toggleState: true,
-    };
-
-    this.toggleUpdate = this.toggleUpdate.bind(this);
+  if (!props.i18n.language) {
+    toggleUpdate("en-CA");
   }
 
-  toggleUpdate(e) {
-
-    this.setState({
-      toggleState: !this.state.toggleState,
-    });
-
-    const language =  this.state.toggleState ? "fr" : "en-CA";
-    this.props.i18n.changeLanguage(language);
-  }
-
-  render() {
-
-    let languageText = "Français";
-    if (!this.state.toggleState) {
-      languageText = "English";
-    }
-
-    return (
-      <NavItem
-        onClick={this.toggleUpdate}
-      >
-        {languageText}
-      </NavItem>
-    );
-
-  }
+  return (
+    <ToggleButtonGroup
+      type="radio"
+      name="lang-group"
+      value={currentLanguage}
+      onChange={toggleUpdate}
+      className="toggle-group"
+    >
+      <ToggleButton id="en-btn" value={"en-CA"} className="toggle-btn">
+        En
+      </ToggleButton>
+      <ToggleButton id="fr-btn" value={"fr"} className="toggle-btn">
+        Fr
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
 }
-
-//***********************************************************************
-ToggleLanguage.propTypes = {
-  rightButton: PropTypes.string,
-  leftButton: PropTypes.string,
-};
 
 export default withTranslation()(ToggleLanguage);

@@ -4,7 +4,7 @@
 # <optional_dataset_config_file.json>:  Specify a non-default dataset config file to load the Navigator with.
 #                                       Argument not required.
 
-[[ "$1" == "" ]] && PORT=5000 || PORT=$1
+[[ "$1" == "" ]] && PORT=8443 || PORT=$1
 
 export ONAV_GIT_HASH="$(git rev-parse HEAD)"
 export ONAV_GIT_TAG="$(git describe --tags --abbrev=0)"

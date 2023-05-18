@@ -1,8 +1,6 @@
 import React from "react";
-import { FormGroup, ControlLabel, FormControl, Modal, Button } from "react-bootstrap";
+import { Form, Row, Col } from "react-bootstrap";
 import PropTypes from "prop-types";
-
-import Icon from "./Icon";
 
 import { withTranslation } from "react-i18next";
 
@@ -20,14 +18,15 @@ export class SelectBox extends React.Component {
   }
 
   toggleShowHelp() {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       showHelp: !prevState.showHelp,
     }));
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return !fastEqual(this.props, nextProps) ||
-      !fastEqual(this.state, nextState);
+    return (
+      !fastEqual(this.props, nextProps) || !fastEqual(this.state, nextState)
+    );
   }
 
   render() {
@@ -35,73 +34,48 @@ export class SelectBox extends React.Component {
     if (this.props.options) {
       options = this.props.options.map((option) => {
         return (
-          <option
-            key={`option-${option.id}`}
-            value={option.id}
-          >
+          <option key={`option-${option.id}`} value={option.id}>
             {option.value}
           </option>
         );
       });
     }
 
-    const disabled = !Array.isArray(this.props.options) ||
-                     !this.props.options.length;
+    const disabled =
+      this.props.loading ||
+      !Array.isArray(this.props.options) ||
+      !this.props.options.length;
+
+    const formLayout = this.props.horizontalLayout ? Row : Col;
 
     return (
-      <>
-        <FormGroup controlid={`formgroup-${this.props.id}-selectbox`}>
-          <ControlLabel>{this.props.label}</ControlLabel>
-          
-          <Button
-            onClick={this.toggleShowHelp}
-            bsStyle="default"
-            bsSize="xsmall"
-            style={{"display": this.props.helpContent ? "block" : "none", "float": "right"}}
-          >
-            ?
-          </Button>
-
-          <FormControl
-            componentClass="select"
-            name={this.props.name}
-            placeholder={disabled ? _("Loading...") : this.props.placeholder}
-            onChange={(e) => {
-              if (this.props.multiple) {
-                this.props.onChange(e.target.name, e.target.selectedOptions);
-              }
-              else {
-                this.props.onChange(e.target.name, e.target.value);
-              }
-            }}
-            disabled={disabled}
-            value={this.props.selected}
-            multiple={this.props.multiple}
-          >
-            {options}
-          </FormControl>
-        </FormGroup>
-
-        <Modal
-          show={this.state.showHelp}
-          onHide={this.toggleShowHelp}
-          bsSize="large"
-          dialogClassName="helpdialog"
-          backdrop={true}
+      <Form.Group
+        controlid={`formgroup-${this.props.id}-selectbox`}
+        as={formLayout}
+      >
+        <Form.Label column>{this.props.label}</Form.Label>
+        <Form.Select
+          name={this.props.name}
+          placeholder={disabled ? "Loading..." : this.props.placeholder}
+          onChange={(e) => {
+            if (this.props.multiple) {
+              this.props.onChange(e.target.name, e.target.selectedOptions);
+            } else {
+              this.props.onChange(e.target.name, e.target.value);
+            }
+          }}
+          disabled={disabled}
+          value={this.props.selected}
+          multiple={this.props.multiple}
+          className={
+            this.props.horizontalLayout
+              ? "form-select-horizontal"
+              : "form-select"
+          }
         >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Help")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {this.props.helpContent}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.toggleShowHelp}>
-              <Icon icon="close"/> {_("Close")}
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </>
+          {options}
+        </Form.Select>
+      </Form.Group>
     );
   }
 }
@@ -121,11 +95,13 @@ SelectBox.propTypes = {
   ]).isRequired,
   multiple: PropTypes.bool,
   helpContent: PropTypes.arrayOf(PropTypes.object),
+  horizontalLayout: PropTypes.bool,
 };
 
 SelectBox.defaultProps = {
   multiple: false,
   helpContent: null,
+  horizontalLayout: false,
 };
 
 export default withTranslation()(SelectBox);

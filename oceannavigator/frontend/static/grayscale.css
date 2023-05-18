@@ -3,7 +3,7 @@
  * Copyright 2013-2017 Start Bootstrap
  * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-grayscale/blob/master/LICENSE)
  */
- body {
+body {
   font-family: "Lora", "Helvetica Neue", Helvetica, Arial, sans-serif;
   position: relative;
   width: 100%;
@@ -125,7 +125,7 @@ a:hover {
   padding: 200px 0;
   text-align: center;
   color: #fcfdfd;
-  background: url("/static/img/intro-bg.png") no-repeat bottom center scroll;
+  background: url("/static/img/intro-bg.jpg") no-repeat bottom center scroll;
   background-color: black;
   -webkit-background-size: cover;
   -moz-background-size: cover;

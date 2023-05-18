@@ -1,45 +1,54 @@
-import React from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import PropTypes from "prop-types";
-import FontAwesome from "react-fontawesome";
-import { Button, Modal } from "react-bootstrap";
-
-import Accordion from "./lib/Accordion";
-import Icon from "./lib/Icon";
+import Dropdown from "react-bootstrap/Dropdown";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import { Accordion, Row, Col } from "react-bootstrap";
 
 import { withTranslation } from "react-i18next";
 
-const utilizeFocus = () => {
-  const ref = React.createRef();
-  const setFocus = () => {
-    ref.current && ref.current.focus();
-  };
-  return { setFocus, ref };
-};
+const CustomToggle = React.forwardRef(
+  ({ children, className, onClick }, ref) => (
+    <button
+      href=""
+      ref={ref}
+      className={className}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+    >
+      <label className="dd-toggle-label">{children}</label>
+      <div className="dd-toggle-caret" />
+    </button>
+  )
+);
 
-export class DatasetDropdown extends React.Component {
-  constructor(props) {
-    super(props);
+const DropdownButton = forwardRef(({ children, onClick }, ref) => (
+  <button
+    className="dd-option-button"
+    href=""
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+  >
+    {children}
+  </button>
+));
 
-    this.inputFocus = utilizeFocus();
+function DatasetDropdown(props) {
+  const [options, setOptions] = useState([]);
+  const [title, setTitle] = useState("");
 
-    this.state = {
-      isListOpen: false,
-      showHelp: false,
-      options: [],
-    };
-
-    this.selectHandler = this.selectHandler.bind(this);
-    this.toggleList = this.toggleList.bind(this);
-    this.toggleShowHelp = this.toggleShowHelp.bind(this);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let dropdownItems = [];
-    let menus = this.props.datasets.map((d) => d.group);
+    let menus = props.options.map((d) => d.group);
     menus = [...new Set(menus)];
 
     for (let menu of menus) {
-      let datasets = this.props.datasets.filter((d) => {
+      let datasets = props.options.filter((d) => {
         return d.group === menu;
       });
       let submenus = datasets.map((d) => d.subgroup);
@@ -51,106 +60,64 @@ export class DatasetDropdown extends React.Component {
           return d.subgroup === submenu;
         });
         options.push([
-          <label key={`label_${submenu}`} className="dd-option-label">
+          <label key={`label_${submenu}`} className="dd-subgroup-label">
             {submenu}
           </label>,
           ...subDatasets.map((sd) => (
-            <button
-              className="dd-option-button"
+            <Dropdown.Item
               id={sd.id}
               key={sd.id}
-              onClick={() => this.selectHandler(sd.id)}
+              onClick={() => selectHandler(sd.id)}
+              as={DropdownButton}
             >
               {sd.value}
-            </button>
-          ))
+            </Dropdown.Item>
+          )),
         ]);
       }
       dropdownItems.push(
-        <Accordion
-          id={`accordion_${menu}`}
-          key={`accordion_${menu}`}
-          title={menu}
-          content={options}
-        />
+        <Accordion id={`accordion_${menu}`} key={`accordion_${menu}`}>
+          <Accordion.Header>{menu}</Accordion.Header>
+          <Accordion.Body className="dd-group">{options}</Accordion.Body>
+        </Accordion>
       );
     }
-    this.setState({ options: dropdownItems });
-  }
 
-  toggleList() {
-    this.setState((prevState) => ({
-      isListOpen: !prevState.isListOpen,
-    }));
-  }
-
-  toggleShowHelp() {
-    this.setState(prevState => ({
-      showHelp: !prevState.showHelp,
-    }));
-  }   
-
-  selectHandler(dataset) {
-    this.props.onChange("dataset", dataset);
-    this.toggleList();
-  }
-
-  render() {
-    const title = this.props.datasets.filter((d) => {
-      return d.id === this.props.selected;
+    const newTitle = props.options.filter((d) => {
+      return d.id === props.selected;
     })[0].value;
 
-    return (
-      <>
-        <label>Dataset</label>
-        <Button
-          onClick={this.toggleShowHelp}
-          bsStyle="default"
-          bsSize="xsmall"
-          style={{
-            display: this.props.helpContent ? "block" : "none",
-            float: "right",
-          }}
-        >
-          ?
-        </Button>
-        <div className="dd-wrapper">
-          <button type="button" className="dd-header" onClick={this.toggleList}>
-            <div className="dd-header-title">{title}</div>
-            <FontAwesome
-              className="dd-header-icon"
-              name="fa-solid fa-angle-down"
-            />
-          </button>
-          {this.state.isListOpen && (
-            <div role="list" className="dd-list">
-              {this.state.options}
-            </div>
-          )}
-        </div>
+    setOptions(dropdownItems);
+    setTitle(newTitle);
+  }, []);
 
-        <Modal
-          show={this.state.showHelp}
-          onHide={this.toggleShowHelp}
-          bsSize="large"
-          dialogClassName="helpdialog"
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Help")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {this.props.helpContent}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.toggleShowHelp}>
-              <Icon icon="close"/> {_("Close")}
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  }
+  useEffect(() => {
+    const newTitle = props.options.filter((d) => {
+      return d.id === props.selected;
+    })[0].value;
+
+    setTitle(newTitle);
+  }, [props.selected]);
+
+  const selectHandler = (dataset) => {
+    props.onChange("dataset", dataset);
+  };
+
+  const formLayout = props.horizontalLayout ? Row : Col;
+
+  return (
+    <div className={`dd-group ${props.horizontalLayout ? "" : "vertical"}`}>
+      <InputGroup as={formLayout}>
+        <Form.Label column className="dd-label">{props.label}</Form.Label>
+        <Dropdown>
+          <Dropdown.Toggle className={"dd-toggle"} as={CustomToggle}>
+            {title}
+          </Dropdown.Toggle>
+          <Dropdown.Menu className="dd-menu">{options}</Dropdown.Menu>
+        </Dropdown>
+      </InputGroup>
+    </div>
+  );
 }
 
 //***********************************************************************
@@ -158,7 +125,7 @@ DatasetDropdown.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  datasets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  options: PropTypes.arrayOf(PropTypes.object).isRequired,
   selected: PropTypes.string.isRequired,
   helpContent: PropTypes.arrayOf(PropTypes.object),
 };

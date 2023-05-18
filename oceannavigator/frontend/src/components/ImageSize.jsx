@@ -1,5 +1,4 @@
 import React from "react";
-import NumericInput from "react-numeric-input";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -27,8 +26,8 @@ class ImageSize extends React.Component {
 
   changed(key, value) {
     const newstate = {
-      "width": this.state.width,
-      "height": this.state.height,
+      width: this.state.width,
+      height: this.state.height,
     };
 
     newstate[key] = value;
@@ -43,46 +42,58 @@ class ImageSize extends React.Component {
   render() {
     _("inches");
     const _inches = _("inches");
-    return ( 
-      <div className='Size input'>
-        <h1 onClick={this.show.bind(this)}>{this.props.title}</h1>
-        <table>
+    return (
+      <div className="image-size">
+        <h1 className="image-title" onClick={this.show.bind(this)}>{this.props.title}</h1>
+        <table className="image-table">
           <tbody>
             <tr>
-              <td><label htmlFor={this.props.id + "_width"}>{_("Width:")}</label></td>
               <td>
-                <NumericInput
+                <label htmlFor={this.props.id + "_width"}>{_("Width:")}</label>
+              </td>
+              <td>
+                <input
+                  className="size-input"
                   id={this.props.id + "_width"}
-                  step={0.25}
+                  type="number"
                   value={this.state.width}
-                  precision={2}
                   onChange={(n, s) => this.changed("width", n)}
-                  format={(num) => { return `${num} ${_inches}`; }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td><label htmlFor={this.props.id + "_height"}>{_("Height:")}</label></td>
-              <td>
-                <NumericInput
-                  id={this.props.id + "_height"}
                   step={0.25}
-                  value={this.state.height}
                   precision={2}
-                  onChange={(n, s) => this.changed("height", n)}
-                  format={(num) => { return `${num} ${_inches}`; }}
                 />
               </td>
             </tr>
             <tr>
-              <td><label htmlFor={this.props.id + "_dpi"}>{_("DPI:")}</label></td>
               <td>
-                <NumericInput
+                <label htmlFor={this.props.id + "_height"}>
+                  {_("Height:")}
+                </label>
+              </td>
+              <td>
+                <input
+                  className="size-input"
+                  id={this.props.id + "_height"}
+                  type="number"
+                  value={this.state.width}
+                  onChange={(n, s) => this.changed("height", n)}
+                  step={0.25}
+                  precision={2}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor={this.props.id + "_dpi"}>{_("DPI:")}</label>
+              </td>
+              <td>
+                <input
+                  className="size-input"
                   id={this.props.id + "_dpi"}
-                  step={1}
+                  type="number"
                   value={this.state.dpi}
-                  precision={0}
                   onChange={(n, s) => this.changed("dpi", n)}
+                  step={1}
+                  precision={0}
                 />
               </td>
             </tr>

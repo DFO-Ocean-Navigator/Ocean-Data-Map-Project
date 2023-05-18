@@ -1,25 +1,17 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image of a Selected Area
-
-*/
-
 import React from "react";
-import {Nav, NavItem, Panel, Row,  Col, Button} from "react-bootstrap";
+import { Accordion, Card, Col, Row, Nav } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
+import ColormapRange from "./ColormapRange.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import ContourSelector from "./ContourSelector.jsx";
 import QuiverSelector from "./QuiverSelector.jsx";
-import StatsTable from "./StatsTable.jsx";
 import ImageSize from "./ImageSize.jsx";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
-import Accordion from "./lib/Accordion.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -29,25 +21,24 @@ class AreaWindow extends React.Component {
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
-    
+
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.scale + ",auto",
-      scale_1: props.scale_1 + ",auto",
+      scale: props.dataset_0.scale + ",auto",
+      scale_1: props.dataset_1.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
       colormap_diff: "default",
-      dataset_compare: props.dataset_compare,
       dataset_0: {
-        dataset: props.dataset_0.dataset,
+        id: props.dataset_0.id,
         variable: props.dataset_0.variable,
         quantum: props.dataset_0.quantum,
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
       },
       dataset_1: {
-        dataset: props.dataset_1.dataset,
+        id: props.dataset_1.id,
         variable: props.dataset_1.variable,
         quantum: props.dataset_1.quantum,
         time: props.dataset_1.time,
@@ -78,7 +69,7 @@ class AreaWindow extends React.Component {
     };
 
     if (props.init !== null) {
-      $.extend(this.state, props.init);
+      this.state = { ...this.state, ...props.init };
     }
 
     // Function bindings
@@ -98,34 +89,34 @@ class AreaWindow extends React.Component {
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitle) {
-      this.setState({plotTitle: title,});
+      this.setState({ plotTitle: title });
     }
   }
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
       if (key === "dataset_0") {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
           dataset_0: {
             ...prevState.dataset_0,
-            ...value
-          }
-        }));      
+            ...value,
+          },
+        }));
         return;
       }
-      
+
       if (key === "dataset_1") {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
           dataset_1: {
             ...prevState.dataset_1,
-            ...value
-          }
+            ...value,
+          },
         }));
         return;
       }
 
       let newState = {};
-      if (typeof(key) === "string") {
+      if (typeof key === "string") {
         newState[key] = value;
       } else {
         for (let i = 0; i < key.length; i++) {
@@ -156,86 +147,75 @@ class AreaWindow extends React.Component {
     _("Show Selected Area(s)");
     _("Saved Image Size");
 
-    const plotOptions = (<div>
-      {/* Image Size Selection */}
-      <ImageSize 
-        key='size' 
-        id='size' 
-        state={this.state.size} 
-        onUpdate={this.onLocalUpdate} 
-        title={_("Saved Image Size")} 
-      ></ImageSize>
+    const plotOptions = (
+      <div>
+        {/* Image Size Selection */}
+        <ImageSize
+          key="size"
+          id="size"
+          state={this.state.size}
+          onUpdate={this.onLocalUpdate}
+          title={_("Saved Image Size")}
+        ></ImageSize>
 
-      {/* Plot Title */}
-      <CustomPlotLabels
-        key='title'
-        id='title'
-        title={_("Plot Title")}
-        updatePlotTitle={this.updatePlotTitle}
-        plotTitle={this.state.plotTitle}
-      />
-    </div>);
+        {/* Plot Title */}
+        <CustomPlotLabels
+          key="title"
+          id="title"
+          title={_("Plot Title")}
+          updatePlotTitle={this.updatePlotTitle}
+          plotTitle={this.state.plotTitle}
+        />
+      </div>
+    );
 
-    const mapSettings = (<Panel 
-      defaultExpanded
-      bsStyle='primary'
-      key='map_settings'
-    >
-      <Panel.Heading>{_("Area Settings")}</Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
-          <Row>
-            <Col xs={9}> 
-              <CheckBox
-                id='dataset_compare'
-                key='dataset_compare'
-                checked={this.state.dataset_compare}
-                onUpdate={(_, checked) => { this.setState({dataset_compare: checked}); }}
-                title={_("Compare Datasets")}
-              />
-            </Col>
-            <Col xs={3}>
-              <Button 
-                bsStyle="link"
-                key='show_help'
-                onClick={this.props.showHelp}
-              >
-                {_("Help")}
-              </Button>
-            </Col>
-          </Row>
-        
+    const mapSettings = (
+      <Card variant="primary" key="map_settings">
+        <Card.Header>{_("Area Settings")}</Card.Header>
+        <Card.Body className="global-settings-card">
+          <CheckBox
+            id="dataset_compare"
+            key="dataset_compare"
+            checked={this.props.dataset_compare}
+            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
+            title={_("Compare Datasets")}
+          />
+
           {/* Displays Options for Compare Datasets */}
           <Button
-            bsStyle="default"
-            key='swap_views'
-            block
-            style={{display: this.state.dataset_compare ? "block" : "none"}}
+            variant="default"
+            key="swap_views"
+            style={{ display: this.props.dataset_compare ? "block" : "none" }}
             onClick={this.props.swapViews}
           >
             {_("Swap Views")}
           </Button>
 
           <div
-            style={{display: this.state.dataset_compare &&
-                    this.state.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+            style={{
+              display:
+                this.props.dataset_compare &&
+                this.state.dataset_0.variable == this.props.dataset_1.variable
+                  ? "block"
+                  : "none",
+            }}
           >
-            <Range
+            <ColormapRange
               auto
-              key='scale_diff'
-              id='scale_diff'
+              key="scale_diff"
+              id="scale_diff"
               state={this.state.scale_diff}
               def={""}
               onUpdate={this.onLocalUpdate}
               title={_("Diff. Variable Range")}
             />
-            <ComboBox 
-              key='colormap_diff' 
-              id='colormap_diff' 
-              state={this.state.colormap_diff} 
-              def='default' 
-              onUpdate={this.onLocalUpdate} 
-              url='/api/v2.0/plot/colormaps' 
+            <ComboBox
+              key="colormap_diff"
+              id="colormap_diff"
+              state={this.state.colormap_diff}
+              def="default"
+              onUpdate={this.onLocalUpdate}
+              url="/api/v2.0/plot/colormaps"
               title={_("Diff. Colourmap")}
             >
               {_("colourmap_help")}
@@ -244,174 +224,179 @@ class AreaWindow extends React.Component {
           </div>
           {/* End of Compare Datasets options */}
 
-          <CheckBox 
-            key='bathymetry' 
-            id='bathymetry' 
-            checked={this.state.bathymetry} 
-            onUpdate={this.onLocalUpdate} 
+          <CheckBox
+            key="bathymetry"
+            id="bathymetry"
+            checked={this.state.bathymetry}
+            onUpdate={this.onLocalUpdate}
             title={_("Show Bathymetry Contours")}
           />
 
-          <CheckBox 
-            key='showarea' 
-            id='showarea' 
-            checked={this.state.showarea} 
-            onUpdate={this.onLocalUpdate} 
+          <CheckBox
+            key="showarea"
+            id="showarea"
+            checked={this.state.showarea}
+            onUpdate={this.onLocalUpdate}
             title={_("Show Selected Area(s)")}
           >
             {_("showarea_help")}
           </CheckBox>
 
-          {/* Arror Selector Drop Down menu */}
-          <QuiverSelector 
-            key='quiver' 
-            id='quiver' 
-            state={this.state.quiver} 
-            def='' 
-            onUpdate={this.onLocalUpdate} 
-            dataset={this.state.dataset_0.dataset} 
+          {/* Arrow Selector Drop Down menu */}
+          <QuiverSelector
+            key="quiver"
+            id="quiver"
+            state={this.state.quiver}
+            def=""
+            onUpdate={this.onLocalUpdate}
+            dataset={this.state.dataset_0.id}
             title={_("Arrows")}
-          >
-            {_("arrows_help")}
-          </QuiverSelector>
-
-          {/* Contour Selector drop down menu */}
-          <ContourSelector 
-            key='contour' 
-            id='contour' 
-            state={this.state.contour} 
-            def='' 
-            onUpdate={this.onLocalUpdate} 
-            dataset={this.state.dataset_0.dataset} 
-            title={_("Additional Contours")}
-          >
-            {_("contour_help")}
-          </ContourSelector>
-          <Accordion id='area_accordion' title={"Plot Options"} content={plotOptions} />
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>);
-
-    const subsetPanel = <SubsetPanel 
-      id='SubsetPanel'
-      key='SubsetPanel'
-      dataset={this.props.dataset_0}
-      area={this.props.area}
-    />
-
-    const dataset = (<Panel
-      key='left_map'
-      id='left_map'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>
-        {this.state.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-      </Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
-          <DatasetSelector 
-            key='area_window_dataset_0'
-            id='dataset_0'
-            onUpdate={this.props.onUpdate}
-            showQuiverSelector={false}
-            showVariableRange={false}
-            options={this.props.options}
-            mountedDataset={this.props.dataset_0.dataset}
-            mountedVariable={this.props.dataset_0.variable}
           />
 
-          <div style={{"display": this.state.currentTab == 1 ? "block" : "none"}}>
-            <ComboBox 
-              key='leftColormap' 
-              id='leftColormap' 
-              state={this.state.leftColormap} 
-              def='default' 
-              onUpdate={this.onLocalUpdate} 
-              url='/api/v2.0/plot/colormaps' 
-              title={_("Colourmap")}
-            >
-              {_("colourmap_help")}
-              <img src="/api/v2.0/plot/colormaps.png/" />
-            </ComboBox>
-          </div>
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>);
-    
-    const compare_dataset = <div key='compare_dataset'>
-      <div style={{"display": this.state.dataset_compare ? "block" : "none"}}>
-        <Panel
-          key='right_map'
-          id='right_map'
-          defaultExpanded
-          bsStyle='primary'
-        >
-          <Panel.Heading>{_("Right Map")}</Panel.Heading>
-          <Panel.Collapse>
-            <Panel.Body>
+          {/* Contour Selector drop down menu */}
+          <ContourSelector
+            key="contour"
+            id="contour"
+            state={this.state.contour}
+            def=""
+            onUpdate={this.onLocalUpdate}
+            dataset={this.state.dataset_0.id}
+            title={_("Additional Contours")}
+          >
+            {/* {_("contour_help")} */}
+          </ContourSelector>
+          <Accordion>
+            <Accordion.Header>Plot Options</Accordion.Header>
+            <Accordion.Body>{plotOptions}</Accordion.Body>
+          </Accordion>
+        </Card.Body>
+      </Card>
+    );
+
+    const subsetPanel = (
+      <SubsetPanel
+        id="SubsetPanel"
+        key="SubsetPanel"
+        dataset={this.props.dataset_0}
+        area={this.props.area}
+      />
+    );
+
+    const dataset = (
+      <Card key="left_map" id="left_map" variant="primary">
+        <Card.Header>
+          {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        </Card.Header>
+        <Card.Body className="global-settings-card">
+          <DatasetSelector
+            key="area_window_dataset_0"
+            id="dataset_0"
+            onUpdate={this.props.updateDataset0}
+            showQuiverSelector={false}
+            showVariableRange={false}
+            mapSettings={this.props.mapSettings}
+            mountedDataset={this.props.dataset_0}
+          />
+
+          <ComboBox
+            key="leftColormap"
+            id="leftColormap"
+            state={this.state.leftColormap}
+            def="default"
+            onUpdate={this.onLocalUpdate}
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" />
+          </ComboBox>
+        </Card.Body>
+      </Card>
+    );
+
+    const compare_dataset = (
+      <div key="compare_dataset">
+        <div style={{ display: this.props.dataset_compare ? "block" : "none" }}>
+          <Card
+            key="right_map"
+            id="right_map"
+            variant="primary"
+          >
+            <Card.Header>{_("Right Map")}</Card.Header>
+            <Card.Body className="global-settings-card">
               <DatasetSelector
-                key='area_window_dataset_1'
-                id='dataset_1'
-                onUpdate={this.props.onUpdate}
+                key="area_window_dataset_1"
+                id="dataset_1"
+                onUpdate={this.props.updateDataset1}
                 showQuiverSelector={false}
                 showVariableRange={false}
-                options={this.props.options}
-                mountedDataset={this.props.dataset_1.dataset}
-                mountedVariable={this.props.dataset_1.variable}
+                mapSettings={this.props.mapSettings}
+                mountedDataset={this.props.dataset_1}
               />
 
-              <div style={{ "display": this.state.currentTab == 1 ? "block" : "none" }}>
-                <ComboBox 
-                  key='rightColormap' 
-                  id='rightColormap' 
-                  state={this.state.rightColormap} 
-                  def='default' 
-                  onUpdate={this.onLocalUpdate} 
-                  url='/api/v2.0/plot/colormaps' 
-                  title={_("Colourmap")}
-                >
-                  {_("colourmap_help")}
-                  <img src="/api/v2.0/plot/colormaps.png/" />
-                </ComboBox>
-              </div>
-            </Panel.Body>
-          </Panel.Collapse>
-        </Panel>
+              <ComboBox
+                key="rightColormap"
+                id="rightColormap"
+                state={this.state.rightColormap}
+                def="default"
+                onUpdate={this.onLocalUpdate}
+                url="/api/v2.0/plot/colormaps"
+                title={_("Colourmap")}
+              >
+                {_("colourmap_help")}
+                <img src="/api/v2.0/plot/colormaps.png/" />
+              </ComboBox>
+            </Card.Body>
+          </Card>
+        </div>
       </div>
-    </div>;
+    );
 
     let leftInputs = [];
     let rightInputs = [];
     const plot_query = {
-      dataset: this.props.dataset_0.dataset,
+      dataset: this.props.dataset_0.id,
       quantum: this.props.dataset_0.quantum,
       scale: this.state.scale,
       name: this.props.name,
     };
 
+    let area = [];
+    if (typeof this.props.area[0] === "string") {
+      area = [this.props.area[0]];
+    } else {
+      area = [
+        {
+          polygons: [this.props.area],
+          innerrings: [],
+          name: "",
+        },
+      ];
+    }
+
     let content = null;
-    switch(this.state.currentTab) {
+    switch (this.state.currentTab) {
       case 1:
         plot_query.type = "map";
         plot_query.colormap = this.state.leftColormap;
         plot_query.time = this.props.dataset_0.time;
-        plot_query.area = this.props.area;
+        plot_query.area = area;
         plot_query.depth = this.state.dataset_0.depth;
         plot_query.bathymetry = this.state.bathymetry;
         plot_query.quiver = this.state.quiver;
         plot_query.contour = this.state.contour;
         plot_query.showarea = this.state.showarea;
-        plot_query.variable = this.props.dataset_0.variable; 
+        plot_query.variable = this.props.dataset_0.variable;
         plot_query.projection = this.props.projection;
         plot_query.size = this.state.size;
         plot_query.dpi = this.state.dpi;
-        plot_query.interp = this.props.options.interpType;
-        plot_query.radius = this.props.options.interpRadius;
-        plot_query.neighbours = this.props.options.interpNeighbours;
+        plot_query.interp = this.props.mapSettings.interpType;
+        plot_query.radius = this.props.mapSettings.interpRadius;
+        plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
-        if (this.state.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+        if (this.props.dataset_compare) {
+          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.rightColormap;
@@ -419,51 +404,41 @@ class AreaWindow extends React.Component {
         }
 
         leftInputs = [mapSettings, subsetPanel]; //Left Sidebar
-        rightInputs = [dataset];  //Right Sidebar
+        rightInputs = [dataset]; //Right Sidebar
 
-        if (this.state.dataset_compare) {   //Adds pane to right sidebar when compare is selected
+        if (this.props.dataset_compare) {
+          //Adds pane to right sidebar when compare is selected
           rightInputs.push(compare_dataset);
         }
-        content = <PlotImage
-          query={plot_query} // For image saving link.
-          permlink_subquery={this.state}
-          action={this.props.action}
-        />;
-        break;
-      case 2:
-        plot_query.time = this.state.dataset_0.time;
-        plot_query.area = this.props.area;
-        plot_query.depth = this.state.dataset_0.depth;
-        if (Array.isArray(this.state.dataset_0.variable)) {
-          // Multiple variables were selected
-          plot_query.variable = this.state.dataset_0.variable.join(",");
-        } else {
-          plot_query.variable = this.state.dataset_0.variable;
-        }
-        
-        leftInputs = [dataset];
-
-        content = <StatsTable query={plot_query}/>;
+        content = (
+          <PlotImage
+            query={plot_query} // For image saving link.
+            permlink_subquery={this.state}
+            action={this.props.action}
+          />
+        );
         break;
     }
 
     return (
-      <div className='AreaWindow Window'>
+      <div className="AreaWindow Window">
         <Nav
-          bsStyle="tabs"
+          variant="tabs"
           activeKey={this.state.currentTab}
           onSelect={this.onTabChange}
         >
-          <NavItem eventKey={1}>{_("Map")}</NavItem>
+          <Nav.Item>
+            <Nav.Link eventKey={1}>{_("Map")}</Nav.Link>
+          </Nav.Item>
         </Nav>
         <Row>
-          <Col lg={2}>
+          <Col className="settings-col" lg={2}>
             {leftInputs}
           </Col>
-          <Col lg={8}>
+          <Col className="plot-col" lg={8}>
             {content}
           </Col>
-          <Col lg={2}>
+          <Col className="settings-col" lg={2}>
             {rightInputs}
           </Col>
         </Row>

@@ -1,16 +1,13 @@
-/* eslint react/no-deprecated: 0 */
-
 import React from "react";
-import $ from "jquery";
-import jQuery from "jquery";
-import {Modal, Button, FormControl} from "react-bootstrap";
+import axios from "axios";
+import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
 class ComboBox extends React.Component {
-  constructor(props) {   
+  constructor(props) {
     super(props);
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
@@ -18,7 +15,7 @@ class ComboBox extends React.Component {
 
     this.state = {
       data: [],
-      url: null
+      url: null,
     };
 
     // Function bindings
@@ -28,16 +25,19 @@ class ComboBox extends React.Component {
   }
 
   componentDidMount() {
-    this._mounted = true;   //Component mounted
+    this._mounted = true; //Component mounted
     this.populate(this.props);
   }
 
   componentWillUnmount() {
-    this._mounted = false;  //Component not mounted
+    this._mounted = false; //Component not mounted
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.url !== this.state.url || nextProps.data !== this.props.data) {
+    if (
+      nextProps.url !== this.state.url ||
+      nextProps.data !== this.props.data
+    ) {
       this.populate(nextProps);
     }
   }
@@ -49,27 +49,26 @@ class ComboBox extends React.Component {
     if (this.props.multiple) {
       value = [];
       const options = e.target.options;
-      
+
       for (let i = 0; i < options.length; ++i) {
         if (options[i].selected) {
           value.push(options[i].value);
         }
       }
     }
-    
-    if (typeof(this.props.onUpdate) === "function") {
+
+    if (typeof this.props.onUpdate === "function") {
       // State key ID: "variable", "dataset", "projection", etc.
       const keys = [this.props.id];
       // And their associative values
       const values = [value];
-      
+
       // Get index of selected option
       if (e.target.selectedIndex != -1) {
         const dataset = e.target.options[e.target.selectedIndex].dataset;
-        // Construct keys and their associative value to be sent to 
+        // Construct keys and their associative value to be sent to
         // OceanNavigator state
         for (let key in dataset) {
-          
           // State key name ("variable_scale", "dataset_help", etc)
           keys.push(this.props.id + "_" + key);
 
@@ -85,120 +84,119 @@ class ComboBox extends React.Component {
 
   // Populates Drop down menu
   populate(props) {
-    
     this.setState({
-      url: props.url
+      url: props.url,
     });
 
-    
-    if ("url" in props && "" !== props.url) /* Checks if URL exists and is not empty */ {
-      $.ajax({
-        url: props.url,
-        dataType: "json",
-        cache: true,
-        success: function (data) {
-          if (this._mounted) {  //Combobox is mounted
+    if ("url" in props && "" !== props.url) {
+      /* Checks if URL exists and is not empty */
+      axios
+        .get(props.url)
+        .then(
+          function (response) {
+            if (this._mounted) {
+              //Combobox is mounted
+              let data = response.data;
+              const ids = data.map(function (d) {
+                return d.id;
+              }); //stores data id
 
-            const ids = data.map(function (d) { return d.id;});  //stores data id
-  
-            if (
-              (this.props.state == "" && typeof(this.props.state) == "string") ||
-              this.props.state == "none"
-            ) {
-              if (jQuery.inArray("none", ids) == -1) {
-                data.splice(0, 0, { "id": "none", "value": _("None") });
-              }
-            }
-            this.setState({
-              data: data,
-            });
-
-            const a = data.map(function (x) {
-              return x.id;
-            });
-
-            let value = this.props.state;
-            const floatValue = parseFloat(value);
-
-            let notInList = false;
-            if (value instanceof Array) {
-              notInList = value.map(
-                (el) => (
-                  jQuery.inArray(el, a) == -1 &&
-                jQuery.inArray(parseFloat(el), a) == -1
-                )
-              ).reduce((prev, cur) => prev || cur, false);
-            } else {
-              notInList = (
-                jQuery.inArray(this.props.state, a) == -1 &&
-                jQuery.inArray(floatValue, a) == -1
-              );
-            }
-            if (
-              notInList ||
-            (this.props.state == "" && data.length > 0) ||
-            this.props.state == "all"
-            ) {
-              if (props.multiple) {
-                if (value == "all") {
-                  value = data.map(function (d) {
-                    return d.id;
-                  });
-                } else if (!Array.isArray(value)) {
-                  value = [value];
+              if (
+                (this.props.state == "" &&
+                  typeof this.props.state == "string") ||
+                this.props.state == "none"
+              ) {
+                if (!ids.includes("none")) {
+                  data.splice(0, 0, { id: "none", value: _("None") });
                 }
               }
-            } else {
-              if (data.length == 0) {
-                value = props.def;
-              } else if (data.length == 1) {
-                value = ids[0];
-              } else if (props.multiple && !Array.isArray(this.props.state)) {
-                value = [this.props.state];
+              this.setState({
+                data: data,
+              });
+
+              const a = data.map(function (x) {
+                return x.id;
+              });
+
+              let value = this.props.state;
+              const floatValue = parseFloat(value);
+
+              let notInList = false;
+              if (value instanceof Array) {
+                notInList = value
+                  .map((el) => !a.includes(el) && !a.includes(parseFloat(el)))
+                  .reduce((prev, cur) => prev || cur, false);
               } else {
-                value = this.props.state;
+                notInList =
+                  !a.includes(this.props.state) && !a.includes(floatValue);
               }
-            }
-            if (
-              data.length > 0 &&
-            !props.multiple &&
-            jQuery.inArray(value, a) == -1 &&
-            jQuery.inArray(floatValue, a) == -1
-            ) {
-              if (jQuery.inArray(0, a) != -1) {
-                value = 0;
+              if (
+                notInList ||
+                (this.props.state == "" && data.length > 0) ||
+                this.props.state == "all"
+              ) {
+                if (props.multiple) {
+                  if (value == "all") {
+                    value = data.map(function (d) {
+                      return d.id;
+                    });
+                  } else if (!Array.isArray(value)) {
+                    value = [value];
+                  }
+                }
               } else {
-                value = data[0].id;
+                if (data.length == 0) {
+                  value = props.def;
+                } else if (data.length == 1) {
+                  value = ids[0];
+                } else if (props.multiple && !Array.isArray(this.props.state)) {
+                  value = [this.props.state];
+                } else {
+                  value = this.props.state;
+                }
               }
-            }
-            if (typeof (this.props.onUpdate) === "function") {
-              props.onUpdate(props.id, value);
-              if (a.indexOf(value) != -1) {
-                const d = data[a.indexOf(value)];
-                for (var key in d) {
-                  if (d.hasOwnProperty(key) && key != "id" && key != "value") {
-                    this.props.onUpdate(this.props.id + "_" + key, d[key]);
+              if (
+                data.length > 0 &&
+                !props.multiple &&
+                !a.includes(value) &&
+                !a.includes(floatValue)
+              ) {
+                if (a.includes(0)) {
+                  value = 0;
+                } else {
+                  value = data[0].id;
+                }
+              }
+              if (typeof this.props.onUpdate === "function") {
+                props.onUpdate(props.id, value);
+                if (a.indexOf(value) != -1) {
+                  const d = data[a.indexOf(value)];
+                  for (var key in d) {
+                    if (
+                      d.hasOwnProperty(key) &&
+                      key != "id" &&
+                      key != "value"
+                    ) {
+                      this.props.onUpdate(this.props.id + "_" + key, d[key]);
+                    }
                   }
                 }
               }
             }
-          }
-        }.bind(this),
-        
-        // On fail...
-        error: function (xhr, status, err) {  
-          if (this._mounted) {
-            console.error(props.url, status, err.toString());
-          }
-        }.bind(this)
-      });
+          }.bind(this)
+        )
+        .catch(
+          function (error) {
+            console.error(props.url, error);
+          }.bind(this)
+        );
     } else {
       this.setState({
-        data: props.data
+        data: props.data,
       });
       const value = this.props.state;
 
-      if (typeof (props.onUpdate) === "function") {
+      if (typeof props.onUpdate === "function") {
         for (let i = 0; i < props.data.length; i++) {
           const d = props.data[i];
           if (d.id == value) {
@@ -216,26 +214,24 @@ class ComboBox extends React.Component {
   //Small help icon - OPENS
   showHelp() {
     this.setState({
-      showHelp: true
+      showHelp: true,
     });
   }
 
   //Small help icon - CLOSES
   closeHelp() {
     this.setState({
-      showHelp: false
+      showHelp: false,
     });
   }
 
   render() {
-
     //Creates one drop down function for each option sent back
-    const options = this.state.data.map(function(o) {
+    const options = this.state.data.map(function (o) {
       var opts = {
         key: o.id,
         value: o.id,
       };
-
 
       //Checks if each value in data has id or value
       for (let key in o) {
@@ -246,13 +242,13 @@ class ComboBox extends React.Component {
           opts["data-" + key] = o[key];
         }
       }
-      return React.createElement("option", opts, o.value);    //Creates Option that was found
+      return React.createElement("option", opts, o.value); //Creates Option that was found
     });
 
     if (this.state.data.length > 1 || this.props.alwaysShow) {
       var value = this.props.state;
       if (this.props.multiple && value == "all") {
-        value = this.state.data.map(function(d) {
+        value = this.state.data.map(function (d) {
           return d.id;
         });
       }
@@ -269,58 +265,60 @@ class ComboBox extends React.Component {
           this.state.data.slice(-1)[0].hasOwnProperty("help"));
 
       var helpOptions = [];
-      if (this.state.data.length > 1 &&
-        this.state.data.slice(-1)[0].hasOwnProperty("help")) {
-        helpOptions = this.state.data.map(function(d) {
+      if (
+        this.state.data.length > 1 &&
+        this.state.data.slice(-1)[0].hasOwnProperty("help")
+      ) {
+        helpOptions = this.state.data.map(function (d) {
           return (
-            <p key={d.id}><em>{d.value}</em>:
-              <span dangerouslySetInnerHTML={{ __html: d.help}} />
+            <p key={d.id}>
+              <em>{d.value}</em>:
+              <span dangerouslySetInnerHTML={{ __html: d.help }} />
             </p>
           );
         });
       }
 
       return (
-        <div key={this.props.url} className='ComboBox input'>
-          <h1>
+        <div key={this.props.url} className="ComboBox input">
+          <h1 className="combobox-title">
             {this.props.title}
-            <span
-              onClick={this.showHelp}
-              style={{"display": hasHelp ? "block" : "none"}}
-            >?</span>
           </h1>
 
           <Modal
             show={this.state.showHelp}
             onHide={this.closeHelp}
-            bsSize="large"
+            variant="large"
             dialogClassName="helpdialog"
             backdrop={true}
           >
             <Modal.Header closeButton closeLabel={_("Close")}>
-              <Modal.Title>{
-                _("titlehelp", {title: this.props.title})
-              }</Modal.Title>
+              <Modal.Title>
+                {_("titlehelp", { title: this.props.title })}
+              </Modal.Title>
             </Modal.Header>
             <Modal.Body>
               {this.props.children}
               {helpOptions}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.closeHelp}><Icon icon="close"/> {_("Close")}</Button>
+              <Button onClick={this.closeHelp}>
+                <Icon icon="close" /> {_("Close")}
+              </Button>
             </Modal.Footer>
           </Modal>
 
-          <FormControl componentClass="select"
-            size={
-              Math.min(10, this.props.multiple ? this.state.data.length : 1)
-            }
+          <Form.Select
+            size={Math.min(
+              10,
+              this.props.multiple ? this.state.data.length : 1
+            )}
             value={value}
             onChange={this.handleChange}
             multiple={this.props.multiple}
           >
             {options}
-          </FormControl>
+          </Form.Select>
         </div>
       );
     } else {
@@ -335,9 +333,10 @@ ComboBox.propTypes = {
   alwaysShow: PropTypes.bool,
   title: PropTypes.string,
   data: PropTypes.array,
-  state: PropTypes.oneOfType([PropTypes.string, 
-    PropTypes.number, 
-    PropTypes.array
+  state: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.array,
   ]),
   onUpdate: PropTypes.func,
   id: PropTypes.string,

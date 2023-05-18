@@ -1,10 +1,9 @@
 import React from "react";
-import {Panel, Row, Col} from "react-bootstrap";
+import { Accordion, Card, Row, Col } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import ImageSize from "./ImageSize.jsx";
-import Accordion from "./lib/Accordion.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -27,7 +26,7 @@ class Class4Window extends React.Component {
     };
 
     if (props.init !== null) {
-      $.extend(this.state, props.init);
+      this.state = { ...this.state, ...props.init };
     }
 
     // Function bindings
@@ -44,12 +43,10 @@ class Class4Window extends React.Component {
 
   onLocalUpdate(key, value) {
     if (this._mounted && value) {
-
       let newState = {};
-      if (typeof(key) === "string") {
+      if (typeof key === "string") {
         newState[key] = value;
-      }
-      else {
+      } else {
         for (let i = 0; i < key.length; ++i) {
           newState[key[i]] = value[i];
         }
@@ -87,12 +84,15 @@ class Class4Window extends React.Component {
       },
     ];
 
-    const plotOptions = <ImageSize
-        key='size'
-        id='size'
+    const plotOptions = (
+      <ImageSize
+        key="size"
+        id="size"
         state={this.state.size}
         onUpdate={this.onLocalUpdate}
-        title={_("Saved Image Size")} />;
+        title={_("Saved Image Size")}
+      />
+    );
 
     _("Forecast");
     _("Show Location");
@@ -102,59 +102,73 @@ class Class4Window extends React.Component {
     _("Saved Image Size");
 
     return (
-      <div className='Class4Window Window'>
+      <div className="Class4Window Window">
         <Row>
           <Col lg={2}>
-            <Panel
-              defaultExpanded
-              bsStyle='primary'
-            >
-              <Panel.Heading>{_("Class 4 Settings")}</Panel.Heading>
-              <Panel.Collapse>
-                <Panel.Body>
-                  <ComboBox
-                    key='forecast'
-                    id='forecast'
-                    state={this.state.forecast}
-                    def=''
-                    url={
-                      "/api/v2.0/class4/forecasts/" + this.props.class4type + "?id=" + this.props.class4id
-                    }
-                    title={_("Forecast")}
-                    onUpdate={this.onLocalUpdate}
-                  />
-                  <CheckBox
-                    key='showmap'
-                    id='showmap'
-                    checked={this.state.showmap}
-                    onUpdate={this.onLocalUpdate}
-                    title={_("Show Location")}>{_("showmap_help")}</CheckBox>
-                  <CheckBox
-                    key='climatology'
-                    id='climatology'
-                    checked={this.state.climatology}
-                    onUpdate={this.onLocalUpdate}
-                    title={_("Show Climatology")}>{_("climatology_help")}</CheckBox>
-                  <ComboBox
-                    key='models'
-                    id='models'
-                    state={this.state.models}
-                    multiple
-                    onUpdate={this.onLocalUpdate}
-                    url={"/api/v2.0/class4/models/" + this.props.class4type + "?id=" + this.props.class4id}
-                    title={_("Additional Models")} />
-                  <ComboBox
-                    key='error'
-                    id='error'
-                    state={this.state.error}
-                    def=''
-                    data={error_options}
-                    title={_("Show Error")}
-                    onUpdate={this.onLocalUpdate} />
-                  <Accordion id='class4_accordion' title={"Plot Options"} content={plotOptions} />
-                </Panel.Body>
-              </Panel.Collapse>
-            </Panel>
+            <Card>
+              <Card.Header>{_("Class 4 Settings")}</Card.Header>
+              <Card.Body>
+                <ComboBox
+                  key="forecast"
+                  id="forecast"
+                  state={this.state.forecast}
+                  def=""
+                  url={
+                    "/api/v2.0/class4/forecasts/" +
+                    this.props.class4type +
+                    "?id=" +
+                    this.props.class4id
+                  }
+                  title={_("Forecast")}
+                  onUpdate={this.onLocalUpdate}
+                />
+                <CheckBox
+                  key="showmap"
+                  id="showmap"
+                  checked={this.state.showmap}
+                  onUpdate={this.onLocalUpdate}
+                  title={_("Show Location")}
+                >
+                  {_("showmap_help")}
+                </CheckBox>
+                <CheckBox
+                  key="climatology"
+                  id="climatology"
+                  checked={this.state.climatology}
+                  onUpdate={this.onLocalUpdate}
+                  title={_("Show Climatology")}
+                >
+                  {_("climatology_help")}
+                </CheckBox>
+                <ComboBox
+                  key="models"
+                  id="models"
+                  state={this.state.models}
+                  multiple
+                  onUpdate={this.onLocalUpdate}
+                  url={
+                    "/api/v2.0/class4/models/" +
+                    this.props.class4type +
+                    "?id=" +
+                    this.props.class4id
+                  }
+                  title={_("Additional Models")}
+                />
+                <ComboBox
+                  key="error"
+                  id="error"
+                  state={this.state.error}
+                  def=""
+                  data={error_options}
+                  title={_("Show Error")}
+                  onUpdate={this.onLocalUpdate}
+                />
+                <Accordion id="class4_accordion">
+                  <Accordion.Header>Plot Options</Accordion.Header>{" "}
+                  <Accordion.Body>{plotOptions}</Accordion.Body>
+                </Accordion>
+              </Card.Body>
+            </Card>
           </Col>
 
           <Col lg={10}>

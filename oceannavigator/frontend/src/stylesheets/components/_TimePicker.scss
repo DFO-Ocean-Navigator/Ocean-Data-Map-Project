@@ -1,255 +1,65 @@
-
-.ui-datepicker-header, .ui-state-highlight {
-  background-color: #3B83C0 !important;
-  color: #FFF !important;
-  border: 1px solid #3B83C0 !important;
-}
-
-.ui-icon {
-  color: #FFF;
-}
-
-.react-datepicker-component {
-  position: relative;
-}
-
-.react-datepicker-component .react-datepicker {
-  margin-left: 5px;
+.timepicker {
+  max-width: 300px;
   margin-top: 5px;
-  display: inherit;
-}
+  margin-bottom: 5px;
+  width: -webkit-fill-available;
 
-.react-datepicker-input {
-  position: relative;
-}
+  .timepicker-label {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 10pt;
+    font-weight: bold;
+    width: max-content;
+  }
 
-.react-datepicker-input input {
-  width: 100%;
-  box-sizing: border-box;
-  padding-right: 60px;
-}
+  .horizontal {
+    width: min-content !important;
+  }
 
-.react-datepicker-input .button-wrapper {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-align-items: center;
-  align-items: center;
-}
+  .button-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-.react-datepicker-input .input-button {
-  margin: 0;
-  height: 100%;
-  width: 50px;
-  display: flex;
-  display: -webkit-flex;
-  align-items: center;
-  -webkit-align-items: center;
-  justify-content: center;
-  -webkit-justify-content: center;
-  background-color: #E0E0E0;
-  cursor: pointer;
-}
-
-.react-datepicker-input .input-button:hover {
-  background-color: #E8E8E8;
-}
-
-.react-datepicker-input .clear-button i {
-  cursor: pointer;
-}
-
-.react-datepicker-input i {
-  margin: 0;
-}
-
-.react-datepicker.floating {
-  position: absolute;
-  z-index: 10000;
-}
-
-.react-datepicker {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  display: inline-block;
-}
-
-.react-datepicker .react-datepicker-container {
-  border: 1px solid #AEAEAE;
-  border-radius: 4px;
-  background-color: #FFFFFF;
-  width: 200px;
-}
-
-.react-datepicker .react-datepicker-top {
-  text-align: center;
-  background-color: #F0F0F0;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom: 1px solid #AEAEAE;
-}
-
-.react-datepicker .react-datepicker-top .week-days {
-  display: inline-block;
-  height: 20px;
-  margin-top: -4px;
-  margin-bottom: -4px;
-}
-
-.react-datepicker .react-datepicker-top .week-days .week-day {
-  float: left;
-  width: 24px;
-  margin: 0 1px;
-  cursor: default;
-}
-
-.react-datepicker .react-datepicker-top .display {
-  width: 200px;
-  height: 35px;
-  padding: 5px;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button {
-  float: left;
-  width: 35px;
-  height: 100%;
-  border-radius: 4px;
-  text-decoration: none;
-  padding: 4px;
-  display: block;
-  text-align: center;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button.button-left .slow {
-  margin-left: 10px;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button.button-right .fast {
-  margin-left: 10px;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button.button-label {
-  width: 119px;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button.button-label.fixed:hover {
-  background-color: transparent;
-  cursor: default;
-}
-
-.react-datepicker .react-datepicker-top .display .react-datepicker-button.button-label:hover {
-  background-color: #DDDDDD;
-}
-
-.react-datepicker .react-datepicker-body {
-  padding: 0.5em;
-  padding-bottom: 0.3em;
-}
-
-.react-datepicker .react-datepicker-row {
-  display: inline-block;
-  margin-top: 0px;
-  width: 100%;
-}
-
-.react-datepicker .react-datepicker-picker {
-  float: left;
-  display: block;
-  text-align: center;
-  color: #BBBBBB;
-  cursor: pointer;
-  border-radius: 4px;
-  text-decoration: none;
-  padding: 2px;
-  margin-left: 1px;
-  margin-right: 1px;
-}
-
-.react-datepicker .react-datepicker-picker.day {
-  width: 24px;
-  height: 24px;
-}
-
-.react-datepicker .react-datepicker-picker.month {
-  width: 23%;
-  margin: 1%;
-  height: 55px;
-  align: center;
-  line-height: 52px;
-}
-
-.react-datepicker .react-datepicker-picker.year {
-  width: 23%;
-  margin: 1%;
-  height: 55px;
-  align: center;
-  line-height: 52px;
-}
-
-.react-datepicker .react-datepicker-picker.react-datepicker-button:hover {
-  background-color: #EAEAEA;
-}
-
-.react-datepicker .react-datepicker-picker.react-datepicker-button.selected {
-  color: #F7F7F7;
-  background-color: #3B83C0;
-}
-
-.react-datepicker .react-datepicker-picker.current {
-  color: #000000;
-}
-
-.react-datepicker .react-datepicker-picker.selected.current {
-  color: #F7F7F7;
-}
-
-.react-datepicker .react-datepicker-picker.react-datepicker-button.disabled {
-  color: #BBBBBB;
-}
-
-.react-datepicker .react-datepicker-picker.react-datepicker-button.disabled:hover {
-  color: #BBBBBB;
-  background-color: transparent;
-  cursor: default;
-}
-
-.react-datepicker .react-datepicker-button {
-  display: block;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 4px;
-  text-decoration: none;
-  padding: 4px;
-}
-
-.react-datepicker .react-datepicker-button:hover {
-  background-color: #DDDDDD;
-}
-
-div.TimePicker {
-    button {
-        height: 100%;
-        padding: 0;
-        margin: 8px 0;
-        min-width: 1.25em;
+    .dropdown-container {
+      display: flex;
+      justify-content: center;
     }
 
-    div {
-        display: flex;
+    .selector-container {
+      display: flex;
+      align-items: center;
 
-        button, div {
-            flex: 1 1 auto;
-        }
-
-        div {
-            padding: 8px 1px;
-        }
+      .date-label {
+        font-size: small;
+        width: fit-content;
+        height: 30px;
+        border: none;
+        border: 1px solid #000;
+        background-color: #fff;
+        color: #000;
+        white-space: nowrap;
+      }
     }
+
+    .hour-selector {
+      font-size: small;
+      width: fit-content;
+      height: 30px;
+      border: 1px solid #000;
+      border-left: none;
+      background-color: #fff;
+      color: #000;
+      white-space: nowrap;
+      margin: 0px;
+    }
+
+    .header-button {
+      color: #008cba;
+      background-color: #fff;
+      border: none;
+      padding: 0px;
+    }
+  }
 }

@@ -1,12 +1,6 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image corresponding to a Selected Point
-
-*/
-
 import React from "react";
-import { Nav, NavItem, Panel, Row, Col } from "react-bootstrap";
+import { Card, Nav, Row, Col } from "react-bootstrap";
+import Accordion from "react-bootstrap/Accordion";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import ComboBox from "./ComboBox.jsx";
@@ -15,7 +9,6 @@ import ImageSize from "./ImageSize.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import Accordion from "./lib/Accordion.jsx";
 
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 
@@ -43,13 +36,12 @@ class PointWindow extends React.Component {
       showmap: false,
       colormap: "default",
       datasetVariables: [],
-      variable: [props.variable],
       observation_variable: [0],
       size: "10x7",
       dpi: 144,
       plotTitles: Array(7).fill(""),
       dataset_0: {
-        dataset: props.dataset_0.dataset,
+        id: props.dataset_0.id,
         variable: [props.dataset_0.variable],
         variable_range: {},
         time: props.dataset_0.time,
@@ -60,7 +52,7 @@ class PointWindow extends React.Component {
     };
 
     if (props.init !== null) {
-      $.extend(this.state, props.init);
+      this.state = { ...this.state, ...props.init };
     }
 
     // Function bindings
@@ -72,7 +64,7 @@ class PointWindow extends React.Component {
   componentWillMount() {
     let dataset_0 = this.state.dataset_0;
     dataset_0.variable_range[this.props.dataset_0.variable] = null;
-    this.setState({ dataset_0: dataset_0 })
+    this.setState({ dataset_0: dataset_0 });
   }
 
   componentDidMount() {
@@ -86,7 +78,7 @@ class PointWindow extends React.Component {
       });
     }
 
-    this.populateVariables(this.props.dataset_0.dataset);
+    this.populateVariables(this.props.dataset_0.id);
   }
 
   componentWillUnmount() {
@@ -120,14 +112,20 @@ class PointWindow extends React.Component {
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
-      if (key === "dataset_0") {
+      if (key === "dataset") {
         this.setState((prevState) => ({
           dataset_0: {
             ...prevState.dataset_0,
             ...value,
           },
         }));
+        if (value.variable.length === 1) {
+          value.variable = value.variable[0];
+          this.props.updateDataset("dataset", value);
+        }
         return;
+      } else if (key === "points") {
+        this.props.action("updatePoint", value);
       }
 
       let newState = {};
@@ -140,54 +138,13 @@ class PointWindow extends React.Component {
         }
       }
       this.setState(newState);
-
-      let parentKeys = [];
-      let parentValues = [];
-
-      if (newState.hasOwnProperty("depth") && newState.depth != "all") {
-        if (!Array.isArray(newState.depth)) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth);
-        } else if (newState.depth.length > 1) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth[0]);
-        }
-      }
-
-      if (newState.hasOwnProperty("point")) {
-        parentKeys.push("point");
-        parentValues.push(newState.point);
-
-        parentKeys.push("names");
-        parentValues.push([]);
-      }
-
-      if (
-        newState.hasOwnProperty("variable_scale") &&
-        this.state.variable.length === 1
-      ) {
-        parentKeys.push("variable_scale");
-        parentValues.push(newState.variable_scale);
-      }
-
-      if (
-        newState.hasOwnProperty("variable") &&
-        newState.variable.length == 1
-      ) {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable[0]);
-      }
-
-      if (parentKeys.length > 0) {
-        this.props.onUpdate(parentKeys, parentValues);
-      }
     }
   }
 
   // Handles when a tab is selected
   onSelect(key) {
     this.setState({
-      selected: key,
+      selected: parseInt(key),
     });
   }
 
@@ -234,64 +191,58 @@ class PointWindow extends React.Component {
 
     // Rendered across all tabs
     const global = (
-      <Panel
-        key="global_settings"
-        id="global_settings"
-        defaultExpanded
-        bsStyle="primary"
-      >
-        <Panel.Heading>{_("Global Settings")}</Panel.Heading>
-        <Panel.Collapse>
-          <Panel.Body>
-            <DatasetSelector
-              key="point_window_dataset_0"
-              id="dataset_0"
-              onUpdate={this.onLocalUpdate}
-              showQuiverSelector={false}
-              showVariableRange={false}
-              showAxisRange={showAxisRange}
-              showTimeRange={showTimeRange}
-              showDepthSelector={showDepthSelector}
-              options={this.props.options}
-              variables={only3dVariables ? "3d" : null}
-              showVariableSelector={showVariableSelector}
-              showDepthsAll={showDepthsAll}
-              multipleVariables={showMultiVariableSelector}
-              mountedDataset={this.props.dataset_0.dataset}
-              mountedVariable={this.props.dataset_0.variable}
-            />
+      <Card key="global_settings" id="global_settings" variant="primary">
+        <Card.Header>{"Global Settings"}</Card.Header>
+        <Card.Body className="global-settings-card">
+          <DatasetSelector
+            key="point_window_dataset_0"
+            id="dataset_0"
+            onUpdate={this.onLocalUpdate}
+            showQuiverSelector={false}
+            showVariableRange={false}
+            showAxisRange={showAxisRange}
+            showTimeRange={showTimeRange}
+            showDepthSelector={showDepthSelector}
+            mapSettings={this.props.mapSettings}
+            variables={only3dVariables ? "3d" : null}
+            showVariableSelector={showVariableSelector}
+            showDepthsAll={showDepthsAll}
+            multipleVariables={showMultiVariableSelector}
+            mountedDataset={this.props.dataset_0}
+          />
 
-            <CheckBox
-              key='showmap'
-              id='showmap'
-              checked={this.state.showmap}
-              onUpdate={this.onLocalUpdate}
-              title={_("Show Location")}
-            >
-              {_("showmap_help")}
-            </CheckBox>
+          <CheckBox
+            key="showmap"
+            id="showmap"
+            checked={this.state.showmap}
+            onUpdate={this.onLocalUpdate}
+            title={"Show Location"}
+          >
+            {"showmap_help"}
+          </CheckBox>
 
-            <div
-              style={{
-                display: this.props.point.length == 1 ? "block" : "none",
-              }}
-            >
-              <LocationInput
-                key="point"
-                id="point"
-                state={this.props.point}
-                title={_("Location")}
-                onUpdate={this.onLocalUpdate}
-              />
-            </div>
-            <Accordion
-              id="point_accordion"
-              title={"Plot Options"}
-              content={plotOptions}
+          <div
+            style={{
+              display: this.props.point.length == 1 ? "block" : "none",
+            }}
+          >
+            <LocationInput
+              key="points"
+              id="points"
+              state={this.props.point}
+              title={"Location"}
+              onUpdate={this.onLocalUpdate}
             />
-          </Panel.Body>
-        </Panel.Collapse>
-      </Panel>
+          </div>
+
+          <Accordion>
+            <Accordion.Header>Plot Options</Accordion.Header>
+            <Accordion.Body className="plot-accordion">
+              {plotOptions}
+            </Accordion.Body>
+          </Accordion>
+        </Card.Body>
+      </Card>
     );
 
     // Show multidepth selector on for Stick tab
@@ -304,8 +255,8 @@ class PointWindow extends React.Component {
           state={this.state.dataset_0.variable}
           def=""
           onUpdate={this.onLocalUpdate}
-          url={`/api/v2.0/dataset/${this.state.dataset_0.dataset}/variables?vectors_only=True`}
-          title={_("Variable")}
+          url={`/api/v2.0/dataset/${this.state.dataset_0.id}/variables?vectors_only=True`}
+          title={"Variable"}
         >
           <h1>Variable</h1>
         </ComboBox>
@@ -321,9 +272,9 @@ class PointWindow extends React.Component {
             "/api/v2.0/depth/?variable=" +
             this.state.dataset_0.variable +
             "&dataset=" +
-            this.props.dataset_0.dataset
+            this.props.dataset_0.id
           }
-          title={_("Depth")}
+          title={"Depth"}
         ></ComboBox>
       </div>
     ) : null;
@@ -338,7 +289,7 @@ class PointWindow extends React.Component {
             id="observation_variable"
             state={this.state.observation_variable}
             url={`/api/v2.0/observation/variables/station=${this.props.point[0][2]}.json`}
-            title={_("Observation Variable")}
+            title={"Observation Variable"}
             multiple
             onUpdate={this.onLocalUpdate}
           />
@@ -356,7 +307,7 @@ class PointWindow extends React.Component {
             id="observation_variable"
             state={this.state.observation_variable}
             data={observation_data}
-            title={_("Observation Variable")}
+            title={"Observation Variable"}
             multiple
             onUpdate={this.onLocalUpdate}
           />
@@ -382,7 +333,7 @@ class PointWindow extends React.Component {
 
     // Start constructing query for image
     const plot_query = {
-      dataset: this.state.dataset_0.dataset,
+      dataset: this.state.dataset_0.id,
       point: this.props.point,
       showmap: this.state.showmap,
       names: this.props.names,
@@ -398,7 +349,9 @@ class PointWindow extends React.Component {
         plot_query.type = "profile";
         plot_query.time = this.state.dataset_0.time;
         plot_query.variable = this.state.dataset_0.variable;
-        plot_query.variable_range = Object.values(this.state.dataset_0.variable_range);
+        plot_query.variable_range = Object.values(
+          this.state.dataset_0.variable_range
+        );
         inputs = [global];
         break;
 
@@ -444,14 +397,16 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.state.dataset_0.variable;
-        plot_query.variable_range = Object.values(this.state.dataset_0.variable_range);
+        plot_query.variable_range = Object.values(
+          this.state.dataset_0.variable_range
+        );
         plot_query.starttime = this.state.dataset_0.starttime;
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;
         plot_query.colormap = this.state.colormap;
-        plot_query.interp = this.state.dataset_0.options.interpType;
-        plot_query.radius = this.state.dataset_0.options.interpRadius;
-        plot_query.neighbours = this.state.dataset_0.options.interpNeighbours;
+        plot_query.interp = this.props.mapSettings.interpType;
+        plot_query.radius = this.props.mapSettings.interpRadius;
+        plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         //plot_query.scale = "auto";
 
         inputs = [global];
@@ -465,9 +420,9 @@ class PointWindow extends React.Component {
               def="default"
               onUpdate={this.onLocalUpdate}
               url="/api/v2.0/plot/colormaps"
-              title={_("Colourmap")}
+              title={"Colourmap"}
             >
-              {_("colourmap_help")}
+              {"colourmap_help"}
               <img src="/plot/colormaps.png/" />
             </ComboBox>
           );
@@ -488,42 +443,51 @@ class PointWindow extends React.Component {
 
     const permlink_subquery = {
       selected: this.state.selected,
-      depth: this.state.dataset_0.depth,
-      colormap: this.state.colormap,
       starttime: this.state.dataset_0.starttime,
     };
 
     return (
       <div className="PointWindow Window">
         <Nav
-          bsStyle="tabs"
+          variant="tabs"
           activeKey={this.state.selected}
           onSelect={this.onSelect}
         >
-          <NavItem eventKey={TabEnum.PROFILE}>{_("Profile")}</NavItem>
-          <NavItem eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>
-            {_("CTD Profile")}
-          </NavItem>
-          <NavItem eventKey={TabEnum.TS} disabled={!hasTempSalinity}>
-            {_("T/S Diagram")}
-          </NavItem>
-          <NavItem eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>
-            {_("Sound Speed Profile")}
-          </NavItem>
-          {/* <NavItem disabled eventKey={TabEnum.STICK}>
-            {_("Stick Plot")}
-          </NavItem> */}
-          <NavItem
-            eventKey={TabEnum.OBSERVATION}
-            disabled={this.props.point[0][2] === undefined}
-          >
-            {_("Observation")}
-          </NavItem>
-          <NavItem eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.PROFILE}>{"Profile"}</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>
+              {"CTD Profile"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSalinity}>
+              {"T/S Diagram"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>
+              {"Sound Speed Profile"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link
+              eventKey={TabEnum.OBSERVATION}
+              disabled={this.props.point[0][2] === undefined}
+            >
+              {"Observation"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.MOORING}>{"Virtual Mooring"}</Nav.Link>
+          </Nav.Item>
         </Nav>
         <Row>
-          <Col lg={2}>{inputs}</Col>
-          <Col lg={10}>
+          <Col className="settings-col" lg={2}>
+            {inputs}
+          </Col>
+          <Col className="plot-col" lg={10}>
             <PlotImage
               query={plot_query} // For image saving link.
               permlink_subquery={permlink_subquery}

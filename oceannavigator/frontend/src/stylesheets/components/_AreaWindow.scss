@@ -1,2 +1,14 @@
 .AreaWindow {
+  .settings-col {
+    padding: unset;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .plot-col {
+    padding: unset;
+    display: flex;
+    justify-content: center;
+  }
 }

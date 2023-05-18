@@ -9,7 +9,7 @@ class QuiverSelector extends React.Component {
     super(props);
   }
   onUpdate(key, value) {
-    if (!$.isArray(key)) {
+    if (!Array.isArray(key)) {
       key = [key];
       value = [value];
     }
@@ -21,7 +21,7 @@ class QuiverSelector extends React.Component {
       }
       state[key[i]] = value[i];
     }
-    const newState = jQuery.extend({}, this.props.state, state);
+    const newState = {...this.props.state, ...state};
     this.props.onUpdate(this.props.id, newState);
   }
 
@@ -53,7 +53,7 @@ class QuiverSelector extends React.Component {
                 : "block",
           }}
         >
-          <ComboBox
+          {/* <ComboBox
             key="magnitude"
             id="magnitude"
             state={this.props.state.magnitude}
@@ -65,13 +65,13 @@ class QuiverSelector extends React.Component {
               { id: "length", value: _("Length") },
               { id: "color", value: _("Colour") },
             ]}
-          />
+          /> */}
           <div
             style={{
               display: this.props.state.magnitude == "color" ? "block" : "none",
             }}
           >
-            <ComboBox
+            {/* <ComboBox
               key="colormap"
               id="colormap"
               state={this.props.state.colormap}
@@ -85,7 +85,7 @@ class QuiverSelector extends React.Component {
               Variable). If you want to use any of the others, they are all
               selectable.
               <img src="/plot/colormaps.png/" />
-            </ComboBox>
+            </ComboBox> */}
           </div>
         </div>
       </div>

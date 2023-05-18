@@ -1,65 +1,64 @@
-html, body {
-    height: 100%;
+html,
+body {
+  height: 100%;
 }
 
 // Text selection background
 ::selection {
-    background: #a8d1ff; /* WebKit/Blink Browsers */
+  background: #a8d1ff; /* WebKit/Blink Browsers */
 }
 ::-moz-selection {
-    background: #a8d1ff; /* Gecko Browsers */
+  background: #a8d1ff; /* Gecko Browsers */
 }
 
 // Pop up windows
 .full-screen-modal {
-    width: calc(100% - 2 * #{$modal-margin});
-    margin: $modal-margin;
+  .modal-content {
+    min-height: calc(100% - 2 * #{$modal-margin});
+    display: flex;
+    flex-direction: column;
+    width: 200%;
+    transform: translateX(-25%);
 
-    .modal-content {
-        min-height: calc(100% - 2 * #{$modal-margin});
-        display: flex;
-        flex-direction: column;
-
-        .modal-header {
-            .modal-title {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                text-align: center;
-                flex: 0 1 auto;
-            }
-        }
-
-        .modal-body {
-            flex: 1 1 auto;
-        }
-
-        .modal-footer {
-            flex: 0 1 auto;
-        }
+    .modal-header {
+      .modal-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        flex: 0 1 auto;
+      }
     }
 
+    .modal-body {
+      flex: 1 1 auto;
+    }
+
+    .modal-footer {
+      flex: 0 1 auto;
+    }
+  }
 }
 
 .modal-header {
+  color: #fff;
+  background-color: #008cba;
+  // Close button
+  .close {
+    opacity: 1;
     color: #fff;
-    background-color: #008cba;
-    // Close button
-    .close {
-        opacity: 1;
-        color: #fff;
-        text-decoration: none;
-    }
+    text-decoration: none;
+  }
 }
 
 textarea {
-    min-height: 15em!important;
+  min-height: 15em !important;
 }
 
 br.clear {
-    clear: both;
+  clear: both;
 }
 
 .disabled {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }

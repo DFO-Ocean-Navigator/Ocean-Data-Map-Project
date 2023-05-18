@@ -1,4 +1,33 @@
-div div.DatasetSelector {
-  padding: 0;
+div.DatasetSelector {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
 }
 
+div.DatasetSelector-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.go-button{
+  margin: 5px;
+}
+
+.go-button:hover{
+  background-color: #fff;
+  border: 1px solid #008cba;
+  color: #008cba;
+}
+
+.loading-modal {
+  top: 33%;
+  z-index: 100;
+  .modal-content {
+    width: 200%;
+    transform: translateX(-25%);
+  }
+}
