@@ -62,17 +62,33 @@ function SettingsWindow(props) {
   });
 
   const handleInterpChange = () => {
-    props.updateMapSettings("interpType", interpType)
-    props.updateMapSettings("interpNeighbours", interpNeighbours)
-    props.updateMapSettings("interpRadius", interpRadius)
+    let newNeighbours = Number(interpNeighbours);
+    newNeighbours = newNeighbours > 50 ? 50 : newNeighbours;
+    newNeighbours = newNeighbours < 1 ? 1 : newNeighbours;
 
+    let newRadius = Number(interpRadius);
+    newRadius = newRadius > 100 ? 100 : newRadius;
+    newRadius = newRadius < 5 ? 5 : newRadius;
+
+    props.updateMapSettings("interpType", interpType);
+    props.updateMapSettings("interpNeighbours", newNeighbours);
+    props.updateMapSettings("interpRadius", newRadius);
+
+    setInterpNeighbours(newNeighbours);
+    setInterpRadius(newRadius);
   };
 
   const handleBathyChange = () => {
-    props.updateMapSettings("bathymetry", showBathy)
-    props.updateMapSettings("mapBathymetryOpacity", bathyOpacity)
-    props.updateMapSettings("bathyContour", bathyContour)
-    props.updateMapSettings("topoShadedRelief", topoRelief)
+    let newOpacity = Number(bathyOpacity);
+    newOpacity = newOpacity > 1 ? 1 : newOpacity;
+    newOpacity = newOpacity < 0 ? 0 : newOpacity;
+
+    props.updateMapSettings("bathymetry", showBathy);
+    props.updateMapSettings("mapBathymetryOpacity", newOpacity);
+    props.updateMapSettings("bathyContour", bathyContour);
+    props.updateMapSettings("topoShadedRelief", topoRelief);
+
+    setBathyOpacity(newOpacity);
   };
 
   return (
