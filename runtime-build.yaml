@@ -1,0 +1,20 @@
+﻿apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: ocnav-runtime-build
+  namespace: pilote
+  labels:
+    name: ocnav-runtime-build
+spec:
+  source:
+    type: Git
+    contextDir: 'docker/runtime'
+    git:
+      ref: master
+      uri: 'https://github.com/tripougnif/Ocean-Data-Map-Project.git'
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'ocnav-runtime:latest'

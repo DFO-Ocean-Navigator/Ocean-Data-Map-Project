@@ -1,0 +1,15 @@
+hypercorn
+xarray
+metpy
+seawater
+geopy
+netCDF4
+pyresample
+flask-Compress
+flask-SQLAlchemy
+marshmallow
+cmocean
+cartopy
+scikit-image
+basemap
+visvalingamwyatt
