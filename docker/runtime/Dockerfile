@@ -14,7 +14,7 @@ RUN apk -U add build-base curl proj-dev gdal-dev geos-dev hdf5-dev netcdf-dev op
 
 # install nvm and set nodejs default version
 RUN mkdir -p /usr/local/nvm && \
-    curl https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | sh && \
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash && \
     source $NVM_DIR/nvm.sh && \
     nvm install $NODE_VERSION && \
     nvm alias default $NODE_VERSION
