@@ -1,40 +1,31 @@
-#!/bin/bash
+# build Ocean Navigator app image
 
-# build Ocean Navigator 8.2 image
+FROM ocnav-runtime:latest
 
-container=$(buildah from localhost/ocnav-runtime:v8.2)
-echo $container
+ENV PYTHONUNBUFFERED 1
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION 12.22.1
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+ENV HOME /home/ocnav
 
-# install source
-#wget https://github.com/DFO-Ocean-Navigator/Ocean-Data-Map-Project/archive/refs/tags/v8.2.tar.gz
-buildah add $container v8.2.tar.gz /root
-buildah run $container mv /root/Ocean-Data-Map-Project-8.2 /home/ocnav
+RUN nvm use default
 
 # configure container
-buildah config --workingdir /home/ocnav $container
-buildah copy --chmod 755 $container entrypoint /entrypoint
-buildah copy --chmod 755 $container runserver.sh bin
-buildah config --cmd '' $container
-buildah config --entrypoint '["/bin/sh", "bin/runserver.sh", "5000"]'  $container
-buildah config --env HOME=/home/ocnav $container
-# TODO: move this in the runtime image
-buildah run $container apk -U add py3-hypercorn
+RUN mkdir -p /home/ocnav
+WORKDIR /home/ocnav
+COPY docker/app/entrypoint /entrypoint
+COPY docker/app/runsever.sh bin
+CMD ''
+ENTRYPOINT '["/bin/sh", "bin/runserver.sh", "5000"]' 
 
-# build frontend (assumes nvm/yarn/bower are already setup on the host)
-cat > buildfe.sh <<EOF
-#!/bin/sh
-export NVM_DIR=/persistent/asd804/ocnav/tools/nvm
-. \${NVM_DIR}/nvm.sh
-. \${NVM_DIR}/bash_completion
-img=\$(buildah mount $container)
-cd \$img/home/ocnav/oceannavigator/frontend
-yarn install --global-folder $HOME/.cache
-yarn build
-rm -rf node_modules
-EOF
+# install source
+COPY . /home/ocnav
 
-chmod +x buildfe.sh
-buildah unshare ./buildfe.sh
-buildah commit $container localhost/ovnav-app:v8.2
-rm buildfe.sh
-#buildah rm $container
+# build frontend
+WORKDIR /home/ocnav/oceannavigator/frontend
+RUN npm install yarn && \
+    yarn install --global-folder $HOME/.cache && \
+    yarn build && \
+    rm -rf node_modules
+

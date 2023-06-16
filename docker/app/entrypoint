@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd $HOME
+#source .profile
+#cd Ocean-Data-Map-Project
+bin/runserver.sh 5000
