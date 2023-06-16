@@ -6,7 +6,7 @@ ENV NVM_DIR /usr/local/nvm
 ENV NODE_VERSION 12.22.1
 
 # install runtime requirements
-COPY docker/runtime/requirements.apk requirements.apk
+COPY requirements.apk requirements.apk
 RUN apk -U add $(cat requirements.apk)
 
 # install build requirements
@@ -20,7 +20,7 @@ RUN mkdir -p /usr/local/nvm && \
     nvm alias default $NODE_VERSION
 
 # install python dependencies
-COPY docker/runtime/requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install  -r requirements.txt
 
 # remove build requirements

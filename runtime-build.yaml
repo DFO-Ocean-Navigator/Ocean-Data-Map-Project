@@ -8,8 +8,10 @@ metadata:
 spec:
   source:
     type: Git
+    contextDir: 'docker/runtime'
     git:
       ref: docker
       uri: 'https://github.com/tripougnif/Ocean-Data-Map-Project.git'
   strategy:
     type: Docker
+
