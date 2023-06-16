@@ -340,7 +340,7 @@ const MainMap = forwardRef((props, ref) => {
       }
       layerQuiver.setSource(source);
     }
-  }, [props.dataset0.quiverVariable]);
+  }, [props.dataset0.id, props.dataset0.quiverVariable]);
 
   useEffect(() => {
     if (map1) {
@@ -351,7 +351,7 @@ const MainMap = forwardRef((props, ref) => {
       }
       quiverLayer.setSource(source);
     }
-  }, [props.dataset1.quiverVariable]);
+  }, [props.dataset1.id, props.dataset1.quiverVariable]);
 
   useEffect(() => {
     if (vectorSource) {
