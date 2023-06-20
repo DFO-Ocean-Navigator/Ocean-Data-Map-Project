@@ -147,7 +147,7 @@ function DatasetSelector(props) {
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
                   quiverVariable: "None",
-                  quiverDensity: 50,
+                  quiverDensity: 10,
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
