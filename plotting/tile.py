@@ -17,6 +17,7 @@ from skimage import measure
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
+from data.transformers.geojson import data_array_to_geojson
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
 
@@ -98,6 +99,31 @@ def get_latlon_coords(projection, x, y, z):
     x0, y0 = get_m_coords(projection, x, y, z)
     dest = Proj(projection)
     lon, lat = dest(x0, y0, inverse=True)
+
+    return lat, lon
+
+
+def get_m_bounds(projection, x, y, z):
+    if projection == "EPSG:3857":
+        nw = num2deg(x, y, z)
+        se = num2deg(x + 1, y + 1, z)
+
+        transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
+        x1, y1 = transformer.transform(nw[1], nw[0])
+        x2, y2 = transformer.transform(se[1], se[0])
+
+    return [x1, x2], [y1, y2]
+
+
+def get_latlon_bounds(projection, x, y, z):
+    x0, y0 = get_m_bounds(projection, x, y, z)
+    dest = Proj(projection)
+    lon, lat = dest(x0, y0, inverse=True)
+    lon = np.array(lon) % 360
+    lat = np.array(lat)
+
+    if lon[1] == 0:
+        lon[1] = 360
 
     return lat, lon
 
@@ -234,6 +260,68 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
     return im
+
+
+async def quiver(
+    dataset_name: str,
+    variable: str,
+    time: str,
+    depth: str,
+    x: int,
+    y: int,
+    z: int,
+    projection: str,
+):
+
+    lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
+
+    print(lon_bounds)
+
+    config = DatasetConfig(dataset_name)
+
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
+        lat_var, lon_var = ds.nc_data.latlon_variables
+
+        time_index = ds.nc_data.timestamp_to_time_index(time)
+
+        data = ds.nc_data.get_dataset_variable(variable)
+
+        lat_slice = np.argwhere(
+            (lat_var.data >= lat_bounds.min()) & (lat_var.data <= lat_bounds.max())
+        ).flatten()
+        lon_slice = np.argwhere(
+            (lon_var.data >= lon_bounds.min()) & (lon_var.data <= lon_bounds.max())
+        ).flatten()
+
+        lat_slice = lat_slice[::10]
+        lon_slice = lon_slice[::10]
+
+        if len(data.shape) == 3:
+            data_slice = (time_index, lat_slice, lon_slice)
+        else:
+            data_slice = (time_index, 0, lat_slice, lon_slice)
+
+        data = data[data_slice]
+
+        bearings = None
+        bearings_var = config.variable[variable].bearing_component
+        if variable in config.vector_variables and bearings_var:
+            with open_dataset(
+                config, variable=bearings_var, timestamp=time
+            ) as ds_bearing:
+                bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
+                    data_slice
+                ].squeeze(drop=True)
+
+        d = await data_array_to_geojson(
+            data.squeeze(drop=True),
+            bearings,
+            lat_var[lat_slice],
+            lon_var[lon_slice],
+            config.variable[variable].scale,
+        )
+
+        return d
 
 
 def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:

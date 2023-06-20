@@ -947,6 +947,38 @@ async def data_tile(
     return _cache_and_send_img(buf, f)
 
 
+@router.get("/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
+async def quiver_tile(
+    dataset: str = Path(
+        ..., description="The key of the dataset.", example="giops_day"
+    ),
+    variable: str = Path(
+        ..., description="The key of the variable.", example="votemper"
+    ),
+    time: int = Path(..., description="NetCDF timestamp"),
+    depth: str = Path(..., description="Depth index", example=0),
+    zoom: int = Path(..., example=4),
+    x: int = Path(..., example=0),
+    y: int = Path(..., example=1),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
+    ),
+):
+
+    data = await plotting.tile.quiver(
+        dataset,
+        variable,
+        time,
+        depth,
+        x,
+        y,
+        zoom,
+        projection,
+    )
+
+    return data
+
+
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
 def topography_tiles(
     zoom: int = Path(..., example=4),
