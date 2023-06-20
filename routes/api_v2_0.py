@@ -947,7 +947,9 @@ async def data_tile(
     return _cache_and_send_img(buf, f)
 
 
-@router.get("/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
+@router.get(
+    "/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{density}/{zoom}/{x}/{y}"
+)
 async def quiver_tile(
     dataset: str = Path(
         ..., description="The key of the dataset.", example="giops_day"
@@ -957,6 +959,7 @@ async def quiver_tile(
     ),
     time: int = Path(..., description="NetCDF timestamp"),
     depth: str = Path(..., description="Depth index", example=0),
+    density: int = Path(..., description="Quiver density (%)", example=50),
     zoom: int = Path(..., example=4),
     x: int = Path(..., example=0),
     y: int = Path(..., example=1),
@@ -970,6 +973,7 @@ async def quiver_tile(
         variable,
         time,
         depth,
+        density,
         x,
         y,
         zoom,

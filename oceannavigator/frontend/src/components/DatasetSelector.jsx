@@ -119,7 +119,10 @@ function DatasetSelector(props) {
                 ? timeData[timeData.length - 20].id
                 : timeData[0].id;
 
-            if (props.mountedDataset && props.mountedDataset.id === newDataset) {
+            if (
+              props.mountedDataset &&
+              props.mountedDataset.id === newDataset
+            ) {
               newTime =
                 props.mountedDataset.time > 0
                   ? props.mountedDataset.time
@@ -144,6 +147,7 @@ function DatasetSelector(props) {
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
                   quiverVariable: "None",
+                  quiverDensity: 50,
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -346,17 +350,35 @@ function DatasetSelector(props) {
     quiverVariables.unshift({ id: "none", value: "None" });
 
     quiverSelector = (
-      <SelectBox
-        id={`dataset-selector-quiver-selector-${props.id}`}
-        name="quiverVariable"
-        label={__("Quiver")}
-        placeholder={__("Quiver Variable")}
-        options={quiverVariables}
-        onChange={updateDataset}
-        selected={dataset.quiverVariable}
-        loading={loading}
-        horizontalLayout={props.horizontalLayout}
-      />
+      <>
+        <SelectBox
+          id={`dataset-selector-quiver-selector-${props.id}`}
+          name="quiverVariable"
+          label={__("Quiver")}
+          placeholder={__("Quiver Variable")}
+          options={quiverVariables}
+          onChange={updateDataset}
+          selected={dataset.quiverVariable}
+          loading={loading}
+          horizontalLayout={props.horizontalLayout}
+        />
+        <SelectBox
+          id={`dataset-selector-quiver-density-${props.id}`}
+          name="quiverDensity"
+          label={__("Quiver Density")}
+          placeholder={__("Quiver Density")}
+          options={[
+            { id: 25, value: "25%" },
+            { id: 50, value: "50%" },
+            { id: 80, value: "80%" },
+            { id: 100, value: "100%" },
+          ]}
+          onChange={updateDataset}
+          selected={dataset.quiverDensity}
+          loading={loading}
+          horizontalLayout={props.horizontalLayout}
+        />
+      </>
     );
   }
 

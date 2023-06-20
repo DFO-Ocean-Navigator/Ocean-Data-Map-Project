@@ -267,6 +267,7 @@ async def quiver(
     variable: str,
     time: str,
     depth: str,
+    density: int,
     x: int,
     y: int,
     z: int,
@@ -274,8 +275,6 @@ async def quiver(
 ):
 
     lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
-
-    print(lon_bounds)
 
     config = DatasetConfig(dataset_name)
 
@@ -293,8 +292,8 @@ async def quiver(
             (lon_var.data >= lon_bounds.min()) & (lon_var.data <= lon_bounds.max())
         ).flatten()
 
-        lat_slice = lat_slice[::10]
-        lon_slice = lon_slice[::10]
+        lat_slice = lat_slice[:: int(100 / density)]
+        lon_slice = lon_slice[:: int(100 / density)]
 
         if len(data.shape) == 3:
             data_slice = (time_index, lat_slice, lon_slice)

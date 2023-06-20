@@ -339,7 +339,7 @@ const MainMap = forwardRef((props, ref) => {
       }
       layerQuiver.setSource(source);
     }
-  }, [props.dataset0.id, props.dataset0.quiverVariable]);
+  }, [props.dataset0.id, props.dataset0.quiverVariable, props.dataset0.quiverDensity]);
 
   useEffect(() => {
     if (map1) {
@@ -350,7 +350,7 @@ const MainMap = forwardRef((props, ref) => {
       }
       quiverLayer.setSource(source);
     }
-  }, [props.dataset1.id, props.dataset1.quiverVariable]);
+  }, [props.dataset1.id, props.dataset1.quiverVariable, props.dataset1.quiverDensity]);
 
   useEffect(() => {
     if (vectorSource) {
@@ -1225,7 +1225,7 @@ const MainMap = forwardRef((props, ref) => {
         `/${dataset.quiverVariable}` +
         `/${dataset.time}` +
         `/${dataset.depth}` +
-        //`/${density}` +
+        `/${dataset.quiverDensity}` +
         "/{z}/{x}/{y}" +
         `?projection=${props.mapSettings.projection}`,
       format: new GeoJSON({
