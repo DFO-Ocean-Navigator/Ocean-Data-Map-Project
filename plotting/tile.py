@@ -286,10 +286,12 @@ async def quiver(
         data = ds.nc_data.get_dataset_variable(variable)
 
         lat_slice = np.argwhere(
-            (lat_var.data >= lat_bounds.min()) & (lat_var.data <= lat_bounds.max())
+            (lat_var.data >= lat_bounds.min() - 1)
+            & (lat_var.data <= lat_bounds.max() + 1)
         ).flatten()
         lon_slice = np.argwhere(
-            (lon_var.data >= lon_bounds.min()) & (lon_var.data <= lon_bounds.max())
+            (lon_var.data >= lon_bounds.min() - 1)
+            & (lon_var.data <= lon_bounds.max() + 1)
         ).flatten()
 
         lat_slice = lat_slice[:: int(100 / density)]
