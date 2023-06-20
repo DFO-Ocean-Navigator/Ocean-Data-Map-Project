@@ -41,7 +41,6 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { useGeographic } from "ol/proj.js";
 import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
@@ -749,7 +748,7 @@ const MainMap = forwardRef((props, ref) => {
     const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
 
     const anchor = [0.5, 0.5];
-    const newLayerQuiver = new VectorLayer({
+    const newLayerQuiver = new VectorTileLayer({
       source: null, // set source during update function below
       style: function (feature, resolution) {
         let scale = feature.get("scale");
@@ -1219,13 +1218,16 @@ const MainMap = forwardRef((props, ref) => {
   };
 
   const getQuiverSource = (dataset) => {
-    const quiverSource = new VectorSource({
+    const quiverSource = new VectorTile({
       url:
-        `/api/v2.0/data?dataset=${dataset.id}` +
-        `&variable=${dataset.quiverVariable}` +
-        `&time=${dataset.time}` +
-        `&depth=${dataset.depth}` +
-        `&geometry_type=area`,
+        "/api/v2.0/tiles/quiver" +
+        `/${dataset.id}` +
+        `/${dataset.quiverVariable}` +
+        `/${dataset.time}` +
+        `/${dataset.depth}` +
+        //`/${density}` +
+        "/{z}/{x}/{y}" +
+        `?projection=${props.mapSettings.projection}`,
       format: new GeoJSON({
         featureProjection: olProj.get("EPSG:3857"),
         dataProjection: olProj.get("EPSG:4326"),
