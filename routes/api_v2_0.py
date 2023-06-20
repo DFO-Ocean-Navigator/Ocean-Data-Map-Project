@@ -967,6 +967,32 @@ async def quiver_tile(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
 ):
+    """
+    Returns a geojson representation of requested model data.
+    """
+
+    settings = get_settings()
+
+    cached_file_name = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v2.0",
+        "tiles",
+        "quiver",
+        projection,
+        dataset,
+        variable,
+        str(time),
+        depth,
+        str(density),
+        str(zoom),
+        str(x),
+        f"{y}.geojson",
+    )
+
+    if os.path.isfile(cached_file_name):
+        log().info(f"Using cached {cached_file_name}.")
+        return FileResponse(cached_file_name, media_type="application/json")
 
     data = await plotting.tile.quiver(
         dataset,
@@ -979,6 +1005,11 @@ async def quiver_tile(
         zoom,
         projection,
     )
+
+    path = pathlib.Path(cached_file_name).parent
+    path.mkdir(parents=True, exist_ok=True)
+    with open(cached_file_name, "w", encoding="utf-8") as f:
+        geojson.dump(data, f)
 
     return data
 
