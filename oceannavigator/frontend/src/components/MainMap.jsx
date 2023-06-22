@@ -1228,6 +1228,7 @@ const MainMap = forwardRef((props, ref) => {
         `/${dataset.quiverDensity}` +
         "/{z}/{x}/{y}" +
         `?projection=${props.mapSettings.projection}`,
+      projection: props.mapSettings.projection,
       format: new GeoJSON({
         featureProjection: olProj.get("EPSG:3857"),
         dataProjection: olProj.get("EPSG:4326"),

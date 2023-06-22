@@ -112,6 +112,26 @@ def get_m_bounds(projection, x, y, z):
         x1, y1 = transformer.transform(nw[1], nw[0])
         x2, y2 = transformer.transform(se[1], se[0])
 
+    elif projection == "EPSG:32661" or projection == "EPSG:3031":
+        if projection == "EPSG:32661":
+            boundinglat = 60.0
+            lon_0 = 0
+            llcrnr_lon = -45
+            urcrnr_lon = 135
+        elif projection == "EPSG:3031":
+            boundinglat = -60.0
+            lon_0 = 0
+            llcrnr_lon = -135
+            urcrnr_lon = 45
+
+        proj = Proj(projection)
+
+        xx, yy = proj(lon_0, boundinglat)
+        lon, llcrnr_lat = proj(math.sqrt(2.0) * yy, 0.0, inverse=True)
+        urcrnr_lat = llcrnr_lat
+
+        return [llcrnr_lon, urcrnr_lon], [llcrnr_lat, urcrnr_lat]
+
     return [x1, x2], [y1, y2]
 
 
@@ -285,14 +305,24 @@ async def quiver(
 
         data = ds.nc_data.get_dataset_variable(variable)
 
-        lat_slice = np.argwhere(
-            (lat_var.data >= lat_bounds.min() - 1)
-            & (lat_var.data <= lat_bounds.max() + 1)
-        ).flatten()
-        lon_slice = np.argwhere(
-            (lon_var.data >= lon_bounds.min() - 1)
-            & (lon_var.data <= lon_bounds.max() + 1)
-        ).flatten()
+        if lat_bounds[0] == lat_bounds[1]:
+            lat_slice = np.argwhere(lat_var.data >= lat_bounds[0] - 1).flatten()
+        else:
+            lat_slice = np.argwhere(
+                (lat_var.data >= lat_bounds.min() - 1)
+                & (lat_var.data <= lat_bounds.max() + 1)
+            ).flatten()
+
+        if lon_bounds[0] > lon_bounds[1]:
+            lon_slice = np.argwhere(
+                (lon_var.data <= lon_bounds[0] + 1)
+                | (lon_var.data >= lon_bounds[1] - 1)
+            ).flatten()
+        else:
+            lon_slice = np.argwhere(
+                (lon_var.data >= lon_bounds[0] - 1)
+                & (lon_var.data <= lon_bounds[1] + 1)
+            ).flatten()
 
         lat_slice = lat_slice[:: int(100 / density)]
         lon_slice = lon_slice[:: int(100 / density)]
