@@ -339,7 +339,11 @@ const MainMap = forwardRef((props, ref) => {
       }
       layerQuiver.setSource(source);
     }
-  }, [props.dataset0.id, props.dataset0.quiverVariable, props.dataset0.quiverDensity]);
+  }, [
+    props.dataset0.id,
+    props.dataset0.quiverVariable,
+    props.dataset0.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (map1) {
@@ -350,7 +354,11 @@ const MainMap = forwardRef((props, ref) => {
       }
       quiverLayer.setSource(source);
     }
-  }, [props.dataset1.id, props.dataset1.quiverVariable, props.dataset1.quiverDensity]);
+  }, [
+    props.dataset1.id,
+    props.dataset1.quiverVariable,
+    props.dataset1.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (vectorSource) {
@@ -1569,7 +1577,7 @@ const MainMap = forwardRef((props, ref) => {
     vectorSource.refresh();
 
     if (mapLayers[7].getSource()) {
-      mapLayers[7].getSource().refresh();
+      mapLayers[7].setSource(getQuiverSource(dataset));
     }
   };
 
