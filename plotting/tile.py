@@ -109,8 +109,8 @@ def get_m_bounds(projection, x, y, z):
         se = num2deg(x + 1, y + 1, z)
 
         transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
-        x1, y1 = transformer.transform(nw[1], nw[0])
-        x2, y2 = transformer.transform(se[1], se[0])
+        x1, y2 = transformer.transform(nw[1], nw[0])
+        x2, y1 = transformer.transform(se[1], se[0])
 
     elif projection == "EPSG:32661" or projection == "EPSG:3031":
         if projection == "EPSG:32661":
@@ -130,7 +130,19 @@ def get_m_bounds(projection, x, y, z):
         lon, llcrnr_lat = proj(math.sqrt(2.0) * yy, 0.0, inverse=True)
         urcrnr_lat = llcrnr_lat
 
-        return [llcrnr_lon, urcrnr_lon], [llcrnr_lat, urcrnr_lat]
+        urcrnrx, urcrnry = proj(urcrnr_lon, urcrnr_lat)
+        llcrnrx, llcrnry = proj(llcrnr_lon, llcrnr_lat)
+
+        n = 2**z
+        x_tile = (urcrnrx - llcrnrx) / n
+        y_tile = (urcrnry - llcrnry) / n
+
+        x1 = llcrnrx + x * x_tile
+        x2 = x1 + x_tile
+        y1 = llcrnry + (n - y - 1) * y_tile
+        y2 = y1 + y_tile
+
+        return [x1, x1, x2, x2], [y1, y2, y1, y2]
 
     return [x1, x2], [y1, y2]
 
@@ -139,11 +151,17 @@ def get_latlon_bounds(projection, x, y, z):
     x0, y0 = get_m_bounds(projection, x, y, z)
     dest = Proj(projection)
     lon, lat = dest(x0, y0, inverse=True)
-    lon = np.array(lon) % 360
-    lat = np.array(lat)
+    lon = np.array(lon).round(0) % 360
+    lat = np.array(lat).round(0)
 
-    if lon[1] == 0:
-        lon[1] = 360
+    if projection != "EPSG:3857":
+        unique_lat, cnts = np.unique(lat, return_counts=True)
+        lon = lon[lat == unique_lat[cnts > 1]]
+        lat = unique_lat[cnts == 1]
+        if np.absolute(np.diff(lon)) > 90:
+            lon[lon == 0] = 360
+    else:
+        lon[lon == 0] = 360
 
     return lat, lon
 
@@ -229,7 +247,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
 
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
-
         for v in variable:
             data.append(
                 dataset.get_area(
@@ -293,7 +310,6 @@ async def quiver(
     z: int,
     projection: str,
 ):
-
     lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
 
     config = DatasetConfig(dataset_name)
@@ -305,24 +321,15 @@ async def quiver(
 
         data = ds.nc_data.get_dataset_variable(variable)
 
-        if lat_bounds[0] == lat_bounds[1]:
-            lat_slice = np.argwhere(lat_var.data >= lat_bounds[0] - 1).flatten()
-        else:
-            lat_slice = np.argwhere(
-                (lat_var.data >= lat_bounds.min() - 1)
-                & (lat_var.data <= lat_bounds.max() + 1)
-            ).flatten()
+        lat_slice = np.argwhere(
+            (lat_var.data >= lat_bounds.min() - 1)
+            & (lat_var.data <= lat_bounds.max() + 1)
+        ).flatten()
 
-        if lon_bounds[0] > lon_bounds[1]:
-            lon_slice = np.argwhere(
-                (lon_var.data <= lon_bounds[0] + 1)
-                | (lon_var.data >= lon_bounds[1] - 1)
-            ).flatten()
-        else:
-            lon_slice = np.argwhere(
-                (lon_var.data >= lon_bounds[0] - 1)
-                & (lon_var.data <= lon_bounds[1] + 1)
-            ).flatten()
+        lon_slice = np.argwhere(
+            (lon_var.data >= lon_bounds.min() - 1)
+            & (lon_var.data <= lon_bounds.max() + 1)
+        ).flatten()
 
         lat_slice = lat_slice[:: int(100 / density)]
         lon_slice = lon_slice[:: int(100 / density)]
