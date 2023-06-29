@@ -38,7 +38,7 @@ components:
     env:
     - name: DEBUG_PORT
       value: "5858"
-    image: registry.access.redhat.com/ubi9/python-39:1-108
+    image: ocnav-runtime:latest
     mountSources: true
   name: py
 metadata:

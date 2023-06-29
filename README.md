@@ -147,3 +147,6 @@ In order to generate the class4.pickle file daily. You should create a crontab e
 In order to provide a production ready and off-site configuration files. We have implemented a new configurations repository. When people clone the Ocean-Data-Map-Project repository they will need to perform an additional step of updating any defined submodules. The following command changes your working directory to your local Ocean-Data-Map-Project directory and then updates the submodules recursively.
 
 * cd ${HOME}/Ocean-Data-Map-Project ; git submodule update --init --recursive
+
+### Docker/Kubernetes
+Coming soon.

@@ -1,20 +1,24 @@
 ﻿apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: ocnav-runtime-build
+  name: ocnav-dev-build
   namespace: proj-k8s-ssc-hpco
   labels:
-    name: ocnav-runtime-build
+    name: ocnav-dev-build
 spec:
   source:
     type: Git
-    contextDir: "docker/runtime"
+    contextDir: "docker/dev"
     git:
       ref: docker
       uri: "https://github.com/tripougnif/Ocean-Data-Map-Project.git"
   strategy:
     type: Docker
+  resources:
+    limits:
+      cpu: '4'
+      memory: 8Gi
   output:
     to:
       type: imageStreamTag
-      name: "ocnav-runtime"
+      name: "ocnav-dev:latest"
