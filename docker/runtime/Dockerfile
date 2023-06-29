@@ -1,5 +1,5 @@
 # build Ocean Navigator runtime image
-FROM alpine
+FROM docker.io/library/alpine
 
 ENV PYTHONUNBUFFERED 1
 ENV NVM_DIR /usr/local/nvm

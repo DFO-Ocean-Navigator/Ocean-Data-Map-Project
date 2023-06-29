@@ -1,7 +1,7 @@
 commands:
 - exec:
     commandLine: pip install -r requirements.txt
-    component: py
+    component: ocnav
     group:
       isDefault: true
       kind: build
@@ -9,7 +9,7 @@ commands:
   id: pip-install-requirements
 - exec:
     commandLine: python app.py
-    component: py
+    component: ocnav
     group:
       isDefault: true
       kind: run
@@ -18,7 +18,7 @@ commands:
 - exec:
     commandLine: pip install debugpy && python -m debugpy --listen 0.0.0.0:${DEBUG_PORT}
       app.py
-    component: py
+    component: ocnav
     group:
       kind: debug
     workingDir: ${PROJECT_SOURCE}
@@ -38,9 +38,13 @@ components:
     env:
     - name: DEBUG_PORT
       value: "5858"
-    image: ocnav-runtime:latest
+    - name: HOME
+      value: /projects
+    image: ocnav-dev:latest
     mountSources: true
-  name: py
+    memoryLimit: 1536M
+    cpuLimit: "0.5"
+  name: ocnav
 metadata:
   description: Python (version 3.9.x) is an interpreted, object-oriented, high-level
     programming language with dynamic semantics. Its high-level built in data structures,

@@ -14,6 +14,9 @@ spec:
       uri: "https://github.com/tripougnif/Ocean-Data-Map-Project.git"
   strategy:
     type: Docker
+    dockerStrategy:
+      from:
+        name: ocnav-dev:latest
   resources:
     limits:
       cpu: '4'
