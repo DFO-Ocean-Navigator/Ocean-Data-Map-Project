@@ -15,6 +15,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      noCache: true
       from:
         name: ocnav-dev:latest
   resources:
