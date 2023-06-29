@@ -1,4 +1,5 @@
 hypercorn
+fastapi
 opentelemetry-instrumentation-fastapi
 xarray
 metpy
