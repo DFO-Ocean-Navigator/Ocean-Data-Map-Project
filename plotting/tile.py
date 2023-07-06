@@ -154,6 +154,15 @@ def get_latlon_bounds(projection, x, y, z):
     lon = np.array(lon).round(0) % 360
     lat = np.array(lat).round(0)
 
+    x_dist = np.absolute(np.diff(x0))[0]
+    y_dist = np.absolute(np.diff(y0))[0]
+
+    lat_stride = int(x_dist * z / 1e6)
+    lon_stride = int(y_dist * z / 1e6)
+
+    lat_stride = lat_stride if lat_stride > 1 else 1
+    lon_stride = lon_stride if lon_stride > 1 else 1
+
     if projection != "EPSG:3857":
         unique_lat, cnts = np.unique(lat, return_counts=True)
         lon = lon[lat == unique_lat[cnts > 1]]
@@ -163,7 +172,7 @@ def get_latlon_bounds(projection, x, y, z):
     else:
         lon[lon == 0] = 360
 
-    return lat, lon
+    return lat, lon, lat_stride, lon_stride
 
 
 def scale(args):
@@ -310,7 +319,9 @@ async def quiver(
     z: int,
     projection: str,
 ):
-    lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
+    lat_bounds, lon_bounds, lat_stride, lon_stride = get_latlon_bounds(
+        projection, x, y, z
+    )
 
     config = DatasetConfig(dataset_name)
 
@@ -331,8 +342,8 @@ async def quiver(
             & (lon_var.data <= lon_bounds.max() + 1)
         ).flatten()
 
-        lat_slice = lat_slice[:: int(100 / density)]
-        lon_slice = lon_slice[:: int(100 / density)]
+        lat_slice = lat_slice[::lat_stride]
+        lon_slice = lon_slice[::lon_stride]
 
         if len(data.shape) == 3:
             data_slice = (time_index, lat_slice, lon_slice)
