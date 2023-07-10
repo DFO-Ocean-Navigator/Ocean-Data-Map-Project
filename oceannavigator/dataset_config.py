@@ -1,38 +1,43 @@
 import json
-import os
 import re
-from typing import Union
+from functools import lru_cache
+from typing import List, Union
 
-from flask import current_app
+from .log import log
+from .settings import get_settings
 
 
 class DatasetConfig:
     """Access class for the dataset configuration"""
 
-    __config = None
-
     def __init__(self, dataset: str) -> None:
-        self._config = DatasetConfig._get_dataset_config()[dataset]
+        try:
+            self._config = DatasetConfig._get_dataset_config()[dataset]
+        except KeyError as e:
+            raise KeyError(f"Dataset ({dataset}) not found.") from e
+
         self._dataset_key: str = dataset
 
     @staticmethod
-    def get_datasets() -> list:
+    def get_datasets() -> List[str]:
         """
         Returns a list of the currently enabled datasets in the dataset config file
         """
         config = DatasetConfig._get_dataset_config()
 
         # Only return "enabled" datasets
-        return [key for key in config.keys() if config[key].get("enabled")]
+        return list(filter(lambda k: config[k].get("enabled"), config.keys()))
 
     @staticmethod
+    @lru_cache()
     def _get_dataset_config() -> dict:
-        if DatasetConfig.__config is None:
-            cwd = os.path.dirname(os.path.realpath(__file__))
-            with open(os.path.join(cwd, current_app.config["datasetConfig"]), "r") as f:
-                DatasetConfig.__config = json.load(f)
-
-        return DatasetConfig.__config
+        settings = get_settings()
+        with open(settings.dataset_config_file, "r") as f:
+            config = json.load(f)
+            log().debug(
+                f"Loaded dataset config file from: {settings.dataset_config_file}"
+            )
+            return config
 
     def _get_attribute(self, key: str) -> Union[str, dict]:
         return self._config.get(key) if not None else ""
@@ -134,6 +139,22 @@ class DatasetConfig:
         return self._get_attribute("lon_var_key")
 
     @property
+    def group(self) -> str:
+        try:
+            name = self._get_attribute("group")
+        except KeyError:
+            name = None
+        return name
+
+    @property
+    def subgroup(self) -> str:
+        try:
+            header = self._get_attribute("subgroup")
+        except KeyError:
+            header = None
+        return header
+
+    @property
     def quantum(self) -> str:
         """
         Returns the "quantum" (aka "time scale") of a dataset
@@ -192,16 +213,20 @@ class DatasetConfig:
         """
         Returns any magnitude variables.
         """
+        vectors = self._get_attribute("vector_variables")
         variables = {}
         for key, data in self._get_attribute("variables").items():
             is_hidden = data.get("hide")
-            is_vector = "mag" in key
 
             if (
-                is_hidden is False
-                or is_hidden is None
-                or is_hidden in ["false", "False"]
-            ) and is_vector:
+                (
+                    is_hidden is False
+                    or is_hidden is None
+                    or is_hidden in ["false", "False"]
+                )
+                and vectors
+                and key in vectors
+            ):
                 variables[key] = data
         return variables
 
@@ -316,7 +341,7 @@ class VariableConfig:
         """
 
         try:
-            unit = self.__get_attribute("unit")
+            unit = self.__get_attribute("units")
         except KeyError:
             unit = None
 

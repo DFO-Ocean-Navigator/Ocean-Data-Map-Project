@@ -1,26 +1,26 @@
-import flask
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-db = SQLAlchemy()
+from oceannavigator.settings import get_settings
 
+settings = get_settings()
 
-def init_db(uri, echo=False):
-    if flask.has_request_context():
-        raise RuntimeError("Do not call this from inside the Flask application")
+SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_uri
 
-    app = flask.Flask("CMDLINE")
-    app.config["SQLALCHEMY_DATABASE_URI"] = uri
-    app.config["SQLALCHEMY_ECHO"] = echo
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.app_context().push()
-    db.init_app(app)
-
-
-def create_tables():
-    db.create_all()
-
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"connect_timeout": 10},
+    pool_recycle=3600,
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 from .orm.datatype import DataType
 from .orm.platform import Platform, PlatformMetadata
 from .orm.sample import Sample
 from .orm.station import Station
+from .schemas.datatype_schema import DataTypeSchema
+from .schemas.platform_schema import PlatformMetadataSchema, PlatformSchema
+from .schemas.sample_schema import SampleSchema
+from .schemas.station_schema import StationSchema

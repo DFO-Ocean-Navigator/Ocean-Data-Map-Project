@@ -1,15 +1,8 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image corresponding to a Selected Point
-
-*/
-
-
 import React from "react";
-import {Nav, NavItem, Panel, Row, Col} from "react-bootstrap";
+import { Card, Nav, Row, Col } from "react-bootstrap";
+import Accordion from "react-bootstrap/Accordion";
 import PlotImage from "./PlotImage.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import ComboBox from "./ComboBox.jsx";
 import LocationInput from "./LocationInput.jsx";
 import ImageSize from "./ImageSize.jsx";
@@ -43,28 +36,35 @@ class PointWindow extends React.Component {
       showmap: false,
       colormap: "default",
       datasetVariables: [],
-      variable: [props.variable],
       observation_variable: [0],
       size: "10x7",
       dpi: 144,
       plotTitles: Array(7).fill(""),
       dataset_0: {
-        dataset: props.dataset_0.dataset,
+        id: props.dataset_0.id,
         variable: [props.dataset_0.variable],
+        variable_range: {},
         time: props.dataset_0.time,
         depth: props.dataset_0.depth,
         starttime: props.dataset_0.starttime,
+        options: props.dataset_0.options,
       },
     };
 
     if (props.init !== null) {
-      $.extend(this.state, props.init);
+      this.state = { ...this.state, ...props.init };
     }
 
     // Function bindings
     this.onLocalUpdate = this.onLocalUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
+  }
+
+  componentWillMount() {
+    let dataset_0 = this.state.dataset_0;
+    dataset_0.variable_range[this.props.dataset_0.variable] = null;
+    this.setState({ dataset_0: dataset_0 });
   }
 
   componentDidMount() {
@@ -78,7 +78,7 @@ class PointWindow extends React.Component {
       });
     }
 
-    this.populateVariables(this.props.dataset_0.dataset);
+    this.populateVariables(this.props.dataset_0.id);
   }
 
   componentWillUnmount() {
@@ -86,91 +86,65 @@ class PointWindow extends React.Component {
   }
 
   populateVariables(dataset) {
-    GetVariablesPromise(dataset).then(variableResult => {
-      this.setState({
-        datasetVariables: variableResult.data.map(v => { return v.id; })
-      });
-    },
-    error => {
-      console.error(error);
-    });
+    GetVariablesPromise(dataset).then(
+      (variableResult) => {
+        this.setState({
+          datasetVariables: variableResult.data.map((v) => {
+            return v.id;
+          }),
+        });
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
   }
 
   //Updates Plot with User Specified Title
-  updatePlotTitle (title) {
-    if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
+  updatePlotTitle(title) {
+    if (title !== this.state.plotTitles[this.state.selected - 1]) {
+      //If new plot title
       const newTitles = this.state.plotTitles;
       newTitles[this.state.selected - 1] = title;
-      this.setState({plotTitles: newTitles,});   //Update Plot Title
+      this.setState({ plotTitles: newTitles }); //Update Plot Title
     }
   }
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
-      if (key === "dataset_0") {
-        this.setState(prevState => ({
+      if (key === "dataset") {
+        this.setState((prevState) => ({
           dataset_0: {
             ...prevState.dataset_0,
-            ...value
-          }
+            ...value,
+          },
         }));
+        if (value.variable.length === 1) {
+          value.variable = value.variable[0];
+          this.props.updateDataset("dataset", value);
+        }
         return;
+      } else if (key === "points") {
+        this.props.action("updatePoint", value);
       }
 
       let newState = {};
 
-      if (typeof(key) === "string") {
+      if (typeof key === "string") {
         newState[key] = value;
-      }
-      else {
+      } else {
         for (let i = 0; i < key.length; i++) {
           newState[key[i]] = value[i];
         }
       }
       this.setState(newState);
-
-      let parentKeys = [];
-      let parentValues = [];
-
-      if (newState.hasOwnProperty("depth") && newState.depth != "all") {
-        if (!Array.isArray(newState.depth)) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth);
-        } else if (newState.depth.length > 1) {
-          parentKeys.push("depth");
-          parentValues.push(newState.depth[0]);
-        }
-      }
-
-      if (newState.hasOwnProperty("point")) {
-        parentKeys.push("point");
-        parentValues.push(newState.point);
-
-        parentKeys.push("names");
-        parentValues.push([]);
-      }
-
-      if (newState.hasOwnProperty("variable_scale") &&
-        this.state.variable.length === 1) {
-        parentKeys.push("variable_scale");
-        parentValues.push(newState.variable_scale);
-      }
-
-      if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
-        parentKeys.push("variable");
-        parentValues.push(newState.variable[0]);
-      }
-
-      if (parentKeys.length > 0) {
-        this.props.onUpdate(parentKeys, parentValues);
-      }
     }
   }
 
   // Handles when a tab is selected
   onSelect(key) {
     this.setState({
-      selected: key
+      selected: parseInt(key),
     });
   }
 
@@ -179,134 +153,165 @@ class PointWindow extends React.Component {
     _("Colourmap");
     _("Saved Image Size");
 
-    const only3dVariables = this.state.selected == TabEnum.PROFILE || 
-                            this.state.selected == TabEnum.OBSERVATION;
+    const only3dVariables =
+      this.state.selected == TabEnum.PROFILE ||
+      this.state.selected == TabEnum.OBSERVATION;
     const showDepthSelector = this.state.selected === TabEnum.MOORING;
     const showDepthsAll = this.state.selected === TabEnum.MOORING;
-    const showTimeRange = this.state.selected === TabEnum.STICK ||
-                          this.state.selected === TabEnum.MOORING;
-    const showVariableSelector =  this.state.selected === TabEnum.PROFILE ||
-                                  this.state.selected === TabEnum.MOORING;
+    const showTimeRange =
+      this.state.selected === TabEnum.STICK ||
+      this.state.selected === TabEnum.MOORING;
+    const showVariableSelector =
+      this.state.selected === TabEnum.PROFILE ||
+      this.state.selected === TabEnum.MOORING;
     const showMultiVariableSelector = this.state.selected === TabEnum.PROFILE;
+    const showAxisRange =
+      this.state.selected === TabEnum.PROFILE ||
+      this.state.selected === TabEnum.MOORING;
+
+    const plotOptions = (
+      <div>
+        <ImageSize
+          key="size"
+          id="size"
+          state={this.state.size}
+          onUpdate={this.onLocalUpdate}
+          title={_("Saved Image Size")}
+        />
+
+        <CustomPlotLabels
+          key="title"
+          id="title"
+          title={_("Plot Title")}
+          updatePlotTitle={this.updatePlotTitle}
+          plotTitle={this.state.plotTitles[this.state.selected - 1]}
+        />
+      </div>
+    );
 
     // Rendered across all tabs
-    const global = (<Panel
-      key='global_settings'
-      id='global_settings'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>{_("Global Settings")}</Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
+    const global = (
+      <Card key="global_settings" id="global_settings" variant="primary">
+        <Card.Header>{"Global Settings"}</Card.Header>
+        <Card.Body className="global-settings-card">
           <DatasetSelector
-            key='point_window_dataset_0'
-            id='dataset_0'
+            key="point_window_dataset_0"
+            id="dataset_0"
             onUpdate={this.onLocalUpdate}
             showQuiverSelector={false}
             showVariableRange={false}
+            showAxisRange={showAxisRange}
             showTimeRange={showTimeRange}
             showDepthSelector={showDepthSelector}
-            options={this.props.options}
+            mapSettings={this.props.mapSettings}
             variables={only3dVariables ? "3d" : null}
             showVariableSelector={showVariableSelector}
             showDepthsAll={showDepthsAll}
             multipleVariables={showMultiVariableSelector}
-            mountedDataset={this.props.dataset_0.dataset}
-            mountedVariable={this.props.dataset_0.variable}
+            mountedDataset={this.props.dataset_0}
           />
 
-          <SelectBox
-            key='showmap'
-            id='showmap'
-            state={this.state.showmap}
+          <CheckBox
+            key="showmap"
+            id="showmap"
+            checked={this.state.showmap}
             onUpdate={this.onLocalUpdate}
-            title={_("Show Location")}
+            title={"Show Location"}
           >
-            {_("showmap_help")}
-          </SelectBox>
+            {"showmap_help"}
+          </CheckBox>
 
-          <div style={{display: this.props.point.length == 1 ? "block" : "none",}}>
+          <div
+            style={{
+              display: this.props.point.length == 1 ? "block" : "none",
+            }}
+          >
             <LocationInput
-              key='point'
-              id='point'
+              key="points"
+              id="points"
               state={this.props.point}
-              title={_("Location")}
+              title={"Location"}
               onUpdate={this.onLocalUpdate}
             />
           </div>
 
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          />
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>);
+          <Accordion>
+            <Accordion.Header>Plot Options</Accordion.Header>
+            <Accordion.Body className="plot-accordion">
+              {plotOptions}
+            </Accordion.Body>
+          </Accordion>
+        </Card.Body>
+      </Card>
+    );
 
     // Show multidepth selector on for Stick tab
     const showMultiDepthAndVector = this.state.selected === TabEnum.STICK;
-    const multiDepthVector = showMultiDepthAndVector ? <div>
-      <ComboBox
-        key='variable'
-        id='variable'
-        state={this.state.dataset_0.variable}
-        def=''
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/variables/?vectors_only&dataset="+this.state.dataset_0.dataset}
-        title={_("Variable")}><h1>Variable</h1></ComboBox>
+    const multiDepthVector = showMultiDepthAndVector ? (
+      <div>
+        <ComboBox
+          key="variable"
+          id="variable"
+          state={this.state.dataset_0.variable}
+          def=""
+          onUpdate={this.onLocalUpdate}
+          url={`/api/v2.0/dataset/${this.state.dataset_0.id}/variables?vectors_only=True`}
+          title={"Variable"}
+        >
+          <h1>Variable</h1>
+        </ComboBox>
 
-      <ComboBox
-        key='depth'
-        id='depth'
-        multiple
-        state={this.state.depth}
-        def={""}
-        onUpdate={this.onLocalUpdate}
-        url={"/api/v1.0/depth/?variable=" + this.state.dataset_0.variable + "&dataset=" + this.props.dataset_0.dataset}
-        title={_("Depth")}></ComboBox>
-    </div> : null;
+        <ComboBox
+          key="depth"
+          id="depth"
+          multiple
+          state={this.state.depth}
+          def={""}
+          onUpdate={this.onLocalUpdate}
+          url={
+            "/api/v2.0/depth/?variable=" +
+            this.state.dataset_0.variable +
+            "&dataset=" +
+            this.props.dataset_0.id
+          }
+          title={"Depth"}
+        ></ComboBox>
+      </div>
+    ) : null;
 
     let observation_data = [];
     let observation_variable = <div></div>;
     if (this.props.point[0][2] !== undefined) {
-      if (typeof(this.props.point[0][2]) == "number") {
-        observation_variable = <ComboBox
-          key='observation_variable'
-          id='observation_variable'
-          state={this.state.observation_variable}
-          url={`/api/v1.0/observation/variables/station=${this.props.point[0][2]}.json`}
-          title={_("Observation Variable")}
-          multiple
-          onUpdate={this.onLocalUpdate}
-        />;
-      }
-      else {
-        observation_data = this.props.point[0][2].datatypes.map(
-          function (o, i) {
-            return { id: i, value: o.replace(/ \[.*\]/, "") };
-          }
+      if (typeof this.props.point[0][2] == "number") {
+        observation_variable = (
+          <ComboBox
+            key="observation_variable"
+            id="observation_variable"
+            state={this.state.observation_variable}
+            url={`/api/v2.0/observation/variables/station=${this.props.point[0][2]}.json`}
+            title={"Observation Variable"}
+            multiple
+            onUpdate={this.onLocalUpdate}
+          />
         );
-        observation_variable = <ComboBox
-          key='observation_variable'
-          id='observation_variable'
-          state={this.state.observation_variable}
-          data={observation_data}
-          title={_("Observation Variable")}
-          multiple
-          onUpdate={this.onLocalUpdate}
-        />;
+      } else {
+        observation_data = this.props.point[0][2].datatypes.map(function (
+          o,
+          i
+        ) {
+          return { id: i, value: o.replace(/ \[.*\]/, "") };
+        });
+        observation_variable = (
+          <ComboBox
+            key="observation_variable"
+            id="observation_variable"
+            state={this.state.observation_variable}
+            data={observation_data}
+            title={"Observation Variable"}
+            multiple
+            onUpdate={this.onLocalUpdate}
+          />
+        );
       }
     }
 
@@ -314,17 +319,21 @@ class PointWindow extends React.Component {
     // and Salinity. This is used to enable/disable some tabs.
     const temperatureRegex = /temp/;
     // eslint-disable-next-line max-len
-    const hasTemperature = this.state.datasetVariables.some(v => v.match(temperatureRegex));
+    const hasTemperature = this.state.datasetVariables.some((v) =>
+      v.match(temperatureRegex)
+    );
 
     const salinityRegex = /salin/;
     // eslint-disable-next-line max-len
-    const hasSalinity = this.state.datasetVariables.some(v => v.match(salinityRegex));
+    const hasSalinity = this.state.datasetVariables.some((v) =>
+      v.match(salinityRegex)
+    );
 
     const hasTempSalinity = hasTemperature && hasSalinity;
 
     // Start constructing query for image
     const plot_query = {
-      dataset: this.state.dataset_0.dataset,
+      dataset: this.state.dataset_0.id,
       point: this.props.point,
       showmap: this.state.showmap,
       names: this.props.names,
@@ -335,11 +344,14 @@ class PointWindow extends React.Component {
 
     let inputs = [];
 
-    switch(this.state.selected) {
+    switch (this.state.selected) {
       case TabEnum.PROFILE:
         plot_query.type = "profile";
         plot_query.time = this.state.dataset_0.time;
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_range = Object.values(
+          this.state.dataset_0.variable_range
+        );
         inputs = [global];
         break;
 
@@ -385,10 +397,16 @@ class PointWindow extends React.Component {
       case TabEnum.MOORING:
         plot_query.type = "timeseries";
         plot_query.variable = this.state.dataset_0.variable;
+        plot_query.variable_range = Object.values(
+          this.state.dataset_0.variable_range
+        );
         plot_query.starttime = this.state.dataset_0.starttime;
         plot_query.endtime = this.state.dataset_0.time;
         plot_query.depth = this.state.dataset_0.depth;
         plot_query.colormap = this.state.colormap;
+        plot_query.interp = this.props.mapSettings.interpType;
+        plot_query.radius = this.props.mapSettings.interpRadius;
+        plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         //plot_query.scale = "auto";
 
         inputs = [global];
@@ -396,17 +414,18 @@ class PointWindow extends React.Component {
           // Add Colormap selector
           inputs.push(
             <ComboBox
-              key='colormap'
-              id='colormap'
+              key="colormap"
+              id="colormap"
               state={this.state.colormap}
-              def='default'
+              def="default"
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Colourmap")}
+              url="/api/v2.0/plot/colormaps"
+              title={"Colourmap"}
             >
-              {_("colourmap_help")}
-              <img src="/colormaps.png" />
-            </ComboBox>);
+              {"colourmap_help"}
+              <img src="/plot/colormaps.png/" />
+            </ComboBox>
+          );
         }
 
         break;
@@ -424,45 +443,51 @@ class PointWindow extends React.Component {
 
     const permlink_subquery = {
       selected: this.state.selected,
-      depth: this.state.dataset_0.depth,
-      colormap: this.state.colormap,
       starttime: this.state.dataset_0.starttime,
     };
 
     return (
-      <div className='PointWindow Window'>
+      <div className="PointWindow Window">
         <Nav
-          bsStyle="tabs"
+          variant="tabs"
           activeKey={this.state.selected}
-          onSelect={this.onSelect}>
-          <NavItem
-            eventKey={TabEnum.PROFILE}>{_("Profile")}</NavItem>
-          <NavItem
-            eventKey={TabEnum.CTD}
-            disabled={!hasTempSalinity}>{_("CTD Profile")}</NavItem>
-          <NavItem
-            eventKey={TabEnum.TS}
-            disabled={!hasTempSalinity}>{_("T/S Diagram")}</NavItem>
-          <NavItem
-            eventKey={TabEnum.SOUND}
-            disabled={!hasTempSalinity}>{_("Sound Speed Profile")}</NavItem>
-          <NavItem
-            disabled
-            eventKey={TabEnum.STICK}>{_("Stick Plot")}</NavItem>
-          <NavItem
-            eventKey={TabEnum.OBSERVATION}
-            disabled={this.props.point[0][2] === undefined}
-          >
-            {_("Observation")}
-          </NavItem>
-          <NavItem
-            eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</NavItem>
+          onSelect={this.onSelect}
+        >
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.PROFILE}>{"Profile"}</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSalinity}>
+              {"CTD Profile"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSalinity}>
+              {"T/S Diagram"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSalinity}>
+              {"Sound Speed Profile"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link
+              eventKey={TabEnum.OBSERVATION}
+              disabled={this.props.point[0][2] === undefined}
+            >
+              {"Observation"}
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey={TabEnum.MOORING}>{"Virtual Mooring"}</Nav.Link>
+          </Nav.Item>
         </Nav>
         <Row>
-          <Col lg={2}>
+          <Col className="settings-col" lg={2}>
             {inputs}
           </Col>
-          <Col lg={10}>
+          <Col className="plot-col" lg={10}>
             <PlotImage
               query={plot_query} // For image saving link.
               permlink_subquery={permlink_subquery}

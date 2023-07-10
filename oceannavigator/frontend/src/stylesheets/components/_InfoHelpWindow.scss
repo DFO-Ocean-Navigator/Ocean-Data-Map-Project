@@ -1,0 +1,18 @@
+.InfoHelpWindow {
+  .new-tab-button {
+    position: absolute;
+    right: 0px;
+    top: 8px;
+  }
+  .options-col {
+    padding: unset;
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+    overflow: auto;
+  }
+
+  .content-iframe {
+    height: -webkit-fill-available;
+  }
+}

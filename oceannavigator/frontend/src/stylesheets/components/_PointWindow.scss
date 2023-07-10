@@ -1,2 +1,24 @@
 .PointWindow {
+  .settings-col {
+    padding: unset;
+    display: flex;
+    flex-direction: column;
+
+    .plot-accordion {
+      padding: 5px;
+    }
+  }
+
+  .plot-col {
+    padding: unset;
+    display: flex;
+    justify-content: center;
+  }
+
+  .global-settings-card {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 }

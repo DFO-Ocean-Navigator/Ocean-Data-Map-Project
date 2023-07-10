@@ -7,11 +7,9 @@ import cartopy.crs as ccrs
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
 from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
-from mpl_toolkits.basemap import maskoceans
 from osgeo import gdal, osr
 from shapely.geometry import LinearRing, MultiPolygon, Point
 from shapely.geometry import Polygon as Poly
@@ -108,6 +106,13 @@ class MapPlotter(Plotter):
             and self.quiver["variable"] != "none"
         )
 
+    def __load_contour(self) -> bool:
+        return (
+            self.contour is not None
+            and self.contour["variable"]
+            and self.contour["variable"] != "none"
+        )
+
     def __apply_poly_mask(self, data: np.ma.MaskedArray) -> np.ma.MaskedArray:
         area = self.area[0]
         polys = []
@@ -172,7 +177,7 @@ class MapPlotter(Plotter):
 
             if abs(self.bounds[3] - self.bounds[1]) > 360:
                 raise ClientError(
-                    gettext(
+                    ( # gettext(
                         "You have requested an area that exceeds the width \
                         of the world. Thinking big is good but plots need to \
                         be less than 360 deg wide."
@@ -223,6 +228,9 @@ class MapPlotter(Plotter):
         variables_to_load = self.variables[
             :
         ]  # we don't want to change self,variables so copy it
+
+        if self.__load_contour():
+            variables_to_load.append(self.contour["variable"])
         if self.__load_quiver():
             variables_to_load.append(self.quiver["variable"])
 
@@ -373,11 +381,7 @@ class MapPlotter(Plotter):
                 self.depth = 0
 
             contour_data = []
-            if (
-                self.contour is not None
-                and self.contour["variable"] != ""
-                and self.contour["variable"] != "none"
-            ):
+            if self.__load_contour():
                 d = dataset.get_area(
                     np.array([self.latitude, self.longitude]),
                     self.depth,
@@ -435,17 +439,6 @@ class MapPlotter(Plotter):
                 d[np.where(quiver_bathymetry < depth_value)] = np.ma.masked
             for d in self.contour_data:
                 d[np.where(self.bathymetry < depth_value_map)] = np.ma.masked
-        else:
-            mask = maskoceans(
-                self.longitude, self.latitude, self.data, True, "h", 1.25
-            ).mask
-            self.data[~mask] = np.ma.masked
-            for d in self.quiver_data:
-                mask = maskoceans(self.quiver_longitude, self.quiver_latitude, d).mask
-                d[~mask] = np.ma.masked
-            for d in contour_data:
-                mask = maskoceans(self.longitude, self.latitude, d).mask
-                d[~mask] = np.ma.masked
 
         if self.area and self.filetype in ["csv", "odv", "txt", "geotiff"]:
             area_polys = []

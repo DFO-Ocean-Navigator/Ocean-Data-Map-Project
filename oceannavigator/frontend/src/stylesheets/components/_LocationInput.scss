@@ -1,0 +1,16 @@
+Div.LocationInput {
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  .location-header {
+    font-size: 10pt;
+    margin: 5px 0px;
+    font-weight: bold;
+  }
+
+  .location-table {
+    .location-input {
+      width: 150px;
+    }
+  }
+}

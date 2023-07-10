@@ -1,8 +1,8 @@
 import datetime
-import os
 import uuid
 import warnings
 import zipfile
+from pathlib import Path
 from typing import Dict, List, Set, Tuple, Union
 
 import dateutil.parser
@@ -15,7 +15,7 @@ import pyresample
 import xarray
 import xarray.core.variable
 from cachetools import TTLCache
-from flask_babel import format_date
+from babel.dates import format_date
 
 import data.calculated
 import data.utils
@@ -49,6 +49,9 @@ class NetCDFData(Data):
         self._nc_files: Union[List, None] = self.get_nc_file_list(
             self._dataset_config, **kwargs
         )
+        self.interp: str = kwargs.get("interp", "gaussian")
+        self.radius: int = kwargs.get("radius", 25000)
+        self.neighbours: int = kwargs.get("neighbours", 10)
 
     def __enter__(self):
         # Don't decode times since we do it anyways.
@@ -82,11 +85,10 @@ class NetCDFData(Data):
             try:
                 # Handle list of URLs for staggered grid velocity field datasets
                 url = self.url if isinstance(self.url, list) else [self.url]
-                # This will raise a FutureWarning for xarray>=0.12.2.
-                # That warning should be resolvable by changing to:
-                # fields = xarray.open_mfdataset(self.url, combine="by_coords",
-                # decode_times=decode_times)
-                fields = xarray.open_mfdataset(url, decode_times=decode_times)
+                if len(url) > 1:
+                    fields = self._construct_remote_ds(url, decode_times)
+                else:
+                    fields = xarray.open_mfdataset(url, decode_times=decode_times)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
@@ -231,8 +233,8 @@ class NetCDFData(Data):
     def subset(self, query):
         """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
-        if not os.path.isdir("/tmp/subset"):
-            os.makedirs("/tmp/subset")
+        path = Path("/tmp/subset")
+        path.mkdir(parents=True, exist_ok=True)
         working_dir = "/tmp/subset/"
 
         entire_globe = True  # subset the globe?
@@ -368,7 +370,7 @@ class NetCDFData(Data):
                 )
             )
 
-        dataset_name = query.get("dataset_name")
+        dataset_name = query.get("dataset")
         y_coord, x_coord = self.yx_dimensions
 
         # Do subset along coordinates
@@ -420,7 +422,7 @@ class NetCDFData(Data):
             + output_format
         )
 
-        # Workaround for 
+        # Workaround for
         # https://github.com/pydata/xarray/issues/2822#issuecomment-475487497
         if "_NCProperties" in subset.attrs.keys():
             del subset.attrs["_NCProperties"]
@@ -633,7 +635,7 @@ class NetCDFData(Data):
             myzip = zipfile.ZipFile("%s%s.zip" % (working_dir, filename), mode="w")
             myzip.write(
                 "%s%s.nc" % (working_dir, filename),
-                os.path.basename("%s%s.nc" % (working_dir, filename)),
+                Path("%s%s.nc" % (working_dir, filename)).name,
             )
             myzip.comment = b"Generated from www.navigator.oceansdata.ca"
             myzip.close()  # Must be called to actually create zip
@@ -738,8 +740,8 @@ class NetCDFData(Data):
             longitude.
         """
         return (
-            self.__find_variable(["nav_lat", "latitude"]),
-            self.__find_variable(["nav_lon", "longitude"]),
+            self.__find_variable(["nav_lat", "latitude", "lat"]),
+            self.__find_variable(["nav_lon", "longitude", "lon"]),
         )
 
     @property
@@ -747,7 +749,7 @@ class NetCDFData(Data):
         try:
             return list(self.dataset.dims)
         except AttributeError:
-            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions 
+            # FVCOM datasets are netCDF4.Dataset instances that use a dimensions
             # property
             return [dim for dim in self.dataset.dimensions]
 
@@ -876,15 +878,12 @@ class NetCDFData(Data):
                 # Handle possible list of URLs for staggered grid velocity field
                 # datasets
                 url = self.url if isinstance(self.url, list) else [self.url]
-                # This will raise a FutureWarning for xarray>=0.12.2.
-                # That warning should be resolvable by changing to:
-                # with xarray.open_mfdataset(url, combine="by_coords",
-                # decode_times=False) as ds:
-                with xarray.open_mfdataset(url, decode_times=False) as ds:
-                    self._variable_list = self._get_xarray_data_variables(
-                        ds
-                    )  # Cache the list for later
-
+                if len(url) > 1:
+                    ds = self._construct_remote_ds(url, False)
+                else:
+                    ds = xarray.open_mfdataset(url, decode_times=False)
+                # Cache the list for later
+                self._variable_list = self._get_xarray_data_variables(ds)
             except xarray.core.variable.MissingDimensionsError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
@@ -1072,3 +1071,18 @@ class NetCDFData(Data):
         if timestamp > 0 and endtime < 0:
             idx = data.utils.roll_time(endtime, len_timestamps)
             return db.get_timestamp_range(timestamp, all_timestamps[idx], variable)
+
+    def _construct_remote_ds(self, urls: list, decode_times: bool) -> xarray.Dataset:
+        """Constructs dataset from multiple remote urls. This avoids memory errors due
+        to xarray's inability to lazily concatenate large datasets. Datasets are
+        arbitrarily limited to 100 most recent timestamps.
+        """
+        fields = xarray.Dataset()
+        for url in urls:
+            field = xarray.open_dataset(url, decode_times=decode_times)
+            variables = list(field.keys())
+            for var in variables:
+                fields[var] = field[var][-100:]
+        fields.attrs = field.attrs
+
+        return fields

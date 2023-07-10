@@ -1,21 +1,23 @@
 import hashlib
-import os
 import threading
 
 import numpy as np
 import pyresample
+from pathlib import Path
 from cachetools import LRUCache
-from flask import current_app
 from netCDF4 import Dataset
 from pyresample.utils import wrap_longitudes
 from scipy.ndimage.filters import gaussian_filter
 
+from oceannavigator.settings import get_settings
+
 _bathymetry_cache = LRUCache(maxsize=256 * 1024 * 1024, getsizeof=len)
+settings = get_settings()
 
 
 def bathymetry(target_lat, target_lon, blur=None):
-    CACHE_DIR = current_app.config["CACHE_DIR"]
-    BATHYMETRY_FILE = current_app.config["BATHYMETRY_FILE"]
+    CACHE_DIR = settings.cache_dir
+    BATHYMETRY_FILE = settings.bathymetry_file
 
     fname = str(np.median(target_lat)) + "," + str(np.median(target_lon))
 
@@ -72,14 +74,12 @@ def bathymetry(target_lat, target_lon, blur=None):
                 target_def,
                 radius_of_influence=500000,
                 fill_value=None,
-                nprocs=4,
             )
 
             def do_save(filename, data):
                 np.save(filename, data.filled())
 
-            if not os.path.isdir(CACHE_DIR):
-                os.makedirs(CACHE_DIR)
+            Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
             t = threading.Thread(target=do_save, args=(CACHE_DIR + "/" + hashed, data))
             t.daemon = True

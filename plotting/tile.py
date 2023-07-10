@@ -1,4 +1,3 @@
-import contextlib
 import math
 from io import BytesIO
 
@@ -6,7 +5,6 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import current_app
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
@@ -20,6 +18,7 @@ import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
 from oceannavigator import DatasetConfig
+from oceannavigator.settings import get_settings
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -162,7 +161,9 @@ def scale(args):
     return buf
 
 
-def plot(projection, x, y, z, args):
+async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
+    settings = get_settings()
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -218,9 +219,7 @@ def plot(projection, x, y, z, args):
 
     # Mask out any topography if we're below the vector-tile threshold
     if z < 8:
-        with Dataset(
-            current_app.config["ETOPO_FILE"] % (projection, z), "r"
-        ) as dataset:
+        with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
             bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
         bathymetry = gaussian_filter(bathymetry, 0.5)
@@ -234,12 +233,12 @@ def plot(projection, x, y, z, args):
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
-    buf = BytesIO()
-    im.save(buf, format="PNG", optimize=True)
-    return buf
+    return im
 
 
-def topo(projection, x, y, z, shaded_relief):
+def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
+    settings = get_settings()
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -256,7 +255,7 @@ def topo(projection, x, y, z, shaded_relief):
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
 
     data = None
-    with Dataset(current_app.config["ETOPO_FILE"] % (projection, z), "r") as dataset:
+    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
         data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
     shade = 0
@@ -280,17 +279,21 @@ def topo(projection, x, y, z, shaded_relief):
     )
     img = sm.to_rgba(np.squeeze(data))
 
-    img = img + shade
+    img += shade
     img = np.clip(img, 0, 1)
 
     im = Image.fromarray((img * 255.0).astype(np.uint8))
+
     buf = BytesIO()
     im.save(buf, format="PNG", optimize=True)
+    buf.seek(0)
 
     return buf
 
 
-def bathymetry(projection, x, y, z, args):
+async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
+    settings = get_settings()
+
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
         lat, lon = np.meshgrid(lat, lon)
@@ -298,7 +301,7 @@ def bathymetry(projection, x, y, z, args):
     xpx = x * 256
     ypx = y * 256
 
-    with Dataset(current_app.config["ETOPO_FILE"] % (projection, z), "r") as dataset:
+    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
         data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
         data = data[::-1, :]
 
@@ -319,25 +322,20 @@ def bathymetry(projection, x, y, z, args):
     for i, l in enumerate(LEVELS):
         contours = measure.find_contours(data, l)
 
-        for n, contour in enumerate(contours):
+        for _, contour in enumerate(contours):
             ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
 
     plt.xlim([0, 255])
     plt.ylim([0, 255])
 
-    with contextlib.closing(BytesIO()) as buf:
-        plt.savefig(
-            buf,
-            format="png",
-            dpi=64,
-            transparent=True,
-        )
-        plt.close(fig)
-        buf.seek(0)
-        im = Image.open(buf)
+    buf = BytesIO()
+    plt.savefig(
+        buf,
+        format="png",
+        dpi=64,
+        transparent=True,
+    )
+    plt.close(fig)
+    buf.seek(0)
 
-        buf2 = BytesIO()
-        im.save(buf2, format="PNG", optimize=True)
-        return buf2
-
-    return None
+    return buf

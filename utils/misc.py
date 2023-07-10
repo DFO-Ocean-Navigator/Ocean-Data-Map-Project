@@ -1,28 +1,31 @@
-import os
 import xml.etree.ElementTree as ET
 from operator import itemgetter
+from typing import List, Union
+from pathlib import Path
 
 import numpy as np
 import pyproj
-from flask import current_app
 from shapely.geometry import LineString, Point, Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from shapely.geometry.polygon import LinearRing
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
+from oceannavigator.settings import get_settings
+
+settings = get_settings()
 
 
-def list_kml_files(subdir):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
+def list_kml_files(subdir: str) -> List[dict]:
+    kml_dir = Path(settings.overlay_kml_dir).joinpath(subdir)
 
     files = []
-    for f in os.listdir(DIR):
+    for f in kml_dir.iterdir():
         name = None
-        if not f.endswith(".kml"):
+        if ".kml" not in f.suffix:
             continue
         try:
-            root = ET.parse(DIR + "/" + f).getroot()
+            root = ET.parse(f.as_posix()).getroot()
         except ET.ParseError:
             continue
         nsmap = root.tag.split("}", 1)[0] + "}"
@@ -30,14 +33,17 @@ def list_kml_files(subdir):
             for filename in folder.iter(nsmap + "name"):
                 name = filename.text
                 break
-        entry = {"name": name, "id": f[:-4]}
+        entry = {"name": name, "id": f.name[:-4]}
 
         files.append(entry)
 
     return sorted(files, key=itemgetter("name"))
 
 
-def _get_view(extent):
+def _get_view(extent: Union[str, None]) -> Union[LinearRing, None]:
+    if not extent:
+        return None
+
     extent = list(map(float, extent.split(",")))
     view = LinearRing(
         [
@@ -51,10 +57,10 @@ def _get_view(extent):
 
 
 def _get_kml(subdir, file_id):
-    DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], subdir)
-    f = os.path.join(DIR, "%s.kml" % file_id)
+    DIR = Path(settings.overlay_kml_dir).joinpath(subdir)
+    f = DIR.joinpath("%s.kml" % file_id)
     folder = None
-    root = ET.parse(f).getroot()
+    root = ET.parse(f.as_posix()).getroot()
     for doc in root:
         if "Document" in doc.tag:
             for folder in doc:
@@ -64,10 +70,10 @@ def _get_kml(subdir, file_id):
     return folder, nsmap
 
 
-def points(file_id, projection, resolution, extent):
+def points(file_id: str, projection: str, extent: str) -> dict:
     proj = pyproj.Proj(projection)
     view = _get_view(extent)
-    folder, nsmap = _get_kml("point", file_id)
+    folder, _ = _get_kml("point", file_id)
     points = []
     name = None
 
@@ -77,10 +83,14 @@ def points(file_id, projection, resolution, extent):
         if "coordinates" in child.tag:
             c_txt = child.text
             lonlat = list(map(float, c_txt.split(",")))
-            x, y = proj(lonlat[0], lonlat[1])
-            p = Point(y, x)
 
-            if view.envelope.intersects(p):
+            should_append = True
+            if view:
+                x, y = proj(lonlat[0], lonlat[1])
+                p = Point(y, x)
+                should_append = view.envelope.intersects(p)
+
+            if should_append:
                 points.append(
                     {
                         "type": "Feature",
@@ -96,17 +106,16 @@ def points(file_id, projection, resolution, extent):
                     }
                 )
 
-    result = {
+    return {
         "type": "FeatureCollection",
         "features": points,
     }
-    return result
 
 
-def lines(file_id, projection, resolution, extent):
+def lines(file_id, projection, extent) -> dict:
     proj = pyproj.Proj(projection)
     view = _get_view(extent)
-    folder, nsmap = _get_kml("line", file_id)
+    folder, _ = _get_kml("line", file_id)
     lines = []
     name = None
 
@@ -148,12 +157,12 @@ def lines(file_id, projection, resolution, extent):
     return result
 
 
-def list_areas(file_id, simplify=True):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
+def list_areas(file_id, simplify=True) -> List[dict]:
+    AREA_DIR = Path(settings.overlay_kml_dir).joinpath("area")
 
     areas = []
-    f = os.path.join(AREA_DIR, "%s.kml" % file_id)
-    folder = ET.parse(f).getroot()
+    f = AREA_DIR.joinpath("%s.kml" % file_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     def get_coords(path):
@@ -194,14 +203,13 @@ def list_areas(file_id, simplify=True):
             }
         )
 
-    areas = sorted(areas, key=lambda k: k["name"])
-
-    return areas
+    return sorted(areas, key=lambda k: k["name"])
 
 
 def areas(area_id, projection, resolution, extent):
-    AREA_DIR = os.path.join(current_app.config["OVERLAY_KML_DIR"], "area")
-    folder = ET.parse(AREA_DIR + "/" + area_id + ".kml").getroot()
+    AREA_DIR = Path(settings.overlay_kml_dir).joinpath("area")
+    f = AREA_DIR.joinpath("%s.kml" % area_id)
+    folder = ET.parse(f.as_posix()).getroot()
     nsmap = folder.tag.split("}", 1)[0] + "}"
 
     proj = pyproj.Proj(projection)
@@ -273,12 +281,10 @@ def areas(area_id, projection, resolution, extent):
                 }
             )
 
-    result = {
+    return {
         "type": "FeatureCollection",
         "features": areas,
     }
-
-    return result
 
 
 def get_point_data(dataset, variable, time, depth, location):

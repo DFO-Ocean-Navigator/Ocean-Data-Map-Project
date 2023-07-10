@@ -1,94 +1,83 @@
-import React from "react";
-import NumericInput from "react-numeric-input";
+import React, {useState, useEffect} from "react";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-class LocationInput extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      latitude: parseFloat(this.props.state[0][0]),
-      longitude: parseFloat(this.props.state[0][1]),
-    };
+function LocationInput(props) {
+  const [latitude, setLatitude] = useState(parseFloat(props.state[0][0]).toFixed(4));
+  const [longitude, setLongitude] = useState(parseFloat(props.state[0][1]).toFixed(4));
 
-    // Function bindings
-    this.updateParent = this.updateParent.bind(this);
-    this.keyPress = this.keyPress.bind(this);
-  }
+  useEffect(() => {
+    let newLat = parseFloat(latitude).toFixed(4);
+    let newLon = parseFloat(longitude).toFixed(4);
+    let prevLat = props.state[0][0].toFixed(4);
+    let prevLon = props.state[0][1].toFixed(4);
 
-  updateParent() {
-    clearTimeout(this.timeout);
-    this.props.onUpdate(
-      this.props.id,
-      [[this.state.latitude, this.state.longitude]]
-    );
-  }
+    if (
+      !isNaN(newLat) &&
+      !isNaN(newLon) &&
+      (newLat !== prevLat || newLon !== prevLon)
+    ) {
+      const timer = setTimeout(() => {
+        props.onUpdate(props.id, [[parseFloat(newLat), parseFloat(newLon)]]);
+      }, 1000);
 
-  keyPress(e) {
-    var key = e.which || e.keyCode;
-    if (key == 13) {
-      this.updateParent();
-      return false;
-    } else {
-      return true;
+      return () => clearTimeout(timer);
     }
-  }
+  }, [latitude, longitude]);
 
-  changed(key, value) {
-    clearTimeout(this.timeout);
-    var state = {};
-    state[key] = value;
-    this.setState(state);
-    this.timeout = setTimeout(this.updateParent, 500);
-  }
+  const changed = (key, e) => {
+    switch (key) {
+      case "latitude":
+        setLatitude(e.target.value);
+        break;
+      case "longitude":
+        setLongitude(e.target.value);
+        break;
+    }
+  };
 
-  render() {
-    return (
-      <div key={this.props.url} className='LocationInput input'>
-        <h1>
-          {this.props.title}
-        </h1>
-
-        <table>
+  return (
+    <div key={props.url} className="LocationInput input">
+      <h1 className="location-header">{props.title}</h1>
+      <div className="tale-container">
+        <table className="location-table">
           <tbody>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_lat"}>{_("Lat:")}</label>
+                <label htmlFor={props.id + "_lat"}>{"Lat:"}</label>
               </td>
               <td>
-                <NumericInput
-                  value={this.state.latitude}
-                  precision={4}
+                <input
+                  className="location-input"
+                  type="number"
+                  value={latitude}
                   step={0.01}
-                  onChange={(n,s) => this.changed("latitude", n)}
-                  onBlur={this.updateParent}
-                  onKeyPress={this.keyPress}
-                  id={this.props.id + "_lat"}
+                  onChange={(n, s) => changed("latitude", n)}
+                  id={props.id + "_lat"}
                 />
               </td>
             </tr>
             <tr>
               <td>
-                <label htmlFor={this.props.id + "_lon"}>{_("Lon:")}</label>
+                <label htmlFor={props.id + "_lon"}>{"Lon:"}</label>
               </td>
               <td>
-                <NumericInput
-                  value={this.state.longitude}
-                  precision={4}
+                <input
+                  className="location-input"
+                  type="number"
+                  value={longitude}
                   step={0.01}
-                  onChange={(n,s) => this.changed("longitude", n)}
-                  onBlur={this.updateParent}
-                  onKeyPress={this.keyPress}
-                  id={this.props.id + "_lon"}
+                  onChange={(n, s) => changed("longitude", n)}
+                  id={props.id + "_lon"}
                 />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 //***********************************************************************

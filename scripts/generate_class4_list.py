@@ -55,19 +55,19 @@ def main():
         log.error(f"Error: Unable to load configuration file {opts.config_file.name}.")
         sys.exit(1)
 
-    if 'CLASS4_OP_PATH' not in config:
-        log.error("Error: CLASS4_OP_PATH entry not found in config file.")
+    if 'ONAV_CLASS4_OP_PATH' not in config:
+        log.error("Error: ONAV_CLASS4_OP_PATH entry not found in config file.")
         sys.exit(1)
 
-    if 'CLASS4_RAO_PATH' not in config:
-        log.error("Error: CLASS4_RAO_PATH entry not found in config file.")
+    if 'ONAV_CLASS4_RAO_PATH' not in config:
+        log.error("Error: ONAV_CLASS4_RAO_PATH entry not found in config file.")
         sys.exit(1)
 
-    if "CACHE_DIR" not in config:
+    if "ONAV_CACHE_DIR" not in config:
         log.error("Cache directory specification not found in configuration file")
         sys.exit(1)
 
-    class4_paths = [config['CLASS4_OP_PATH'], config['CLASS4_RAO_PATH']]
+    class4_paths = [config['ONAV_CLASS4_OP_PATH'], config['ONAV_CLASS4_RAO_PATH']]
     output_files = ["class4_OP_files.pickle", "class4_RAO_files.pickle"]
     pattern = ["**/**/*GIOPS*profile.nc", "**/**/*SAM2_OLA.nc"]
 
@@ -75,7 +75,7 @@ def main():
         log.info(f"Generating list of Class4 files from {path}...")
         class4_files = list_class4_files(path, pattern)
 
-        output_file_name = Path(config["CACHE_DIR"], file)
+        output_file_name = Path(config["ONAV_CACHE_DIR"], file)
         try:
             output_file = open(output_file_name, "wb")
         except IOError:

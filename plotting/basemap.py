@@ -1,7 +1,8 @@
 import hashlib
-import os
 import pickle
 import threading
+from pathlib import Path
+from typing import Union
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -9,8 +10,10 @@ import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
-from flask import current_app
-from typing import Union
+
+from oceannavigator.settings import get_settings
+
+settings = get_settings()
 
 
 def get_resolution(height: float, width: float) -> str:
@@ -29,9 +32,7 @@ def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
     shp_file = f"/cartopy_resources/ne_{resolution}_diff.shp"
 
     try:
-        land_shp = shpreader.BasicReader(
-            current_app.config["SHAPE_FILE_DIR"] + shp_file
-        )
+        land_shp = shpreader.BasicReader(settings.shape_file_dir + shp_file)
     except shpreader.shapefile.ShapefileException:
         print(f"Could not open {shp_file}, using Cartopy feature interface.")
         land_shp = cfeature.NaturalEarthFeature("physical", "land", resolution)
@@ -47,9 +48,9 @@ def load_map(
     plot_proj: ccrs, extent: list, figuresize: list, dpi: int, plot_resolution: str
 ) -> Union[plt.figure, plt.axes]:
 
-    CACHE_DIR = current_app.config["CACHE_DIR"]
+    CACHE_DIR = settings.cache_dir
     filename = _get_filename(plot_proj.proj4_params["proj"], extent)
-    filename = "".join([CACHE_DIR, "/", filename])
+    filename = Path(CACHE_DIR).joinpath(filename)
 
     pc_proj = ccrs.PlateCarree()
     pc_extent = pc_proj.transform_points(
@@ -62,7 +63,7 @@ def load_map(
         pc_extent[1, 1] + 5,
     ]
 
-    if not os.path.exists(filename):
+    if not filename.exists():
         fig = plt.figure(figsize=figuresize, dpi=dpi)
         ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
         ax.set_extent(extent, crs=plot_proj)
@@ -88,8 +89,7 @@ def load_map(
         def do_pickle(fig, ax, filename: str) -> None:
             pickle.dump((fig, ax), open(filename, "wb"), -1)
 
-        if not os.path.isdir(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
+        Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
 
         t = threading.Thread(target=do_pickle, args=(fig, ax, filename))
         t.daemon = True

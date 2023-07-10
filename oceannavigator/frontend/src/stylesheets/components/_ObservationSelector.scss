@@ -1,10 +1,24 @@
 div.ObservationSelector {
+    .obs-card {
+      margin-top: 5px;
+      margin-bottom: 5px;
+
+      .card-header{
+        display: flex;
+        flex-direction: row;
+      }
+    }
     .inputs {
         display: flex;
         > .input {
             flex: 0 1 auto;
             margin-left: 0.5em;
             margin-right: 0.5em;
+        }
+
+        .slider-container {
+          width: 95%;
+          margin: 10px auto;
         }
     }
 
@@ -56,10 +70,3 @@ div.ObservationSelector {
       }
     }
 }
-
-.observation-modal {
-    width: auto;
-    min-width: 600px;
-    max-width: 75%;
-}
-

@@ -2,7 +2,6 @@
 
 import datetime
 import itertools
-import json
 import re
 from bisect import bisect_left, bisect_right
 from typing import List, Union
@@ -111,17 +110,9 @@ def roll_time(requested_index: int, len_timestamp_dim: int):
     return requested_index
 
 
-class DateTimeEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, datetime.datetime):
-            return o.isoformat()
-
-        return json.JSONEncoder.default(self, o)
-
-
 def trunc(
-    values: Union[np.float, np.ndarray], num_decimals: int = 3
-) -> Union[np.float, np.ndarray]:
+    values: Union[float, np.ndarray], num_decimals: int = 3
+) -> Union[float, np.ndarray]:
     """
     Truncates the floating-point value(s) to `num_decimals` places.
 

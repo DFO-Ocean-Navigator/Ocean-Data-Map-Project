@@ -5,7 +5,7 @@ $(sed -i "s/CODE_VERSION/$CODE_VER/g" oceannavigator/frontend/index.html)
 
 HOST_IP=$(hostname -I | awk '{print $1}')
 
-PORT=5000
+PORT=8443
 
 nc -zv 0.0.0.0 $PORT > /dev/null 2>&1
 RES=$?

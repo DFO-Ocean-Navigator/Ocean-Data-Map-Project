@@ -47,6 +47,9 @@ class TimeseriesPlotter(PointPlotter):
             variable=self.variables,
             timestamp=self.starttime,
             endtime=self.endtime,
+            interp=self.interp,
+            radius=self.radius,
+            neighbours=self.neighbours,
         ) as dataset:
             self.load_misc(dataset, self.variables)
 
@@ -508,5 +511,8 @@ class TimeseriesPlotter(PointPlotter):
                 fontsize=14,
                 transform=ax.transAxes,
             )
+
+            if self.axis_range:
+                plt.gca().set_ylim(self.axis_range[0])
 
         return super(TimeseriesPlotter, self).plot(fig)

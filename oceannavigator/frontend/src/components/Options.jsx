@@ -1,8 +1,8 @@
 import React from "react";
-import { Row, FormControl, ControlLabel, Col, Panel, Button } from "react-bootstrap";
-import NumericInput from "react-numeric-input";
+import { Row, FormControl, ControlLabel, Col, Card, Button } from "react-bootstrap";
+// import NumericInput from "react-numeric-input";
 import Icon from "./lib/Icon.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -38,13 +38,12 @@ class Options extends React.Component {
 
     return (
       <div>
-        <Panel
+        <Card
           defaultExpanded
           bsStyle='primary'
         >
-          <Panel.Heading>{_("Colour Interpolation")}</Panel.Heading>
-          <Panel.Collapse>
-            <Panel.Body>
+          <Card.Header>{_("Colour Interpolation")}</Card.Header>
+            <Card.Body>
               <Row>
                 <Col md={4}>
                   <ControlLabel>{_("Method")}</ControlLabel>
@@ -67,7 +66,8 @@ class Options extends React.Component {
                   <ControlLabel>{_("Sampling Radius (km)")}</ControlLabel>
                 </Col>
                 <Col md={8}>
-                  <NumericInput
+                  <input
+                    type="number"
                     min={5}
                     max={100}
                     value={this.state.interpRadius}
@@ -80,7 +80,8 @@ class Options extends React.Component {
                   <ControlLabel>{_("Nearest Neighbours")}</ControlLabel>
                 </Col>
                 <Col md={8}>
-                  <NumericInput
+                  <input
+                    type="number"
                     min={1}
                     max={50}
                     value={this.state.interpNeighbours}
@@ -99,22 +100,20 @@ class Options extends React.Component {
                   {_("Apply")}
                 </Button>
               </Row>
-            </Panel.Body>
-          </Panel.Collapse>
-        </Panel>
+            </Card.Body>
+        </Card>
 
-        <Panel
+        <Card
           defaultExpanded
           bsStyle='primary'
         >
-          <Panel.Heading>{_("Bathymetry")}</Panel.Heading>
-          <Panel.Collapse>
-            <Panel.Body>
+          <Card.Header>{_("Bathymetry")}</Card.Header>
+            <Card.Body>
               <Row>
                 <Col md={12}>
-                  <SelectBox
+                  <CheckBox
                     id='bathymetry'
-                    state={this.state.bathymetry}
+                    checked={this.state.bathymetry}
                     onUpdate={(e, val) => { this.setState({ "bathymetry": val, }); }}
                     title={_("Show Bathymetry Contours")}
                   />
@@ -125,7 +124,8 @@ class Options extends React.Component {
                   <ControlLabel>{_("Bathemetry Opacity")}</ControlLabel>
                 </Col>
                 <Col md={8}>
-                  <NumericInput
+                  <input
+                    type="number"
                     min={0.0}
                     max={1.0}
                     step={0.05}
@@ -151,9 +151,9 @@ class Options extends React.Component {
               </Row>
               <Row>
                 <Col md={12}>
-                  <SelectBox
+                  <CheckBox
                     id='topoShadedRelief'
-                    state={this.state.topoShadedRelief}
+                    checked={this.state.topoShadedRelief}
                     onUpdate={(e, val) => { this.setState({ "topoShadedRelief": val, }); }}
                     title={_("Topography Shaded Relief")}
                   />
@@ -170,9 +170,8 @@ class Options extends React.Component {
                   {_("Apply")}
                 </Button>
               </Row>
-            </Panel.Body>
-          </Panel.Collapse>
-        </Panel>
+            </Card.Body>
+        </Card>
       </div>
     );
   }

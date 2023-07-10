@@ -1,0 +1,39 @@
+Div.calendar-container {
+  border: 1px solid #aeaeae;
+  width: 300px;
+  justify-content: center;
+
+  .calendar-header {
+    width: 100%;
+    color: #ffffff;
+    background-color: #008cba;
+    font-size: large;
+    font-weight: bold;
+    padding: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .calendar {
+    display: grid;
+    grid-template: repeat(2, auto) / repeat(2, auto);
+    column-gap: 2px;
+    row-gap: 2px;
+    background-color: #ffffff;
+    padding: 2px;
+
+    .date-selected {
+      color: #ffffff;
+      background-color: #008cba;
+    }
+
+    .date-button-enabled {
+      background-color: lightgray;
+    }
+
+    .date-button-disabled {
+      color: lightgray;
+    }
+  }
+}

@@ -72,7 +72,7 @@ class ONav_Profiling_Driver:
             logging.info(f"Attempt {i+1}:")
             start_time = time.time()
             try:
-                resp = requests.get(url, timeout=self.max_time)
+                resp = requests.get(url, timeout=self.max_time, verify=False)
                 end_time = time.time()
 
                 if resp.status_code == 200:
@@ -105,20 +105,20 @@ class ONav_Profiling_Driver:
 
     def get_datasets(self):
         logging.info("Requesting dataset meta data...")
-        data, _, _ = self.send_req(self.api_url + "datasets/")
+        data, _, _ = self.send_req(self.api_url + "datasets")
         if data:
             return [d for d in json.loads(data.content)]
 
     def get_variables(self, dataset):
         logging.info("Requesting variables...")
-        data, _, _ = self.send_req(self.api_url + f"variables/?dataset={dataset}")
+        data, _, _ = self.send_req(self.api_url + f"dataset/{dataset}/variables")
         if data:
             return [d for d in json.loads(data.content)]
 
     def get_timestamps(self, dataset, variable):
         logging.info("Requesting timestamps...")
         data, _, _ = self.send_req(
-            self.api_url + f"timestamps/?dataset={dataset}&variable={variable}"
+            self.api_url + f"dataset/{dataset}/{variable}/timestamps"
         )
         if data:
             return [d for d in json.loads(data.content)]
@@ -126,29 +126,31 @@ class ONav_Profiling_Driver:
     def get_depths(self, dataset, variable):
         logging.info("Requesting depths...")
         data, _, _ = self.send_req(
-            self.api_url + f"depth/?dataset={dataset}&variable={variable}"
+            self.api_url + f"/dataset/{dataset}/{variable}/depths"
         )
         if data:
             return [d for d in json.loads(data.content)]
 
-    def get_plot(self, query):
+    def get_plot(self, plot_type, query):
         logging.info("Requesting plot...")
         return self.send_req(
             self.api_url
-            + "plot/?"
+            + f"plot/{plot_type}?"
             + urlencode({"query": json.dumps(query)})
             + "&format=json"
         )
 
-    def get_subset(self, query):
+    def get_subset(self, dataset, variable, query):
         logging.info("Requesting subset...")
-        url = self.api_url + "subset/?"
+        url = self.api_url + f"subset/{dataset}/{variable}?"
         for key in query:
             url += f"&{key}={query[key]}"
         return self.send_req(url)
 
     def get_git_hash(self):
-        resp = requests.get(self.api_url + "git-hash", timeout=self.max_time)
+        resp = requests.get(
+            self.api_url + "gitinfo", timeout=self.max_time, verify=False
+        )
         if resp.status_code == 200:
             return json.loads(resp.content)
         return ""
@@ -170,6 +172,7 @@ class ONav_Profiling_Driver:
 
                 if timestamps:
                     _, start_time, resp_time = self.get_plot(
+                        "profile",
                         {
                             "dataset": ds,
                             "names": [],
@@ -178,7 +181,6 @@ class ONav_Profiling_Driver:
                             "showmap": 0,
                             "station": config["station"],
                             "time": timestamps[-1]["id"],
-                            "type": "profile",
                             "variable": v,
                         }
                     )
@@ -203,6 +205,7 @@ class ONav_Profiling_Driver:
                     start_idx = len(timestamps) - config["datasets"][ds]["n_timestamps"]
 
                     _, start_time, resp_time = self.get_plot(
+                        "timeseries",
                         {
                             "colormap": "default",
                             "dataset": ds,
@@ -215,7 +218,6 @@ class ONav_Profiling_Driver:
                             "showmap": 0,
                             "starttime": timestamps[start_idx]["id"],
                             "station": config["station"],
-                            "type": "timeseries",
                             "variable": v,
                         }
                     )
@@ -240,6 +242,7 @@ class ONav_Profiling_Driver:
 
                 if timestamps:
                     _, start_time, resp_time = self.get_plot(
+                        "transect",
                         {
                             "colormap": "default",
                             "dataset": ds,
@@ -254,7 +257,6 @@ class ONav_Profiling_Driver:
                             "showmap": 1,
                             "surfacevariable": "none",
                             "time": timestamps[-1]["id"],
-                            "type": "transect",
                             "variable": v,
                         }
                     )
@@ -279,6 +281,7 @@ class ONav_Profiling_Driver:
                     start_idx = len(timestamps) - config["datasets"][ds]["n_timestamps"]
 
                     _, start_time, resp_time = self.get_plot(
+                        "hovmoller",
                         {
                             "colormap": "default",
                             "dataset": ds,
@@ -291,7 +294,6 @@ class ONav_Profiling_Driver:
                             "scale": "-5,30,auto",
                             "showmap": 1,
                             "starttime": timestamps[start_idx]["id"],
-                            "type": "hovmoller",
                             "variable": v,
                         }
                     )
@@ -312,6 +314,7 @@ class ONav_Profiling_Driver:
 
                 if timestamps:
                     _, start_time, resp_time = self.get_plot(
+                        "map",
                         {
                             "area": [
                                 {
@@ -344,7 +347,6 @@ class ONav_Profiling_Driver:
                             "scale": "-5,30,auto",
                             "showarea": 1,
                             "time": timestamps[-1]["id"],
-                            "type": "map",
                             "variable": v,
                         }
                     )
@@ -365,9 +367,10 @@ class ONav_Profiling_Driver:
 
                 if timestamps:
                     _, start_time, resp_time = self.get_subset(
+                        ds,
+                        v,
                         {
                             "output_format": "NETCDF4",
-                            "dataset_name": ds,
                             "max_range": config["datasets"][ds]["max_range"],
                             "min_range": config["datasets"][ds]["min_range"],
                             "should_zip": 1,
@@ -375,7 +378,6 @@ class ONav_Profiling_Driver:
                                 [str(timestamps[-1]["id"]), str(timestamps[-1]["id"])]
                             ),
                             "user_grid": 0,
-                            "variables": v,
                         }
                     )
 
@@ -393,6 +395,7 @@ class ONav_Profiling_Driver:
             logging.info(f"Observation ID: {o}")
 
             _, start_time, resp_time = self.get_plot(
+                "observation",
                 {
                     "dataset": "giops_day",
                     "names": [],
@@ -400,7 +403,6 @@ class ONav_Profiling_Driver:
                     "observation_variable": [0],
                     "plotTitle": "",
                     "quantum": "day",
-                    "type": "observation",
                     "variable": ["votemper"],
                 }
             )
@@ -415,15 +417,16 @@ class ONav_Profiling_Driver:
             logging.info(f"Class4 ID: {c}")
 
             _, start_time, resp_time = self.get_plot(
+                "class4",
                 {
                     "class4id": [c],
+                    "class4type": "ocean_predict",
                     "climatology": 0,
                     "dataset": "giops_day",
                     "error": "none",
                     "forecast": "best",
                     "models": [],
                     "showmap": 0,
-                    "type": "class4",
                 }
             )
 
@@ -553,8 +556,8 @@ if __name__ == "__main__":
     """
 
     # default options
-    url = "https://navigator.oceansdata.ca"
-    config = "api_profiling_config.json"
+    url = "https://10.118.169.120:5000"
+    config = "scripts/profiling_scripts/api_profiling_config.json"
     csv_file = None
     prof_path = None
     usr_id = "test_usr"

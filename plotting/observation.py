@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pint
 import pytz
-from flask_babel import format_datetime, gettext
+from babel.dates import format_datetime
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from data import open_dataset
-from data.observational import DataType, Sample, Station, db
+from data.observational import DataType, Sample, Station
 from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 from plotting.utils import mathtext
@@ -18,8 +20,9 @@ from utils.errors import ClientError
 
 
 class ObservationPlotter(PointPlotter):
-    def __init__(self, dataset_name: str, query: str, **kwargs):
+    def __init__(self, dataset_name: str, query: str, db: Session, **kwargs):
         self.plottype: str = "observation"
+        self.db = db
         super(ObservationPlotter, self).__init__(dataset_name, query, **kwargs)
 
     def load_data(self):
@@ -31,8 +34,9 @@ class ObservationPlotter(PointPlotter):
             self.timestamps = []
             self.observation_times = []
             self.names = []
+
             for idx, o in enumerate(self.observation):
-                station = db.session.query(Station).get(o)
+                station = self.db.query(Station).get(o)
                 observation = {
                     "time": station.time.isoformat(),
                     "longitude": station.longitude,
@@ -49,13 +53,13 @@ class ObservationPlotter(PointPlotter):
                     )
                 datatype_keys = [
                     k[0]
-                    for k in db.session.query(db.func.distinct(Sample.datatype_key))
+                    for k in self.db.query(func.distinct(Sample.datatype_key))
                     .filter(Sample.station == station)
                     .all()
                 ]
 
                 datatypes = (
-                    db.session.query(DataType)
+                    self.db.query(DataType)
                     .filter(DataType.key.in_(datatype_keys))
                     .order_by(DataType.key)
                     .all()
@@ -68,7 +72,7 @@ class ObservationPlotter(PointPlotter):
                 data = []
                 for dt in datatypes:
                     data.append(
-                        db.session.query(Sample.depth, Sample.value)
+                        self.db.query(Sample.depth, Sample.value)
                         .filter(Sample.station == station, Sample.datatype == dt)
                         .all()
                     )
@@ -112,10 +116,10 @@ class ObservationPlotter(PointPlotter):
                 self.load_misc(dataset, self.variables)
             except IndexError as e:
                 raise ClientError(
-                    gettext(
+                    (
                         "The selected variable(s) were not found in the dataset. \
-                Most likely, this variable is a derived product from existing dataset variables. \
-                Please select another variable."
+                        Most likely, this variable is a derived product from existing \
+                        dataset variables. Please select another variable."
                     )
                     + str(e)
                 )
@@ -258,8 +262,14 @@ class ObservationPlotter(PointPlotter):
             else:
                 l = []
                 for j in [
-                    (gettext("Observed"), self.observation_times),
-                    (gettext("Modelled"), self.timestamps),
+                    (
+                        "Observed",
+                        self.observation_times,
+                    ),  # (gettext("Observed"), self.observation_times),
+                    (
+                        "Modelled",
+                        self.timestamps,
+                    ),  # (gettext("Modelled"), self.timestamps),
                 ]:
                     for i, name in enumerate(self.names):
                         if len(self.names) == 1:
@@ -275,14 +285,14 @@ class ObservationPlotter(PointPlotter):
                     legobj.set_linewidth(4.0)
 
         ax[0].invert_yaxis()
-        ax[0].set_ylabel(gettext("Depth (m)"))
+        ax[0].set_ylabel("Depth (m)")  # ax[0].set_ylabel(gettext("Depth (m)"))
 
         if not self.plotTitle:
             if len(self.variables) > 0:
                 plt.suptitle(
                     "\n".join(
                         wrap(
-                            gettext("Profile for %s, Observed at %s, Modelled at %s")
+                            "Profile for %s, Observed at %s, Modelled at %s"  # gettext("Profile for %s, Observed at %s, Modelled at %s")
                             % (
                                 ", ".join(self.names),
                                 format_datetime(self.observation_time),
@@ -296,7 +306,7 @@ class ObservationPlotter(PointPlotter):
                 plt.suptitle(
                     "\n".join(
                         wrap(
-                            gettext("Profile for %s (%s)")
+                            "Profile for %s (%s)"  # gettext("Profile for %s (%s)")
                             % (
                                 ", ".join(self.names),
                                 format_datetime(self.observation_time),

@@ -1,456 +1,316 @@
-/* eslint react/no-deprecated: 0 */
+import React, { useState, useEffect, forwardRef } from "react";
+import { Button, Col, Row } from "react-bootstrap";
+import Dropdown from "react-bootstrap/Dropdown";
+import { InputGroup } from "react-bootstrap";
+import Form from "react-bootstrap/Form";
+import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
-import React from "react";
-import $ from "jquery";
-/*eslint no-unused-vars: ["error", {"varsIgnorePattern": "jQuery" }]*/
-import jQuery from "jquery";
-import dateFormat from "dateformat";
-import { Button } from "react-bootstrap";
-import Icon from "./lib/Icon.jsx";
-import PropTypes from "prop-types";
-
-import "jquery-ui-css/base.css";
-import "jquery-ui-css/datepicker.css";
-import "jquery-ui-css/theme.css";
-import "jquery-ui/datepicker";
-import "jquery-ui/button";
-import "jquery-ui-month-picker/MonthPicker.css";
-import "jquery-ui-month-picker/MonthPicker.js";
-import "jquery-ui/../i18n/datepicker-fr.js";
-import "jquery-ui/../i18n/datepicker-fr-CA.js";
-
+import DailyCalendar from "./calendars/DailyCalendar.jsx";
+import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
+import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
 import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 
-class TimePicker extends React.Component {
-  constructor(props) {
-    super(props);
+const CustomToggle = forwardRef(({ children, onClick }, ref) => (
+  <div
+    href=""
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+  >
+    {children}
+  </div>
+));
 
-    // Track if mounted to prevent no-op errors with the Ajax callbacks.
-    this._mounted = false;
+function TimePicker(props) {
+  const [timestamps, setTimestamps] = useState([]);
+  const [data, setData] = useState([]);
+  const [map, setMap] = useState({});
+  const [revMap, setRevMap] = useState({});
+  const [dateHours, setDateHours] = useState([]);
+  const [climatology, setClimatology] = useState(false);
 
-    this.state = {
-      data: [],
-      map: {},
-      revmap: {},
-      times: [],
-      min: 0,
-      max: 0,
-      value: 0 // Currently selected date
-    };
-
-    // Function bindings
-    this.timeChange = this.timeChange.bind(this);
-    this.pickerChange = this.pickerChange.bind(this);
-    this.nextTime = this.nextTime.bind(this);
-    this.prevTime = this.prevTime.bind(this);
-    this.getMinMaxTimestamps = this.getMinMaxTimestamps.bind(this);
-    this.getNextTimestamp = this.getNextTimestamp.bind(this);
-    this.getPrevTimestamp = this.getPrevTimestamp.bind(this);
-    this.getTimestampFromIndex = this.getTimestampFromIndex.bind(this);
-    this.getIndexFromTimestamp = this.getIndexFromTimestamp.bind(this);
-  }
-
-  componentDidMount() {
-    this._mounted = true;
-    this.populate(this.props);
-  }
-
-  componentWillUnmount() {
-    this._mounted = false;
-  }
-
-  getIndexFromTimestamp(timestamp) {
-    const keys = Object.keys(this.state.map);
-    return keys.indexOf(timestamp.toString());
-  }
-
-  getTimestampFromIndex(index) {
-    const keys = Object.keys(this.state.map);
-    if (index < 0) {
-      return keys[keys.length + index];
-    }
-
-    return keys[index];
-  }
-
-  getMinMaxTimestamps(props, data) {
-    let min = data[0].id;
-    let max = data[data.length - 1].id;
-
-    if ("min" in props) {
-      min = this.getNextTimestamp(parseInt(props.min));
-    }
-    if ("max" in props) {
-      max = this.getPrevTimestamp(parseInt(props.max));
-    }
-
-    if (!min) {
-      min = data[0].id;
-    }
-    if (!max) {
-      max = data[data.length - 1].id;
-    }
-
-    return [min, max];
-  }
-
-  getNextTimestamp(timestamp) {
-    const keys = Object.keys(this.state.map);
-    const nextIndex = keys.indexOf(timestamp.toString()) + 1;
-    return keys[nextIndex];
-  }
-
-  getPrevTimestamp(timestamp) {
-    const keys = Object.keys(this.state.map);
-    const prevIndex = keys.indexOf(timestamp.toString()) - 1;
-    return keys[prevIndex];
-  }
-
-  populate(props) {
-    // eslint-disable-next-line max-len
-    GetTimestampsPromise(props.dataset, props.variable).then(timestampResult => {
-      const data = timestampResult.data;
-
-      let map = {};
-      let revmap = {};
-
-      for (let i = 0; i < data.length; ++i) {
-        const d1 = new Date(data[i].value);
-        const d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
-        let d3 = d2;
-        if (this.props.quantum !== "hour") {
-          d3 = new Date(
-            Date.UTC(
-              d1.getUTCFullYear(),
-              d1.getUTCMonth(),
-              d1.getUTCDate(),
-              0,
-              0,
-              0,
-              0
-            )
-          );
-        }
-        map[data[i].id] = d2;
-        revmap[d3.toUTCString()] = data[i].id;
-      }
-
-      const [min, max] = this.getMinMaxTimestamps(props, data);
-
-      this.setState(
-        {
-          data: data,
-          map: map,
-          revmap: revmap,
-          min: min,
-          max: max
-        },
-        () => {
-          switch (props.quantum) {
-            case "month":
-              $(this.refs.picker).MonthPicker({
-                Button: false,
-                MonthFormat: "MM yy",
-                OnAfterMenuClose: this.pickerChange,
-                MinMonth: new Date(
-                  map[min].getTime() +
-                  map[min].getTimezoneOffset() * 60 * 1000
-                ),
-                MaxMonth: new Date(
-                  map[max].getTime() +
-                  map[max].getTimezoneOffset() * 60 * 1000
-                ),
-                i18n: {
-                  year: _("Year"),
-                  prevYear: _("Previous Year"),
-                  nextYear: _("Next Year"),
-                  next12Years: _("Jump Forward 12 Years"),
-                  prev12Years: _("Jump Back 12 Years"),
-                  nextLabel: _("Next"),
-                  prevLabel: _("Prev"),
-                  buttonText: _("Open Month Chooser"),
-                  jumpYears: _("Jump Years"),
-                  backTo: _("Back to"),
-                  months: [
-                    _("Jan."),
-                    _("Feb."),
-                    _("Mar."),
-                    _("Apr."),
-                    _("May"),
-                    _("June"),
-                    _("July"),
-                    _("Aug."),
-                    _("Sep."),
-                    _("Oct."),
-                    _("Nov."),
-                    _("Dec.")
-                  ]
-                }
-              });
-              break;
-            case "hour":
-              $(this.refs.picker).datepicker({
-                Button: false,
-                dateFormat: "dd MM yy",
-                onClose: this.pickerChange,
-                minDate: new Date(map[min]),
-                maxDate: new Date(map[max])
-              });
-              $(this.refs.picker).datepicker(
-                "option",
-                "minDate",
-                new Date(map[min])
-              );
-              $(this.refs.picker).datepicker(
-                "option",
-                "maxDate",
-                new Date(map[max])
-              );
-              break;
-            case "day":
-            default:
-              $(this.refs.picker).datepicker({
-                Button: false,
-                dateFormat: "dd MM yy",
-                onClose: this.pickerChange,
-                minDate: new Date(map[min]),
-                maxDate: new Date(map[max])
-              });
-
-              $(this.refs.picker).datepicker(
-                "option",
-                "minDate",
-                new Date(map[min])
-              );
-              $(this.refs.picker).datepicker(
-                "option",
-                "maxDate",
-                new Date(map[max])
-              );
-              break;
+  useEffect(() => {
+    if (!props.timestamps) {
+      if (props.dataset.id && props.dataset.variable) {
+        GetTimestampsPromise(props.dataset.id, props.dataset.variable).then(
+          (result) => {
+            setTimestamps(result.data);
           }
-          this.pickerChange();
-        }
-      );
-    }, error => {
-      console.error(error);
-    });
-  }
-
-  pickerChange() {
-    const [min, max] = this.getMinMaxTimestamps(this.props, this.state.data);
-
-    let d = null;
-    if (this.props.quantum === "hour") {
-      var times = [];
-      d = $(this.refs.picker).datepicker("getDate");
-      const isodatestr = dateFormat(d, "yyyy-mm-dd", true);
-
-      for (let i = 0; i < this.state.data.length; ++i) {
-        if (this.state.data[i].value.indexOf(isodatestr) === 0) {
-          if (this.state.data[i].id <= max && this.state.data[i].id >= min) {
-            times.unshift({
-              id: this.state.data[i].id,
-              value: dateFormat(this.state.data[i].value, "HH:MM", true)
-            });
-          }
-        }
+        );
       }
-      this.setState({
-        times: times
+    } else {
+      setTimestamps(props.timestamps);
+    }
+    if (props.dataset.id && props.dataset.id.includes("climatology")) {
+      setClimatology(true);
+    }
+  }, [props]);
+
+  useEffect(() => {
+    let newData = timestamps;
+
+    if (props.min) {
+      newData = newData.filter((item) => {
+        return item.id > props.min;
       });
-
-      if (times.length > 0) {
-        let index = this.getIndexFromTimestamp(this.props.state);
-        if (index === -1) {
-          index = this.state.data.length - 1;
-        }
-
-        if (this.state.value === undefined) {
-          this.props.onUpdate(this.props.id, times[0].id);
-        } else if (
-          this.state.data[index].value.indexOf(isodatestr) !== 0
-        ) {
-          this.props.onUpdate(this.props.id, times[0].id);
-        }
-      }
     }
-    else if (this.refs.picker !== null) {
 
-      if (this.props.quantum == "month" &&
-        $.data(this.refs.picker, "KidSysco-MonthPicker")) {
-        d = $(this.refs.picker).MonthPicker("GetSelectedDate");
-      }
-      else {
-        d = $(this.refs.picker).datepicker("getDate");
-      }
-      if (d !== null) {
-        const utcDate = new Date(
+    if (props.max) {
+      newData = newData.filter((item) => {
+        return item.id < props.max;
+      });
+    }
+
+    let newMap = {};
+    let newRevMap = {};
+    for (let i = 0; i < newData.length; ++i) {
+      const d1 = new Date(newData[i].value);
+      const d2 = new Date(d1.getTime() + d1.getTimezoneOffset() * 60000);
+      let d3 = d2;
+      if (props.dataset.quantum !== "hour") {
+        d3 = new Date(
           Date.UTC(
-            d.getFullYear(),
-            d.getMonth(),
-            this.props.quantum == "month" ? 15 : d.getDate(),
-            d.getHours(),
-            d.getMinutes(),
-            d.getSeconds(),
-            d.getMilliseconds()
+            d1.getUTCFullYear(),
+            d1.getUTCMonth(),
+            d1.getUTCDate(),
+            0,
+            0,
+            0,
+            0
           )
         );
-        this.props.onUpdate(
-          this.props.id,
-          this.state.revmap[utcDate.toUTCString()]
-        );
       }
-      else {
-        if (this.props.state < 0) {
-          this.props.onUpdate(
-            this.props.id,
-            this.getTimestampFromIndex(this.props.state)
-          );
-        }
-      }
-    }
-  }
-
-  timeChange(e) {
-    const value = e.target.value;
-    this.setState({
-      value: value
-    });
-    this.props.onUpdate(this.props.id, value);
-  }
-
-  nextTime() {
-    const old_value = this.props.state;
-    const value = this.getNextTimestamp(parseInt(this.props.state));
-
-    this.props.onUpdate(this.props.id, value);
-
-    this.setState(
-      {
-        value: value
-      },
-      function () {
-        this.updatePicker(old_value, value);
-      }.bind(this)
-    );
-  }
-
-  prevTime() {
-    const old_value = this.props.state;
-    const value = this.getPrevTimestamp(parseInt(this.props.state));
-
-    this.setState(
-      {
-        value: value
-      },
-      function () {
-        this.updatePicker(old_value, value);
-      }.bind(this)
-    );
-
-    this.props.onUpdate(this.props.id, value);
-  }
-
-  updatePicker(oldstate, newstate) {
-    const old_idx = this.getIndexFromTimestamp(oldstate);
-    const new_idx = this.getIndexFromTimestamp(newstate);
-
-    if (
-      this.state.data[old_idx].value.substring(0, 10) !==
-      this.state.data[new_idx].value.substring(0, 10)
-    ) {
-      this.pickerChange();
-    }
-  }
-
-  isFirstTime() {
-    return parseInt(this.props.state) === this.state.min;
-  }
-
-  isLastTime() {
-    return parseInt(this.props.state) === this.state.max;
-  }
-
-  render() {
-    $.datepicker.setDefaults($.datepicker.regional[this.props.i18n.language]);
-
-    const date = new Date(this.state.map[this.props.state]);
-    let input = null;
-    switch (this.props.quantum) {
-      case "month":
-        input = (
-          <input
-            readOnly
-            ref="picker"
-            type="text"
-            value={$.datepicker.formatDate("MM yy", date)}
-          />
-        );
-        break;
-      case "day":
-      case "hour":
-        input = (
-          <input
-            readOnly
-            ref="picker"
-            type="text"
-            value={$.datepicker.formatDate("dd MM yy", date)}
-          />
-        );
-        break;
+      newMap[newData[i].id] = d2;
+      newRevMap[d3.toUTCString()] = newData[i].id;
     }
 
-    let timeinput = null;
-    const options = this.state.times.map(function (t) {
+    if (props.dataset.quantum === "hour") {
+      let currentTime = new Date(map[props.state]);
+      let hours = getHoursForDate(currentTime, map);
+      setDateHours(hours);
+    }
+
+    setData(newData);
+    setMap(newMap);
+    setRevMap(newRevMap);
+  }, [timestamps, props.min, props.max]);
+
+  const zeroPad = (num) => {
+    return num.toString().padStart(2, "0");
+  };
+
+  const getHoursForDate = (currentDate, map) => {
+    let hours = Object.entries(map).filter((date) => {
       return (
-        <option key={t.id} value={t.id}>
-          {t.value}
+        date[1].getDate() === currentDate.getDate() &&
+        date[1].getMonth() === currentDate.getMonth() &&
+        date[1].getFullYear() === currentDate.getFullYear()
+      );
+    });
+
+    return hours;
+  };
+
+  const getSeason = (time) => {
+    // assumes timestamp is not on boundary
+    let year = time.getFullYear();
+    if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
+      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+    } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
+      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
+    } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
+      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
+    } else {
+      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
+    }
+  };
+
+  const getIndexFromTimestamp = (timestamp) => {
+    return data.findIndex((ts) => {
+      return ts.id === timestamp;
+    });
+  };
+
+  const getTimestampFromIndex = (index) => {
+    const keys = Object.keys(map);
+    if (index < 0) {
+      return parseInt(keys[keys.length + index]);
+    }
+
+    return parseInt(keys[index]);
+  };
+
+  const hourChanged = (e) => {
+    props.onUpdate(props.id, e.target.value);
+  };
+
+  const handlePrevTime = () => {
+    let currentIndex = getIndexFromTimestamp(props.state);
+    if (currentIndex > 0) {
+      props.onUpdate(props.id, getTimestampFromIndex(currentIndex - 1));
+    }
+  };
+
+  const handleNextTime = () => {
+    let currentIndex = getIndexFromTimestamp(props.state);
+    if (currentIndex < data.length - 1) {
+      props.onUpdate(props.id, getTimestampFromIndex(currentIndex + 1));
+    }
+  };
+
+  const handleCalendarInteraction = (date) => {
+    switch (props.dataset.quantum) {
+      case "hour":
+        let hours = getHoursForDate(date, map);
+        setDateHours(hours);
+        props.onUpdate(props.id, hours[hours.length - 1][0]);
+        break;
+      default:
+        const utcDate = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+        );
+        props.onUpdate(props.id, revMap[utcDate.toUTCString()]);
+        break;
+    }
+  };
+
+  let buttonText = "";
+  let calendar = null;
+  if (Object.keys(map).length > 0) {
+    let selectedDate = new Date(map[props.state]);
+    switch (props.dataset.quantum) {
+      case "hour":
+      case "day":
+        buttonText = selectedDate.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+
+        calendar = (
+          <DailyCalendar
+            selected={selectedDate}
+            availableDates={Object.values(map)}
+            onUpdate={handleCalendarInteraction}
+          />
+        );
+        break;
+      case "month":
+        buttonText = climatology
+          ? selectedDate.toLocaleDateString(undefined, {
+              month: "long",
+            })
+          : selectedDate.toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+            });
+
+        calendar = (
+          <MonthlyCalendar
+            selected={selectedDate}
+            availableDates={Object.values(map)}
+            onUpdate={handleCalendarInteraction}
+            climatology={climatology}
+          />
+        );
+        break;
+      case "year":
+        buttonText = selectedDate.getUTCFullYear();
+        break;
+      case "season":
+        buttonText = getSeason(selectedDate);
+
+        calendar = (
+          <SeasonalCalendar
+            selected={selectedDate}
+            availableDates={Object.values(map)}
+            onUpdate={handleCalendarInteraction}
+            climatology={climatology}
+          />
+        );
+        break;
+    }
+  }
+
+  let currentIndex = getIndexFromTimestamp(props.state);
+  let hourDropdown = null;
+  if (props.dataset.quantum === "hour") {
+    let hours = dateHours;
+    if (dateHours.length === 0) {
+      let currentTime = new Date(map[props.state]);
+      hours = getHoursForDate(currentTime, map);
+    }
+
+    const hourOptions = hours.map((date) => {
+      return (
+        <option key={date[0]} value={date[0]}>
+          {zeroPad(date[1].getHours()) + ":00"}
         </option>
       );
     });
-    if (this.props.quantum == "hour") {
-      timeinput = (
-        <select value={this.state.value} onChange={this.timeChange}>
-          {options}
-        </select>
-      );
-    }
 
-    return (
-      <div key={this.props.url + this.props.key} className="TimePicker input">
-        <h1>{this.props.title}</h1>
-
-        <div>
-          <Button onClick={this.prevTime} disabled={this.isFirstTime()}>
-            <Icon icon="caret-left" alt="<" />
-          </Button>
-          <div>
-            {input}
-            {timeinput}
-          </div>
-          <Button onClick={this.nextTime} disabled={this.isLastTime()}>
-            <Icon icon="caret-right" alt=">" />
-          </Button>
-        </div>
-      </div>
+    hourDropdown = (
+      <Form.Select
+        className="hour-selector"
+        onChange={hourChanged}
+        value={props.state}
+      >
+        {hourOptions}
+      </Form.Select>
     );
   }
-}
+  let dateSelector = (
+    <div className="selector-container">
+      <Button className="date-label">{buttonText}</Button>
+    </div>
+  );
 
-//***********************************************************************
-TimePicker.propTypes = {
-  title: PropTypes.string,
-  quantum: PropTypes.string.isRequired,
-  state: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  onUpdate: PropTypes.func.isRequired,
-  id: PropTypes.string.isRequired,
-  min: PropTypes.number,
-  max: PropTypes.number,
-  dataset: PropTypes.string.isRequired,
-  variable: PropTypes.string.isRequired,
-};
+  const formLayout = props.horizontalLayout ? Row : Col;
+
+  return (
+    <InputGroup className="timepicker" as={formLayout}>
+      <label
+        className={`timepicker-label ${
+          props.horizontalLayout ? "horizontal" : ""
+        }`}
+      >
+        {props.title}
+      </label>
+      <Dropdown drop={props.horizontalLayout ? "up" : "down"}>
+        <div className="button-container">
+          <Button
+            className="header-button"
+            disabled={currentIndex === 0}
+            onClick={handlePrevTime}
+          >
+            {" "}
+            <ChevronLeft />
+          </Button>
+          <div className="dropdown-container">
+            <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
+            <Dropdown.Menu
+              className="dropdown-menu"
+              disabled={props.dataset.quantum === "year"}
+            >
+              {calendar}
+            </Dropdown.Menu>
+            {hourDropdown}
+          </div>
+          <Button
+            className="header-button"
+            disabled={currentIndex === data.length - 1}
+            onClick={handleNextTime}
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+      </Dropdown>
+    </InputGroup>
+  );
+}
 
 export default withTranslation()(TimePicker);

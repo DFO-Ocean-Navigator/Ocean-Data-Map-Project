@@ -1,0 +1,33 @@
+import requests
+import os
+import shutil
+from urllib.request import urlopen
+from contextlib import closing
+
+
+def requestFile():
+   # json object for the query
+   query = {q}
+
+
+   # Assemble full request
+   base_url = "https://navigator.oceansdata.ca/api/v2.0/subset/?"
+   url = base_url
+   for key in query:
+      url += f"&{{key}}={{query[key]}}"
+   print(url)
+
+
+   #Open URL and save response
+   data_file = requests.get(url, stream=True)
+   dump = data_file.raw
+   # change this if you want a different save location
+   location = os.getcwd()
+   with open("script_output.nc", "wb") as location:
+      print('Saving File')
+      shutil.copyfileobj(dump, location)
+      print('Done')
+
+
+if __name__ == '__main__':
+   requestFile()

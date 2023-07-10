@@ -4,7 +4,6 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import seawater
-from flask_babel import gettext
 
 import plotting.utils as utils
 from data import open_dataset
@@ -98,7 +97,7 @@ class TemperatureSalinityPlotter(PointPlotter):
                         [x[1] for x in self.points],
                     ]
                 ),
-                gs[0, 0]
+                gs[0, 0],
             )  # Longitudes
 
         # Plot TS Diagram
@@ -128,8 +127,8 @@ class TemperatureSalinityPlotter(PointPlotter):
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], "-")
 
-        plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
-        plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
+        plt.xlabel("Salinity (PSU)", fontsize=14) # plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
+        plt.ylabel("Temperature (Celsius)", fontsize=14) # plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
 
         if len(self.points) == 1:
             labels = []
@@ -154,7 +153,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         if not self.plotTitle:
             plt.title(
-                gettext("T/S Diagram for (%s)\n%s")
+                "T/S Diagram for (%s)\n%s" # gettext("T/S Diagram for (%s)\n%s")
                 % (", ".join(self.names), self.date_formatter(self.iso_timestamp)),
                 fontsize=15,
             )

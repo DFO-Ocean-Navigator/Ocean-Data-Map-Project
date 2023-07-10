@@ -1,22 +1,15 @@
-/* eslint react/no-deprecated: 0 */
-/*
-
-  Opens Window displaying the Image corresponding to a Selected Line
-
-*/
 import React from "react";
-import {Nav, NavItem, Panel, Row, Col, Button} from "react-bootstrap";
+import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
-import Range from "./Range.jsx";
-import SelectBox from "./SelectBox.jsx";
+import Range from "./ColormapRange.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DepthLimit from "./DepthLimit.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-
 
 import { withTranslation } from "react-i18next";
 
@@ -26,7 +19,7 @@ class LineWindow extends React.Component {
 
     // Track if mounted to prevent no-op errors with the Ajax callbacks.
     this._mounted = false;
-    
+
     this.state = {
       selected: 1,
       scale: props.dataset_0.variable_scale + ",auto",
@@ -42,11 +35,11 @@ class LineWindow extends React.Component {
       dpi: 144,
       depth_limit: false,
       plotTitles: Array(2).fill(""),
-      selectedPlots: [0, 1, 1]
+      selectedPlots: [0, 1, 1],
     };
 
     if (props.init !== null) {
-      $.extend(this.state, props.init);
+      this.state = { ...this.state, ...props.init };
     }
 
     // Function bindings
@@ -65,29 +58,29 @@ class LineWindow extends React.Component {
   }
 
   //Updates Plot with User Specified Title
-  updatePlotTitle (title) {
-    if (title !== this.state.plotTitles[this.state.selected - 1]) {   //If new plot title
+  updatePlotTitle(title) {
+    if (title !== this.state.plotTitles[this.state.selected - 1]) {
+      //If new plot title
       const newTitles = this.state.plotTitles;
       newTitles[this.state.selected - 1] = title;
-      this.setState({plotTitles: newTitles,});   //Update Plot Title
+      this.setState({ plotTitles: newTitles }); //Update Plot Title
     }
   }
 
-  updateSelectedPlots (plots_selected, compare) {
-
+  updateSelectedPlots(plots_selected, compare) {
     let temp = [1, 0, 0];
-    
-    if(plots_selected[0]) {
+
+    if (plots_selected[0]) {
       temp[0] = 1;
     } else {
       temp[0] = 0;
     }
-    if(plots_selected[1]) {
+    if (plots_selected[1]) {
       temp[1] = 1;
     } else {
       temp[1] = 0;
     }
-    if(plots_selected[2]) {
+    if (plots_selected[2]) {
       temp[2] = 1;
     } else {
       temp[2] = 0;
@@ -95,36 +88,33 @@ class LineWindow extends React.Component {
 
     if (compare) {
       this.setState({
-        comparePlots: temp, 
+        comparePlots: temp,
       });
     } else {
       this.setState({
         selectedPlots: temp,
       });
     }
-    
   }
 
   onLocalUpdate(key, value) {
     if (this._mounted) {
-      
       var newState = {};
-      if (typeof(key) === "string") {
+      if (typeof key === "string") {
         newState[key] = value;
-      } 
-      else {
+      } else {
         for (let i = 0; i < key.length; ++i) {
           newState[key[i]] = value[i];
         }
       }
-      
+
       this.setState(newState);
     }
   }
 
   onSelect(key) {
     this.setState({
-      selected: key
+      selected: parseInt(key),
     });
   }
 
@@ -141,56 +131,60 @@ class LineWindow extends React.Component {
     _("Surface Variable");
     _("Saved Image Size");
 
-    const global = (<Panel 
-      key='global_settings'
-      id='global_settings'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>{_("Global Settings")}</Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
-          <Row>
-            <Col xs={9}>
-              <SelectBox
-                id='dataset_compare'
-                key='dataset_compare'
-                state={this.props.dataset_compare}
-                onUpdate={this.props.onUpdate}
-                title={_("Compare Datasets")}
-              />
-            </Col>
-            <Col xs={3}>
-              <Button 
-                bsStyle="link"
-                key='show_help'
-                id='show_help'
-                onClick={this.props.showHelp}
-              >
-                {_("Help")}
-              </Button>
-            </Col>
-          </Row>
+    const plotOptions = (
+      <div>
+        <ImageSize
+          key="size"
+          id="size"
+          state={this.state.size}
+          onUpdate={this.onLocalUpdate}
+          title={_("Saved Image Size")}
+        />
+        <CustomPlotLabels
+          key="title"
+          id="title"
+          title={_("Plot Title")}
+          updatePlotTitle={this.updatePlotTitle}
+          plotTitle={this.state.plotTitles[this.state.selected - 1]}
+        />
+      </div>
+    );
+
+    const global = (
+      <Card key="global_settings" id="global_settings" variant="primary">
+        <Card.Header>{_("Global Settings")}</Card.Header>
+        <Card.Body className="global-settings-card">
+          <CheckBox
+            id="dataset_compare"
+            key="dataset_compare"
+            checked={this.props.dataset_compare}
+            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
+            title={_("Compare Datasets")}
+          />
           <Button
-            key='swap_views'
-            id='swap_views'
-            bsStyle="default"
-            block
-            style={{display: this.props.dataset_compare ? "block" : "none"}}
+            key="swap_views"
+            id="swap_views"
+            variant="default"
+            style={{ display: this.props.dataset_compare ? "block" : "none" }}
             onClick={this.props.swapViews}
           >
             {_("Swap Views")}
           </Button>
-          
+
           {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
           <div
-            style={{display: this.props.dataset_compare &&
-                            this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}
+            style={{
+              display:
+                this.props.dataset_compare &&
+                this.props.dataset_0.variable == this.props.dataset_1.variable
+                  ? "block"
+                  : "none",
+            }}
           >
             <Range
               auto
-              key='scale_diff'
-              id='scale_diff'
+              key="scale_diff"
+              id="scale_diff"
               state={this.state.scale_diff}
               def={""}
               onUpdate={this.onLocalUpdate}
@@ -198,162 +192,151 @@ class LineWindow extends React.Component {
             />
           </div>
 
-          <SelectBox
-            key='showmap'
-            id='showmap'
-            state={this.state.showmap}
+          <CheckBox
+            key="showmap"
+            id="showmap"
+            checked={this.state.showmap}
             onUpdate={this.onLocalUpdate}
             title={_("Show Map Location")}
           >
             {_("showmap_help")}
-          </SelectBox>
-            
-          <ImageSize
-            key='size'
-            id='size'
-            state={this.state.size}
-            onUpdate={this.onLocalUpdate}
-            title={_("Saved Image Size")}
-          />
-          <CustomPlotLabels
-            key='title'
-            id='title'
-            title={_("Plot Title")}
-            updatePlotTitle={this.updatePlotTitle}
-            plotTitle={this.state.plotTitles[this.state.selected - 1]}
-          ></CustomPlotLabels>
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>);
+          </CheckBox>
 
-    const transectSettings = <Panel
-      key='transect_settings'
-      id='transect_settings'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>{_("Transect Settings")}</Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
+          <Accordion>
+            <Accordion.Header>Plot Options</Accordion.Header>
+            <Accordion.Body>{plotOptions}</Accordion.Body>
+          </Accordion>
+        </Card.Body>
+      </Card>
+    );
+
+    const transectSettings = (
+      <Card key="transect_settings" id="transect_settings" variant="primary">
+        <Card.Header>{_("Transect Settings")}</Card.Header>
+        <Card.Body className="global-settings-card">
           <ComboBox
-            key='surfacevariable'
-            id='surfacevariable'
+            key="surfacevariable"
+            id="surfacevariable"
             state={this.state.surfacevariable}
             onUpdate={this.onLocalUpdate}
             title={_("Surface Variable")}
-            url={"/api/v1.0/variables/?dataset=" + this.props.dataset_0.dataset}
-          >{_("surfacevariable_help")}</ComboBox>
+            url={`/api/v2.0/dataset/${this.props.dataset_0.id}/variables`}
+          >
+            {_("surfacevariable_help")}
+          </ComboBox>
 
           <NumberBox
-            key='linearthresh'
-            id='linearthresh'
+            key="linearthresh"
+            id="linearthresh"
             state={this.state.linearthresh}
             onUpdate={this.onLocalUpdate}
             title={_("Linear Threshold")}
-          >{_("linearthresh_help")}</NumberBox>
+          >
+            {_("linearthresh_help")}
+          </NumberBox>
 
           <DepthLimit
-            key='depth_limit'
-            id='depth_limit'
+            key="depth_limit"
+            id="depth_limit"
             state={this.state.depth_limit}
             onUpdate={this.onLocalUpdate}
           />
 
           <div
-            style={{display: this.props.dataset_compare &&
-                            this.props.dataset_0.variable == this.props.dataset_1.variable ? "block" : "none"}}>
+            style={{
+              display:
+                this.props.dataset_compare &&
+                this.props.dataset_0.variable == this.props.dataset_1.variable
+                  ? "block"
+                  : "none",
+            }}
+          >
             <ComboBox
-              key='colormap_diff'
-              id='colormap_diff'
+              key="colormap_diff"
+              id="colormap_diff"
               state={this.state.colormap_diff}
-              def='default'
+              def="default"
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Diff. Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+              url="/api/v2.0/plot/colormaps"
+              title={_("Diff. Colour Map")}
+            >
+              {_("colourmap_help")}
+              <img src="/plot/colormaps.png/" />
             </ComboBox>
           </div>
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>;
-    
-    const dataset = <Panel 
-      key='left_map'
-      id='left_map'
-      defaultExpanded
-      bsStyle='primary'
-    >
-      <Panel.Heading>
-        {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-      </Panel.Heading>
-      <Panel.Collapse>
-        <Panel.Body>
+        </Card.Body>
+      </Card>
+    );
+
+    const dataset = (
+      <Card key="left_map" id="left_map" variant="primary">
+        <Card.Header>
+          {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        </Card.Header>
+        <Card.Body className="global-settings-card">
           <DatasetSelector
-            key='line_window_dataset_0'
-            id='dataset_0'
-            onUpdate={this.props.onUpdate}
+            key="line_window_dataset_0"
+            id="dataset_0"
+            onUpdate={this.props.updateDataset0}
             variables={this.state.selected == 2 ? "all" : "3d"}
             showQuiverSelector={false}
             showDepthSelector={this.state.selected == 2}
             showTimeRange={this.state.selected == 2}
             showVariableRange={false}
-            options={this.props.options}
-            mountedDataset={this.props.dataset_0.dataset}
-            mountedVariable={this.props.dataset_0.variable}
+            mapSettings={this.props.mapSettings}
+            mountedDataset={this.props.dataset_0}
           />
 
           <ComboBox
-            key='colormap'
-            id='colormap'
+            key="colormap"
+            id="colormap"
             state={this.state.colormap}
-            def='default'
+            def="default"
             onUpdate={this.onLocalUpdate}
-            url='/api/v1.0/colormaps/'
-            title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colour Map")}
+          >
+            {_("colourmap_help")}
+            <img src="/plot/colormaps.png/" />
           </ComboBox>
-        </Panel.Body>
-      </Panel.Collapse>
-    </Panel>;
-    
-    const compare_dataset = 
-    <div key='compare_dataset'>
-      
-      <Panel 
-        key='right_map'
-        id='right_map'
-        defaultExpanded
-        bsStyle='primary'
-      >
-        <Panel.Heading>{_("Right Map")}</Panel.Heading>
-        <Panel.Collapse>
-          <Panel.Body>
+        </Card.Body>
+      </Card>
+    );
+
+    const compare_dataset = (
+      <div key="compare_dataset">
+        <Card key="right_map" id="right_map" variant="primary">
+          <Card.Header>{_("Right Map")}</Card.Header>
+          <Card.Body className="global-settings-card">
             <DatasetSelector
-              key='line_window_dataset_1'
-              id='dataset_1'
-              onUpdate={this.props.onUpdate}
+              key="line_window_dataset_1"
+              id="dataset_1"
+              onUpdate={this.props.updateDataset1}
               variables={this.state.selected == 2 ? "all" : "3d"}
               showQuiverSelector={false}
               showDepthSelector={this.state.selected == 2}
               showTimeRange={this.state.selected == 2}
               showVariableRange={false}
-              options={this.props.options}
-              mountedDataset={this.props.dataset_1.dataset}
-              mountedVariable={this.props.dataset_1.variable}
+              mapSettings={this.props.mapSettings}
+              mountedDataset={this.props.dataset_1}
             />
 
             <ComboBox
-              key='colormap_right'
-              id='colormap_right'
+              key="colormap_right"
+              id="colormap_right"
               state={this.state.colormap_right}
-              def='default'
+              def="default"
               onUpdate={this.onLocalUpdate}
-              url='/api/v1.0/colormaps/'
-              title={_("Colour Map")}>{_("colourmap_help")}<img src="/colormaps.png" />
+              url="/api/v2.0/plot/colormaps"
+              title={_("Colour Map")}
+            >
+              {_("colourmap_help")}
+              <img src="/plot/colormaps.png/" />
             </ComboBox>
-          </Panel.Body>
-        </Panel.Collapse>
-      </Panel>
-      
-    </div>;
+          </Card.Body>
+        </Card>
+      </div>
+    );
 
     // Input panels
     const leftInputs = [global];
@@ -362,10 +345,10 @@ class LineWindow extends React.Component {
       rightInputs.push(compare_dataset);
     }
     const plot_query = {
-      dataset: this.props.dataset_0.dataset,
+      dataset: this.props.dataset_0.id,
       quantum: this.props.dataset_0.quantum,
       variable: this.props.dataset_0.variable,
-      path: this.props.line[0],
+      path: this.props.line,
       scale: this.state.scale,
       colormap: this.state.colormap,
       showmap: this.state.showmap,
@@ -375,7 +358,7 @@ class LineWindow extends React.Component {
       plotTitle: this.state.plotTitles[this.state.selected - 1],
     };
 
-    switch(this.state.selected) {
+    switch (this.state.selected) {
       case 1:
         plot_query.type = "transect";
         plot_query.time = this.props.dataset_0.time;
@@ -384,7 +367,8 @@ class LineWindow extends React.Component {
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.colormap_right;
@@ -398,7 +382,8 @@ class LineWindow extends React.Component {
         plot_query.starttime = this.props.dataset_0.starttime;
         plot_query.depth = this.props.dataset_0.depth;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = this.props.dataset_1;
+          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
           plot_query.compare_to.colormap = this.state.colormap_right;
@@ -408,27 +393,32 @@ class LineWindow extends React.Component {
     }
 
     return (
-      <div className='LineWindow Window'>
+      <div className="LineWindow Window">
         <Nav
-          bsStyle="tabs"
+          variant="tabs"
           activeKey={this.state.selected}
           onSelect={this.onSelect}
         >
-          <NavItem eventKey={1}>{_("Transect")}</NavItem>
-          <NavItem eventKey={2}>{_("Hovmöller Diagram")}</NavItem>
+          <Nav.Item>
+            <Nav.Link eventKey={1}>{_("Transect")}</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            {" "}
+            <Nav.Link eventKey={2}>{_("Hovmöller Diagram")}</Nav.Link>
+          </Nav.Item>
         </Nav>
         <Row>
-          <Col lg={2}>
+          <Col className="settings-col" lg={2}>
             {leftInputs}
           </Col>
-          <Col lg={8}>
+          <Col className="plot-col" lg={8}>
             <PlotImage
               query={plot_query}
               permlink_subquery={this.state}
               action={this.props.action}
             />
           </Col>
-          <Col lg={2}>
+          <Col className="settings-col" lg={2}>
             {rightInputs}
           </Col>
         </Row>
@@ -441,8 +431,8 @@ class LineWindow extends React.Component {
 LineWindow.propTypes = {
   generatePermLink: PropTypes.func,
   dataset_compare: PropTypes.bool,
-  dataset_0: PropTypes.object.isRequired,
-  dataset_1: PropTypes.object.isRequired,
+  dataset_0: PropTypes.object,
+  dataset_1: PropTypes.object,
   names: PropTypes.array,
   line: PropTypes.array,
   onUpdate: PropTypes.func,

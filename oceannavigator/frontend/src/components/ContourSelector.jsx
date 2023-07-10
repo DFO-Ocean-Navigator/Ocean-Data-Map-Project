@@ -1,6 +1,6 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
-import SelectBox from "./SelectBox.jsx";
+import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
@@ -31,9 +31,8 @@ class ContourSelector extends React.Component {
         continue;
       }
       state[key[i]] = value[i];
-
     }
-    const newState = jQuery.extend({}, this.props.state, state);
+    const newState = {...this.props.state, ...state};
     this.props.onUpdate(this.props.id, newState);
   }
 
@@ -65,17 +64,73 @@ class ContourSelector extends React.Component {
     _("Show Legend");
     _("Auto Levels");
     return (
-      <div className='ContourSelector input'>
-        <ComboBox id='variable' state={this.props.state.variable} def='' onUpdate={this.onUpdate} url={"/api/v1.0/variables/?dataset=" + this.props.dataset} title={this.props.title}>{this.props.children}</ComboBox>
-        <div className='sub' style={{"display": (this.props.state.variable == "none" || this.props.state.variable == "") ? "none" : "block"}}>
-          <SelectBox key='hatch' id='hatch' state={this.props.state.hatch} onUpdate={this.onUpdate} title={_("Crosshatch")}></SelectBox>
-          <div style={{"display": this.props.state.hatch ? "none" : "block"}}>
-            <ComboBox key='colormap' id='colormap' state={this.props.state.colormap} def='' onUpdate={this.onUpdate} url='/api/v1.0/colormaps/' title={_("Colourmap")}>There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.<img src="/colormaps.png" /></ComboBox>
+      <div className="ContourSelector input">
+        <ComboBox
+          id="variable"
+          state={this.props.state.variable}
+          def=""
+          onUpdate={this.onUpdate}
+          url={`/api/v2.0/dataset/${this.props.dataset}/variables`} 
+          title={this.props.title}
+        >
+          {this.props.children}
+        </ComboBox>
+        <div
+          className="sub"
+          style={{
+            display:
+              this.props.state.variable == "none" ||
+              this.props.state.variable == ""
+                ? "none"
+                : "block",
+          }}
+        >
+          <CheckBox
+            key="hatch"
+            id="hatch"
+            state={this.props.state.hatch}
+            onUpdate={this.onUpdate}
+            title={_("Crosshatch")}
+          ></CheckBox>
+          <div style={{ display: this.props.state.hatch ? "none" : "block" }}>
+            <ComboBox
+              key="colormap"
+              id="colormap"
+              state={this.props.state.colormap}
+              def=""
+              onUpdate={this.onUpdate}
+              url="/api/v2.0/plot/colormaps"
+              title={_("Colourmap")}
+            >
+              There are several colourmaps available. This tool tries to pick an
+              appropriate default based on the variable type (Default For
+              Variable). If you want to use any of the others, they are all
+              selectable.
+              <img src="/api/v2.0/plot/colormaps.png/" />
+            </ComboBox>
           </div>
-          <SelectBox key='legend' id='legend' state={this.props.state.legend} onUpdate={this.onUpdate} title={_("Show Legend")}></SelectBox>
+          <CheckBox
+            key="legend"
+            id="legend"
+            checked={this.props.state.legend}
+            onUpdate={this.onUpdate}
+            title={_("Show Legend")}
+          ></CheckBox>
           <h1>{_("Levels")}</h1>
-          <SelectBox key='autolevels' id='autolevels' state={auto} onUpdate={this.onUpdateAuto} title={_("Auto Levels")}></SelectBox>
-          <input type="text" style={{"display": this.state.autolevels ? "none" : "inline-block"}} value={this.state.levels} onChange={this.levelsChanged} onBlur={this.updateLevels} />
+          <CheckBox
+            key="autolevels"
+            id="autolevels"
+            state={auto}
+            onUpdate={this.onUpdateAuto}
+            title={_("Auto Levels")}
+          ></CheckBox>
+          <input
+            type="text"
+            style={{ display: this.state.autolevels ? "none" : "inline-block" }}
+            value={this.state.levels}
+            onChange={this.levelsChanged}
+            onBlur={this.updateLevels}
+          />
         </div>
       </div>
     );

@@ -6,7 +6,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import format_date, format_datetime
+from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -83,6 +83,8 @@ class Plotter(metaclass=ABCMeta):
         self.scale = self.__get_scale(query.get("scale"))
 
         self.variables = self.__get_variables(query.get("variable"))
+
+        self.axis_range = query.get("variable_range")
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -257,7 +259,7 @@ class Plotter(metaclass=ABCMeta):
         with contextlib.closing(StringIO()) as buf:
             buf.write("\n".join(["// %s: %s" % (h[0], h[1]) for h in header]))
             buf.write("\n")
-            buf.write(", ".join(columns))   
+            buf.write(", ".join(columns))
             buf.write("\n")
 
             for line in data:

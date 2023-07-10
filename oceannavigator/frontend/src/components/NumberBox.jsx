@@ -1,6 +1,6 @@
 import React from "react";
-import {Modal, Button} from "react-bootstrap";
-import NumericInput from "react-numeric-input";
+import { Modal, Button } from "react-bootstrap";
+// import NumericInput from "react-numeric-input";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
@@ -10,7 +10,7 @@ class NumberBox extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: this.props.state
+      value: this.props.state,
     };
 
     // Function bindings
@@ -27,7 +27,7 @@ class NumberBox extends React.Component {
 
   changed(num, str) {
     clearTimeout(this.timeout);
-    
+
     this.setState({
       value: num,
     });
@@ -48,61 +48,63 @@ class NumberBox extends React.Component {
 
   closeHelp() {
     this.setState({
-      showHelp: false
+      showHelp: false,
     });
   }
 
   showHelp() {
     this.setState({
-      showHelp: true
+      showHelp: true,
     });
   }
 
   render() {
-    var hasHelp = (
-      this.props.children != null &&
-      this.props.children.length > 0
-    );
+    var hasHelp = this.props.children != null && this.props.children.length > 0;
     return (
-      <div className='NumberBox input'>
-        <h1>{this.props.title}
-          <span
+      <div className="NumberBox">
+        <h1 className="numberbox-title">
+          {this.props.title}
+          <span className="help-button"
             onClick={this.showHelp}
-            style={{"display": hasHelp ?  "block" : "none"}}
-          >?</span>
+            style={{ display: hasHelp ? "block" : "none" }}
+          >
+            ?
+          </span>
         </h1>
 
         <Modal
           show={this.state.showHelp}
           onHide={this.closeHelp}
-          bsSize="large"
+          variant="large"
           dialogClassName="helpdialog"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{
-              _("titlehelp", {title: this.props.title})
-            }</Modal.Title>
+            <Modal.Title>
+              {_("titlehelp", { title: this.props.title })}
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            {this.props.children}
-          </Modal.Body>
+          <Modal.Body>{this.props.children}</Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.closeHelp}><Icon icon="close" /> {_("Close")}</Button>
+            <Button onClick={this.closeHelp}>
+              <Icon icon="close" /> {_("Close")}
+            </Button>
           </Modal.Footer>
         </Modal>
 
-        <table>
+        <table className="numberbox-table"> 
           <tbody>
             <tr>
               <td>
-                <label htmlFor={this.props.id}>{_("Value:")}</label>
+                <label className="table-label" htmlFor={this.props.id}>
+                  {_("Value:")}
+                </label>
               </td>
               <td>
-                <NumericInput
+                <input
+                  className="table-input"
+                  type="number"
                   value={this.state.value}
                   onChange={this.changed}
-                  onBlur={this.updateParent}
-                  onKeyPress={this.keyPress}
                 />
               </td>
             </tr>

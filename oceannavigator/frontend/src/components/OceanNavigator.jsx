@@ -1,775 +1,532 @@
-import React from "react";
-import Map from "./Map.jsx";
+import { nominalTypeHack } from "prop-types";
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "react-bootstrap";
+import Modal from "react-bootstrap/Modal";
+import ReactGA from "react-ga";
+
+import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
+import MainMap from "./MainMap.jsx";
 import MapInputs from "./MapInputs.jsx";
-import MapToolbar from "./MapToolbar.jsx";
+import MapTools from "./MapTools.jsx";
+import ScaleViewer from "./ScaleViewer.jsx";
+import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
+import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
-import TrackWindow from "./TrackWindow.jsx";
+import ObservationSelector from "./ObservationSelector.jsx";
+import SettingsWindow from "./SettingsWindow.jsx";
+import InfoHelpWindow from "./InfoHelpWindow.jsx";
+import Class4Selector from "./Class4Selector.jsx";
 import Class4Window from "./Class4Window.jsx";
-import Permalink from "./Permalink.jsx";
-import Options from "./Options.jsx";
-import {Button, Modal} from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
-import Iframe from "react-iframe";
-import ReactGA from "react-ga";
-
-import { DATASET_DEFAULTS, DEFAULT_OPTIONS } from "./Defaults.js";
+import Permalink from "./Permalink.jsx";
+import ToggleLanguage from "./ToggleLanguage.jsx";
+import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
-import { GetTimestampsPromise } from "../remote/OceanNavigator.js";
-
-const stringify = require("fast-stable-stringify");
-
 function formatLatLon(latitude, longitude) {
+  latitude = latitude > 90 ? 90 : latitude;
+  latitude = latitude < -90 ? -90 : latitude;
+  longitude = longitude > 180 ? longitude - 360 : longitude;
+  longitude = longitude < -180 ? 360 + longitude : longitude;
   let formatted = "";
   formatted += Math.abs(latitude).toFixed(4) + " ";
-  formatted += (latitude >= 0) ? "N" : "S";
+  formatted += latitude >= 0 ? "N" : "S";
   formatted += ", ";
   formatted += Math.abs(longitude).toFixed(4) + " ";
-  formatted += (longitude >= 0) ? "E" : "W";
-  
+  formatted += longitude >= 0 ? "E" : "W";
   return formatted;
 }
 
-class OceanNavigator extends React.Component {
-  constructor(props) {
-    super(props);
+function OceanNavigator(props) {
+  const mapRef = useRef(null);
+  const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
+  const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
+  const [compareDatasets, setCompareDatasets] = useState(false);
+  const [mapSettings, setMapSettings] = useState({
+    projection: "EPSG:3857", // Map projection
+    basemap: "topo",
+    extent: [],
+    ...MAP_DEFAULTS,
+  });
+  const [uiSettings, setUiSettings] = useState({
+    showModal: false,
+    modalType: "",
+    showDrawingTools: false,
+    showObservationTools: false,
+  });
+  const [mapState, setMapState] = useState({});
+  const [class4Id, setClass4Id] = useState();
+  const [class4Type, setClass4Type] = useState("ocean_predict");
+  const [vectorId, setVectorId] = useState(null);
+  const [vectorType, setVectorType] = useState("point");
+  const [vectorCoordinates, setVectorCoordinates] = useState([]);
+  const [selectedCoordinates, setSelectedCoordinates] = useState([]);
+  const [names, setNames] = useState([]);
+  const [observationArea, setObservationArea] = useState([]);
+  const [subquery, setSubquery] = useState();
+  const [showPermalink, setShowPermalink] = useState(false);
 
+  useEffect(() => {
     ReactGA.ga("send", "pageview");
-
-    this.DEF_INTERP_TYPE = Object.freeze("gaussian");
-    this.DEF_INTERP_RADIUS_KM = Object.freeze(25);
-    this.DEF_INTERP_NUM_NEIGHBOURS = Object.freeze(10);
-
-    this.state = {
-      ...DATASET_DEFAULTS,
-      plotEnabled: false, // "Plot" button in MapToolbar
-      projection: "EPSG:3857", // Map projection
-      showModal: false,
-      vectortype: null,
-      vectorid: null,
-      busy: false, // Controls if the busyModal is visible
-      basemap: "topo",
-      showHelp: false,
-      showCompareHelp: false,
-      extent: [],
-      setDefaultScale: false,
-      dataset_compare: false, // Controls if compare mode is enabled
-      dataset_1: {
-        ...DATASET_DEFAULTS,
-      },
-      syncRanges: false, // Clones the variable range from one view to the other when enabled
-      sidebarOpen: true, // Controls sidebar opened/closed status
-      options: {
-        ...DEFAULT_OPTIONS
-      },
-      showObservationSelect: false,
-      observationArea: [],
-    };
-
-    this.mapComponent = null;
-    this.mapComponent2 = null;
-
-    this.prevOptions = this.state.options;
-
+    
     if (window.location.search.length > 0) {
       try {
-        const querystate = JSON.parse(decodeURIComponent(window.location.search.replace("?query=", "")));
-        $.extend(this.state, querystate);
-      } catch(err) {
+        const query = JSON.parse(
+          decodeURIComponent(window.location.search.replace("?query=", ""))
+        );
+        updateUI({ modalType: query.modalType, showModal: query.showModal });
+        setSubquery(query.subquery);
+        setNames(query.names);
+        setVectorId(query.vectorId);
+        setVectorType(query.vectorType);
+        setVectorCoordinates(query.vectorCoordinates);
+        setSelectedCoordinates(query.selectedCoordinates);
+        for (let key in query) {
+          switch (key) {
+            case "dataset0":
+              setDataset0(query.dataset0);
+              break;
+            case "dataset1":
+              setDataset1(query.dataset1);
+              setCompareDatasets(query.compareDatasets);
+              break;
+            case "mapSettings":
+              setMapSettings(query.mapSettings);
+              break;
+          }
+        }
+      } catch (err) {
         console.error(err);
       }
-      let url = window.location.origin;
-      if (window.location.pathname != undefined) {
-        url += window.location.pathname;
-      }
-      window.history.replaceState(null, null, url);
     }
+  }, []);
 
-    window.onpopstate = function(event) {
-      if (event.state) {
-        this.setState({
-          showModal: false
-        });
-      }
-    }.bind(this);
-
-    // Function bindings (performance optimization)
-    this.toggleSidebar = this.toggleSidebar.bind(this);
-    this.toggleCompareHelp = this.toggleCompareHelp.bind(this);
-    this.swapViews = this.swapViews.bind(this);
-    this.updateState = this.updateState.bind(this);
-    this.action = this.action.bind(this);
-    this.closeModal = this.closeModal.bind(this);
-    this.generatePermLink = this.generatePermLink.bind(this);
-    this.updateOptions = this.updateOptions.bind(this);
-    this.setStartTime = this.setStartTime.bind(this);
-    this.removeMapInteraction = this.removeMapInteraction.bind(this);
-  }
-
-  // Opens/closes the sidebar state
-  toggleSidebar() {
-    this.setState({sidebarOpen: !this.state.sidebarOpen});
-  }
-
-  // Opens/closes the help modal for dataset comparison
-  toggleCompareHelp() {
-    this.setState({showCompareHelp: !this.state.showCompareHelp,});
-  }
-
-  // Swap all view-related state variables
-  swapViews() {
-    const newState = this.state;
-    // "destructuring" from ES2015
-    [newState.dataset, newState.dataset_1.dataset] = [newState.dataset_1.dataset, newState.dataset];    
-    [newState.variable, newState.dataset_1.variable] = [newState.dataset_1.variable, newState.variable];
-    [newState.depth, newState.dataset_1.depth] = [newState.dataset_1.depth, newState.depth];
-    [newState.time, newState.dataset_1.time] = [newState.dataset_1.time, newState.time];
-    [newState.scale, newState.scale_1] = [newState.scale_1, newState.scale];
-    [newState.variable_scale, newState.dataset_1.variable_scale] = [newState.dataset_1.variable_scale, newState.variable_scale];
-    [newState.starttime, newState.dataset_1.starttime] = [newState.dataset_1.starttime, newState.starttime];
-
-    this.setState(newState);
-  }
-
-  // Turns off map drawing
-  removeMapInteraction(type = "all") {
-     if (this.mapComponent){
-      this.mapComponent.removeMapInteractions(type);
-    }
-    if (this.mapComponent2) {
-      this.mapComponent2.removeMapInteractions(type);
-    }
-  }
-
-  updateOptions(newOptions) {
-    let options = null;
-    if (newOptions == null) {
-      options = this.prevOptions;
-    }
-    else {
-      options = Object.assign({}, this.state.options);
-      this.prevOptions = this.state.options;
-      options.interpType = newOptions.interpType ? newOptions.interpType : options.interpType;
-      options.interpRadius = newOptions.interpRadius ? newOptions.interpRadius : options.interpRadius;
-      options.interpNeighbours = newOptions.interpNeighbours ? newOptions.interpNeighbours : options.interpNeighbours;
-      options.mapBathymetryOpacity = newOptions.mapBathymetryOpacity ? newOptions.mapBathymetryOpacity : options.mapBathymetryOpacity;
-      options.bathymetry = newOptions.bathymetry ? newOptions.bathymetry : options.bathymetry;
-      options.topoShadedRelief = newOptions.topoShadedRelief ? newOptions.topoShadedRelief : options.topoShadedRelief;
-      options.bathyContour = newOptions.bathyContour ? newOptions.bathyContour : options.bathyContour;
-    }
-
-    this.setState({options});
-  }
-
-  componentWillMount() {
-    GetTimestampsPromise(DATASET_DEFAULTS.dataset, DATASET_DEFAULTS.variable).then(timeResult => {
-      const defaults = {...DATASET_DEFAULTS};
-      defaults.starttime = timeResult.data[0].id;
-      defaults.time = timeResult.data[timeResult.data.length - 1].id;
-      this.setState({ ...defaults,
-                      dataset_1 : {...defaults}
-                    });
-    });     
-  }
-
-  // Updates global app state
-  updateState(key, value) {
-    if (key === "dataset_0" ) {
-      this.setState(value);
-      return;
-    }
-
-    if (key === "dataset_1") {
-      this.setState({dataset_1: value});
-      return;
-    }
-
-    let newState = {};
-
-    // Only updating one value
-    if (typeof(key) === "string") {
-      if (this.state[key] === value) {
-
-        // Value hasn't changed
-        return;
-      }
-      
-      // Store the updated value
-      newState[key] = value;
-
-      switch (key) {
-        case "scale":
-          const newScaleState = {
-            variable_scale: value,
-          };
-
-          if (this.state.syncRanges) {
-            newScaleState["dataset_1"] = {
-              ...this.state.dataset_1,
-              variable_scale: value,
-            };
-          }
-
-          this.setState(newScaleState);
-          return;
-        case "scale_1":
-          const newScale_1State = {
-            dataset_1: {
-              ...this.state.dataset_1,
-              variable_scale: value,
-            }
-          };
-
-          if (this.state.syncRanges) {
-            newScale_1State["variable_scale"] = value;
-          }
-
-          this.setState(newScale_1State);
-          return;
-        case "showObservationSelect":
-          if (!value) {
-            newState['observationArea'] = [];
-          }
-          break;
-      }
-
-    }
-    else {
-      for (let i = 0; i < key.length; ++i) {
-        switch(key[i]) {
-          case "time":
-            if (value[i] !== undefined) {
-              newState.time = value[i];
-            }
-            break;
-          default:
-            newState[key[i]] = value[i];
-        }
-      }
-    }
-    this.setState(newState);
-  }
-
-  setStartTime(time) {
-    if (time.length > 24) {
-      return time[time.length - 25].id;
-    }
-    return time[0].id;
-  }
-
-  action(name, arg, arg2, arg3) {
-    switch(name) {
-      case "obs_point":
-        // Enable point selection in both maps
-        this.mapComponent.obs_point();
-        if (this.mapComponent2) {
-          this.mapComponent2.obs_point();
-        }
+  const action = (name, arg, arg2, arg3) => {
+    switch (name) {
+      case "startDrawing":
+        setVectorId(null);
+        mapRef.current.startDrawing();
         break;
-      case "obs_area":
-        if (typeof(arg) === "object") {
-          this.setState({
-            observationArea: arg,
-            showObservationSelect: true,
-          });
+      case "stopDrawing":
+        mapRef.current.stopDrawing();
+        break;
+      case "vectorType":
+        setVectorType(arg);
+        break;
+      case "undoPoints":
+        setVectorCoordinates(
+          vectorCoordinates.slice(0, vectorCoordinates.length - 1)
+        );
+        break;
+      case "clearPoints":
+        setVectorCoordinates([]);
+        setSelectedCoordinates([]);
+        setVectorId(null);
+        break;
+      case "resetMap":
+        mapRef.current.resetMap();
+        break;
+      case "addPoints":
+        setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
+        break;
+      case "removePoint":
+        let coords = vectorCoordinates.filter((coord, index) => index !== arg);
+        setVectorCoordinates(coords);
+        break;
+      case "updatePoint":
+        let newCoords = null;
+        if (!isNaN(arg2) && !isNaN(arg3)) {
+          newCoords = [...vectorCoordinates];
+          newCoords[arg][arg2] = arg3;
         } else {
-          // Enable point selection in both maps
-          this.mapComponent.obs_area();
-          if (this.mapComponent2) {
-            this.mapComponent2.obs_area();
-          }
+          newCoords = arg;
         }
+        setVectorCoordinates(newCoords);
         break;
-      case "point":
-        if (typeof(arg) === "object") {
-          // The EnterPoint component correctly orders the coordinate
-          // pair, so no need to swap it.
-          if (arg2 === "enterPoint") {
-            this.setState({
-              point: [[arg[0], arg[1]]],
-              modal: "point",
-              names: [],
-            });       
-            this.showModal();
-          }
-          // Drawing on the map results in a reversed coordinate pair
-          // so swap it.
-          else {
-            this.setState({
-              point: arg,
-              modal: "point",
-              names: [],
-            });
-          }
-
-          ReactGA.event({
-            category: "PointPlot",
-            action: "click",
-            label: "PointPlot"
-          });
-        } 
-        else {
-          // Enable point selection in both maps
-          this.mapComponent.point();
-          if (this.mapComponent2) {
-            this.mapComponent2.point();
-          }
-        }
-        break;
-      case "line":
-        if (typeof(arg) === "object") {
-          this.setState({
-            line: arg,
-            modal: "line",
-            names: [],
-          });
-
-          // Disable line drawing in both maps
-          this.removeMapInteraction("Line");
-          ReactGA.event({
-            category: "LinePlot",
-            action: "click",
-            label: "LinePlot"
-          });
-
-          this.showModal();
+      case "selectPoints":
+        if (!arg) {
+          setSelectedCoordinates(vectorCoordinates);
         } else {
-          // Enable line drawing in both maps
-          this.mapComponent.line();
-          if (this.mapComponent2) {
-            this.mapComponent2.line();
-          }
-        }
-        break;
-      case "area":        
-        if (typeof(arg) === "object") {
-          // Disable area drawing on both maps
-          this.setState({
-            area: arg,
-            modal: "area",
-            names: [],
-          });
-          this.removeMapInteraction("Area");
-          ReactGA.event({
-            category: "AreaPlot",
-            action: "click",
-            label: "AreaPlot"
-          });
-          this.showModal();
-        } else {
-          // Enable area drawing on both maps
-          this.mapComponent.area();
-          if (this.mapComponent2) {
-            this.mapComponent2.area();
-          }
-        }
-        break;
-      case "track":
-        this.setState({
-          track: arg,
-          modal: "track",
-          names: arg,
-        });
-        ReactGA.event({
-          category: "TrackPlot",
-          action: "click",
-          label: "TrackPlot"
-        });
-        this.showModal();
-        break;
-      case "show":
-        this.mapComponent.show(arg, arg2);
-        if (this.mapComponent2) {
-          this.mapComponent2.show(arg, arg2);
-        }
-        if (arg === 'class4') {
-          this.setState({class4type : arg3})
-        }
-        break;
-      case "add":
-        this.mapComponent.add(arg, arg2, arg3);
-        if (this.mapComponent2) {
-          this.mapComponent2.add(arg, arg2, arg3);
+          setSelectedCoordinates(arg);
         }
         break;
       case "plot":
-        this.showModal();
-        break;
-      case "reset":
-        this.mapComponent.resetMap();
-        if (this.mapComponent2) {
-          this.mapComponent2.resetMap();
+        if (vectorCoordinates.length > 0 || vectorId) {
+          if (!vectorId) {
+            setSelectedCoordinates(vectorCoordinates);
+          }
+          setUiSettings({
+            ...uiSettings,
+            showModal: true,
+            modalType: vectorType,
+          });
         }
+        break;
+      case "show":
+        setVectorCoordinates([]);
+        setSelectedCoordinates([]);
+        closeModal();
+        setClass4Type(arg3);
+        mapRef.current.show(arg, arg2);
+        break;
+      case "drawObsPoint":
+        // Enable point selection in both maps
+        mapRef.current.drawObsPoint();
+        break;
+
+      case "drawObsArea":
+        mapRef.current.drawObsArea();
+        break;
+      case "setObsArea":
+        if (arg) {
+          setObservationArea(arg);
+          updateUI({ modalType: "observationSelect", showModal: true });
+        }
+        break;
+      case "class4Id":
+        setClass4Id(arg);
+        break;
+      case "toggleCompare":
+        setCompareDatasets((prevCompare) => {
+          return !prevCompare;
+        });
         break;
       case "permalink":
-        if (arg !== null) {
-          this.setState({
-            subquery: arg,
-            showPermalink: true,
-          });
-        }
-        else {
-          this.setState({
-            showPermalink: true,
-          });
-        }
-        break;
-      case "options":
-        this.setState({showOptions: true,});
-        break;
-      case "help":
-        this.setState({ showHelp: true,});
-        break;
-      default:
-        console.error("Undefined", name, arg);
+        setSubquery(null);
+        setShowPermalink(true);
         break;
     }
-  }
+  };
 
-  showModal() {
-    this.setState({
-      showModal: true
+  const updateState = (key, value) => {
+    for (let i = 0; i < key.length; ++i) {
+      switch (key[i]) {
+        case "vectorId":
+          setVectorId(value[i]);
+          break;
+        case "vectorType":
+          setVectorType(value[i]);
+          break;
+        case "names":
+          setNames(value[i]);
+      }
+    }
+  };
+
+  const updateMapState = (key, value) => {
+    setMapState((prevMapState) => {
+      return {
+        ...prevMapState,
+        [key]: value,
+      };
     });
   }
-  
-  closeModal() {
-    if (this.state.subquery) {
-      this.setState({
-        subquery: null,
+
+  const updateDataset0 = (key, value) => {
+    switch (key) {
+      case "dataset":
+        setDataset0(value);
+        break;
+      default:
+        setDataset0((prevDataset) => {
+          return {
+            ...prevDataset,
+            [key]: value,
+          };
+        });
+    }
+  };
+
+  const updateDataset1 = (key, value) => {
+    switch (key) {
+      case "dataset":
+        setDataset1(value);
+        break;
+      default:
+        setDataset1((prevDataset) => {
+          return {
+            ...prevDataset,
+            [key]: value,
+          };
+        });
+    }
+  };
+
+  const updateUI = (newSettings) => {
+    setUiSettings((prevUISettings) => {
+      return { ...prevUISettings, ...newSettings };
+    });
+  };
+
+  const closeModal = () => {
+    setUiSettings((prevUiSettings) => {
+      return {
+        ...prevUiSettings,
         showModal: false,
-      });
-    } else {
-      window.history.back();
-    }
-  }
+        modalType: "",
+      };
+    });
+  };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.showModal && !prevState.showModal) {
-      window.history.replaceState(prevState, null, null);
-      window.history.pushState(null, null, null);
-    }
-  }
+  const updateMapSettings = (key, value) => {
+    setMapSettings((prevMapSettings) => {
+      let newMapSettings = {
+        ...prevMapSettings,
+        [key]: value,
+      };
+      return newMapSettings;
+    });
+  };
 
-  generatePermLink(subquery, permalinkSettings) {
+  const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
-    if (this.state.subquery !== undefined) {
-      query.subquery = this.state.subquery;
+    if (subquery !== undefined) {
+      query.subquery = subquery;
       query.showModal = true;
-      query.modal = this.state.modal;
-      query.names = this.state.names;
-      // Hacky fix to remove a third "null" array member from corrupting
-      // permalink URL.
-      if (this.state.modal === "point" && this.state.point[0].length === 3) {
-        query.point = [this.state.point[0].slice(0, 2)];
-      }
-      else {
-        query[this.state.modal] = this.state[this.state.modal];
-      }
+      query.modalType = uiSettings.modalType;
+      query.names = names;
+      query.vectorId = vectorId;
+      query.vectorType = vectorType;
+      query.vectorCoordinates = vectorCoordinates;
+      query.selectedCoordinates = selectedCoordinates;
     }
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
-        query[setting] = this.state[setting];
+        switch (setting) {
+          case "dataset0":
+            query.dataset0 = dataset0;
+            break;
+          case "dataset1":
+            query.dataset1 = dataset1;
+            query.compareDatasets = compareDatasets;
+            break;
+          case "mapSettings":
+            query.mapSettings = mapSettings;
+            break;
+        }
       }
-    }
-
-    return window.location.origin + window.location.pathname +
-      `?query=${encodeURIComponent(stringify(query))}`;
-  }
-
-  render() {
-    let modalContent = "";
-    let modalTitle = "";
-
-    switch (this.state.modal) {
-      case "point":
-        modalContent = (
-          <PointWindow
-            dataset_0={this.state}
-            point={this.state.point}
-            names={this.state.names}
-            onUpdate={this.updateState}
-            onUpdateOptions={this.updateOptions}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            action={this.action}
-            showHelp={this.toggleCompareHelp}
-            swapViews={this.swapViews}
-            options={this.state.options}
-          />
-        );
-        modalTitle = this.state.point.map(p => formatLatLon(p[0], p[1]))
-        modalTitle = modalTitle.join(", ")
-        break;
-      case "line":
-        modalContent = (
-          <LineWindow
-            dataset_0={this.state}
-            line={this.state.line}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            onUpdate={this.updateState}
-            onUpdateOptions={this.updateOptions}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            action={this.action}
-            showHelp={this.toggleCompareHelp}
-            swapViews={this.swapViews}
-            options={this.state.options}
-          />
-        );
-
-        modalTitle = "(" + this.state.line[0].map(function(ll) {
-          return formatLatLon(ll[0], ll[1]);
-        }).join("), (") + ")";
-        break;
-      case "area":
-        modalContent = (
-          <AreaWindow
-            dataset_0={this.state}
-            area={this.state.area}
-            colormap={this.state.colormap}
-            names={this.state.names}
-            projection={this.state.projection}
-            onUpdate={this.updateState}
-            onUpdateOptions={this.updateOptions}
-            init={this.state.subquery}
-            dataset_compare={this.state.dataset_compare}
-            dataset_1={this.state.dataset_1}
-            showHelp={this.toggleCompareHelp}
-            action={this.action}
-            swapViews={this.swapViews}
-            options={this.state.options}
-          />
-        );
-
-        modalTitle = "";
-        break;
-      case "track":
-        modalContent = (
-          <TrackWindow
-            dataset={this.state.dataset}
-            quantum={this.state.quantum}
-            track={this.state.track}
-            variable={this.state.variable}
-            scale={this.state.variable_scale}
-            names={this.state.names}
-            depth={this.state.depth}
-            onUpdate={this.updateState}
-            init={this.state.subquery}
-            action={this.action}
-            obs_query={this.state.vectorid}
-          />
-        );
-
-        modalTitle = "";
-        break;
-      case "class4":
-        modalContent = (
-          <Class4Window
-            dataset={this.state.dataset}
-            class4id={this.state.class4}
-            class4type={this.state.class4type}
-            calss4type={this.state.modal}
-            init={this.state.subquery}
-            action={this.action}
-          />
-        );
-        modalTitle = "";
-        break;
-    }
-    if (this.state.modal !== "point" && this.state.names && this.state.names.length > 0) {
-      modalTitle = this.state.names.slice(0).sort().join(", ");
-    }
-
-    _("Loading");
-
-    const contentClassName = this.state.sidebarOpen ? "content open" : "content";
-    
-    // Pick which map we need
-    let map = null;
-    if (this.state.dataset_compare) {
-      
-      const secondState = $.extend(true, {}, this.state);
-      for (let i = 0; i < Object.keys(this.state.dataset_1).length; ++i) {
-        const keys = Object.keys(this.state.dataset_1);
-        secondState[keys[i]] = this.state.dataset_1[keys[i]];
-      }
-      map = <div className='multimap'>
-        <Map
-          ref={(m) => this.mapComponent = m}
-          state={this.state}
-          action={this.action}
-          updateState={this.updateState}
-          partner={this.mapComponent2}
-          scale={this.state.variable_scale}
-          options={this.state.options}
-          quiverVariable={this.state.quiverVariable}
-        />
-        <Map
-          ref={(m) => this.mapComponent2 = m}
-          state={secondState}
-          action={this.action}
-          updateState={this.updateState}
-          partner={this.mapComponent}
-          scale={this.state.dataset_1.variable_scale}
-          options={this.state.options}
-        />
-      </div>;
-    } 
-    else {
-      map = <Map
-        ref={(m) => this.mapComponent = m}
-        state={this.state}
-        action={this.action}
-        updateState={this.updateState}
-        scale={this.state.variable_scale}
-        options={this.state.options}
-        quiverVariable={this.state.quiverVariable}
-      />;
     }
 
     return (
-      <div className='OceanNavigator'>
-        <MapInputs
-          state={this.state}
-          swapViews={this.swapViews}
-          changeHandler={this.updateState}
-          showHelp={this.toggleCompareHelp}
-          options={this.state.options}
-          updateOptions={this.updateOptions}
-          extent={this.state.extent}
-          projection={this.state.projection}
-          basemap={this.state.basemap}
-          dataset_compare={this.state.dataset_compare}
-          sidebarOpen={this.state.sidebarOpen}
-        />
-        <div className={contentClassName}>
-          <MapToolbar
-            action={this.action}
-            plotEnabled={this.state.plotEnabled}
-            dataset_compare={this.state.dataset_compare}
-            updateState={this.updateState}
-            toggleSidebar={this.toggleSidebar}
-            toggleOptionsSidebar={this.toggleOptionsSidebar}
-            showObservationSelect={this.state.showObservationSelect}
-            observationArea={this.state.observationArea}
-            disablePlotInteraction={this.removeMapInteraction}
-          />
-          {map}
-        </div>
-
-        <Modal
-          show={this.state.showModal}
-          onHide={this.closeModal}
-          dialogClassName='full-screen-modal'
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {modalContent}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={this.closeModal}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showPermalink}
-          onHide={() => this.setState({showPermalink: false})}
-          dialogClassName='permalink-modal'
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="link" alt={_("Share Link")}/> {_("Share Link")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Permalink
-              generatePermLink={this.generatePermLink}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showPermalink: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showOptions}
-          onHide={() => this.setState({showOptions: false})}
-          dialogClassName='permalink-modal'
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="gear" alt={_("Options")}/> {_("Options")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Options 
-              options={this.state.options}
-              updateOptions={this.updateOptions}
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showOptions: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showHelp}
-          onHide={() => this.setState({showHelp: false})}
-          dialogClassName='full-screen-modal'
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title><Icon icon="question" alt={_("Help")}/> {_("Help")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Iframe 
-              url="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
-              height="768px"
-              position="relative"
-            />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              onClick={() => this.setState({showHelp: false})}
-            ><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-
-        <Modal
-          show={this.state.showCompareHelp}
-          onHide={this.toggleCompareHelp}
-          bsSize="large"
-          dialogClassName="helpdialog"
-          backdrop={true}
-        >
-          <Modal.Header closeButton closeLabel={_("Close")}>
-            <Modal.Title>{_("Compare Datasets Help")}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            
-          </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.toggleCompareHelp}><Icon icon="close" alt={_("Close")}/> {_("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
+      window.location.origin +
+      window.location.pathname +
+      `?query=${encodeURIComponent(JSON.stringify(query))}`
     );
+  };
+
+  let modalBodyContent = null;
+  let modalTitle = "";
+  let modalSize = "lg";
+  switch (uiSettings.modalType) {
+    case "point":
+      modalBodyContent = (
+        <PointWindow
+          dataset_0={dataset0}
+          point={selectedCoordinates}
+          mapSettings={mapSettings}
+          names={names}
+          updateDataset={updateDataset0}
+          init={subquery}
+          action={action}
+        />
+      );
+      modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
+      modalTitle = modalTitle.join(", ");
+      break;
+    case "line":
+      modalBodyContent = (
+        <LineWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          line={selectedCoordinates}
+          mapSettings={mapSettings}
+          names={names}
+          onUpdate={updateDataset0}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset0}
+          init={subquery}
+          action={action}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
+        />
+      );
+
+      modalTitle =
+        "(" +
+        selectedCoordinates
+          .map(function (ll) {
+            return formatLatLon(ll[0], ll[1]);
+          })
+          .join("), (") +
+        ")";
+      break;
+    case "area":
+      modalBodyContent = (
+        <AreaWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          area={selectedCoordinates}
+          mapSettings={mapSettings}
+          names={names}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset1}
+          init={subquery}
+          action={action}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
+        />
+      );
+
+      modalTitle = "";
+      break;
+    case "presetFeatures":
+      modalBodyContent = <PresetFeaturesWindow action={action} />;
+      modalTitle = "Preset Features";
+      break;
+    case "enterCoords":
+      modalBodyContent = (
+        <EnterCoordsWindow
+          action={action}
+          updateUI={updateUI}
+          vectorType={vectorType}
+          vectorCoordinates={vectorCoordinates}
+        />
+      );
+      modalTitle = __("Enter Coordinates");
+      break;
+    case "observationSelect":
+      modalBodyContent = (
+        <ObservationSelector area={observationArea} action={action} />
+      );
+      modalTitle = "Select Observations";
+      break;
+    case "class4Selector":
+      modalBodyContent = <Class4Selector action={action} updateUI={updateUI} />;
+      modalTitle = "Select Class4";
+      modalSize = "sm";
+      break;
+    case "class4":
+      modalBodyContent = (
+        <Class4Window
+          dataset={dataset0.id}
+          class4id={class4Id}
+          class4type={class4Type}
+          init={subquery}
+          action={action}
+        />
+      );
+      modalTitle = "Class4";
+      break;
+    case "settings":
+      modalBodyContent = (
+        <SettingsWindow
+          mapSettings={mapSettings}
+          updateMapSettings={updateMapSettings}
+        />
+      );
+      modalTitle = __("Settings");
+      break;
+    case "info-help":
+      modalBodyContent = <InfoHelpWindow />;
+      modalTitle = __("Info/Help");
+      break;
   }
+
+  return (
+    <div className="OceanNavigator">
+      <ScaleViewer
+        dataset={dataset0}
+        mapSettings={mapSettings}
+        onUpdate={updateDataset0}
+        mapState={mapState}
+      />
+      {compareDatasets ? (
+        <ScaleViewer
+          dataset={dataset1}
+          mapSettings={mapSettings}
+          onUpdate={updateDataset0}
+          mapState={mapState}
+          right={true}
+        />
+      ) : null}
+      <MainMap
+        ref={mapRef}
+        mapSettings={mapSettings}
+        dataset0={dataset0}
+        dataset1={dataset1}
+        vectorId={vectorId}
+        vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
+        class4Type={class4Type}
+        updateState={updateState}
+        action={action}
+        updateMapSettings={updateMapSettings}
+        updateUI={updateUI}
+        updateMapState={updateMapState}
+        compareDatasets={compareDatasets}
+      />
+      <MapInputs
+        dataset0={dataset0}
+        dataset1={dataset1}
+        mapSettings={mapSettings}
+        updateDataset0={updateDataset0}
+        updateDataset1={updateDataset1}
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        compareDatasets={compareDatasets}
+        action={action}
+        showCompare={true}
+        vectorType={vectorType}
+        vectorCoordinates={vectorCoordinates}
+      />
+      <ToggleLanguage />
+      <LinkButton action={action} />
+      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <Modal
+        show={uiSettings.showModal}
+        onHide={closeModal}
+        dialogClassName="full-screen-modal"
+        size={modalSize}
+      >
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalBodyContent}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeModal}>{__("Close")}</Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal
+        show={showPermalink}
+        onHide={() => setShowPermalink(false)}
+        dialogClassName="permalink-modal"
+        backdrop={true}
+      >
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
+          <Modal.Title>
+            <Icon icon="link" alt={"Share Link"} /> {__("Share Link")}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Permalink
+            modalType={uiSettings.modalType}
+            compareDatasets={compareDatasets}
+            generatePermLink={generatePermLink}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setShowPermalink(false)}>
+            <Icon icon="close" alt={__("Close")} /> {__("Close")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
 }
 
 export default withTranslation()(OceanNavigator);

@@ -1,70 +1,56 @@
 body {
-    font-family: $font-family;
+  font-family: $font-family;
+  overflow: hidden;
 
-    input, select {
-        font-size: 0.75em;
-    }
+  input,
+  select {
+    font-size: 0.75em;
+  }
 
-    .nav-tabs {
-        font-size: 0.8em;
-    }
+  .nav-tabs {
+    font-size: 0.8em;
+  }
 }
 .OceanNavigator {
-    .MapInputs {
-        width: 0;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        transition: left 0.3s ease-in-out;
-    }
-    > .content {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0; // Map view takes up full screen width when sidebar closed
-        right: 0;
-        display: flex;
-        flex-flow: column;
-        transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #008cba;
 
-        .MapToolbar {
-            flex: 0 1 auto;
-        }
-
-        .Map {
-            flex: 1 1 auto;
-        }
-    }
-
+  .map-container {
+    width: 100%;
+  }
 }
 
-.checkbox, .alert, .control-label {
-    font-size: 95%;
+.checkbox,
+.alert,
+.control-label {
+  font-size: 95%;
 }
 
 // Moves content to the right to fit sidebar
 .content.open {
-    left: $sidebar-width;
+  left: $sidebar-width;
 }
 
 .permalink-modal {
-    textarea {
-        font-size: 1em;
-        width: 100%;
-    }
+  textarea {
+    font-size: 1em;
+    width: 100%;
+  }
 }
 
 .busy-modal {
-    height: 100%;
-    margin: 0 auto;
-    .modal-content {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        img {
-            display: block;
-            margin: 0 auto;
-        }
+  height: 100%;
+  margin: 0 auto;
+  .modal-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    img {
+      display: block;
+      margin: 0 auto;
     }
+  }
 }

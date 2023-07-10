@@ -5,7 +5,10 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import numpy as np
-from flask import current_app
+
+from oceannavigator.settings import get_settings
+
+settings = get_settings()
 
 
 def get_filename(plot_type, dataset_name, extension):
@@ -169,12 +172,10 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
         ylabel_style={"size": 10},
         zorder=1,
     )
-    
+
     img_path = "/cartopy_resources/bluemarble.png"
     try:
-        img = plt.imread(
-            current_app.config["SHAPE_FILE_DIR"] + img_path
-        )
+        img = plt.imread(settings.shape_file_dir + img_path)
         m.imshow(
             img,
             origin="upper",

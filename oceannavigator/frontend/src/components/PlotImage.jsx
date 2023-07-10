@@ -1,18 +1,20 @@
 /* eslint react/no-deprecated: 0 */
 
-
 import React from "react";
-import {Button,
-  DropdownButton,
+import axios from "axios";
+import {
+  Button,
   ButtonToolbar,
-  MenuItem,
   Modal,
-  Alert} from "react-bootstrap";
+  Alert,
+} from "react-bootstrap";
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
-const stringify = require("fast-stable-stringify");
+
 const FAIL_IMAGE = require("./fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
@@ -31,7 +33,7 @@ class PlotImage extends React.PureComponent {
       url: LOADING_IMAGE,
       showImagelink: false,
     };
-    
+
     // Function bindings
     this.saveImage = this.saveImage.bind(this);
     this.getLink = this.getLink.bind(this);
@@ -40,40 +42,39 @@ class PlotImage extends React.PureComponent {
   }
 
   generateScript(language) {
-      const query = encodeURIComponent(stringify(this.generateQuery(this.props.query)));
-      let scriptLang = null;
-      let scriptType = null;
-      switch(language){
-        case "pythonPlot":
-          scriptLang = "python";
-          scriptType = "PLOT";
-          break;
-        case "rPlot":
-          scriptLang = "r";
-          scriptType = "PLOT";
-          break;
-        case "pythonCSV":
-          scriptLang = "python";
-          scriptType = "CSV"
-          break;
-        case "rCSV":
-          scriptLang = "r";
-          scriptType = "CSV"
-          break;
-      }
-      const url = `${window.location.origin}/api/v1.0/generatescript/?query=${query}&lang=${scriptLang}&scriptType=${scriptType}`;
-      window.location.href = url;
+    let [type, query] = this.generateQuery(this.props.query);
+    query = encodeURIComponent(JSON.stringify(query));
+    let scriptLang = null;
+    let scriptType = null;
+    switch (language) {
+      case "pythonPlot":
+        scriptLang = "python";
+        scriptType = "plot";
+        break;
+      case "rPlot":
+        scriptLang = "r";
+        scriptType = "plot";
+        break;
+      case "pythonCSV":
+        scriptLang = "python";
+        scriptType = "csv";
+        break;
+      case "rCSV":
+        scriptLang = "r";
+        scriptType = "csv";
+        break;
+    }
+    const url = `${window.location.origin}/api/v2.0/generate_script?query=${query}&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
+    window.location.href = url;
   }
 
   componentDidMount() {
     this._mounted = true;
-    this.loadImage(this.generateQuery(this.props.query));
+    this.loadImage(...this.generateQuery(this.props.query));
   }
 
-  componentWillReceiveProps(props) {
-    if (stringify(this.props.query) !== stringify(props.query)) {
-      this.loadImage(this.generateQuery(props.query));
-    }
+  componentDidUpdate() {
+    this.loadImage(...this.generateQuery(this.props.query));
   }
 
   componentWillUnmount() {
@@ -87,60 +88,57 @@ class PlotImage extends React.PureComponent {
     this.setState(newState);
   }
 
-  loadImage(query) {
-    const paramString = $.param({
-      query: stringify(query),
-      format: "json",
-    });
+  loadImage(type, query) {
+    const queryString = JSON.stringify(query);
 
-    if (this.state.paramString !== paramString) {
-
+    if (this.state.queryString !== queryString) {
       this.setState({
-        loading: true, 
-        fail: false, 
+        loading: true,
+        fail: false,
         url: LOADING_IMAGE,
-        paramString: paramString,
+        queryString: queryString,
         errorMessage: null,
       });
 
-      const promise = $.ajax({
-        url: "/api/v1.0/plot/",
-        cache: true,
-        data: paramString,
-        dataType: "json",
-        method: (paramString.length < 1536) ? "GET" : "POST",
-      }).promise();
+      axios
+        .get(`/api/v2.0/plot/${type}`, {
+          params: {
+            query: queryString,
+            format: "json",
+          },
+        })
+        .then(
+          function (data) {
+            if (this._mounted) {
+              this.setState({
+                loading: false,
+                fail: false,
+                url: data.data,
+                errorMessage: null,
+              });
+            }
+          }.bind(this)
+        )
+        .catch(
+          function (xhr) {
+            if (this._mounted) {
+              // Get our custom error message
+              // const message = xhr.getResponseHeader("x-error-message");
 
-      promise.done(function(data) {
-        if (this._mounted) {
-          this.setState({
-            loading: false,
-            fail: false,
-            url: data,
-            errorMessage: null,
-          });
-        }
-      }.bind(this));
-            
-      promise.fail(function(xhr) {
-        if (this._mounted) {
-          // Get our custom error message
-          const message = JSON.parse(xhr.responseText).message;
-          
-          this.setState({
-            url: FAIL_IMAGE,
-            loading: false,
-            fail: true,
-            errorMessage: message,
-          });
-        }
-      }.bind(this));
+              this.setState({
+                url: FAIL_IMAGE,
+                loading: false,
+                fail: true,
+                // errorMessage: message,
+              });
+            }
+          }.bind(this)
+        );
     }
   }
 
   generateQuery(q) {
     const query = {
-      type: q.type,
       dataset: q.dataset,
       names: q.names,
     };
@@ -148,9 +146,10 @@ class PlotImage extends React.PureComponent {
     if (q.plotTitle !== null) {
       query.plotTitle = q.plotTitle;
     }
-    
-    switch(q.type) {
+
+    switch (q.type) {
       case "profile":
+        query.variable_range = q.variable_range;
       case "ts":
       case "sound":
         query.variable = q.variable;
@@ -159,7 +158,7 @@ class PlotImage extends React.PureComponent {
         query.time = q.time;
         if (q.compare_to) {
           query.compare_to = {
-            dataset: q.compare_to.dataset,
+            dataset: q.compare_to.id,
             dataset_quantum: q.compare_to.dataset_quantum,
             variable: q.compare_to.variable,
             time: q.compare_to.time,
@@ -170,11 +169,15 @@ class PlotImage extends React.PureComponent {
         query.showmap = q.showmap;
         query.station = q.point;
         query.variable = q.variable;
+        query.variable_range = q.variable_range;
         query.depth = q.depth;
         query.starttime = q.starttime;
         query.endtime = q.endtime;
         query.scale = q.scale;
         query.colormap = q.colormap;
+        query.interp = q.interp;
+        query.radius = q.radius;
+        query.neighbours = q.neighbours;
         break;
       case "transect":
         query.variable = q.variable;
@@ -244,7 +247,7 @@ class PlotImage extends React.PureComponent {
         query.interp = q.interp;
         query.radius = q.radius;
         query.neighbours = q.neighbours;
-              
+
         if (q.compare_to) {
           query.compare_to = {
             dataset: q.compare_to.dataset,
@@ -293,17 +296,21 @@ class PlotImage extends React.PureComponent {
         query.endtime = q.endtime;
         break;
     }
-    return query;
+    return [q.type, query];
   }
 
   urlFromQuery(q) {
-    const query = this.generateQuery(q);
-    return "/api/v1.0/plot/?query=" + encodeURIComponent(stringify(query));
+    const [type, query] = this.generateQuery(q);
+    return (
+      `/api/v2.0/plot/${type}?query=` +
+      encodeURIComponent(JSON.stringify(query))
+    );
   }
 
   saveImage(format) {
-    let url = `${this.urlFromQuery(this.props.query)}` + `&save&format=${format}`;
-      
+    let url =
+      `${this.urlFromQuery(this.props.query)}` + `&save=True&format=${format}`;
+
     if (format !== "odv" || format !== "csv") {
       url += `&size=${this.props.query.size}` + `&dpi=${this.props.query.dpi}`;
     }
@@ -312,7 +319,7 @@ class PlotImage extends React.PureComponent {
   }
 
   getLink(key) {
-    switch(key) {
+    switch (key) {
       case "web":
         this.props.action("permalink", this.props.permlink_subquery);
         break;
@@ -326,21 +333,20 @@ class PlotImage extends React.PureComponent {
   }
 
   render() {
-    
-    const imagelinkModalEntered = function() {
-      this.imagelinkbox.style.height = this.imagelinkbox.scrollHeight + 5 + "px";
+    const imagelinkModalEntered = function () {
+      this.imagelinkbox.style.height =
+        this.imagelinkbox.scrollHeight + 5 + "px";
       this.imagelinkbox.select();
     }.bind(this);
 
     // Show a nice error if we need to
     let errorAlert = null;
     if (this.state.errorMessage !== null) {
-      errorAlert = (<Alert bsStyle="danger">{this.state.errorMessage}</Alert>);
+      errorAlert = <Alert variant="danger">{this.state.errorMessage}</Alert>;
     }
 
     return (
-      <div className='PlotImage'>
-
+      <div className="PlotImage">
         {/* Rendered graph */}
         <div className="RenderedImage">
           <img src={this.state.url} />
@@ -348,135 +354,156 @@ class PlotImage extends React.PureComponent {
 
         {errorAlert}
 
-        <ButtonToolbar>
+        <ButtonToolbar className="button-bar">
           <DropdownButton
             id="save"
-            title={<span><Icon icon="save" /> {_("Save Image")}</span>}
+            title={
+              <span>
+                <Icon icon="save" /> {_("Save Image")}
+              </span>
+            }
             disabled={this.state.fail || this.state.loading}
             onSelect={this.saveImage}
-            dropup
+            drop={"up"}
           >
-            <MenuItem
-              eventKey="png"
-            ><Icon icon="file-image-o" /> PNG</MenuItem>
-            <MenuItem
-              eventKey="jpeg"
-            ><Icon icon="file-image-o" /> JPG</MenuItem>
-            <MenuItem
-              eventKey="pdf"
-            ><Icon icon="file-pdf-o" /> PDF</MenuItem>
-            <MenuItem
-              eventKey="svg"
-            ><Icon icon="file-code-o" /> SVG</MenuItem>
-            <MenuItem
-              eventKey="ps"
-            ><Icon icon="file-pdf-o" /> PS</MenuItem>
-            <MenuItem
-              eventKey="eps"
-            ><Icon icon="file-pdf-o" /> EPS</MenuItem>
-            <MenuItem
-              eventKey="tiff"
-            ><Icon icon="file-image-o" /> TIFF</MenuItem>
-            <MenuItem
+            <Dropdown.Item eventKey="png">
+              <Icon icon="file-image-o" /> PNG
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="jpeg">
+              <Icon icon="file-image-o" /> JPG
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="pdf">
+              <Icon icon="file-pdf-o" /> PDF
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="svg">
+              <Icon icon="file-code-o" /> SVG
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="ps">
+              <Icon icon="file-pdf-o" /> PS
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="eps">
+              <Icon icon="file-pdf-o" /> EPS
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="tiff">
+              <Icon icon="file-image-o" /> TIFF
+            </Dropdown.Item>
+            <Dropdown.Item
               eventKey="geotiff"
               disabled={this.props.query.type != "map"}
-            ><Icon icon="file-image-o" /> GeoTIFF</MenuItem>
-            <MenuItem divider />
-            <MenuItem
+            >
+              <Icon icon="file-image-o" /> GeoTIFF
+            </Dropdown.Item>
+            <Dropdown.Divider/>
+            <Dropdown.Item
               eventKey="csv"
               disabled={this.props.query.type == "hovmoller"}
               onSelect={this.saveImage}
-            ><Icon icon="file-text-o" /> {_("CSV")}</MenuItem>
-            <MenuItem
+            >
+              <Icon icon="file-text-o" /> {_("CSV")}
+            </Dropdown.Item>
+            <Dropdown.Item
               eventKey="odv"
               onSelect={this.saveImage}
-              disabled={jQuery.inArray(this.props.query.type, [
-                "profile",
-                "observation",
-                "transect",
-                "map"
-              ]) == -1}
-            ><Icon icon="file-text-o" /> {_("ODV")}</MenuItem>
-            <MenuItem
+              disabled={
+                !this.props.query.type.includes("profile") &&
+                !this.props.query.type.includes("observation") &&
+                !this.props.query.type.includes("transect") &&
+                !this.props.query.type.includes("map")
+              }
+            >
+              <Icon icon="file-text-o" /> {_("ODV")}
+            </Dropdown.Item>
+            <Dropdown.Item
               eventKey="stats"
               disabled={this.props.query.type == "hovmoller"}
               onSelect={this.saveImage}
-            ><Icon icon="file-text-o" /> {_("Statistics (csv)")}</MenuItem>
+            >
+              <Icon icon="file-text-o" /> {_("Statistics (csv)")}
+            </Dropdown.Item>
           </DropdownButton>
 
           <DropdownButton
             id="link"
-            title={<span><Icon icon="link" /> {_("Get Link")}</span>}
-            bsStyle={this.state.fail ? "primary" : "default"}
-            disabled={this.state.loading}
+            title={
+              <span>
+                <Icon icon="link" /> {_("Get Link")}
+              </span>
+            }
+            disabled={this.state.fail || this.state.loading}
             onSelect={this.getLink}
-            dropup
+            drop={"up"}
           >
-            <MenuItem
-              eventKey="web"
-            ><Icon icon="globe" /> {_("Web")}</MenuItem>
-            <MenuItem
-              eventKey="image"
-              disabled={this.state.fail}
-            ><Icon icon="file-image-o" /> {_("Image")}</MenuItem>
+            <Dropdown.Item eventKey="web">
+              <Icon icon="globe" /> {_("Web")}
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="image" disabled={this.state.fail}>
+              <Icon icon="file-image-o" /> {_("Image")}
+            </Dropdown.Item>
           </DropdownButton>
 
           <DropdownButton
             id="script"
-            title={<span><Icon icon="file-code-o" /> {_("API Script")}</span>}
-            bsStyle={this.state.fail ? "primary" : "default"}
-            disabled={this.state.loading}
+            title={
+              <span>
+                <Icon icon="file-code-o" /> {_("API Script")}
+              </span>
+            }
+            disabled={this.state.fail || this.state.loading}
             onSelect={this.generateScript}
-            dropup
+            drop={"up"}
           >
-            <MenuItem
-              eventKey="rPlot"
-              disabled={this.state.fail}
-            ><Icon icon="code" /> R - PLOT</MenuItem>
-            <MenuItem
-              eventKey="pythonPlot"
-            ><Icon icon="code" /> Python 3 - PLOT</MenuItem>
-            <MenuItem
-              eventKey="pythonCSV"
-            ><Icon icon="code" /> Python 3 - CSV</MenuItem>
-            <MenuItem
-              eventKey="rCSV"
-            ><Icon icon="code"/> R - CSV</MenuItem>
+            <Dropdown.Item eventKey="rPlot" disabled={this.state.fail}>
+              <Icon icon="code" /> R - PLOT
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="pythonPlot">
+              <Icon icon="code" /> Python 3 - PLOT
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="pythonCSV">
+              <Icon icon="code" /> Python 3 - CSV
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="rCSV">
+              <Icon icon="code" /> R - CSV
+            </Dropdown.Item>
           </DropdownButton>
-
         </ButtonToolbar>
 
         <Modal
           show={this.state.showImagelink}
           onHide={this.toggleImageLink}
-          dialogClassName='permalink-modal'
-          onEntered={imagelinkModalEntered}>
+          dialogClassName="permalink-modal"
+          onEntered={imagelinkModalEntered}
+        >
           <Modal.Header closeButton>
             <Modal.Title>{_("Share Link")}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <textarea
-              ref={(t) => this.imagelinkbox = t}
+              ref={(t) => (this.imagelinkbox = t)}
               type="text"
               id="imagelink_area"
               readOnly
               value={
-                window.location.origin + this.urlFromQuery(this.props.query) +
-                  "&format=png&size=" + this.props.query.size +
-                  "&dpi=" + this.props.query.dpi
+                window.location.origin +
+                this.urlFromQuery(this.props.query) +
+                "&format=png&size=" +
+                this.props.query.size +
+                "&dpi=" +
+                this.props.query.dpi
               }
             />
           </Modal.Body>
           <Modal.Footer>
             <Button
-              onClick={function() {
+              onClick={function () {
                 this.imagelinkbox.select();
                 document.execCommand("copy");
-              }.bind(this)
-              }><Icon icon="copy" /> {_("Copy")}</Button>
-            <Button
-              onClick={this.toggleImageLink}
-            ><Icon icon="close" /> {_("Close")}</Button>
+              }.bind(this)}
+            >
+              <Icon icon="copy" /> {_("Copy")}
+            </Button>
+            <Button onClick={this.toggleImageLink}>
+              <Icon icon="close" /> {_("Close")}
+            </Button>
           </Modal.Footer>
         </Modal>
       </div>

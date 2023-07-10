@@ -1,12 +1,11 @@
-import os
 import re
+from pathlib import Path
 from io import BytesIO
 
 import cmocean
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-from flask_babel import gettext
 
 import plotting
 
@@ -41,7 +40,7 @@ def find_colormap(name):
 
 
 _c = mcolors.ColorConverter().to_rgb
-data_dir = os.path.join(os.path.dirname(plotting.__file__), "data")
+data_dir = (Path(plotting.__file__).parent).joinpath("data")
 colormaps = {
     "water velocity bearing": cmocean.cm.rain,
     "depth excess": cmocean.cm.deep,
@@ -70,17 +69,14 @@ colormaps = {
     "velocity": cmocean.cm.delta,
     "eastward current": cmocean.cm.delta,
     "northward current": cmocean.cm.delta,
-    "waveheight": cmocean.cm.amp,
-    "waveperiod": cmocean.cm.tempo,
+    "wave height": cmocean.cm.amp,
+    "wave period": cmocean.cm.tempo,
+    "wave direction": cmocean.cm.phase,
     "chlorophyll": cmocean.cm.algae,
     "iron": cmocean.cm.amp,
     "oxygen": cmocean.cm.oxy,
-    "phosphate": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "phosphate.txt"))
-    ),
-    "nitrate": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "nitrate.txt"))
-    ),
+    "phosphate": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("phosphate.txt"))),
+    "nitrate": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("nitrate.txt"))),
     "nitrate concentration": cmocean.cm.tempo,
     "ice": cmocean.cm.ice,
     "phytoplankton": cmocean.cm.deep_r,
@@ -286,12 +282,10 @@ colormaps = {
     "grey": make_colormap([_c("#ffffff"), _c("#000000")]),
     "potential sub surface channel": mcolors.ListedColormap(["#ecf0f1", "#f57732"]),
     "thermal": cmocean.cm.thermal,
-    "neo_sst": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "neo_sst.txt"))
-    ),
-    "BuYlRd": mcolors.ListedColormap(np.loadtxt(os.path.join(data_dir, "BuYlRd.txt"))),
+    "neo_sst": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("neo_sst.txt"))),
+    "BuYlRd": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("BuYlRd.txt"))),
     "temperature": mcolors.ListedColormap(
-        np.loadtxt(os.path.join(data_dir, "temperature.txt"))
+        np.loadtxt(data_dir.joinpath("temperature.txt"))
     ),
 }
 colormaps["wind"] = colormaps["velocity"]
@@ -301,6 +295,7 @@ colormaps["wind"] = colormaps["velocity"]
 # Babel so that they'll end up in the translation list.
 # If the gettext calls were in the definition of colormap_names, they'd get
 # executed before the user's locale is known and would always be in English.
+"""
 gettext("Ammonium Concentration")
 gettext("Anomaly")
 gettext("Bathymetry")
@@ -344,6 +339,7 @@ gettext("Density")
 gettext("Deep")
 gettext("Balance")
 gettext("Potential Sub Surface Channel")
+"""
 
 colormap_names = {
     "ammonium concentration": "Ammonium Concentration",
@@ -401,7 +397,7 @@ def plot_colormaps():
     gradient = np.linspace(0, 1, 256)
     gradient = np.vstack((gradient, gradient))
 
-    fig.suptitle(gettext("Ocean Navigator Colourmaps"), fontsize=14)
+    fig.suptitle("Ocean Navigator Colourmaps", fontsize=14)
     for ax, cmap in zip(axes, sorted(colormap_names, key=colormap_names.get)):
         ax.imshow(gradient, aspect="auto", cmap=colormaps.get(cmap))
         pos = list(ax.get_position().bounds)
@@ -415,12 +411,11 @@ def plot_colormaps():
         ax.set_axis_off()
 
     buf = BytesIO()
-    try:
-        plt.savefig(buf, format="png", dpi="figure")
-        plt.close(fig)
-        return buf.getvalue()
-    finally:
-        buf.close()
+    plt.savefig(buf, format="png", dpi="figure")
+    plt.close(fig)
+
+    buf.seek(0)
+    return buf
 
 
 if __name__ == "__main__":

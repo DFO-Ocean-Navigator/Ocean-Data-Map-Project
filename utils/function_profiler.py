@@ -1,6 +1,5 @@
 import cProfile
-from os import getcwd
-from os.path import join
+from pathlib import Path
 
 """
     This function is used to profile an arbitrary function
@@ -40,7 +39,7 @@ def profileit(func):
         prof.dump_stats(datafn)
         print("// -----------------------------------")
         print(".profile file written to:")
-        print(join(getcwd(), datafn))
+        print((Path.cwd()).joinpath(datafn))
         print("Run python -m pstats " + datafn + " to parse the stats.")
         print("// -----------------------------------")
         return retval

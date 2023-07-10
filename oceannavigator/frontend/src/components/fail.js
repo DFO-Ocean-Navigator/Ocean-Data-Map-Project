@@ -3,13 +3,14 @@
 
 var fail;
 
-if (process.env.NODE_ENV == "production") {
-  fail = require("../images/sad-computer.png").default;
-} 
-else {
-  // We're in dev environment.
-  fail = require("../images/failure.gif").default;
-}
+fail = require("../images/sad-computer.png").default;
+// if (process.env.NODE_ENV == "production") {
+//   fail = require("../images/sad-computer.png").default;
+// } 
+// else {
+//   // We're in dev environment.
+//   fail = require("../images/failure.gif").default;
+// }
 
 module.exports = fail;
 
