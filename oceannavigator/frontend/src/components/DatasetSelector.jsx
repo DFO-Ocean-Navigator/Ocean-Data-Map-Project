@@ -147,7 +147,7 @@ function DatasetSelector(props) {
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
                   quiverVariable: "None",
-                  quiverDensity: 10,
+                  quiverDensity: 0,
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -368,16 +368,11 @@ function DatasetSelector(props) {
           label={__("Quiver Density")}
           placeholder={__("Quiver Density")}
           options={[
-            { id: 10, value: "10%" },
-            { id: 20, value: "20%" },
-            { id: 30, value: "30%" },
-            { id: 40, value: "40%" },
-            { id: 50, value: "50%" },
-            { id: 60, value: "60%" },
-            { id: 70, value: "70%" },
-            { id: 80, value: "80%" },
-            { id: 90, value: "90%" },
-            { id: 100, value: "100%" },
+            { id: -2, value: "-2" },
+            { id: -1, value: "-1" },
+            { id: 0, value: "None" },
+            { id: 1, value: "1" },
+            { id: 2, value: "2" },
           ]}
           onChange={updateDataset}
           selected={dataset.quiverDensity}
