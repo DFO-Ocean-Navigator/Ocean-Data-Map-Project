@@ -13,11 +13,19 @@ div.DatasetSelector-horizontal {
   justify-content: center;
 }
 
-.go-button{
-  margin: 5px;
+div.quiver-options {
+  width: 275px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
-.go-button:hover{
+.go-button {
+  margin: 5px;
+  display: flex;
+}
+
+.go-button:hover {
   background-color: #fff;
   border: 1px solid #008cba;
   color: #008cba;

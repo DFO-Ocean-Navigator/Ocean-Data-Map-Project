@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -20,6 +21,8 @@ import {
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 
 import { withTranslation } from "react-i18next";
+
+import "rc-slider/assets/index.css";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
@@ -350,7 +353,7 @@ function DatasetSelector(props) {
     quiverVariables.unshift({ id: "none", value: "None" });
 
     quiverSelector = (
-      <>
+      <div className="quiver-options">
         <SelectBox
           id={`dataset-selector-quiver-selector-${props.id}`}
           name="quiverVariable"
@@ -362,24 +365,20 @@ function DatasetSelector(props) {
           loading={loading}
           horizontalLayout={props.horizontalLayout}
         />
-        <SelectBox
-          id={`dataset-selector-quiver-density-${props.id}`}
-          name="quiverDensity"
-          label={__("Quiver Density")}
-          placeholder={__("Quiver Density")}
-          options={[
-            { id: -2, value: "-2" },
-            { id: -1, value: "-1" },
-            { id: 0, value: "None" },
-            { id: 1, value: "1" },
-            { id: 2, value: "2" },
-          ]}
-          onChange={updateDataset}
-          selected={dataset.quiverDensity}
-          loading={loading}
-          horizontalLayout={props.horizontalLayout}
+        <Slider
+          range
+          allowCross={false}
+          min={-1}
+          max={1}
+          marks={{
+            "-1": "-",
+            "0": "",
+            "1": "+",
+          }}
+          defaultValue={dataset.quiverDensity}
+          onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
         />
-      </>
+      </div>
     );
   }
 
