@@ -292,9 +292,9 @@ class TestAPIv2:
 
         # response for each type of query
         response = []
-        response.append(self.client.get("/api/v2.0/kml/points"))
-        response.append(self.client.get("/api/v2.0/kml/lines"))
-        response.append(self.client.get("/api/v2.0/kml/areas"))
+        response.append(self.client.get("/api/v2.0/kml/point"))
+        response.append(self.client.get("/api/v2.0/kml/line"))
+        response.append(self.client.get("/api/v2.0/kml/area"))
         for resp in response:
             assert resp.status_code == 200
 
