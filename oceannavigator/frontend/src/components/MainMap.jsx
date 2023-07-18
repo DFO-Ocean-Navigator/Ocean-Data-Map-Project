@@ -334,7 +334,7 @@ const MainMap = forwardRef((props, ref) => {
   useEffect(() => {
     if (layerQuiver) {
       let source = null;
-      if (props.dataset0.quiverVariable !== "none") {
+      if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0);
       }
       layerQuiver.setSource(source);
@@ -349,7 +349,7 @@ const MainMap = forwardRef((props, ref) => {
     if (map1) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
-      if (props.dataset1.quiverVariable !== "none") {
+      if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1);
       }
       quiverLayer.setSource(source);
