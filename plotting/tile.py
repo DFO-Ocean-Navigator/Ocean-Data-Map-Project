@@ -332,10 +332,10 @@ async def quiver(
         ).flatten()
 
         lat_stride = int(
-            2.5 * lat_var.size / ((lat_var.max() - lat_var.min()) * (z + density))
+            4 * lat_var.size / ((lat_var.max() - lat_var.min()) * (z + density))
         )
         lon_stride = int(
-            2.5 * lon_var.size / ((lon_var.max() - lon_var.min()) * (z + density))
+            4 * lon_var.size / ((lon_var.max() - lon_var.min()) * (z + density))
         )
 
         lat_stride = lat_stride if lat_stride > 1 else 1

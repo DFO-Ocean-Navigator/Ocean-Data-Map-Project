@@ -365,15 +365,16 @@ function DatasetSelector(props) {
           loading={loading}
           horizontalLayout={props.horizontalLayout}
         />
+        <Form.Label>Quiver Density</Form.Label>
         <Slider
           range
           allowCross={false}
-          min={-1}
-          max={1}
+          min={-2}
+          max={2}
           marks={{
-            "-1": "-",
+            "-2": "-",
             "0": "",
-            "1": "+",
+            "2": "+",
           }}
           defaultValue={dataset.quiverDensity}
           onChange={(x) => updateDataset("quiverDensity", parseInt(x))}

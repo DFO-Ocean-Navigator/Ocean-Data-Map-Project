@@ -14,10 +14,24 @@ div.DatasetSelector-horizontal {
 }
 
 div.quiver-options {
-  width: 275px;
+  width: 400px;
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-evenly;
+
+  .label {
+    text-wrap: nowrap;
+  }
+
+  .rc-slider {
+    width: 80px;
+
+    .rc-slider-mark-text {
+      top: -30px;
+      font-size: medium;
+    }
+  }
 }
 
 .go-button {
