@@ -36,7 +36,6 @@ from data.observational import (
     engine,
 )
 from data.sqlite_database import SQLiteDatabase
-from data.transformers.geojson import data_array_to_geojson
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
 from oceannavigator.dataset_config import DatasetConfig
 from oceannavigator.log import log
@@ -428,81 +427,6 @@ def range(
     }
 
 
-@router.get("/data")
-async def data(
-    dataset: str = Query(
-        ..., description="The key of the dataset.", example="giops_day"
-    ),
-    variable: str = Query(
-        ..., description="The key of the variable.", example="votemper"
-    ),
-    time: int = Query(..., description="NetCDF timestamp"),
-    depth: int = Query(..., description="Depth index", example=0),
-):
-    """
-    Returns a geojson representation of requested model data.
-    """
-
-    settings = get_settings()
-
-    cached_file_name = os.path.join(
-        settings.cache_dir,
-        "data",
-        f"get_data_{dataset}_{variable}_{depth}_{time}.geojson",
-    )
-
-    if os.path.isfile(cached_file_name):
-        log().info(f"Using cached {cached_file_name}.")
-        return FileResponse(cached_file_name, media_type="application/json")
-
-    config = DatasetConfig(dataset)
-
-    with open_dataset(config, variable=variable, timestamp=time) as ds:
-
-        lat_var, lon_var = ds.nc_data.latlon_variables
-
-        stride = config.vector_arrow_stride
-
-        lat_slice = slice(0, lat_var.size, stride)
-        lon_slice = slice(0, lon_var.size, stride)
-
-        time_index = ds.nc_data.timestamp_to_time_index(time)
-
-        data = ds.nc_data.get_dataset_variable(variable)
-
-        if len(data.shape) == 3:
-            data_slice = (time_index, lat_slice, lon_slice)
-        else:
-            data_slice = (time_index, depth, lat_slice, lon_slice)
-
-        data = data[data_slice]
-
-        bearings = None
-        bearings_var = config.variable[variable].bearing_component
-        if variable in config.vector_variables and bearings_var:
-            with open_dataset(
-                config, variable=bearings_var, timestamp=time
-            ) as ds_bearing:
-                bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
-                    data_slice
-                ].squeeze(drop=True)
-
-        d = await data_array_to_geojson(
-            data.squeeze(drop=True),
-            bearings,  # this is a hack
-            lat_var[lat_slice],
-            lon_var[lon_slice],
-            config.variable[variable].scale,
-        )
-
-        path = pathlib.Path(cached_file_name).parent
-        path.mkdir(parents=True, exist_ok=True)
-        with open(cached_file_name, "w", encoding="utf-8") as f:
-            geojson.dump(d, f)
-
-        return d
-
-
 @router.get("/class4")
 def class4_files():
     """
@@ -588,7 +512,6 @@ def subset_query(
     time: str = Query(..., description="", example="2283984000,2283984000"),
     should_zip: str = Query("1", description="", example="1"),
 ):
-
     working_dir = None
     subset_filename = None
 
@@ -1049,12 +972,12 @@ def topography_tiles(
         f"{y}.png",
     )
 
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # if os.path.isfile(f):
+    #     return FileResponse(
+    #         f,
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     img = plot_topography(projection, x, y, zoom, shaded_relief)
     return _cache_and_send_img(img, f)
@@ -1094,12 +1017,12 @@ async def bathymetry_tiles(
         f"{y}.png",
     )
 
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # if os.path.isfile(f):
+    #     return FileResponse(
+    #         f,
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     img = await plot_bathymetry(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
