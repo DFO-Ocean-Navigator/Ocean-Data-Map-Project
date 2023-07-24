@@ -67,8 +67,8 @@ function SubsetPanel(props) {
       queryString = "&min_range=" + min_range + "&max_range=" + max_range;
     }
     const outputEndtime = outputTimerange
-      ? state.outputEndtime
-      : state.outputStarttime;
+      ? outputEndtime
+      : outputStarttime;
     window.location.href =
       `/api/v2.0/subset/${props.dataset.id}/${outputVariables.join()}?` +
       "&outputFormat=" +
