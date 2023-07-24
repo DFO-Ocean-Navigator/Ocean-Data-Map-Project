@@ -13,8 +13,8 @@ import pint
 import pyresample
 import xarray
 import xarray.core.variable
-from cachetools import TTLCache
 from babel.dates import format_date
+from cachetools import TTLCache
 
 import data.calculated
 import data.utils
