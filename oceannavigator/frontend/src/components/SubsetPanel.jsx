@@ -66,16 +66,16 @@ function SubsetPanel(props) {
       const max_range = [AABB[1], AABB[3]].join();
       queryString = "&min_range=" + min_range + "&max_range=" + max_range;
     }
-    const outputEndtime = outputTimerange
-      ? outputEndtime
-      : outputStarttime;
+    const starttime = outputTimerange
+      ? outputStarttime
+      : outputEndtime;
     window.location.href =
       `/api/v2.0/subset/${props.dataset.id}/${outputVariables.join()}?` +
-      "&outputFormat=" +
+      "&output_format=" +
       outputFormat +
       queryString +
       "&time=" +
-      [outputStarttime, outputEndtime].join() +
+      [starttime, outputEndtime].join() +
       "&should_zip=" +
       (zip ? 1 : 0);
   };
