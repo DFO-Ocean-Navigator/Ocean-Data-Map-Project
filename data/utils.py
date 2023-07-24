@@ -42,15 +42,17 @@ def find_ge(a, x):
 
 
 def get_data_vars_from_equation(equation: str, data_variables: List[str]) -> List[str]:
-    """Extracts the data variables (i.e. variables that exist in netcdf files, as opposed to
-        "calculated variables") from an equation string for a calculated variable.
+    """Extracts the data variables (i.e. variables that exist in netcdf files, as
+        opposed to "calculated variables") from an equation string for a calculated
+        variable.
 
         We perform a regex to match all variable keys, and then a set-intersection to
         filter out the "calculated" variables.
 
     Arguments:
         equation {str} -- equation string of a calculated variable.
-        data_variables {List[str]} -- list of non-calculated varaible keys in the dataset.
+        data_variables {List[str]} -- list of non-calculated varaible keys in the
+            dataset.
 
     Returns:
         List[str] -- List of strings containing the variable keys
