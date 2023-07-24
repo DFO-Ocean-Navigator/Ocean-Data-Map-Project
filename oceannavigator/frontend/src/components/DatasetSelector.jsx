@@ -119,14 +119,17 @@ function DatasetSelector(props) {
                 ? timeData[timeData.length - 20].id
                 : timeData[0].id;
 
-            if (props.mountedDataset && props.mountedDataset.id === newDataset) {
+            if (
+              props.mountedDataset &&
+              props.mountedDataset.id === newDataset
+            ) {
               newTime =
                 props.mountedDataset.time > 0
                   ? props.mountedDataset.time
                   : newTime;
               newStarttime =
-                props.mountedDataset.startTime > 0
-                  ? props.mountedDataset.startTime
+                props.mountedDataset.starttime > 0
+                  ? props.mountedDataset.starttime
                   : newStarttime;
             }
 
@@ -239,6 +242,26 @@ function DatasetSelector(props) {
     });
   };
 
+  const changeTime = (newTime) => {
+    let newDataset = {};
+    if (dataset.starttime > newTime) {
+      const timeIdx = datasetTimestamps.findIndex((timestamp) => {
+        return timestamp.id === newTime;
+      });
+
+      const newStarttime =
+        timeIdx > 20
+          ? datasetTimestamps[timeIdx - 20].id
+          : datasetTimestamps[0].id;
+
+      newDataset = { ...dataset, time: newTime, starttime: newStarttime };
+    } else {
+      newDataset = { ...dataset, time: newTime };
+    }
+
+    setDataset(newDataset);
+  };
+
   const nothingChanged = (key, value) => {
     return dataset[key] === value;
   };
@@ -249,6 +272,10 @@ function DatasetSelector(props) {
 
   const variableChanged = (key) => {
     return key === "variable";
+  };
+
+  const timeChanged = (key) => {
+    return key === "time";
   };
 
   const updateDataset = (key, value) => {
@@ -263,6 +290,11 @@ function DatasetSelector(props) {
 
     if (variableChanged(key)) {
       changeVariable(value);
+      return;
+    }
+
+    if (timeChanged(key)) {
+      changeTime(value);
       return;
     }
 

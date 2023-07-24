@@ -9,13 +9,12 @@ import dateutil.parser
 import geopy
 import netCDF4
 import numpy as np
-import pandas
 import pint
 import pyresample
 import xarray
 import xarray.core.variable
-from cachetools import TTLCache
 from babel.dates import format_date
+from cachetools import TTLCache
 
 import data.calculated
 import data.utils
@@ -349,24 +348,20 @@ class NetCDFData(Data):
         time_var = find_variable("time", list(self.dataset.variables.keys()))
         timestamp = str(
             format_date(
-                pandas.to_datetime(
-                    np.float64(
-                        self.get_dataset_variable(time_var)[time_range[0]].values
-                    )
+                self.timestamp_to_iso_8601(
+                    self.get_dataset_variable(time_var)[time_range[0]].values
                 ),
-                "yyyyMMdd",
+                "yyyMMdd",
             )
         )
         endtimestamp = ""
         if apply_time_range:
             endtimestamp = "-" + str(
                 format_date(
-                    pandas.to_datetime(
-                        np.float64(
-                            self.get_dataset_variable(time_var)[time_range[1]].values
-                        )
+                    self.timestamp_to_iso_8601(
+                        self.get_dataset_variable(time_var)[time_range[1]].values
                     ),
-                    "yyyyMMdd",
+                    "yyyMMdd",
                 )
             )
 
@@ -429,7 +424,6 @@ class NetCDFData(Data):
 
         # "Special" output
         if output_format == "NETCDF3_NC":
-
             GRID_RESOLUTION = 50
 
             # Regrids an input data array according to it's input grid definition
@@ -439,7 +433,6 @@ class NetCDFData(Data):
                 input_def: pyresample.geometry.SwathDefinition,
                 output_def: pyresample.geometry.SwathDefinition,
             ):
-
                 orig_shape = data.shape
 
                 data = np.rollaxis(data, 0, 4)  # Roll time axis backward
@@ -837,7 +830,6 @@ class NetCDFData(Data):
             ds_zarr = xarray.open_zarr(url)
             var_list = []
             for var in list(ds_zarr.data_vars):
-
                 name = var
                 units = (
                     ds_zarr.variables[var].attrs["units"]
@@ -953,7 +945,6 @@ class NetCDFData(Data):
         """
         # If the timestamp cache is empty
         if self.__timestamp_cache.get("timestamps") is None:
-
             var = self.time_variable
 
             # Convert timestamps to UTC
@@ -1013,7 +1004,6 @@ class NetCDFData(Data):
     def __get_variables_to_load(
         self, db: SQLiteDatabase, variable: set, calculated_variables: dict
     ) -> List[str]:
-
         calc_var_keys = set(calculated_variables)
         variables_to_load = variable.difference(calc_var_keys)
         requested_calculated_variables = variable & calc_var_keys
@@ -1032,7 +1022,6 @@ class NetCDFData(Data):
     def __get_requested_timestamps(
         self, db: SQLiteDatabase, variable: str, timestamp, endtime, nearest_timestamp
     ) -> List[int]:
-
         # We assume timestamp and/or endtime have been converted
         # to the same time units as the requested dataset. Otherwise
         # this won't work.
