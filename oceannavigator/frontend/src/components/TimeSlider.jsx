@@ -3,6 +3,8 @@ import { Button } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
+  ChevronBarLeft,
+  ChevronBarRight,
   ChevronLeft,
   ChevronDoubleLeft,
   ChevronRight,
@@ -19,7 +21,7 @@ function TimeSlider(props) {
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
-    let newNTicks = 24;
+    let newNTicks = 20;
     if (props.dataset.quantum === "hour") {
       newNTicks = 48;
     }
@@ -177,6 +179,26 @@ function TimeSlider(props) {
     );
   });
 
+  const firstFrame = () => {
+    if (props.timestamps.length > nTicks) {
+      setMin(0);
+      setMax(nTicks);
+    } else {
+      setMin(0);
+      setMax(props.timestamps.length);
+    }
+  };
+
+  const lastFrame = () => {
+    if (props.timestamps.length - nTicks > 0) {
+      setMin(props.timestamps.length - nTicks);
+      setMax(props.timestamps.length);
+    } else {
+      setMin(0);
+      setMax(props.timestamps.length);
+    }
+  };
+
   const prevFrame = () => {
     if (min >= nTicks) {
       setMin(min - nTicks);
@@ -216,6 +238,13 @@ function TimeSlider(props) {
       <div className="button-container">
         <Button
           className="slider-button"
+          onClick={firstFrame}
+          disabled={min === 0 || props.loading}
+        >
+          <ChevronBarLeft />
+        </Button>
+        <Button
+          className="slider-button"
           onClick={prevFrame}
           disabled={min === 0 || props.loading}
         >
@@ -249,6 +278,13 @@ function TimeSlider(props) {
           disabled={max === props.timestamps.length || props.loading}
         >
           <ChevronDoubleRight />
+        </Button>
+        <Button
+          className="slider-button"
+          onClick={lastFrame}
+          disabled={max === props.timestamps.length || props.loading}
+        >
+          <ChevronBarRight />
         </Button>
       </div>
     </div>
