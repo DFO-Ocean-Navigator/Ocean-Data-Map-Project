@@ -24,6 +24,8 @@ function TimeSlider(props) {
     let newNTicks = 20;
     if (props.dataset.quantum === "hour") {
       newNTicks = 48;
+    } else if (props.timestamps.length < newNTicks) {
+      newNTicks = props.timestamps.length;
     }
     setMin(
       props.timestamps.length < newNTicks
@@ -233,23 +235,63 @@ function TimeSlider(props) {
     setSelectedIndex(selectedIndex + 1);
   };
 
+  let firstFrameTime = null;
+  let lastFrameTime = null;
+  let prevFrameTime = null;
+  let nextFrameTime = null;
+
+  if (props.timestamps.length > 0) {
+    let prevIdx = min - nTicks;
+    prevIdx = prevIdx < 0 ? 0 : prevIdx;
+
+    let nextIdx = max + nTicks;
+    nextIdx =
+      nextIdx >= props.timestamps.length
+        ? props.timestamps.length - 1
+        : nextIdx;
+
+    firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
+    lastFrameTime = getFormattedTime(
+      new Date(props.timestamps[props.timestamps.length - 1].value)
+    );
+
+    prevFrameTime = getFormattedTime(new Date(props.timestamps[prevIdx].value));
+    nextFrameTime = getFormattedTime(new Date(props.timestamps[nextIdx].value));
+  }
+
   return (
     <div className="time-slider">
       <div className="button-container">
-        <Button
-          className="slider-button"
-          onClick={firstFrame}
-          disabled={min === 0 || props.loading}
+        <OverlayTrigger
+          key={`firstFrameButton-overlay`}
+          placement="top"
+          overlay={<Tooltip id="firsFrameButton">{firstFrameTime}</Tooltip>}
         >
-          <ChevronBarLeft />
-        </Button>
-        <Button
-          className="slider-button"
-          onClick={prevFrame}
-          disabled={min === 0 || props.loading}
+          <span>
+            <Button
+              className="slider-button"
+              onClick={firstFrame}
+              disabled={min === 0 || props.loading}
+            >
+              <ChevronBarLeft />
+            </Button>
+          </span>
+        </OverlayTrigger>
+        <OverlayTrigger
+          key={`prevFrameButton-overlay`}
+          placement="top"
+          overlay={<Tooltip id="prevFrameButton">{prevFrameTime}</Tooltip>}
         >
-          <ChevronDoubleLeft />
-        </Button>
+          <span>
+            <Button
+              className="slider-button"
+              onClick={prevFrame}
+              disabled={min === 0 || props.loading}
+            >
+              <ChevronDoubleLeft />
+            </Button>
+          </span>
+        </OverlayTrigger>
         <Button
           className="slider-button"
           onClick={prevValue}
@@ -272,20 +314,36 @@ function TimeSlider(props) {
         >
           <ChevronRight />
         </Button>
-        <Button
-          className="slider-button"
-          onClick={nextFrame}
-          disabled={max === props.timestamps.length || props.loading}
+        <OverlayTrigger
+          key={`nextFrameButton-overlay`}
+          placement="top"
+          overlay={<Tooltip id="nextFrameButton">{nextFrameTime}</Tooltip>}
         >
-          <ChevronDoubleRight />
-        </Button>
-        <Button
-          className="slider-button"
-          onClick={lastFrame}
-          disabled={max === props.timestamps.length || props.loading}
+          <span>
+            <Button
+              className="slider-button"
+              onClick={nextFrame}
+              disabled={max === props.timestamps.length || props.loading}
+            >
+              <ChevronDoubleRight />
+            </Button>
+          </span>
+        </OverlayTrigger>
+        <OverlayTrigger
+          key={`lastFrameButton-overlay`}
+          placement="top"
+          overlay={<Tooltip id="lastFrameButton">{lastFrameTime}</Tooltip>}
         >
-          <ChevronBarRight />
-        </Button>
+          <span>
+            <Button
+              className="slider-button"
+              onClick={lastFrame}
+              disabled={max === props.timestamps.length || props.loading}
+            >
+              <ChevronBarRight />
+            </Button>
+          </span>
+        </OverlayTrigger>
       </div>
     </div>
   );
