@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
@@ -10,6 +9,8 @@ import {
   ChevronRight,
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
+
+import TimeSliderButton from "./TimeSliderButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -142,44 +143,45 @@ function TimeSlider(props) {
 
   const sliderRail = <div className="slider-rail" />;
 
-  const ticks = props.timestamps.slice(minTick, maxTick).map((timestamp, index) => {
-    let time = new Date(timestamp.value);
-    let tickLabel = null;
-    let tickClass = "slider-minor-tick";
-    let tooltipLabel = getFormattedTime(time);
-    index = index + minTick;
-    if (setMajorTick(time)) {
-      tickLabel = tooltipLabel;
-      tickClass = "slider-major-tick";
-    }
+  const ticks = props.timestamps
+    .slice(minTick, maxTick)
+    .map((timestamp, index) => {
+      let time = new Date(timestamp.value);
+      let tickLabel = null;
+      let tickClass = "slider-minor-tick";
+      let tooltipLabel = getFormattedTime(time);
+      index = index + minTick;
+      if (setMajorTick(time)) {
+        tickLabel = tooltipLabel;
+        tickClass = "slider-major-tick";
+      }
 
-    let thumb = null;
-    if (timestamp.id === props.selected) {
-      thumb = <SliderHandle />;
-    }
+      let thumb = null;
+      if (timestamp.id === props.selected) {
+        thumb = <SliderHandle />;
+      }
 
-    return (
-      <OverlayTrigger
-        key={`overlay-${index}`}
-        placement="top"
-        overlay={<Tooltip id={`tooltip-${index}`}>{tooltipLabel}</Tooltip>}
-      >
-        <div
-          key={`span-${index}`}
-          id={index}
-          onClick={handleClick}
-          className="slider-span"
+      return (
+        <OverlayTrigger
+          key={`overlay-${index}`}
+          placement="top"
+          overlay={<Tooltip id={`tooltip-${index}`}>{tooltipLabel}</Tooltip>}
         >
-          <div key={`tick-${index}`} id={index} className={tickClass} />
-
-          {thumb}
-          <label className="slider-major-tick-text" id={index}>
-            {tickLabel}
-          </label>
-        </div>
-      </OverlayTrigger>
-    );
-  });
+          <div
+            key={`span-${index}`}
+            id={index}
+            onClick={handleClick}
+            className="slider-span"
+          >
+            <div key={`tick-${index}`} id={index} className={tickClass} />
+            {thumb}
+            <label className="slider-major-tick-text" id={index}>
+              {tickLabel}
+            </label>
+          </div>
+        </OverlayTrigger>
+      );
+    });
 
   const firstFrame = () => {
     if (props.timestamps.length > nTicks) {
@@ -228,7 +230,7 @@ function TimeSlider(props) {
   };
 
   const prevValue = () => {
-    let newIdx = selectedIndex - 1
+    let newIdx = selectedIndex - 1;
     if (newIdx < minTick) {
       prevFrame();
     }
@@ -236,122 +238,100 @@ function TimeSlider(props) {
   };
 
   const nextValue = () => {
-    let newIdx = selectedIndex + 1
+    let newIdx = selectedIndex + 1;
     if (newIdx >= maxTick) {
       nextFrame();
     }
     setSelectedIndex(newIdx);
   };
 
+  let prevTime = null;
+  let nextTime = null;
   let firstFrameTime = null;
   let lastFrameTime = null;
   let prevFrameTime = null;
   let nextFrameTime = null;
 
   if (props.timestamps.length > 0) {
-    let prevIdx = minTick - nTicks;
-    prevIdx = prevIdx < 0 ? 0 : prevIdx;
+    let prevTimeIdx = selectedIndex - 1;
+    prevTimeIdx = prevTimeIdx < 0 ? 0 : prevTimeIdx;
 
-    let nextIdx = maxTick + nTicks;
-    nextIdx =
-      nextIdx >= props.timestamps.length
+    let nextTimeIdx = selectedIndex + 1;
+    nextTimeIdx =
+      nextTimeIdx >= props.timestamps.length
         ? props.timestamps.length - 1
-        : nextIdx;
+        : nextTimeIdx;
 
+    let prevFrameIdx = minTick - nTicks;
+    prevFrameIdx = prevFrameIdx < 0 ? 0 : prevFrameIdx;
+
+    let nextFrameIdx = maxTick + nTicks;
+    nextFrameIdx =
+      nextFrameIdx >= props.timestamps.length
+        ? props.timestamps.length - 1
+        : nextFrameIdx;
+
+    prevTime = getFormattedTime(new Date(props.timestamps[prevTimeIdx].value));
+    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));        
     firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
     lastFrameTime = getFormattedTime(
       new Date(props.timestamps[props.timestamps.length - 1].value)
     );
-
-    prevFrameTime = getFormattedTime(new Date(props.timestamps[prevIdx].value));
-    nextFrameTime = getFormattedTime(new Date(props.timestamps[nextIdx].value));
+    prevFrameTime = getFormattedTime(
+      new Date(props.timestamps[prevFrameIdx].value)
+    );
+    nextFrameTime = getFormattedTime(
+      new Date(props.timestamps[nextFrameIdx].value)
+    );
   }
 
   return (
     <div className="time-slider">
       <div className="button-container">
-        <OverlayTrigger
-          key={`firstFrameButton-overlay`}
-          placement="top"
-          overlay={<Tooltip id="firsFrameButton">{firstFrameTime}</Tooltip>}
-        >
-          <span>
-            <Button
-              className="slider-button"
-              onClick={firstFrame}
-              disabled={minTick === 0 || props.loading}
-            >
-              <ChevronBarLeft />
-            </Button>
-          </span>
-        </OverlayTrigger>
-        <OverlayTrigger
-          key={`prevFrameButton-overlay`}
-          placement="top"
-          overlay={<Tooltip id="prevFrameButton">{prevFrameTime}</Tooltip>}
-        >
-          <span>
-            <Button
-              className="slider-button"
-              onClick={prevFrame}
-              disabled={minTick === 0 || props.loading}
-            >
-              <ChevronDoubleLeft />
-            </Button>
-          </span>
-        </OverlayTrigger>
-        <Button
-          className="slider-button"
+        <TimeSliderButton
+          tooltipText={firstFrameTime}
+          onClick={firstFrame}
+          disabled={minTick === 0 || props.loading}
+          icon={<ChevronBarLeft />}
+        />
+        <TimeSliderButton
+          tooltipText={prevFrameTime}
+          onClick={prevFrame}
+          disabled={minTick === 0 || props.loading}
+          icon={<ChevronDoubleLeft />}
+        />
+        <TimeSliderButton
+          tooltipText={prevTime}
           onClick={prevValue}
           disabled={selectedIndex === 0 || props.loading}
-        >
-          <ChevronLeft />
-        </Button>
+          icon={<ChevronLeft />}
+        />
       </div>
       <div className="slider-container">
         {sliderRail}
         {props.loading ? null : ticks}
       </div>
       <div className="button-container">
-        <Button
-          className="slider-button"
+        <TimeSliderButton
+          tooltipText={nextTime}
           onClick={nextValue}
           disabled={
             selectedIndex === props.timestamps.length - 1 || props.loading
           }
-        >
-          <ChevronRight />
-        </Button>
-        <OverlayTrigger
-          key={`nextFrameButton-overlay`}
-          placement="top"
-          overlay={<Tooltip id="nextFrameButton">{nextFrameTime}</Tooltip>}
-        >
-          <span>
-            <Button
-              className="slider-button"
-              onClick={nextFrame}
-              disabled={maxTick === props.timestamps.length || props.loading}
-            >
-              <ChevronDoubleRight />
-            </Button>
-          </span>
-        </OverlayTrigger>
-        <OverlayTrigger
-          key={`lastFrameButton-overlay`}
-          placement="top"
-          overlay={<Tooltip id="lastFrameButton">{lastFrameTime}</Tooltip>}
-        >
-          <span>
-            <Button
-              className="slider-button"
-              onClick={lastFrame}
-              disabled={maxTick === props.timestamps.length || props.loading}
-            >
-              <ChevronBarRight />
-            </Button>
-          </span>
-        </OverlayTrigger>
+          icon={<ChevronRight />}
+        />
+        <TimeSliderButton
+          tooltipText={nextFrameTime}
+          onClick={nextFrame}
+          disabled={maxTick === props.timestamps.length || props.loading}
+          icon={<ChevronDoubleRight />}
+        />
+        <TimeSliderButton
+          tooltipText={lastFrameTime}
+          onClick={lastFrame}
+          disabled={maxTick === props.timestamps.length || props.loading}
+          icon={<ChevronBarRight />}
+        />
       </div>
     </div>
   );
