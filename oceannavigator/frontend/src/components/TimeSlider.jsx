@@ -252,7 +252,7 @@ function TimeSlider(props) {
   let prevFrameTime = null;
   let nextFrameTime = null;
 
-  if (props.timestamps.length > 0) {
+  if (props.timestamps.length > 0 && selectedIndex < props.timestamps.length) {
     let prevTimeIdx = selectedIndex - 1;
     prevTimeIdx = prevTimeIdx < 0 ? 0 : prevTimeIdx;
 
