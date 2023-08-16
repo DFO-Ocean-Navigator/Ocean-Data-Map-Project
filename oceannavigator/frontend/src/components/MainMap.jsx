@@ -310,25 +310,29 @@ const MainMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (props.dataset0.default_location) {
-      const newMapView = new View({
-        center: olProj.transform(
-          [
-            props.dataset0.default_location[0],
-            props.dataset0.default_location[1],
-          ],
-          "EPSG:4326",
-          "EPSG:3857"
-        ),
-        projection: "EPSG:3857",
-        zoom: props.dataset0.default_location[2],
-        maxZoom: MAX_ZOOM["EPSG:3857"],
-        minZoom: MIN_ZOOM["EPSG:3857"],
-      });
-      map0.setView(newMapView);
-      setMapView(newMapView);
-      props.updateMapSettings("projection", "EPSG:3857")
+      const newCenter = [
+        props.dataset0.default_location[0],
+        props.dataset0.default_location[1],
+      ];
+      const newZoom = props.dataset0.default_location[2];
+      updateMapView(map0, newCenter, newZoom, "EPSG:3857");
+      if (props.compareDatasets){
+        updateMapView(map1, newCenter, newZoom, "EPSG:3857");
+      }
     }
   }, [props.dataset0.id]);
+
+  useEffect(() => {
+    if (props.dataset1.default_location) {
+      const newCenter = [
+        props.dataset1.default_location[0],
+        props.dataset1.default_location[1],
+      ];
+      const newZoom = props.dataset1.default_location[2];
+      updateMapView(map0, newCenter, newZoom, "EPSG:3857");
+      updateMapView(map1, newCenter, newZoom, "EPSG:3857");
+    }
+  }, [props.dataset1.id]);
 
   useEffect(() => {
     if (props.dataset0.time >= 0) {
@@ -1506,6 +1510,19 @@ const MainMap = forwardRef((props, ref) => {
     });
   };
 
+  const updateMapView = (map, center, zoom, projection) => {
+    const newMapView = new View({
+      center: olProj.transform(center, "EPSG:4326", projection),
+      projection: projection,
+      zoom: zoom,
+      maxZoom: MAX_ZOOM[projection],
+      minZoom: MIN_ZOOM[projection],
+    });
+    map.setView(newMapView);
+    setMapView(newMapView);
+    props.updateMapSettings("projection", projection);
+  };
+
   const updateProjection = (map, dataset) => {
     resetMap();
 
@@ -1531,11 +1548,11 @@ const MainMap = forwardRef((props, ref) => {
       setLayerBasemap(newLayerBasemap);
     }
 
-    let center = DEF_CENTER[props.mapSettings.projection]
-    if (props.dataset0.default_location){
-      center = props.dataset0.default_location
+    let center = DEF_CENTER[props.mapSettings.projection];
+    if (props.dataset0.default_location) {
+      center = props.dataset0.default_location;
     }
-    
+
     const newMapView = new View({
       projection: props.mapSettings.projection,
       center: olProj.transform(
