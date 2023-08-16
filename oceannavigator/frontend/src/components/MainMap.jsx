@@ -173,13 +173,7 @@ const MainMap = forwardRef((props, ref) => {
     });
 
     let projection = props.mapSettings.projection;
-    const newMapView = new View({
-      center: olProj.transform(DEF_CENTER[projection], "EPSG:4326", projection),
-      projection: projection,
-      zoom: 4,
-      maxZoom: MAX_ZOOM[projection],
-      minZoom: MIN_ZOOM[projection],
-    });
+    const newMapView = createMapView(center, projection, zoom);
 
     let newVectorSource = new VectorSource({
       features: [],
@@ -315,9 +309,11 @@ const MainMap = forwardRef((props, ref) => {
         props.dataset0.default_location[1],
       ];
       const newZoom = props.dataset0.default_location[2];
-      updateMapView(map0, newCenter, newZoom, "EPSG:3857");
-      if (props.compareDatasets){
-        updateMapView(map1, newCenter, newZoom, "EPSG:3857");
+      const newMapView = createMapView(newCenter, newZoom, "EPSG:3857");
+      map0.setView(newMapView);
+      props.updateMapSettings("projection", "EPSG:3857");
+      if (props.compareDatasets) {
+        map1.setView(newMapView);
       }
     }
   }, [props.dataset0.id]);
@@ -329,8 +325,10 @@ const MainMap = forwardRef((props, ref) => {
         props.dataset1.default_location[1],
       ];
       const newZoom = props.dataset1.default_location[2];
-      updateMapView(map0, newCenter, newZoom, "EPSG:3857");
-      updateMapView(map1, newCenter, newZoom, "EPSG:3857");
+      const newMapView = createMapView(newCenter, newZoom, "EPSG:3857");
+      map0.setView(newMapView);
+      map1.setView(newMapView);
+      props.updateMapSettings("projection", "EPSG:3857");
     }
   }, [props.dataset1.id]);
 
@@ -445,6 +443,18 @@ const MainMap = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
+
+  const createMapView = (center, zoom, projection) => {
+    const newMapView = new View({
+      center: olProj.transform(center, "EPSG:4326", projection),
+      projection: projection,
+      zoom: zoom,
+      maxZoom: MAX_ZOOM[projection],
+      minZoom: MIN_ZOOM[projection],
+    });
+
+    return newMapView;
+  };
 
   const createMap = (
     overlay,
@@ -1508,19 +1518,6 @@ const MainMap = forwardRef((props, ref) => {
         });
       },
     });
-  };
-
-  const updateMapView = (map, center, zoom, projection) => {
-    const newMapView = new View({
-      center: olProj.transform(center, "EPSG:4326", projection),
-      projection: projection,
-      zoom: zoom,
-      maxZoom: MAX_ZOOM[projection],
-      minZoom: MIN_ZOOM[projection],
-    });
-    map.setView(newMapView);
-    setMapView(newMapView);
-    props.updateMapSettings("projection", projection);
   };
 
   const updateProjection = (map, dataset) => {
