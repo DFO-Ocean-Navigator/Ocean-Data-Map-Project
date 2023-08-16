@@ -309,7 +309,29 @@ const MainMap = forwardRef((props, ref) => {
   }, [props.compareDatasets]);
 
   useEffect(() => {
-    if (props.dataset0.time > 0) {
+    if (props.dataset0.default_location) {
+      const newMapView = new View({
+        center: olProj.transform(
+          [
+            props.dataset0.default_location[0],
+            props.dataset0.default_location[1],
+          ],
+          "EPSG:4326",
+          "EPSG:3857"
+        ),
+        projection: "EPSG:3857",
+        zoom: props.dataset0.default_location[2],
+        maxZoom: MAX_ZOOM["EPSG:3857"],
+        minZoom: MIN_ZOOM["EPSG:3857"],
+      });
+      map0.setView(newMapView);
+      setMapView(newMapView);
+      props.updateMapSettings("projection", "EPSG:3857")
+    }
+  }, [props.dataset0.id]);
+
+  useEffect(() => {
+    if (props.dataset0.time >= 0) {
       layerData0.setSource(new XYZ(getDataSource(props.dataset0)));
     }
   }, [
@@ -321,7 +343,7 @@ const MainMap = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (props.dataset1.time > 0) {
+    if (props.dataset1.time >= 0) {
       layerData1.setSource(new XYZ(getDataSource(props.dataset1)));
     }
   }, [
@@ -1508,10 +1530,16 @@ const MainMap = forwardRef((props, ref) => {
     if (map === map0) {
       setLayerBasemap(newLayerBasemap);
     }
+
+    let center = DEF_CENTER[props.mapSettings.projection]
+    if (props.dataset0.default_location){
+      center = props.dataset0.default_location
+    }
+    
     const newMapView = new View({
       projection: props.mapSettings.projection,
       center: olProj.transform(
-        DEF_CENTER[props.mapSettings.projection],
+        center,
         "EPSG:4326",
         props.mapSettings.projection
       ),
