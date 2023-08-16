@@ -173,7 +173,7 @@ const MainMap = forwardRef((props, ref) => {
     });
 
     let projection = props.mapSettings.projection;
-    const newMapView = createMapView(center, projection, zoom);
+    const newMapView = createMapView(DEF_CENTER[projection], projection, 4);
 
     let newVectorSource = new VectorSource({
       features: [],
@@ -309,7 +309,7 @@ const MainMap = forwardRef((props, ref) => {
         props.dataset0.default_location[1],
       ];
       const newZoom = props.dataset0.default_location[2];
-      const newMapView = createMapView(newCenter, newZoom, "EPSG:3857");
+      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
       if (props.compareDatasets) {
@@ -325,7 +325,7 @@ const MainMap = forwardRef((props, ref) => {
         props.dataset1.default_location[1],
       ];
       const newZoom = props.dataset1.default_location[2];
-      const newMapView = createMapView(newCenter, newZoom, "EPSG:3857");
+      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
       map0.setView(newMapView);
       map1.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -444,7 +444,7 @@ const MainMap = forwardRef((props, ref) => {
     props.mapSettings.topoShadedRelief,
   ]);
 
-  const createMapView = (center, zoom, projection) => {
+  const createMapView = (center, projection, zoom) => {
     const newMapView = new View({
       center: olProj.transform(center, "EPSG:4326", projection),
       projection: projection,
