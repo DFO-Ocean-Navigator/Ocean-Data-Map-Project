@@ -140,6 +140,7 @@ def datasets():
                 "group": config.group,
                 "subgroup": config.subgroup,
                 "time_dim_units": config.time_dim_units,
+                "default_location": config.default_location,
             }
         )
     return data

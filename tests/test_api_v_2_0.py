@@ -305,21 +305,21 @@ class TestAPIv2:
         # points
         response.append(
             self.client.get(
-                "/api/v2.0/kml/points/AZMP_Stations?projection=EPSG:3857"
+                "/api/v2.0/kml/point/AZMP_Stations?projection=EPSG:3857"
                 "&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
         # lines
         response.append(
             self.client.get(
-                "/api/v2.0/kml/lines/AZMP%20Transects?projection=EPSG:3857"
+                "/api/v2.0/kml/line/AZMP%20Transects?projection=EPSG:3857"
                 "&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
         # areas
         response.append(
             self.client.get(
-                "/api/v2.0/kml/areas/AZMP_NL_Region_Analysis_Areas?projection=EPSG:3857"
+                "/api/v2.0/kml/area/AZMP_NL_Region_Analysis_Areas?projection=EPSG:3857"
                 "&resolution=9784&view_bounds=-15936951,1567587,4805001,12398409"
             )
         )
