@@ -141,6 +141,7 @@ def datasets():
                 "group": config.group,
                 "subgroup": config.subgroup,
                 "time_dim_units": config.time_dim_units,
+                "default_location": config.default_location,
             }
         )
     return data
@@ -458,7 +459,6 @@ async def data(
     config = DatasetConfig(dataset)
 
     with open_dataset(config, variable=variable, timestamp=time) as ds:
-
         lat_var, lon_var = ds.nc_data.latlon_variables
 
         stride = config.vector_arrow_stride
@@ -588,7 +588,6 @@ def subset_query(
     time: str = Query(..., description="", example="2283984000,2283984000"),
     should_zip: str = Query("1", description="", example="1"),
 ):
-
     working_dir = None
     subset_filename = None
 
