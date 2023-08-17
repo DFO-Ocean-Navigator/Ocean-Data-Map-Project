@@ -190,6 +190,17 @@ class DatasetConfig:
         return cache
 
     @property
+    def default_location(self) -> list:
+        """
+        Returns the default map location of the specified dataset. Used to pan the map
+        to dataset location. Format [lon, lat, zoom].
+        """
+
+        dataset_default_location = self._get_attribute("default_location")
+
+        return dataset_default_location
+
+    @property
     def variables(self) -> list:
         """
         Returns a list of the variables for the specified dataset

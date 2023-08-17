@@ -1,34 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
+  ChevronBarLeft,
+  ChevronBarRight,
   ChevronLeft,
   ChevronDoubleLeft,
   ChevronRight,
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
+import TimeSliderButton from "./TimeSliderButton.jsx";
+
 import { withTranslation } from "react-i18next";
 
 function TimeSlider(props) {
-  const [min, setMin] = useState(0);
-  const [max, setMax] = useState(1);
+  const [minTick, setMinTick] = useState(0);
+  const [maxTick, setMaxTick] = useState(1);
   const [nTicks, setNTicks] = useState(48);
   const [selectedIndex, setSelectedIndex] = useState(1);
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
-    let newNTicks = 24;
+    let newNTicks = 20;
     if (props.dataset.quantum === "hour") {
       newNTicks = 48;
+    } else if (props.timestamps.length < newNTicks) {
+      newNTicks = props.timestamps.length;
     }
-    setMin(
+    setMinTick(
       props.timestamps.length < newNTicks
         ? 0
         : props.timestamps.length - newNTicks
     );
-    setMax(props.timestamps.length);
+    setMaxTick(props.timestamps.length);
     let newIndex = props.timestamps.findIndex((timestamp) => {
       return timestamp.id === props.selected;
     });
@@ -138,52 +143,73 @@ function TimeSlider(props) {
 
   const sliderRail = <div className="slider-rail" />;
 
-  const ticks = props.timestamps.slice(min, max).map((timestamp, index) => {
-    let time = new Date(timestamp.value);
-    let tickLabel = null;
-    let tickClass = "slider-minor-tick";
-    let tooltipLabel = getFormattedTime(time);
-    index = index + min;
-    if (setMajorTick(time)) {
-      tickLabel = tooltipLabel;
-      tickClass = "slider-major-tick";
-    }
+  const ticks = props.timestamps
+    .slice(minTick, maxTick)
+    .map((timestamp, index) => {
+      let time = new Date(timestamp.value);
+      let tickLabel = null;
+      let tickClass = "slider-minor-tick";
+      let tooltipLabel = getFormattedTime(time);
+      index = index + minTick;
+      if (setMajorTick(time)) {
+        tickLabel = tooltipLabel;
+        tickClass = "slider-major-tick";
+      }
 
-    let thumb = null;
-    if (timestamp.id === props.selected) {
-      thumb = <SliderHandle />;
-    }
+      let thumb = null;
+      if (timestamp.id === props.selected) {
+        thumb = <SliderHandle />;
+      }
 
-    return (
-      <OverlayTrigger
-        key={`overlay-${index}`}
-        placement="top"
-        overlay={<Tooltip id={`tooltip-${index}`}>{tooltipLabel}</Tooltip>}
-      >
-        <div
-          key={`span-${index}`}
-          id={index}
-          onClick={handleClick}
-          className="slider-span"
+      return (
+        <OverlayTrigger
+          key={`overlay-${index}`}
+          placement="top"
+          overlay={<Tooltip id={`tooltip-${index}`}>{tooltipLabel}</Tooltip>}
         >
-          <div key={`tick-${index}`} id={index} className={tickClass} />
+          <div
+            key={`span-${index}`}
+            id={index}
+            onClick={handleClick}
+            className="slider-span"
+          >
+            <div key={`tick-${index}`} id={index} className={tickClass} />
+            {thumb}
+            <label className="slider-major-tick-text" id={index}>
+              {tickLabel}
+            </label>
+          </div>
+        </OverlayTrigger>
+      );
+    });
 
-          {thumb}
-          <label className="slider-major-tick-text" id={index}>
-            {tickLabel}
-          </label>
-        </div>
-      </OverlayTrigger>
-    );
-  });
+  const firstFrame = () => {
+    if (props.timestamps.length > nTicks) {
+      setMinTick(0);
+      setMaxTick(nTicks);
+    } else {
+      setMinTick(0);
+      setMaxTick(props.timestamps.length);
+    }
+  };
+
+  const lastFrame = () => {
+    if (props.timestamps.length - nTicks > 0) {
+      setMinTick(props.timestamps.length - nTicks);
+      setMaxTick(props.timestamps.length);
+    } else {
+      setMinTick(0);
+      setMaxTick(props.timestamps.length);
+    }
+  };
 
   const prevFrame = () => {
-    if (min >= nTicks) {
-      setMin(min - nTicks);
-      setMax(min);
+    if (minTick >= nTicks) {
+      setMinTick(minTick - nTicks);
+      setMaxTick(minTick);
     } else if (props.timestamps.length > nTicks) {
-      setMin(0);
-      setMax(nTicks);
+      setMinTick(0);
+      setMaxTick(nTicks);
     } else {
       setMin(0);
       setMax(props.timestamps.length);
@@ -191,65 +217,121 @@ function TimeSlider(props) {
   };
 
   const nextFrame = () => {
-    if (props.timestamps.length - max >= nTicks) {
-      setMin(max);
-      setMax(max + nTicks);
+    if (props.timestamps.length - maxTick >= nTicks) {
+      setMinTick(maxTick);
+      setMaxTick(maxTick + nTicks);
     } else if (props.timestamps.length - nTicks > 0) {
-      setMin(props.timestamps.length - nTicks);
-      setMax(props.timestamps.length);
+      setMinTick(props.timestamps.length - nTicks);
+      setMaxTick(props.timestamps.length);
     } else {
-      setMin(0);
-      setMax(props.timestamps.length);
+      setMinTick(0);
+      setMaxTick(props.timestamps.length);
     }
   };
 
   const prevValue = () => {
-    setSelectedIndex(selectedIndex - 1);
+    let newIdx = selectedIndex - 1;
+    if (newIdx < minTick) {
+      prevFrame();
+    }
+    setSelectedIndex(newIdx);
   };
 
   const nextValue = () => {
-    setSelectedIndex(selectedIndex + 1);
+    let newIdx = selectedIndex + 1;
+    if (newIdx >= maxTick) {
+      nextFrame();
+    }
+    setSelectedIndex(newIdx);
   };
+
+  let prevTime = null;
+  let nextTime = null;
+  let firstFrameTime = null;
+  let lastFrameTime = null;
+  let prevFrameTime = null;
+  let nextFrameTime = null;
+
+  if (props.timestamps.length > 0 && selectedIndex < props.timestamps.length) {
+    let prevTimeIdx = selectedIndex - 1;
+    prevTimeIdx = prevTimeIdx < 0 ? 0 : prevTimeIdx;
+
+    let nextTimeIdx = selectedIndex + 1;
+    nextTimeIdx =
+      nextTimeIdx >= props.timestamps.length
+        ? props.timestamps.length - 1
+        : nextTimeIdx;
+
+    let prevFrameIdx = minTick - nTicks;
+    prevFrameIdx = prevFrameIdx < 0 ? 0 : prevFrameIdx;
+
+    let nextFrameIdx = maxTick + nTicks;
+    nextFrameIdx =
+      nextFrameIdx >= props.timestamps.length
+        ? props.timestamps.length - 1
+        : nextFrameIdx;
+
+    prevTime = getFormattedTime(new Date(props.timestamps[prevTimeIdx].value));
+    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));        
+    firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
+    lastFrameTime = getFormattedTime(
+      new Date(props.timestamps[props.timestamps.length - 1].value)
+    );
+    prevFrameTime = getFormattedTime(
+      new Date(props.timestamps[prevFrameIdx].value)
+    );
+    nextFrameTime = getFormattedTime(
+      new Date(props.timestamps[nextFrameIdx].value)
+    );
+  }
 
   return (
     <div className="time-slider">
       <div className="button-container">
-        <Button
-          className="slider-button"
+        <TimeSliderButton
+          tooltipText={firstFrameTime}
+          onClick={firstFrame}
+          disabled={minTick === 0 || props.loading}
+          icon={<ChevronBarLeft />}
+        />
+        <TimeSliderButton
+          tooltipText={prevFrameTime}
           onClick={prevFrame}
-          disabled={min === 0 || props.loading}
-        >
-          <ChevronDoubleLeft />
-        </Button>
-        <Button
-          className="slider-button"
+          disabled={minTick === 0 || props.loading}
+          icon={<ChevronDoubleLeft />}
+        />
+        <TimeSliderButton
+          tooltipText={prevTime}
           onClick={prevValue}
           disabled={selectedIndex === 0 || props.loading}
-        >
-          <ChevronLeft />
-        </Button>
+          icon={<ChevronLeft />}
+        />
       </div>
       <div className="slider-container">
         {sliderRail}
         {props.loading ? null : ticks}
       </div>
       <div className="button-container">
-        <Button
-          className="slider-button"
+        <TimeSliderButton
+          tooltipText={nextTime}
           onClick={nextValue}
           disabled={
             selectedIndex === props.timestamps.length - 1 || props.loading
           }
-        >
-          <ChevronRight />
-        </Button>
-        <Button
-          className="slider-button"
+          icon={<ChevronRight />}
+        />
+        <TimeSliderButton
+          tooltipText={nextFrameTime}
           onClick={nextFrame}
-          disabled={max === props.timestamps.length || props.loading}
-        >
-          <ChevronDoubleRight />
-        </Button>
+          disabled={maxTick === props.timestamps.length || props.loading}
+          icon={<ChevronDoubleRight />}
+        />
+        <TimeSliderButton
+          tooltipText={lastFrameTime}
+          onClick={lastFrame}
+          disabled={maxTick === props.timestamps.length || props.loading}
+          icon={<ChevronBarRight />}
+        />
       </div>
     </div>
   );

@@ -53,13 +53,13 @@ function TimePicker(props) {
   useEffect(() => {
     let newData = timestamps;
 
-    if (props.min) {
+    if (props.min && props.min < props.state) {
       newData = newData.filter((item) => {
         return item.id > props.min;
       });
     }
 
-    if (props.max) {
+    if (props.max && props.max > props.state) {
       newData = newData.filter((item) => {
         return item.id < props.max;
       });
