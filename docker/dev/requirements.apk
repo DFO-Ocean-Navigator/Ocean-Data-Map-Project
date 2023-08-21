@@ -7,6 +7,7 @@ netcdf
 openblas
 libgomp
 git
+libstdc++
 py3-dask
 py3-sentry-sdk
 py3-flask-babel
