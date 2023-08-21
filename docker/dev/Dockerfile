@@ -1,5 +1,5 @@
 # build Ocean Navigator runtime image
-FROM docker.io/library/node:12-alpine
+FROM docker.io/library/node:18-alpine
 
 ENV PYTHONUNBUFFERED 1
 
@@ -12,4 +12,4 @@ RUN apk -U add build-base curl proj-dev gdal-dev geos-dev hdf5-dev netcdf-dev op
 
 # install python dependencies
 COPY requirements.txt requirements.txt
-RUN pip install  -r requirements.txt
+RUN pip install -U pip && pip install  -r requirements.txt
