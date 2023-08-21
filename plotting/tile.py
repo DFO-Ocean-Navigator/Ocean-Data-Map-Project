@@ -5,6 +5,7 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
@@ -299,12 +300,35 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     return im
 
 
+def get_dimension_slice(dim_var: xr.IndexVariable, dim_bounds: np.array) -> np.array:
+    dim_slice = np.argwhere(
+        (dim_var.data >= dim_bounds.min()) & (dim_var.data <= dim_bounds.max())
+    ).flatten()
+
+    if dim_slice.any():
+        n_quivers = (
+            25
+            * (dim_var.data[dim_slice.max()] - dim_var.data[dim_slice.min()])
+            / np.diff(dim_bounds)
+        )
+
+        stride = np.around(dim_slice.size / n_quivers)
+        stride = stride if stride > 1 else 1
+
+        dim_slice = np.arange(
+            dim_slice.min() - 2 * stride, dim_slice.max() + 2 * stride, stride
+        )
+        dim_slice = dim_slice[(dim_slice >= 0) & (dim_slice < dim_var.size)]
+
+    return dim_slice.astype(int)
+
+
 async def quiver(
     dataset_name: str,
     variable: str,
     time: str,
     depth: str,
-    density: int,
+    density_adj: int,
     x: int,
     y: int,
     z: int,
@@ -321,55 +345,37 @@ async def quiver(
 
         data = ds.nc_data.get_dataset_variable(variable)
 
-        lat_slice = np.argwhere(
-            (lat_var.data >= lat_bounds.min() - 1)
-            & (lat_var.data <= lat_bounds.max() + 1)
-        ).flatten()
+        lat_slice = get_dimension_slice(lat_var, lat_bounds)
+        lon_slice = get_dimension_slice(lon_var, lon_bounds)
 
-        lon_slice = np.argwhere(
-            (lon_var.data >= lon_bounds.min() - 1)
-            & (lon_var.data <= lon_bounds.max() + 1)
-        ).flatten()
+        if lat_slice.any() and lon_slice.any():
+            if len(data.shape) == 3:
+                data_slice = (time_index, lat_slice, lon_slice)
+            else:
+                data_slice = (time_index, int(depth), lat_slice, lon_slice)
 
-        lat_stride = int(
-            4 * lat_var.size / ((lat_var.max() - lat_var.min()) * (z + density))
-        )
-        lon_stride = int(
-            4 * lon_var.size / ((lon_var.max() - lon_var.min()) * (z + density))
-        )
+            data = data[data_slice]
 
-        lat_stride = lat_stride if lat_stride > 1 else 1
-        lon_stride = lon_stride if lon_stride > 1 else 1
+            bearings = None
+            bearings_var = config.variable[variable].bearing_component
+            if variable in config.vector_variables and bearings_var:
+                with open_dataset(
+                    config, variable=bearings_var, timestamp=time
+                ) as ds_bearing:
+                    bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
+                        data_slice
+                    ].squeeze(drop=True)
 
-        lat_slice = lat_slice[lat_slice % lat_stride == 0]
-        lon_slice = lon_slice[lon_slice % lon_stride == 0]
+            d = await data_array_to_geojson(
+                data.squeeze(drop=True),
+                bearings,
+                lat_var[lat_slice],
+                lon_var[lon_slice],
+                config.variable[variable].scale,
+            )
 
-        if len(data.shape) == 3:
-            data_slice = (time_index, lat_slice, lon_slice)
-        else:
-            data_slice = (time_index, int(depth), lat_slice, lon_slice)
-
-        data = data[data_slice]
-
-        bearings = None
-        bearings_var = config.variable[variable].bearing_component
-        if variable in config.vector_variables and bearings_var:
-            with open_dataset(
-                config, variable=bearings_var, timestamp=time
-            ) as ds_bearing:
-                bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
-                    data_slice
-                ].squeeze(drop=True)
-
-        d = await data_array_to_geojson(
-            data.squeeze(drop=True),
-            bearings,
-            lat_var[lat_slice],
-            lon_var[lon_slice],
-            config.variable[variable].scale,
-        )
-
-        return d
+            return d
+    return {}
 
 
 def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
