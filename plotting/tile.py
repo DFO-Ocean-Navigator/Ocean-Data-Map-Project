@@ -300,27 +300,26 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     return im
 
 
-def get_dimension_slice(dim_var: xr.IndexVariable, dim_bounds: np.array) -> np.array:
+def get_quiver_slice(
+    dim_var: xr.IndexVariable, dim_bounds: np.array, density_adj: int
+) -> np.array:
     dim_slice = np.argwhere(
         (dim_var.data >= dim_bounds.min()) & (dim_var.data <= dim_bounds.max())
     ).flatten()
 
     if dim_slice.any():
-        n_quivers = (
-            25
+        n_quivers = int(
+            (30 + density_adj * 10)
             * (dim_var.data[dim_slice.max()] - dim_var.data[dim_slice.min()])
             / np.diff(dim_bounds)
         )
 
-        stride = np.around(dim_slice.size / n_quivers)
-        stride = stride if stride > 1 else 1
+        dim_slice = np.linspace(dim_slice[0], dim_slice[-1], int(n_quivers)).astype(int)
 
-        dim_slice = np.arange(
-            dim_slice.min() - 2 * stride, dim_slice.max() + 2 * stride, stride
-        )
-        dim_slice = dim_slice[(dim_slice >= 0) & (dim_slice < dim_var.size)]
+        if dim_bounds.max() == 360:
+            dim_slice[-1] = 0
 
-    return dim_slice.astype(int)
+        return dim_slice
 
 
 async def quiver(
@@ -345,8 +344,9 @@ async def quiver(
 
         data = ds.nc_data.get_dataset_variable(variable)
 
-        lat_slice = get_dimension_slice(lat_var, lat_bounds)
-        lon_slice = get_dimension_slice(lon_var, lon_bounds)
+        lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
+        lat_slice = get_quiver_slice(lat_var, lat_bounds, density_adj)
+        lon_slice = get_quiver_slice(lon_var, lon_bounds, density_adj)
 
         if lat_slice.any() and lon_slice.any():
             if len(data.shape) == 3:

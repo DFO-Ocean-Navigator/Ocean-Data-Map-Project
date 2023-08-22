@@ -872,7 +872,7 @@ async def data_tile(
 
 
 @router.get(
-    "/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{density}/{zoom}/{x}/{y}"
+    "/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{density_adj}/{zoom}/{x}/{y}"
 )
 async def quiver_tile(
     dataset: str = Path(
@@ -883,7 +883,7 @@ async def quiver_tile(
     ),
     time: int = Path(..., description="NetCDF timestamp"),
     depth: str = Path(..., description="Depth index", example=0),
-    density: int = Path(..., description="Quiver density (%)", example=50),
+    density_adj: int = Path(..., description="Quiver density adjustment", example=1),
     zoom: int = Path(..., example=4),
     x: int = Path(..., example=0),
     y: int = Path(..., example=1),
@@ -908,22 +908,22 @@ async def quiver_tile(
         variable,
         str(time),
         depth,
-        str(density),
+        str(density_adj),
         str(zoom),
         str(x),
         f"{y}.geojson",
     )
 
-    if os.path.isfile(cached_file_name):
-        log().info(f"Using cached {cached_file_name}.")
-        return FileResponse(cached_file_name, media_type="application/json")
+    # if os.path.isfile(cached_file_name):
+    #     log().info(f"Using cached {cached_file_name}.")
+    #     return FileResponse(cached_file_name, media_type="application/json")
 
     data = await plotting.tile.quiver(
         dataset,
         variable,
         time,
         depth,
-        density,
+        density_adj,
         x,
         y,
         zoom,
@@ -973,12 +973,12 @@ def topography_tiles(
         f"{y}.png",
     )
 
-    # if os.path.isfile(f):
-    #     return FileResponse(
-    #         f,
-    #         media_type="image/png",
-    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    #     )
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     img = plot_topography(projection, x, y, zoom, shaded_relief)
     return _cache_and_send_img(img, f)

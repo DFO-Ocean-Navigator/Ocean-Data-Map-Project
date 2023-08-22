@@ -399,12 +399,12 @@ function DatasetSelector(props) {
         <Slider
           range
           allowCross={false}
-          min={-2}
-          max={2}
+          min={-1}
+          max={1}
           marks={{
-            "-2": "-",
+            "-1": "-",
             "0": "",
-            "2": "+",
+            "1": "+",
           }}
           defaultValue={dataset.quiverDensity}
           onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
