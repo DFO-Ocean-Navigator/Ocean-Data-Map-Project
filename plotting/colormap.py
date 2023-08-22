@@ -58,7 +58,7 @@ colormaps = {
     "curl": cmocean.cm.curl,
     "vorticity": cmocean.cm.curl,
     "divergence": cmocean.cm.curl,
-    "bathymetry": cmocean.cm.deep,
+    "bathymetry": cmocean.cm.gray,
     "salinity": cmocean.cm.haline,
     "speed": cmocean.cm.speed,
     "speed of current": cmocean.cm.speed,

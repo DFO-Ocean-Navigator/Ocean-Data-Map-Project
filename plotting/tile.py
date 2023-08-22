@@ -250,7 +250,7 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     cmap = "BrBG_r"
 
     land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(1, 0.25, 128))
+    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
     colors = np.vstack((water_colors, land_colors))
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
 
