@@ -1018,12 +1018,12 @@ async def bathymetry_tiles(
         f"{y}.png",
     )
 
-    # if os.path.isfile(f):
-    #     return FileResponse(
-    #         f,
-    #         media_type="image/png",
-    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    #     )
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     img = await plot_bathymetry(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
