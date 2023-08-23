@@ -311,7 +311,14 @@ def get_quiver_slice(
     stride = int(dim_var.size / n_quivers)
     stride = stride if stride > 1 else 1
 
-    return dim_slice[dim_slice % stride == 0]
+    dim_slice = dim_slice[dim_slice % stride == 0]
+
+    if tile_bounds[1] == 360 and dim_var.size - dim_slice[-1] < stride:
+        dim_slice[-1] = 0
+    elif tile_bounds[1] == 360:
+        dim_slice = np.append(dim_slice, 0)
+
+    return dim_slice
 
 
 async def quiver(
