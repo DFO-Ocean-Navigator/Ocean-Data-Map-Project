@@ -914,9 +914,9 @@ async def quiver_tile(
         f"{y}.geojson",
     )
 
-    # if os.path.isfile(cached_file_name):
-    #     log().info(f"Using cached {cached_file_name}.")
-    #     return FileResponse(cached_file_name, media_type="application/json")
+    if os.path.isfile(cached_file_name):
+        log().info(f"Using cached {cached_file_name}.")
+        return FileResponse(cached_file_name, media_type="application/json")
 
     data = await plotting.tile.quiver(
         dataset,

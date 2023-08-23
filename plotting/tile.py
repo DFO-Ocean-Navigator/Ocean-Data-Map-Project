@@ -301,25 +301,17 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
 
 
 def get_quiver_slice(
-    dim_var: xr.IndexVariable, dim_bounds: np.array, density_adj: int
+    dim_var: xr.IndexVariable, tile_bounds: np.array, n_quivers: int
 ) -> np.array:
     dim_slice = np.argwhere(
-        (dim_var.data >= dim_bounds.min()) & (dim_var.data <= dim_bounds.max())
+        (dim_var.data >= tile_bounds.min() - 1)
+        & (dim_var.data <= tile_bounds.max() + 1)
     ).flatten()
 
-    if dim_slice.any():
-        n_quivers = int(
-            (30 + density_adj * 10)
-            * (dim_var.data[dim_slice.max()] - dim_var.data[dim_slice.min()])
-            / np.diff(dim_bounds)
-        )
+    stride = int(dim_var.size / n_quivers)
+    stride = stride if stride > 1 else 1
 
-        dim_slice = np.linspace(dim_slice[0], dim_slice[-1], int(n_quivers)).astype(int)
-
-        if dim_bounds.max() == 360:
-            dim_slice[-1] = 0
-
-        return dim_slice
+    return dim_slice[dim_slice % stride == 0]
 
 
 async def quiver(
@@ -333,8 +325,6 @@ async def quiver(
     z: int,
     projection: str,
 ):
-    lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
-
     config = DatasetConfig(dataset_name)
 
     with open_dataset(config, variable=variable, timestamp=time) as ds:
@@ -345,8 +335,15 @@ async def quiver(
         data = ds.nc_data.get_dataset_variable(variable)
 
         lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
-        lat_slice = get_quiver_slice(lat_var, lat_bounds, density_adj)
-        lon_slice = get_quiver_slice(lon_var, lon_bounds, density_adj)
+        n_y_quivers = (
+            (25 + 10 * density_adj) * 2**z * (lat_var.max() - lat_var.min()) / 180
+        )
+        n_x_quivers = (
+            (25 + 10 * density_adj) * 2**z * (lon_var.max() - lon_var.min()) / 360
+        )
+
+        lat_slice = get_quiver_slice(lat_var, lat_bounds, n_y_quivers)
+        lon_slice = get_quiver_slice(lon_var, lon_bounds, n_x_quivers)
 
         if lat_slice.any() and lon_slice.any():
             if len(data.shape) == 3:
@@ -375,7 +372,7 @@ async def quiver(
             )
 
             return d
-    return {}
+    return {"type": "FeatureCollection", "features": []}
 
 
 def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
