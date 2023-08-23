@@ -348,6 +348,19 @@ class TestAPIv2:
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
+    def test_quiver_endpoint(self):
+        response = self.client.get(
+            "api/v2.0/tiles/quiver/giops_real/magwatervel/2212444800/0/1/3/2/2",
+            params={"projection": "EPSG:3857"},
+        )
+
+        data = response.json()
+
+        assert response.status_code == 200
+        assert response.headers["Content-Type"] == "application/json"
+        assert len(data["features"]) == 28
+
+    @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_bath_endpoint(self):
         response = self.client.get("api/v2.0/tiles/bath/6/56/41?projection=EPSG:3857")
 

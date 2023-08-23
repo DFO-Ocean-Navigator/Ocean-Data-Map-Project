@@ -303,15 +303,13 @@ class Mercator(Model):
         return res, np.squeeze([self.depths] * len(latitude))
 
     def __has_depth(self, var):
-        '''
+        """
         Check that the variable has four dimensions (time, depth, lat, lon),
         and that the depth dimension has more than one element.
-        '''
+        """
 
         depth_index = [
             i for i, dim in enumerate(var.dims) if dim in self.nc_data.depth_dimensions
         ]
 
-        return (
-            len(var.shape) == 4 and depth_index and var.shape[depth_index[0]] > 1
-        )
+        return len(var.shape) == 4 and depth_index and var.shape[depth_index[0]] > 1

@@ -41,7 +41,6 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { useGeographic } from "ol/proj.js";
 import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
@@ -359,23 +358,31 @@ const MainMap = forwardRef((props, ref) => {
   useEffect(() => {
     if (layerQuiver) {
       let source = null;
-      if (props.dataset0.quiverVariable !== "none") {
+      if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0);
       }
       layerQuiver.setSource(source);
     }
-  }, [props.dataset0.id, props.dataset0.quiverVariable]);
+  }, [
+    props.dataset0.id,
+    props.dataset0.quiverVariable,
+    props.dataset0.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (map1) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
-      if (props.dataset1.quiverVariable !== "none") {
+      if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1);
       }
       quiverLayer.setSource(source);
     }
-  }, [props.dataset1.id, props.dataset1.quiverVariable]);
+  }, [
+    props.dataset1.id,
+    props.dataset1.quiverVariable,
+    props.dataset1.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (vectorSource) {
@@ -785,7 +792,7 @@ const MainMap = forwardRef((props, ref) => {
     const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
 
     const anchor = [0.5, 0.5];
-    const newLayerQuiver = new VectorLayer({
+    const newLayerQuiver = new VectorTileLayer({
       source: null, // set source during update function below
       style: function (feature, resolution) {
         let scale = feature.get("scale");
@@ -1255,13 +1262,17 @@ const MainMap = forwardRef((props, ref) => {
   };
 
   const getQuiverSource = (dataset) => {
-    const quiverSource = new VectorSource({
+    const quiverSource = new VectorTile({
       url:
-        `/api/v2.0/data?dataset=${dataset.id}` +
-        `&variable=${dataset.quiverVariable}` +
-        `&time=${dataset.time}` +
-        `&depth=${dataset.depth}` +
-        `&geometry_type=area`,
+        "/api/v2.0/tiles/quiver" +
+        `/${dataset.id}` +
+        `/${dataset.quiverVariable}` +
+        `/${dataset.time}` +
+        `/${dataset.depth}` +
+        `/${dataset.quiverDensity}` +
+        "/{z}/{x}/{y}" +
+        `?projection=${props.mapSettings.projection}`,
+      projection: props.mapSettings.projection,
       format: new GeoJSON({
         featureProjection: olProj.get("EPSG:3857"),
         dataProjection: olProj.get("EPSG:4326"),
@@ -1608,7 +1619,7 @@ const MainMap = forwardRef((props, ref) => {
     vectorSource.refresh();
 
     if (mapLayers[7].getSource()) {
-      mapLayers[7].getSource().refresh();
+      mapLayers[7].setSource(getQuiverSource(dataset));
     }
   };
 
