@@ -12,7 +12,7 @@ flask-SQLAlchemy
 marshmallow
 cmocean
 cartopy
-pyproj<3.6.0
+pyproj @ git+https://github.com/pyproj4/pyproj.git@c77e346d4e0ecc07cdc495fcaefafea09a8dde5c
 scikit-image
 basemap
 visvalingamwyatt
