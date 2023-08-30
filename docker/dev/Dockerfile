@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED 1
 ENV NODE_VERSION=12.22.1
 
 # install runtime requirements
-COPY requirements.apk requirements.apk
+COPY docker/dev/requirements.apk requirements.apk
 RUN apk -U add $(cat requirements.apk)
 
 # install build requirements
@@ -22,10 +22,11 @@ RUN checksum=$(curl -sSL --compressed "https://unofficial-builds.nodejs.org/down
       && npm --version
 
 # install python dependencies
-COPY requirements.txt requirements.txt
+COPY docker/dev/requirements.txt requirements.txt
 RUN pip install -U pip && pip install  -r requirements.txt
 
-# install frontend dependencies
-COPY package.json package.json
-COPY package-lock.json package-lock.json
+# install code and frontend dependencies
+RUN mkdir /app
+COPY . /app
+WORKDIR /app/oceannavigator/frontend
 RUN npm install

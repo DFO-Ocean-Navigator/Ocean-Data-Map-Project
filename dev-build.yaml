@@ -2,26 +2,25 @@
 kind: BuildConfig
 metadata:
   name: ocnav-dev-build
-  namespace: proj-k8s-ssc-hpco
   labels:
     name: ocnav-dev-build
 spec:
   source:
     type: Git
-    contextDir: "docker/dev"
     git:
       ref: docker
       uri: "https://github.com/tripougnif/Ocean-Data-Map-Project.git"
   strategy:
     type: Docker
     dockerStrategy:
+      dockerFilePath: docker/dev/Dockerfile
       noCache: true
       from:
         name: ocnav-dev:latest
   resources:
     limits:
-      cpu: '4'
-      memory: 8Gi
+      cpu: '1500m'
+      memory: 2Gi
   output:
     to:
       type: imageStreamTag
