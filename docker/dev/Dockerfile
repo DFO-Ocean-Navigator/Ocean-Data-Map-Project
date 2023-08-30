@@ -16,7 +16,7 @@ RUN checksum=$(curl -sSL --compressed "https://unofficial-builds.nodejs.org/down
     && curl -fsSLO --compressed "https://unofficial-builds.nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64-musl.tar.xz"; \
     echo "$checksum  node-v$NODE_VERSION-linux-x64-musl.tar.xz" | sha256sum -c - \
       && tar -xJf "node-v$NODE_VERSION-linux-x64-musl.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
-      && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
+      && ln -sf /usr/local/bin/node /usr/local/bin/nodejs \
       && rm -f "node-v$NODE_VERSION-linux-x64-musl.tar.xz" \
       && node --version \
       && npm --version
