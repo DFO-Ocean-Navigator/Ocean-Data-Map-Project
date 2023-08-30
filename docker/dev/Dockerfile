@@ -24,3 +24,8 @@ RUN checksum=$(curl -sSL --compressed "https://unofficial-builds.nodejs.org/down
 # install python dependencies
 COPY requirements.txt requirements.txt
 RUN pip install -U pip && pip install  -r requirements.txt
+
+# install frontend dependencies
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+RUN npm install
