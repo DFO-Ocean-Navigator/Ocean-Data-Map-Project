@@ -41,7 +41,6 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { useGeographic } from "ol/proj.js";
 import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
@@ -173,13 +172,7 @@ const MainMap = forwardRef((props, ref) => {
     });
 
     let projection = props.mapSettings.projection;
-    const newMapView = new View({
-      center: olProj.transform(DEF_CENTER[projection], "EPSG:4326", projection),
-      projection: projection,
-      zoom: 4,
-      maxZoom: MAX_ZOOM[projection],
-      minZoom: MIN_ZOOM[projection],
-    });
+    const newMapView = createMapView(DEF_CENTER[projection], projection, 4);
 
     let newVectorSource = new VectorSource({
       features: [],
@@ -309,7 +302,37 @@ const MainMap = forwardRef((props, ref) => {
   }, [props.compareDatasets]);
 
   useEffect(() => {
-    if (props.dataset0.time > 0) {
+    if (props.dataset0.default_location) {
+      const newCenter = [
+        props.dataset0.default_location[0],
+        props.dataset0.default_location[1],
+      ];
+      const newZoom = props.dataset0.default_location[2];
+      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
+      map0.setView(newMapView);
+      props.updateMapSettings("projection", "EPSG:3857");
+      if (props.compareDatasets) {
+        map1.setView(newMapView);
+      }
+    }
+  }, [props.dataset0.id]);
+
+  useEffect(() => {
+    if (props.dataset1.default_location) {
+      const newCenter = [
+        props.dataset1.default_location[0],
+        props.dataset1.default_location[1],
+      ];
+      const newZoom = props.dataset1.default_location[2];
+      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
+      map0.setView(newMapView);
+      map1.setView(newMapView);
+      props.updateMapSettings("projection", "EPSG:3857");
+    }
+  }, [props.dataset1.id]);
+
+  useEffect(() => {
+    if (props.dataset0.time >= 0) {
       layerData0.setSource(new XYZ(getDataSource(props.dataset0)));
     }
   }, [
@@ -321,7 +344,7 @@ const MainMap = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (props.dataset1.time > 0) {
+    if (props.dataset1.time >= 0) {
       layerData1.setSource(new XYZ(getDataSource(props.dataset1)));
     }
   }, [
@@ -335,23 +358,31 @@ const MainMap = forwardRef((props, ref) => {
   useEffect(() => {
     if (layerQuiver) {
       let source = null;
-      if (props.dataset0.quiverVariable !== "none") {
+      if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0);
       }
       layerQuiver.setSource(source);
     }
-  }, [props.dataset0.quiverVariable]);
+  }, [
+    props.dataset0.id,
+    props.dataset0.quiverVariable,
+    props.dataset0.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (map1) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
-      if (props.dataset1.quiverVariable !== "none") {
+      if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1);
       }
       quiverLayer.setSource(source);
     }
-  }, [props.dataset1.quiverVariable]);
+  }, [
+    props.dataset1.id,
+    props.dataset1.quiverVariable,
+    props.dataset1.quiverDensity,
+  ]);
 
   useEffect(() => {
     if (vectorSource) {
@@ -419,6 +450,18 @@ const MainMap = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
+
+  const createMapView = (center, projection, zoom) => {
+    const newMapView = new View({
+      center: olProj.transform(center, "EPSG:4326", projection),
+      projection: projection,
+      zoom: zoom,
+      maxZoom: MAX_ZOOM[projection],
+      minZoom: MIN_ZOOM[projection],
+    });
+
+    return newMapView;
+  };
 
   const createMap = (
     overlay,
@@ -749,7 +792,7 @@ const MainMap = forwardRef((props, ref) => {
     const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
 
     const anchor = [0.5, 0.5];
-    const newLayerQuiver = new VectorLayer({
+    const newLayerQuiver = new VectorTileLayer({
       source: null, // set source during update function below
       style: function (feature, resolution) {
         let scale = feature.get("scale");
@@ -1219,13 +1262,17 @@ const MainMap = forwardRef((props, ref) => {
   };
 
   const getQuiverSource = (dataset) => {
-    const quiverSource = new VectorSource({
+    const quiverSource = new VectorTile({
       url:
-        `/api/v2.0/data?dataset=${dataset.id}` +
-        `&variable=${dataset.quiverVariable}` +
-        `&time=${dataset.time}` +
-        `&depth=${dataset.depth}` +
-        `&geometry_type=area`,
+        "/api/v2.0/tiles/quiver" +
+        `/${dataset.id}` +
+        `/${dataset.quiverVariable}` +
+        `/${dataset.time}` +
+        `/${dataset.depth}` +
+        `/${dataset.quiverDensity}` +
+        "/{z}/{x}/{y}" +
+        `?projection=${props.mapSettings.projection}`,
+      projection: props.mapSettings.projection,
       format: new GeoJSON({
         featureProjection: olProj.get("EPSG:3857"),
         dataProjection: olProj.get("EPSG:4326"),
@@ -1508,10 +1555,16 @@ const MainMap = forwardRef((props, ref) => {
     if (map === map0) {
       setLayerBasemap(newLayerBasemap);
     }
+
+    let center = DEF_CENTER[props.mapSettings.projection];
+    if (props.dataset0.default_location) {
+      center = props.dataset0.default_location;
+    }
+
     const newMapView = new View({
       projection: props.mapSettings.projection,
       center: olProj.transform(
-        DEF_CENTER[props.mapSettings.projection],
+        center,
         "EPSG:4326",
         props.mapSettings.projection
       ),
@@ -1566,7 +1619,7 @@ const MainMap = forwardRef((props, ref) => {
     vectorSource.refresh();
 
     if (mapLayers[7].getSource()) {
-      mapLayers[7].getSource().refresh();
+      mapLayers[7].setSource(getQuiverSource(dataset));
     }
   };
 

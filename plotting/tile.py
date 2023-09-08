@@ -5,6 +5,7 @@ import matplotlib.cm
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
@@ -17,6 +18,7 @@ from skimage import measure
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
+from data.transformers.geojson import data_array_to_geojson
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
 
@@ -102,6 +104,69 @@ def get_latlon_coords(projection, x, y, z):
     return lat, lon
 
 
+def get_m_bounds(projection, x, y, z):
+    if projection == "EPSG:3857":
+        nw = num2deg(x, y, z)
+        se = num2deg(x + 1, y + 1, z)
+
+        transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
+        x1, y2 = transformer.transform(nw[1], nw[0])
+        x2, y1 = transformer.transform(se[1], se[0])
+
+    elif projection == "EPSG:32661" or projection == "EPSG:3031":
+        if projection == "EPSG:32661":
+            boundinglat = 60.0
+            lon_0 = 0
+            llcrnr_lon = -45
+            urcrnr_lon = 135
+        elif projection == "EPSG:3031":
+            boundinglat = -60.0
+            lon_0 = 0
+            llcrnr_lon = -135
+            urcrnr_lon = 45
+
+        proj = Proj(projection)
+
+        xx, yy = proj(lon_0, boundinglat)
+        lon, llcrnr_lat = proj(math.sqrt(2.0) * yy, 0.0, inverse=True)
+        urcrnr_lat = llcrnr_lat
+
+        urcrnrx, urcrnry = proj(urcrnr_lon, urcrnr_lat)
+        llcrnrx, llcrnry = proj(llcrnr_lon, llcrnr_lat)
+
+        n = 2**z
+        x_tile = (urcrnrx - llcrnrx) / n
+        y_tile = (urcrnry - llcrnry) / n
+
+        x1 = llcrnrx + x * x_tile
+        x2 = x1 + x_tile
+        y1 = llcrnry + (n - y - 1) * y_tile
+        y2 = y1 + y_tile
+
+        return [x1, x1, x2, x2], [y1, y2, y1, y2]
+
+    return [x1, x2], [y1, y2]
+
+
+def get_latlon_bounds(projection, x, y, z):
+    x0, y0 = get_m_bounds(projection, x, y, z)
+    dest = Proj(projection)
+    lon, lat = dest(x0, y0, inverse=True)
+    lon = np.array(lon).round(0) % 360
+    lat = np.array(lat).round(0)
+
+    if projection != "EPSG:3857":
+        unique_lat, cnts = np.unique(lat, return_counts=True)
+        lon = lon[lat == unique_lat[cnts > 1]]
+        lat = unique_lat[cnts == 1]
+        if np.absolute(np.diff(lon)) > 90:
+            lon[lon == 0] = 360
+    elif lon[1] == 0:
+        lon[1] = 360
+
+    return lat, lon
+
+
 def scale(args):
     """
     Draws the variable scale that is placed over the map.
@@ -183,7 +248,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
 
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
-
         for v in variable:
             data.append(
                 dataset.get_area(
@@ -236,6 +300,88 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     return im
 
 
+def get_quiver_slice(
+    dim_var: xr.IndexVariable, tile_bounds: np.array, n_quivers: int
+) -> np.array:
+    dim_slice = np.argwhere(
+        (dim_var.data >= tile_bounds.min() - 1)
+        & (dim_var.data <= tile_bounds.max() + 1)
+    ).flatten()
+
+    stride = int(dim_var.size / n_quivers)
+    stride = stride if stride > 1 else 1
+
+    dim_slice = dim_slice[dim_slice % stride == 0]
+
+    if tile_bounds[1] == 360 and dim_var.size - dim_slice[-1] < stride:
+        dim_slice[-1] = 0
+    elif tile_bounds[1] == 360:
+        dim_slice = np.append(dim_slice, 0)
+
+    return dim_slice
+
+
+async def quiver(
+    dataset_name: str,
+    variable: str,
+    time: str,
+    depth: str,
+    density_adj: int,
+    x: int,
+    y: int,
+    z: int,
+    projection: str,
+):
+    config = DatasetConfig(dataset_name)
+
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
+        lat_var, lon_var = ds.nc_data.latlon_variables
+
+        time_index = ds.nc_data.timestamp_to_time_index(time)
+
+        data = ds.nc_data.get_dataset_variable(variable)
+
+        lat_bounds, lon_bounds = get_latlon_bounds(projection, x, y, z)
+        n_y_quivers = (
+            (25 + 10 * density_adj) * 2**z * (lat_var.max() - lat_var.min()) / 180
+        )
+        n_x_quivers = (
+            (25 + 10 * density_adj) * 2**z * (lon_var.max() - lon_var.min()) / 360
+        )
+
+        lat_slice = get_quiver_slice(lat_var, lat_bounds, n_y_quivers)
+        lon_slice = get_quiver_slice(lon_var, lon_bounds, n_x_quivers)
+
+        if lat_slice.any() and lon_slice.any():
+            if len(data.shape) == 3:
+                data_slice = (time_index, lat_slice, lon_slice)
+            else:
+                data_slice = (time_index, int(depth), lat_slice, lon_slice)
+
+            data = data[data_slice]
+
+            bearings = None
+            bearings_var = config.variable[variable].bearing_component
+            if variable in config.vector_variables and bearings_var:
+                with open_dataset(
+                    config, variable=bearings_var, timestamp=time
+                ) as ds_bearing:
+                    bearings = ds_bearing.nc_data.get_dataset_variable(bearings_var)[
+                        data_slice
+                    ].squeeze(drop=True)
+
+            d = await data_array_to_geojson(
+                data.squeeze(drop=True),
+                bearings,
+                lat_var[lat_slice],
+                lon_var[lon_slice],
+                config.variable[variable].scale,
+            )
+
+            return d
+    return {"type": "FeatureCollection", "features": []}
+
+
 def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
     settings = get_settings()
 
@@ -250,7 +396,7 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     cmap = "BrBG_r"
 
     land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(1, 0.25, 128))
+    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
     colors = np.vstack((water_colors, land_colors))
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
 

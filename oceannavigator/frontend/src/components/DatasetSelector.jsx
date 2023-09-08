@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -20,6 +21,8 @@ import {
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 
 import { withTranslation } from "react-i18next";
+
+import "rc-slider/assets/index.css";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
@@ -119,14 +122,17 @@ function DatasetSelector(props) {
                 ? timeData[timeData.length - 20].id
                 : timeData[0].id;
 
-            if (props.mountedDataset && props.mountedDataset.id === newDataset) {
+            if (
+              props.mountedDataset &&
+              props.mountedDataset.id === newDataset
+            ) {
               newTime =
                 props.mountedDataset.time > 0
                   ? props.mountedDataset.time
                   : newTime;
               newStarttime =
-                props.mountedDataset.startTime > 0
-                  ? props.mountedDataset.startTime
+                props.mountedDataset.starttime > 0
+                  ? props.mountedDataset.starttime
                   : newStarttime;
             }
 
@@ -144,6 +150,8 @@ function DatasetSelector(props) {
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
                   quiverVariable: "None",
+                  quiverDensity: 0,
+                  default_location: currentDataset.default_location
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -239,6 +247,26 @@ function DatasetSelector(props) {
     });
   };
 
+  const changeTime = (newTime) => {
+    let newDataset = {};
+    if (dataset.starttime > newTime) {
+      const timeIdx = datasetTimestamps.findIndex((timestamp) => {
+        return timestamp.id === newTime;
+      });
+
+      const newStarttime =
+        timeIdx > 20
+          ? datasetTimestamps[timeIdx - 20].id
+          : datasetTimestamps[0].id;
+
+      newDataset = { ...dataset, time: newTime, starttime: newStarttime };
+    } else {
+      newDataset = { ...dataset, time: newTime };
+    }
+
+    setDataset(newDataset);
+  };
+
   const nothingChanged = (key, value) => {
     return dataset[key] === value;
   };
@@ -249,6 +277,10 @@ function DatasetSelector(props) {
 
   const variableChanged = (key) => {
     return key === "variable";
+  };
+
+  const timeChanged = (key) => {
+    return key === "time";
   };
 
   const updateDataset = (key, value) => {
@@ -263,6 +295,11 @@ function DatasetSelector(props) {
 
     if (variableChanged(key)) {
       changeVariable(value);
+      return;
+    }
+
+    if (timeChanged(key)) {
+      changeTime(value);
       return;
     }
 
@@ -346,17 +383,33 @@ function DatasetSelector(props) {
     quiverVariables.unshift({ id: "none", value: "None" });
 
     quiverSelector = (
-      <SelectBox
-        id={`dataset-selector-quiver-selector-${props.id}`}
-        name="quiverVariable"
-        label={__("Quiver")}
-        placeholder={__("Quiver Variable")}
-        options={quiverVariables}
-        onChange={updateDataset}
-        selected={dataset.quiverVariable}
-        loading={loading}
-        horizontalLayout={props.horizontalLayout}
-      />
+      <div className="quiver-options">
+        <SelectBox
+          id={`dataset-selector-quiver-selector-${props.id}`}
+          name="quiverVariable"
+          label={__("Quiver")}
+          placeholder={__("Quiver Variable")}
+          options={quiverVariables}
+          onChange={updateDataset}
+          selected={dataset.quiverVariable}
+          loading={loading}
+          horizontalLayout={props.horizontalLayout}
+        />
+        <Form.Label>Quiver Density</Form.Label>
+        <Slider
+          range
+          allowCross={false}
+          min={-1}
+          max={1}
+          marks={{
+            "-1": "-",
+            "0": "",
+            "1": "+",
+          }}
+          defaultValue={dataset.quiverDensity}
+          onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
+        />
+      </div>
     );
   }
 
