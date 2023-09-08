@@ -1,12 +1,12 @@
 commands:
 - exec:
-    commandLine: pip install -r requirements.txt
+    commandLine: ln -s /app/oceannavigator/frontend/node_modules /projects/oceannavigator/frontend
     component: ocnav
     group:
       isDefault: true
       kind: build
     workingDir: ${PROJECT_SOURCE}
-  id: pip-install-requirements
+  id: link-node-modules
 - exec:
     commandLine: python app.py
     component: ocnav

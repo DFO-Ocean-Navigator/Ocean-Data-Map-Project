@@ -13,7 +13,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
-      dockerFilePath: docker/dev/Dockerfile
+      dockerfilePath: docker/dev/Dockerfile
       noCache: true
       from:
         name: ocnav-dev:latest
