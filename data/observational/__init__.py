@@ -10,7 +10,7 @@ SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_uri
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"connect_timeout": 10},
+    connect_args={"connect_timeout": 10} if not SQLALCHEMY_DATABASE_URL.startswith('sqlite') else {},
     pool_recycle=3600,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

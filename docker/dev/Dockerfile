@@ -30,3 +30,4 @@ RUN mkdir /app
 COPY . /app
 WORKDIR /app/oceannavigator/frontend
 RUN npm install
+WORKDIR /app

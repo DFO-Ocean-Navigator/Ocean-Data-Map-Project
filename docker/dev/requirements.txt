@@ -1,5 +1,5 @@
 hypercorn
-fastapi
+fastapi==0.85.0
 opentelemetry-instrumentation-fastapi
 xarray
 metpy
@@ -13,7 +13,7 @@ marshmallow
 cmocean
 cartopy
 pyproj @ git+https://github.com/pyproj4/pyproj.git@c77e346d4e0ecc07cdc495fcaefafea09a8dde5c
-scikit-image
+scikit-image==0.21.0
 basemap
 visvalingamwyatt
 debugpy
