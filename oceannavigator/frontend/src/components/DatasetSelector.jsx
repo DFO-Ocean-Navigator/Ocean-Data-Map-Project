@@ -4,6 +4,8 @@ import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
@@ -570,6 +572,17 @@ function DatasetSelector(props) {
     />
   ) : null;
 
+  const hideDataSwitch = props.showCompare ? (
+    <Button
+      className="new-tab-button"
+      onClick={() => {
+        props.updateMapSettings("hideDataLayer", !props.mapSettings.hideDataLayer)
+      }}
+    >
+      <FontAwesomeIcon icon={faEyeSlash} />
+    </Button>
+  ) : null;
+
   return (
     <>
       <div
@@ -589,6 +602,7 @@ function DatasetSelector(props) {
         {props.horizontalLayout ? null : timeSelector}
         {props.horizontalLayout ? goButton : null}
         {props.showCompare ? compareSwitch : null}
+        {props.showCompare ? hideDataSwitch : null}
       </div>
       {props.horizontalLayout ? timeSelector : null}
       {props.horizontalLayout ? null : goButton}

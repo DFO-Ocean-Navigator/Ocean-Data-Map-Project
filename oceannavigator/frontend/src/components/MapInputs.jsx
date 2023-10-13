@@ -36,6 +36,7 @@ function MapInputs(props) {
             id="dataset_0"
             onUpdate={props.updateDataset0}
             mapSettings={props.mapSettings}
+            updateMapSettings={props.updateMapSettings}
             action={props.action}
             horizontalLayout={true}
             showTimeSlider={!props.compareDatasets}
