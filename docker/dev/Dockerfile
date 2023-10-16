@@ -1,5 +1,5 @@
 # build Ocean Navigator runtime image
-FROM docker.io/library/alpine:3.18
+FROM docker.io/library/alpine:3.18.3
 
 ENV PYTHONUNBUFFERED 1
 ENV NODE_VERSION=12.22.1
