@@ -9,7 +9,7 @@ COPY docker/dev/requirements.apk requirements.apk
 RUN apk -U add $(cat requirements.apk)
 
 # install build requirements
-RUN apk -U add build-base curl proj-dev gdal-dev geos-dev hdf5-dev netcdf-dev openblas-dev freetype-dev python3-dev py3-numpy-dev py3-pip -t .build-deps
+RUN apk -U add build-base curl proj-dev gdal-dev geos-dev hdf5-dev netcdf-dev openblas-dev freetype-dev python3-dev py3-pip -t .build-deps
 
 # install unofficial node-musl build
 RUN checksum=$(curl -sSL --compressed "https://unofficial-builds.nodejs.org/download/release/v${NODE_VERSION}/SHASUMS256.txt" | grep "node-v${NODE_VERSION}-linux-x64-musl.tar.xz" | cut -d' ' -f1) \
