@@ -40,7 +40,7 @@ components:
       value: "5858"
     - name: HOME
       value: /projects
-    image: ocnav-dev:latest
+    image: ocean-data-map-project:latest
     mountSources: true
     memoryLimit: 1536M
     cpuLimit: "0.5"
