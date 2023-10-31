@@ -11,4 +11,11 @@
     display: flex;
     justify-content: center;
   }
+
+  .global-settings-card {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 }
