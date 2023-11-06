@@ -2,6 +2,7 @@
 
 import glob
 import os
+import sys
 
 import defopt
 import pandas as pd
@@ -9,6 +10,10 @@ import seawater
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(os.path.dirname(current))
+sys.path.append(parent)
 
 from data.observational import DataType, Platform, Sample, Station
 
