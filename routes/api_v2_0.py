@@ -99,10 +99,10 @@ def git_info():
 
 @router.get("/generate_script")
 def generate_script(
-    query: str = Query(..., description="string-ified JSON"),
+    query: str = Query(description="string-ified JSON"),
     plot_type: str = Query(None, description="Type of requested data product."),
-    lang: e.ScriptLang = Query(..., description="Language of the requested API script"),
-    script_type: e.ScriptType = Query(..., description="Type of requested script"),
+    lang: e.ScriptLang = Query(description="Language of the requested API script"),
+    script_type: e.ScriptType = Query(description="Type of requested script"),
 ):
     if lang == e.ScriptLang.python:
         b = generatePython(query, plot_type, script_type)
@@ -149,7 +149,6 @@ def datasets():
 @router.get("/dataset/{dataset}")
 def dataset(
     dataset: str = Path(
-        None,
         title="The key of the dataset.",
         example="giops_day",
     )
@@ -168,7 +167,6 @@ def dataset(
 @router.get("/api/v2.0/{dataset}/timeunit")
 def time_dimension(
     dataset: str = Path(
-        None,
         title="The key of the dataset.",
         example="giops_day",
     )
@@ -181,7 +179,6 @@ def time_dimension(
 @router.get("/dataset/{dataset}/quantum")
 def quantum(
     dataset: str = Path(
-        ...,
         title="The key of the dataset.",
         example="giops_day",
     )
@@ -198,7 +195,6 @@ def quantum(
 @router.get("/dataset/{dataset}/variables")
 def variables(
     dataset: str = Path(
-        ...,
         title="The key of the dataset.",
         example="giops_day",
     ),
@@ -245,8 +241,8 @@ def variables(
 
 @router.get("/dataset/{dataset}/{variable}/timestamps")
 def timestamps(
-    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
-    variable: str = Path(..., title="The key of the variable.", example="votemper"),
+    dataset: str = Path(title="The key of the dataset.", example="giops_day"),
+    variable: str = Path(title="The key of the variable.", example="votemper"),
 ):
     """
     Returns all timestamps available for a given variable in a dataset.
@@ -295,12 +291,10 @@ def timestamps(
 @router.get("/dataset/{dataset}/{variable}/depths")
 def depths(
     dataset: str = Path(
-        ...,
         title="The key of the dataset.",
         example="giops_day",
     ),
     variable: str = Path(
-        ...,
         title="The key of the variable.",
         example="votemper",
     ),
@@ -338,15 +332,9 @@ def depths(
 
 @router.get("/scale/{dataset}/{variable}/{scale}")
 def scale(
-    dataset: str = Query(
-        ..., description="The key of the dataset.", example="giops_day"
-    ),
-    variable: str = Query(
-        ..., description="The key of the variable.", example="votemper"
-    ),
-    scale: str = Query(
-        ..., description="Min/max values for scale image", example="-5,30"
-    ),
+    dataset: str = Path(description="The key of the dataset.", example="giops_day"),
+    variable: str = Path(description="The key of the variable.", example="votemper"),
+    scale: str = Path(description="Min/max values for scale image", example="-5,30"),
 ):
     """
     Returns a scale bar png
@@ -370,40 +358,30 @@ def scale(
     "/{projection}/{extent}/{depth}/{time}"
 )
 def range(
-    dataset: str = Query(
-        ..., description="The key of the dataset.", example="giops_day"
-    ),
-    variable: str = Query(
-        ..., description="The key of the variable.", example="votemper"
-    ),
-    interp: e.InterpolationType = Query("gaussian", description="", example="gaussian"),
-    radius: int = Query(
-        25, description="Radius in km to search for neighbours", example=25
-    ),
-    neighbours: int = Query(
-        10,
+    dataset: str = Path(description="The key of the dataset.", example="giops_day"),
+    variable: str = Path(description="The key of the variable.", example="votemper"),
+    interp: e.InterpolationType = Path(description="", example="gaussian"),
+    radius: int = Path(description="Radius in km to search for neighbours", example=25),
+    neighbours: int = Path(
         description="The max number of nearest neighbours to search for.",
         example=10,
     ),
-    projection: str = Query(
-        "EPSG:3857",
+    projection: str = Path(
         description="EPSG code of the desired projection.",
         example="EPSG:3857",
     ),
-    extent: str = Query(
-        ...,
+    extent: str = Path(
         description="View extent",
         example="-17815466.9445,3631998.6003,6683517.8652,10333997.2404",
     ),
-    depth: str = Query(
-        ...,
+    depth: str = Path(
         description="Depth index",
         examples={
             "numerical index": {"value": "1"},
             "bottom index": {"value": "bottom"},
         },
     ),
-    time: int = Query(..., description="NetCDF timestamp"),
+    time: int = Path(description="NetCDF timestamp"),
 ):
     """
     Returns the min/max values of a variable for a given view extent.
@@ -440,12 +418,11 @@ def class4_files():
 
 @router.get("/class4/{data_type}/{class4_type}")
 def class4_data(
-    data_type: str = Path(..., title="The type of data requested.", example="models"),
+    data_type: str = Path(title="The type of data requested.", example="models"),
     class4_type: str = Path(
-        ..., title="The type of the desired class4 product.", example="ocean_predict"
+        title="The type of the desired class4 product.", example="ocean_predict"
     ),
     id: str = Query(
-        ...,
         description="The ID of the desired class4 data.",
         example="class4_20220513_GIOPS_CONCEPTS_3.3_profile_231",
     ),
@@ -465,19 +442,17 @@ def class4_data(
 @router.get("/class4/{class4_type}")
 def class4_file(
     class4_type: str = Path(
-        ..., title="The type of the desired class4 product.", example="ocean_predict"
+        title="The type of the desired class4 product.", example="ocean_predict"
     ),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
-    resolution: int = Query(..., description="The map resolution.", example="9784"),
+    resolution: int = Query(description="The map resolution.", example="9784"),
     extent: str = Query(
-        ...,
         description="The extent of the area bounding the data.",
         example="-15936951,1411044,4805001,12554952",
     ),
     id: str = Query(
-        ...,
         description="The ID of the desired class4 data.",
         example="class4_20220513_GIOPS_CONCEPTS_3.3_profile_231",
     ),
@@ -497,20 +472,18 @@ def class4_file(
 @router.get("/subset/{dataset}/{variables}")
 def subset_query(
     request: Request,
-    dataset: str = Path(..., title="The key of the dataset.", example="giops_day"),
-    variables: str = Path(..., title="The variables keys.", example="votemper"),
+    dataset: str = Path(title="The key of the dataset.", example="giops_day"),
+    variables: str = Path(title="The variables keys.", example="votemper"),
     output_format: str = Query("NETCDF4", description="", example="NETCDF4"),
     min_range: str = Query(
-        ...,
         description="The lower bound of the plot extent.",
         example="45.318100000000015,-59.3802",
     ),
     max_range: str = Query(
-        ...,
         description="The upper bound of the plot extent.",
         example="45.994500000000016,-56.9418",
     ),
-    time: str = Query(..., description="", example="2283984000,2283984000"),
+    time: str = Query(description="", example="2283984000,2283984000"),
     should_zip: str = Query("1", description="", example="1"),
 ):
     working_dir = None
@@ -584,9 +557,8 @@ def colormaps_png():
 
 @router.get("/plot/{plot_type}")
 async def plot(
-    plot_type: str = Path(..., title="The key of the dataset.", example="profile"),
+    plot_type: str = Path(title="The key of the dataset.", example="profile"),
     query: str = Query(
-        ...,
         description="Collection of plot arguments.",
         example=(
             '{"dataset":"giops_day","names":[],"plotTitle":"","showmap":false,'
@@ -693,9 +665,8 @@ def kml_points():
 
 @router.get("/kml/point/{id}")
 def kml_point(
-    id: str = Path(..., example="NL-AZMP_Stations"),
+    id: str = Path(example="NL-AZMP_Stations"),
     projection: str = Query(
-        ...,
         description="EPSG code for desired projection. Used to map resulting KML \
             coords",
         example="EPSG:3857",
@@ -729,9 +700,8 @@ def kml_lines():
 
 @router.get("/kml/line/{id}")
 def kml_line(
-    id: str = Path(..., example="NL-AZMP_Stations"),
+    id: str = Path(example="NL-AZMP_Stations"),
     projection: str = Query(
-        ...,
         description="EPSG code for desired projection. Used to map resulting KML \
             coords",
         example="EPSG:3857",
@@ -764,15 +734,13 @@ def kml_areas():
 
 @router.get("/kml/area/{id}")
 def kml_area(
-    id: str = Path(..., example="NL-AZMP_Stations"),
+    id: str = Path(example="NL-AZMP_Stations"),
     projection: str = Query(
-        ...,
         description="EPSG code for desired projection. Used to map resulting KML \
             coords",
         example="EPSG:3857",
     ),
     resolution: int = Query(
-        ...,
         description="Used to exclude KML points that aren't visible. Useful for \
             filtering large KML groups.",
     ),
@@ -793,24 +761,20 @@ def kml_area(
 
 @router.get("/tiles/{dataset}/{variable}/{time}/{depth}/{zoom}/{x}/{y}")
 async def data_tile(
-    dataset: str = Path(
-        ..., description="The key of the dataset.", example="giops_day"
-    ),
-    variable: str = Path(
-        ..., description="The key of the variable.", example="votemper"
-    ),
-    time: int = Path(..., description="NetCDF timestamp"),
-    depth: str = Path(..., description="Depth index", example=0),
-    zoom: int = Path(..., example=4),
-    x: int = Path(..., example=0),
-    y: int = Path(..., example=1),
+    dataset: str = Path(description="The key of the dataset.", example="giops_day"),
+    variable: str = Path(description="The key of the variable.", example="votemper"),
+    time: int = Path(description="NetCDF timestamp"),
+    depth: str = Path(description="Depth index", example=0),
+    zoom: int = Path(example=4),
+    x: int = Path(example=0),
+    y: int = Path(example=1),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
     interp: e.InterpolationType = Query(default="gaussian"),
     radius: int = Query(default=25, example=25),
     neighbours: int = Query(default=10, example=10),
-    scale: str = Query(..., example="-5,30"),
+    scale: str = Query(example="-5,30"),
 ):
     """
     Produces the map data tiles
@@ -875,18 +839,14 @@ async def data_tile(
     "/tiles/quiver/{dataset}/{variable}/{time}/{depth}/{density_adj}/{zoom}/{x}/{y}"
 )
 async def quiver_tile(
-    dataset: str = Path(
-        ..., description="The key of the dataset.", example="giops_day"
-    ),
-    variable: str = Path(
-        ..., description="The key of the variable.", example="votemper"
-    ),
-    time: int = Path(..., description="NetCDF timestamp"),
-    depth: str = Path(..., description="Depth index", example=0),
-    density_adj: int = Path(..., description="Quiver density adjustment", example=1),
-    zoom: int = Path(..., example=4),
-    x: int = Path(..., example=0),
-    y: int = Path(..., example=1),
+    dataset: str = Path(description="The key of the dataset.", example="giops_day"),
+    variable: str = Path(description="The key of the variable.", example="votemper"),
+    time: int = Path(description="NetCDF timestamp"),
+    depth: str = Path(description="Depth index", example=0),
+    density_adj: int = Path(description="Quiver density adjustment", example=1),
+    zoom: int = Path(example=4),
+    x: int = Path(example=0),
+    y: int = Path(example=1),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
@@ -940,9 +900,9 @@ async def quiver_tile(
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
 def topography_tiles(
-    zoom: int = Path(..., example=4),
-    x: int = Path(..., example=0),
-    y: int = Path(..., example=1),
+    zoom: int = Path(example=4),
+    x: int = Path(example=0),
+    y: int = Path(example=1),
     shaded_relief: bool = Query(default=False),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
@@ -986,9 +946,9 @@ def topography_tiles(
 
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_tiles(
-    zoom: int = Path(..., example=4),
-    x: int = Path(..., example=0),
-    y: int = Path(..., example=1),
+    zoom: int = Path(example=4),
+    x: int = Path(example=0),
+    y: int = Path(example=1),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
@@ -1031,10 +991,10 @@ async def bathymetry_tiles(
 
 @router.get("/mbt/{tiletype}/{zoom}/{x}/{y}")
 def mbt(
-    tiletype: str = Path(..., example="bath"),
-    zoom: int = Path(..., example=8),
-    x: int = Path(..., example=88),
-    y: int = Path(..., example=85),
+    tiletype: str = Path(example="bath"),
+    zoom: int = Path(example=8),
+    x: int = Path(example=88),
+    y: int = Path(example=85),
     projection: str = Query(
         default="EPSG:3857", description="EPSG projection code.", example="EPSG:3857"
     ),
@@ -1126,7 +1086,6 @@ def observation_datatypes(db: Session = Depends(get_db)):
 @router.get("/observation/meta_keys/{platform_types}.json")
 def observation_keys(
     platform_types: str = Path(
-        ...,
         title="List of platform types (comma seperated).",
         example="argo,drifter,animal,mission,glider",
     ),
@@ -1148,12 +1107,10 @@ def observation_keys(
 @router.get("/observation/meta_values/{platform_types}/{key}.json")
 def observation_values(
     platform_types: str = Path(
-        ...,
         title="List of platform types (comma seperated).",
         example="argo",
     ),
     key: str = Path(
-        ...,
         title="Metadata key",
         example="Float unique identifier",
     ),
@@ -1175,7 +1132,6 @@ def observation_values(
 @router.get("/observation/tracktimerange/{platform_id}.json")
 def observation_tracktime(
     platform_id: str = Path(
-        ...,
         title="Platform ID.",
         example="1344",
     ),
@@ -1208,7 +1164,6 @@ def observation_tracktime(
 @router.get("/observation/track/{query}.json")
 def observation_track(
     query: str = Path(
-        ...,
         title="List of key=value pairs, seperated by ;",
         example="start_date=2019-01-01;end_date=2019-06-01;quantum=year",
     ),
@@ -1314,7 +1269,6 @@ def observation_track(
 @router.get("/observation/point/{query}.json")
 def observation_point(
     query: str = Path(
-        ...,
         title="List of key=value pairs, seperated by ;",
         example=(
             "start_date=2019-01-01;end_date=2019-06-01;"
@@ -1416,12 +1370,10 @@ def observation_point(
 @router.get("/observation/meta/{key}/{id}.json")
 def observation_meta(
     key: str = Path(
-        ...,
         title="Type/Platform of observation.",
         example="station",
     ),
     id: str = Path(
-        ...,
         title="id of observation.",
         example="21831",
     ),
@@ -1459,7 +1411,6 @@ def observation_meta(
 @router.get("/observation/variables/{query}.json")
 def observation_variables(
     query: str = Path(
-        ...,
         title=" A key=value pair, where key is either station \
             or platform and value is the id.",
         example="station=356768",
