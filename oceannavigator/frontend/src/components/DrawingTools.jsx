@@ -83,4 +83,15 @@ function DrawingTools(props) {
   );
 }
 
+DrawingTools.propTypes = {
+  
+};
+
 export default withTranslation()(DrawingTools);
+
+
+// uiSettings={props.uiSettings}
+// updateUI={props.updateUI}
+// action={props.action}
+// vectorType={props.vectorType}
+// vectorCoordinates={props.vectorCoordinates}

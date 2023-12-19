@@ -125,4 +125,10 @@ function PresetFeaturesWindow(props) {
   );
 }
 
+PresetFeaturesWindow.propTypes = {
+  action: PropTypes.func,
+  
+};
+
+action={action}
 export default withTranslation()(PresetFeaturesWindow);

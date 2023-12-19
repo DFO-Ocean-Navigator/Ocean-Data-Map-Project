@@ -6,6 +6,7 @@ import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
 import { withTranslation } from "react-i18next";
+import { propTypes } from "react-bootstrap/esm/Image";
 
 function EnterCoordsWindow(props) {
   const [enteredLat, setEnteredLat] = useState("");
@@ -259,4 +260,16 @@ function EnterCoordsWindow(props) {
   );
 }
 
+EnterCoordsWindow.propTypes = {
+  action: PropTypes.func,
+  updateUI: PropTypes.func,
+  vectorType: PropTypes.string.isRequired,
+  vectorCoordinates: PropTypes.array,
+
+};
+
 export default withTranslation()(EnterCoordsWindow);
+
+
+// vectorType={vectorType}
+// vectorCoordinates={vectorCoordinates}

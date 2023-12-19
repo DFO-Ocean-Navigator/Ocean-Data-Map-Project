@@ -86,6 +86,9 @@ LocationInput.propTypes = {
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.array,
+  key: PropTypes.string,
 };
 
 export default withTranslation()(LocationInput);
+
+

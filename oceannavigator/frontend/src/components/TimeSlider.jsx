@@ -337,4 +337,13 @@ function TimeSlider(props) {
   );
 }
 
+TimeSlider.propTypes = {
+  key: PropTypes.string,
+  id:PropTypes,string,
+  dataset: PropTypes.object,
+  loading: PropTypes.bool,
+  selected: PropTypes.string,
+  onChange: PropTypes.func,
+  timestamps: PropTypes.array,
+};
 export default withTranslation()(TimeSlider);

@@ -101,6 +101,16 @@ QuiverSelector.propTypes = {
   magnitude: PropTypes.string,
   onUpdate: PropTypes.func,
   id: PropTypes.string,
+  key: PropTypes.string,
+  def: PropTypes.string,
+  dataset: PropTypes.func,
+  title: PropTypes.
+
 };
 
 export default withTranslation()(QuiverSelector);
+
+
+// def=""
+// dataset={this.state.dataset_0.id}
+// title={_("Arrows")}

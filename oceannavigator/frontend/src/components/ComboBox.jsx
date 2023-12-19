@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
-import PropTypes from "prop-types";
+import PropTypes, { string } from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
@@ -341,6 +341,8 @@ ComboBox.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
   url: PropTypes.string,
+  def: Proptypes.string,
+  key: PropTypes.string,
 };
 
 export default withTranslation()(ComboBox);

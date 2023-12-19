@@ -312,5 +312,5 @@ function TimePicker(props) {
     </InputGroup>
   );
 }
-
 export default withTranslation()(TimePicker);
+

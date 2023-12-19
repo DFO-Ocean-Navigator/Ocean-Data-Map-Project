@@ -440,6 +440,10 @@ LineWindow.propTypes = {
   action: PropTypes.func,
   swapViews: PropTypes.func,
   showHelp: PropTypes.func,
+  setCompareDatasets: PropTypes.bool,
+  updateDataset1: PropTypes.func,
+  updateDataset0: PropTypes.func,
+  // mapSettings: PropTypes.func,
 };
 
 export default withTranslation()(LineWindow);

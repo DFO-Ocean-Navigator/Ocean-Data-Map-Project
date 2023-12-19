@@ -121,6 +121,7 @@ NumberBox.propTypes = {
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.number,
+  key: PropTypes.string,
 };
 
 export default withTranslation()(NumberBox);

@@ -160,4 +160,14 @@ function MapTools(props) {
   );
 }
 
+MapTools.propTypes = {
+  action: PropTypes.func,
+  uiSettings: PropTypes.shape({
+    showModal: PropTypes.bool,
+    modalType: PropTypes.string,
+    showDrawingTools: PropTypes.bool,
+    showObservationTools: PropTypes.bool,
+  }).isRequired,
+  updateUI: PropTypes.func,
+};
 export default withTranslation()(MapTools);

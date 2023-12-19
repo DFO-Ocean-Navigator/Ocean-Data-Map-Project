@@ -82,6 +82,8 @@ CustomPlotLabels.propTypes = {
   title: PropTypes.string,
   updatePlotTitle: PropTypes.func,
   plotTitle: PropTypes.string,
+  key: PropTypes.string,
 };
 
 export default withTranslation()(CustomPlotLabels);
+// key="title"

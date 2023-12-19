@@ -609,6 +609,7 @@ function DatasetSelector(props) {
 DatasetSelector.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
+  key: PropTypes.string,
   variables: PropTypes.string,
   multipleVariables: PropTypes.bool,
   showQuiverSelector: PropTypes.bool,
@@ -619,8 +620,14 @@ DatasetSelector.propTypes = {
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.object,
+  mapSettings: PropTypes.object,
   horizontalLayout: PropTypes.bool,
+  showTimeSlider: PropTypes.bool,
 };
+// action={props.action}
+// showTimeSlider={!props.compareDatasets}
+// showCompare={props.showCompare}
+// compareDatasets={props.compareDatasets}
 
 DatasetSelector.defaultProps = {
   showQuiverSelector: true,

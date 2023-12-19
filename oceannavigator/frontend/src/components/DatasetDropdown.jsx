@@ -123,11 +123,17 @@ function DatasetDropdown(props) {
 //***********************************************************************
 DatasetDropdown.propTypes = {
   id: PropTypes.string.isRequired,
+  key: PropTypes.string,
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.object).isRequired,
   selected: PropTypes.string.isRequired,
   helpContent: PropTypes.arrayOf(PropTypes.object),
+  placeholder: PropTypes.string,
+  horizontalLayout:PropTypes.bool,
 };
 
 export default withTranslation()(DatasetDropdown);
+// key={`dataset-selector-dataset-selector-${props.id}`}
+// placeholder={__("Dataset")}
+// horizontalLayout={props.horizontalLayout}

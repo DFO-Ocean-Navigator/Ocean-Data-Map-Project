@@ -109,6 +109,10 @@ ImageSize.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
+  key: PropTypes.string,
+  // state: PropTypes.array,
 };
 
 export default withTranslation()(ImageSize);
+
+// state={this.state.size}

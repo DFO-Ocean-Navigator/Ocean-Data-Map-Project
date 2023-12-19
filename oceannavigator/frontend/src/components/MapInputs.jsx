@@ -63,4 +63,26 @@ function MapInputs(props) {
   );
 }
 
+MapInputs.propTypes = {
+  updateDataset1: PropTypes.func,
+  updateDataset0: PropTypes.func,
+  action: PropTypes.func,
+  showCompare: PropTypes.bool,
+  mapSettings: PropTypes.object,
+
+  uiSettings: PropTypes.shape({
+    showModal: PropTypes.bool,
+    modalType: PropTypes.string,
+    showDrawingTools: PropTypes.bool,
+    showObservationTools: PropTypes.bool,
+  }).isRequired,
+  updateUI: PropTypes.func,
+  compareDatasets: PropTypes.bool,
+  vectorType: PropTypes.string.isRequired,
+  vectorCoordinates: PropTypes.array.isRequired,
+};
+
+// dataset0={dataset0}
+// dataset1={dataset1}
+
 export default MapInputs;

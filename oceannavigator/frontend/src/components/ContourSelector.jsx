@@ -143,6 +143,14 @@ ContourSelector.propTypes = {
   legend: PropTypes.bool,
   onUpdate: PropTypes.func,
   id: PropTypes.string,
+  title: PropTypes.string,
+  key: PropTypes.string,
+  def: PropTypes.string,
+  dataset: PropTypes.string,
 };
 
 export default withTranslation()(ContourSelector);
+// key="contour"
+// def=""
+// dataset={this.state.dataset_0.id}
+// title={_("Additional Contours")}

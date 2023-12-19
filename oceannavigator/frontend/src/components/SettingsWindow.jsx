@@ -226,4 +226,10 @@ function SettingsWindow(props) {
   );
 }
 
+//***********************************************************************
+SettingsWindow.propTypes = {
+  mapSettings: PropTypes.object,
+  updateMapSettings: PropTypes.func,
+
+};
 export default withTranslation()(SettingsWindow);

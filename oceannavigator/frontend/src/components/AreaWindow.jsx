@@ -14,6 +14,7 @@ import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
+import { propTypes } from "react-bootstrap/esm/Image.js";
 
 class AreaWindow extends React.Component {
   constructor(props) {
@@ -463,6 +464,15 @@ AreaWindow.propTypes = {
   showHelp: PropTypes.func,
   swapViews: PropTypes.func,
   options: PropTypes.object,
+  mapSettings: PropTypes.func,
+  updateDataset0: PropTypes.func,
+  updateDataset1: PropTypes.func,
+  setCompareDatasets: PropTypes.bool,
 };
 
 export default withTranslation()(AreaWindow);
+
+// mapSettings={mapSettings}
+// updateDataset0={updateDataset0}
+// updateDataset1={updateDataset1}
+// setCompareDatasets={setCompareDatasets}

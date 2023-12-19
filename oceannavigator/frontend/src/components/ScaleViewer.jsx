@@ -78,4 +78,13 @@ function ScaleViewer(props) {
   );
 }
 
+ScaleViewer.propTypes = {
+  dataset: PropTypes.func,
+  onUpdate: PropTypes.func,
+  mapSettings: PropTypes.func,
+  mapState: PropTypes.func,
+};
+
 export default ScaleViewer;
+
+// mapState={mapState}

@@ -4,6 +4,7 @@ import { Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
+import { propTypes } from "react-bootstrap/esm/Image.js";
 
 class DepthLimit extends React.Component {
   constructor(props) {
@@ -77,6 +78,7 @@ class DepthLimit extends React.Component {
 DepthLimit.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
+  key: propTypes.string,
   state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
 };
 

@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 
 import Class4Calendar from "./calendars/Class4Calendar.jsx";
 import { GetClass4Promise } from "../remote/OceanNavigator.js";
+import { propTypes } from "react-bootstrap/esm/Image.js";
 
 function Class4Selector(props) {
   const [class4OPFiles, setClass4OPFiles] = useState([]);
@@ -70,5 +71,10 @@ function Class4Selector(props) {
     </div>
   );
 }
+//***********************************************************************
+Class4Selector.propTypes = {
+  updateUI: PropTypes.func,
+  action: PropTypes.func,
+};
 
 export default Class4Selector;

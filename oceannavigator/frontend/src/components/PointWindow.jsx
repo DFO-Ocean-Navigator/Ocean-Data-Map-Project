@@ -517,3 +517,7 @@ PointWindow.propTypes = {
 };
 
 export default withTranslation()(PointWindow);
+
+
+          // mapSettings={mapSettings}
+          // updateDataset={updateDataset0}
