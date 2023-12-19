@@ -8,7 +8,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
 from oceannavigator.dataset_config import DatasetConfig
@@ -51,10 +50,6 @@ def configure_sentry(app: FastAPI) -> None:
     SentryAsgiMiddleware(app)
 
 
-def configure_opentelemetry(app: FastAPI) -> None:
-    FastAPIInstrumentor.instrument_app(app)
-
-
 def add_routes(app: FastAPI) -> None:
     from routes.api_v2_0 import router as v2_router
 
@@ -91,7 +86,6 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware)
 
     configure_sentry(app)
-    configure_opentelemetry(app)
     configure_dask()
     configure_exception_handlers(app)
 
