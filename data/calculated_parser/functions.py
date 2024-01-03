@@ -610,13 +610,8 @@ def potentialsubsurfacechannel(
     sal = np.take(salinity, indices=range(0, depth_length), axis=depth_index)
 
     sound_speed = sspeed(depth, latitude, temp, sal)
-    # minima = np.apply_along_axis(spsignal.find_peaks, depth_index, -sound_speed)
-    # maxima = np.apply_along_axis(spsignal.find_peaks, depth_index, sound_speed)
-    # minima = np.squeeze(np.delete(minima, 1, axis=depth_index))
-    # maxima = np.squeeze(np.delete(maxima, 1, axis=depth_index))
-
     minima, maxima = find_point_extrema(sound_speed, depth_index)
- 
+
     delC = calculate_del_C(depth, sound_speed, minima, maxima, freq_cutoff, depth_index)
     hasPSSC = np.zeros_like(minima, dtype="float")
 

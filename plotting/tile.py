@@ -203,7 +203,7 @@ def scale(args):
         ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
     )
     if variable_name == "Potential Sub Surface Channel":
-        bar.set_ticks([0, 1], True)
+        bar.set_ticks([0, 1])
 
     bar.set_label(
         "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12
