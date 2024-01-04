@@ -442,7 +442,7 @@ class NetCDFData(Data):
 
                 # Perform regridding using nearest neighbour weighting
                 regridded = pyresample.kd_tree.resample_nearest(
-                    input_def, data, output_def, 50000, fill_value=None, nprocs=8
+                    input_def, data, output_def, 50000, fill_value=None
                 )
                 # Move merged axis back to front
                 regridded = np.moveaxis(regridded, -1, 0)
