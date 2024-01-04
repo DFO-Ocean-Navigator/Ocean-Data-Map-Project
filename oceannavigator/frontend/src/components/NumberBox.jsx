@@ -1,6 +1,5 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
-// import NumericInput from "react-numeric-input";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 
@@ -28,9 +27,12 @@ class NumberBox extends React.Component {
   changed(num, str) {
     clearTimeout(this.timeout);
 
-    this.setState({
-      value: num,
-    });
+    num = Number(num)
+    if (!isNaN(num)) {
+      this.setState({
+        value: num,
+      });
+    }
 
     this.timeout = setTimeout(this.updateParent, 1250);
   }
@@ -91,7 +93,7 @@ class NumberBox extends React.Component {
           </Modal.Footer>
         </Modal>
 
-        <table className="numberbox-table"> 
+        <table className="numberbox-table">
           <tbody>
             <tr>
               <td>
@@ -104,7 +106,7 @@ class NumberBox extends React.Component {
                   className="table-input"
                   type="number"
                   value={this.state.value}
-                  onChange={this.changed}
+                  onChange={(e)=>this.changed(e.target.value)}
                 />
               </td>
             </tr>
