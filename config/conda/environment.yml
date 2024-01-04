@@ -9,6 +9,7 @@ dependencies:
   - annotated-types=0.6.0=pyhd8ed1ab_0
   - anyio=4.1.0=pyhd8ed1ab_0
   - aom=3.7.1=h59595ed_0
+  - asciitree=0.3.3=py_2
   - asgiref=3.7.2=pyhd8ed1ab_0
   - asttokens=2.4.1=pyhd8ed1ab_0
   - attr=2.5.1=h166bdaf_1
@@ -37,11 +38,11 @@ dependencies:
   - bzip2=1.0.8=hd590300_5
   - c-ares=1.23.0=hd590300_0
   - c-blosc2=2.11.3=hb4ffafa_0
-  - ca-certificates=2023.12.12=h06a4308_0
+  - ca-certificates=2023.11.17=hbcca054_0
   - cachetools=5.3.2=pyhd8ed1ab_0
   - cairo=1.18.0=h3faef2a_0
   - cartopy=0.22.0=py312hfb8ada1_1
-  - certifi=2023.11.17=py312h06a4308_0
+  - certifi=2023.11.17=pyhd8ed1ab_0
   - cfitsio=4.3.1=hbdc6101_0
   - cftime=1.6.3=py312hc7c0aa3_0
   - charls=2.4.2=h59595ed_0
@@ -68,6 +69,7 @@ dependencies:
   - executing=2.0.1=pyhd8ed1ab_0
   - expat=2.5.0=hcb278e6_1
   - fastapi=0.103.0=pyhd8ed1ab_0
+  - fasteners=0.17.3=pyhd8ed1ab_0
   - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
   - font-ttf-inconsolata=3.000=h77eed37_0
   - font-ttf-source-code-pro=2.038=h77eed37_0
@@ -102,6 +104,8 @@ dependencies:
   - hdf5=1.14.3=nompi_h4f84152_100
   - holoviews=1.18.1=py312h06a4308_0
   - hpack=4.0.0=pyh9f0ad1d_0
+  - httpcore=1.0.2=pyhd8ed1ab_0
+  - httpx=0.26.0=pyhd8ed1ab_0
   - hypercorn=0.14.3=py312h7900ff3_2
   - hyperframe=6.0.1=pyhd8ed1ab_0
   - icu=73.2=h59595ed_0
@@ -234,6 +238,7 @@ dependencies:
   - networkx=3.2.1=pyhd8ed1ab_0
   - nspr=4.35=h27087fc_0
   - nss=3.95=h1d7d5a4_0
+  - numcodecs=0.12.1=py312h30efb56_0
   - numpy=1.26.2=py312heda63a1_0
   - openjpeg=2.5.0=h488ebb8_3
   - openssl=3.2.0=hd590300_1
@@ -368,6 +373,7 @@ dependencies:
   - xyzservices=2023.10.1=pyhd8ed1ab_0
   - xz=5.2.6=h166bdaf_0
   - yaml=0.2.5=h7f98852_2
+  - zarr=2.16.1=pyhd8ed1ab_0
   - zeromq=4.3.5=h59595ed_0
   - zfp=1.0.0=h59595ed_4
   - zict=3.0.0=pyhd8ed1ab_0
