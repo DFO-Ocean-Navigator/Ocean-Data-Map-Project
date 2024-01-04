@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 from PIL import Image
 from pyproj import Proj
 from pyproj.transformer import Transformer
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 from skimage import measure
 
 import plotting.colormap as colormap
