@@ -1711,6 +1711,9 @@ const MainMap = forwardRef((props, ref) => {
     }
   }
 
+  layerData0.setVisible(!props.mapSettings.hideDataLayer)
+  layerData1.setVisible(!props.mapSettings.hideDataLayer)
+
   return (
     <div className="map-container">
       <div className="title ol-popup" ref={popupElement0} />
