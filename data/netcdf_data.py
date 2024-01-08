@@ -68,7 +68,7 @@ class NetCDFData(Data):
                             self._nc_files[0],
                             decode_times=decode_times,
                         )
-                except xarray.core.variable.MissingDimensionsError:
+                except ValueError:
                     # xarray won't open FVCOM files due to dimension/coordinate/
                     # variable label duplication issue, so fall back to using
                     # netCDF4.Dataset()
@@ -88,7 +88,7 @@ class NetCDFData(Data):
                     fields = self._construct_remote_ds(url, decode_times)
                 else:
                     fields = xarray.open_mfdataset(url, decode_times=decode_times)
-            except xarray.core.variable.MissingDimensionsError:
+            except ValueError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
                 fields = netCDF4.Dataset(self.url)
@@ -876,7 +876,7 @@ class NetCDFData(Data):
                     ds = xarray.open_mfdataset(url, decode_times=False)
                 # Cache the list for later
                 self._variable_list = self._get_xarray_data_variables(ds)
-            except xarray.core.variable.MissingDimensionsError:
+            except ValueError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
                 with netCDF4.Dataset(self.url) as ds:

@@ -9,7 +9,7 @@ class PlatformSchema(BaseModel):
     unique_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PlatformMetadataSchema(BaseModel):
@@ -18,4 +18,4 @@ class PlatformMetadataSchema(BaseModel):
     value: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
