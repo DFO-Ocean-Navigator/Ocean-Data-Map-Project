@@ -3,6 +3,7 @@ import math
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
+from sqlalchemy.dialects import mysql
 from sqlalchemy import and_, func
 from sqlalchemy.orm import Session, joinedload
 
@@ -111,6 +112,7 @@ def get_platforms(
             )
             <= radDist
         )
+    print(query.distinct.statement.compile(dialect=mysql.dialect()))
 
     return query.distinct().all()
 
@@ -161,6 +163,7 @@ def get_platform_tracks(
     )
 
     query = query.group_by(Platform.id, funcs[quantum](Station.time))
+
     return query.order_by(Platform.id, funcs[quantum](Station.time)).all()
 
 
@@ -375,7 +378,87 @@ def get_stations(
     Queries for stations, givent the optional query filters.
     """
 
+    print(__build_station_query(**locals()).options(joinedload("platform")).statement.compile(dialect=mysql.dialect()))
+
     return __build_station_query(**locals()).options(joinedload("platform")).all()
+
+# updated get_station def
+def get_stations(
+    session: Session,
+    variable: Optional[str] = None,
+    mindepth: Optional[float] = None,
+    maxdepth: Optional[float] = None,
+    minlat: Optional[float] = None,
+    maxlat: Optional[float] = None,
+    minlon: Optional[float] = None,
+    maxlon: Optional[float] = None,
+    starttime: Optional[datetime.datetime] = None,
+    endtime: Optional[datetime.datetime] = None,
+    platform_types: Optional[List[Platform.Type]] = None,
+    meta_key: Optional[str] = None,
+    meta_value: Optional[str] = None,
+) -> List[Station]:
+    """
+    Queries for stations, given the optional query filters.
+    """
+
+    query = session.query(
+        Station.id,
+        Station.name,
+        Station.platform_id,
+        Station.time,
+        Station.latitude,
+        Station.longitude
+    ).with_hint(Station, "USE INDEX (idx_stations_time)")
+
+    query = query.join(Sample, Station.id == Sample.station_id)
+    query = query.join(Platform, Platform.id == Station.platform_id, isouter=True)
+
+    # if datatype_key:
+    query = query.filter(Sample.datatype_key == variable)
+    # query = query.filter(Station.time >= starttime)
+    # query = query.filter(Station.time <= endtime)
+
+    if minlat:
+        query = query.filter(Station.latitude >= minlat)
+
+    if maxlat:
+        query = query.filter(Station.latitude <= maxlat)
+
+    if minlon:
+        query = query.filter(Station.longitude >= minlon)
+
+    if maxlon:
+        query = query.filter(Station.longitude <= maxlon)
+
+    if starttime:
+        query = query.filter(Station.time >= starttime)
+
+    if endtime:
+        query = query.filter(Station.time <= endtime)
+        
+    if variable:
+        query = query.filter(Sample.datatype_key == variable)
+
+    if mindepth:
+        query = query.filter(Sample.depth >= mindepth)
+
+    if maxdepth:
+        query = query.filter(Sample.depth <= maxdepth)
+
+    if platform_types:
+        query = query.filter(Platform.type.in_(platform_types))
+
+    # Joins to PlatformMetadata
+    if meta_key is not None:
+        query = query.join(PlatformMetadata).filter(
+            and_(
+                PlatformMetadata.key == meta_key,
+                PlatformMetadata.value.ilike(f"%{meta_value}%"),
+            )
+        )
+
+    return query.all()
 
 
 def __get_bounding_latlon(lat, lon, distance):
@@ -490,6 +573,14 @@ def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
         .order_by(PlatformMetadata.key)
         .all()
     )
+    # print(
+    #     session.query(PlatformMetadata.key)
+    #     .distinct()
+    #     .join(Platform)
+    #     .filter(Platform.type.in_(platform_types))
+    #     .order_by(PlatformMetadata.key)
+    #     .statement.compile(dialect=mysql.dialect())
+    # )
     data = [item[0] for item in data]
     return data
 
@@ -508,6 +599,15 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
         .order_by(PlatformMetadata.value)
         .all()
     )
+    # print(
+    #     session.query(PlatformMetadata.value)
+    #     .distinct()
+    #     .join(Platform)
+    #     .filter(Platform.type.in_(platform_types))
+    #     .filter(PlatformMetadata.key == key)
+    #     .order_by(PlatformMetadata.value)
+    #     .statement.compile(dialect=mysql.dialect())
+    # )
     data = [item[0] for item in data]
     return data
 
@@ -516,5 +616,10 @@ def get_datatypes(session: Session) -> List[DataType]:
     """
     Queries all DataTypes in the database
     """
+    # print(
+    #     session.query(DataType)
+    #     .order_by(DataType.name)
+    #     .statement.compile(dialect=mysql.dialect())
+    # )
     datatypes = session.query(DataType).order_by(DataType.name).all()
     return datatypes
