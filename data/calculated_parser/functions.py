@@ -577,6 +577,23 @@ def potentialsubsurfacechannel(
     Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have
     a sub-surface channel
     """
+
+    def find_point_extrema(sound_speed, depth_index):
+        sound_speed_rolled = np.rollaxis(sound_speed, depth_index)
+        sound_speed_rs = sound_speed_rolled.reshape(sound_speed_rolled.shape[0], -1)
+
+        minima = np.empty(sound_speed_rs.shape[-1], dtype=object)
+        maxima = np.empty(sound_speed_rs.shape[-1], dtype=object)
+
+        for idx, row in enumerate(sound_speed_rs.transpose()):
+            minima[idx] = spsignal.find_peaks(-row)[0]
+            maxima[idx] = spsignal.find_peaks(row)[0]
+
+        minima = minima.reshape(sound_speed_rolled.shape[1:])
+        maxima = maxima.reshape(sound_speed_rolled.shape[1:])
+
+        return minima, maxima
+
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
         depth, latitude, temperature, salinity
     )
@@ -593,10 +610,7 @@ def potentialsubsurfacechannel(
     sal = np.take(salinity, indices=range(0, depth_length), axis=depth_index)
 
     sound_speed = sspeed(depth, latitude, temp, sal)
-    minima = np.apply_along_axis(spsignal.find_peaks, depth_index, -sound_speed)
-    maxima = np.apply_along_axis(spsignal.find_peaks, depth_index, sound_speed)
-    minima = np.squeeze(np.delete(minima, 1, axis=depth_index))
-    maxima = np.squeeze(np.delete(maxima, 1, axis=depth_index))
+    minima, maxima = find_point_extrema(sound_speed, depth_index)
 
     delC = calculate_del_C(depth, sound_speed, minima, maxima, freq_cutoff, depth_index)
     hasPSSC = np.zeros_like(minima, dtype="float")

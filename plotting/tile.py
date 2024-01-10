@@ -12,7 +12,7 @@ from netCDF4 import Dataset
 from PIL import Image
 from pyproj import Proj
 from pyproj.transformer import Transformer
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 from skimage import measure
 
 import plotting.colormap as colormap
@@ -203,7 +203,7 @@ def scale(args):
         ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
     )
     if variable_name == "Potential Sub Surface Channel":
-        bar.set_ticks([0, 1], True)
+        bar.set_ticks([0, 1])
 
     bar.set_label(
         "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12

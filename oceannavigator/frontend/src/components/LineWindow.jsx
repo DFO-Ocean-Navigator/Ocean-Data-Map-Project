@@ -176,7 +176,7 @@ class LineWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                this.props.dataset_0.variable == this.props.dataset_1.variable
+                  this.props.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
@@ -246,7 +246,7 @@ class LineWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                this.props.dataset_0.variable == this.props.dataset_1.variable
+                  this.props.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
@@ -367,7 +367,7 @@ class LineWindow extends React.Component {
         plot_query.depth_limit = this.state.depth_limit;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
-          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to = { ...this.props.dataset_1 };
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
@@ -382,7 +382,7 @@ class LineWindow extends React.Component {
         plot_query.starttime = this.props.dataset_0.starttime;
         plot_query.depth = this.props.dataset_0.depth;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to = { ...this.props.dataset_1 };
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;

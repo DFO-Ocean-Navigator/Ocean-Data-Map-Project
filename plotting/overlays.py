@@ -7,7 +7,7 @@ from pathlib import Path
 from cachetools import LRUCache
 from netCDF4 import Dataset
 from pyresample.utils import wrap_longitudes
-from scipy.ndimage.filters import gaussian_filter
+from scipy.ndimage import gaussian_filter
 
 from oceannavigator.settings import get_settings
 

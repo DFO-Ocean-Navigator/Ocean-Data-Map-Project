@@ -25,3 +25,17 @@
   flex-direction: column;
   justify-content: flex-start;
 }
+
+.hide-data-button {
+  position: absolute;
+  top: 0px;
+  right: calc(5%);
+  height: 20px;
+  width: 20px;
+  justify-content: center;
+  display: flex;
+}
+
+.hide-data-button-compare {
+  right: calc(50.5%) !important;
+}
