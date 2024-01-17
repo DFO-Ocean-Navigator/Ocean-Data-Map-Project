@@ -112,7 +112,6 @@ def get_platforms(
             )
             <= radDist
         )
-    print(query.distinct.statement.compile(dialect=mysql.dialect()))
 
     return query.distinct().all()
 
@@ -359,30 +358,8 @@ def __build_station_query(
     return query.distinct()
 
 
-def get_stations(
-    session: Session,
-    variable: Optional[str] = None,
-    mindepth: Optional[float] = None,
-    maxdepth: Optional[float] = None,
-    minlat: Optional[float] = None,
-    maxlat: Optional[float] = None,
-    minlon: Optional[float] = None,
-    maxlon: Optional[float] = None,
-    starttime: Optional[datetime.datetime] = None,
-    endtime: Optional[datetime.datetime] = None,
-    platform_types: Optional[List[Platform.Type]] = None,
-    meta_key: Optional[str] = None,
-    meta_value: Optional[str] = None,
-) -> List[Station]:
-    """
-    Queries for stations, givent the optional query filters.
-    """
-
-    print(__build_station_query(**locals()).options(joinedload("platform")).statement.compile(dialect=mysql.dialect()))
-
-    return __build_station_query(**locals()).options(joinedload("platform")).all()
-
 # updated get_station def
+
 def get_stations(
     session: Session,
     variable: Optional[str] = None,
@@ -462,7 +439,7 @@ def get_stations(
 
 
 def __get_bounding_latlon(lat, lon, distance):
-    # angular distance in radians on a great circle
+    # angular di      stance in radians on a great circle
     radDist = distance / EARTH_RADIUS
 
     minLat = math.radians(lat) - radDist
@@ -573,14 +550,7 @@ def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
         .order_by(PlatformMetadata.key)
         .all()
     )
-    # print(
-    #     session.query(PlatformMetadata.key)
-    #     .distinct()
-    #     .join(Platform)
-    #     .filter(Platform.type.in_(platform_types))
-    #     .order_by(PlatformMetadata.key)
-    #     .statement.compile(dialect=mysql.dialect())
-    # )
+
     data = [item[0] for item in data]
     return data
 
@@ -599,15 +569,7 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
         .order_by(PlatformMetadata.value)
         .all()
     )
-    # print(
-    #     session.query(PlatformMetadata.value)
-    #     .distinct()
-    #     .join(Platform)
-    #     .filter(Platform.type.in_(platform_types))
-    #     .filter(PlatformMetadata.key == key)
-    #     .order_by(PlatformMetadata.value)
-    #     .statement.compile(dialect=mysql.dialect())
-    # )
+
     data = [item[0] for item in data]
     return data
 
@@ -616,10 +578,5 @@ def get_datatypes(session: Session) -> List[DataType]:
     """
     Queries all DataTypes in the database
     """
-    # print(
-    #     session.query(DataType)
-    #     .order_by(DataType.name)
-    #     .statement.compile(dialect=mysql.dialect())
-    # )
     datatypes = session.query(DataType).order_by(DataType.name).all()
     return datatypes
