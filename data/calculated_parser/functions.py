@@ -8,6 +8,7 @@ import numpy as np
 import numpy.ma
 import scipy.signal as spsignal
 import seawater
+import gsw
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
@@ -120,9 +121,9 @@ def unstaggered_speed(u_vel, v_vel):
 def __calc_pressure(depth, latitude):
     pressure = []
     try:
-        pressure = [seawater.pres(d, latitude) for d in depth]
+        pressure = [gsw.conversions.p_from_z(d,latitude) for d in depth]
     except TypeError:
-        pressure = seawater.pres(depth, latitude)
+        pressure = gsw.conversions.p_from_z(depth,latitude)
 
     return np.array(pressure)
 
@@ -178,8 +179,8 @@ def oxygensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarra
     * temperature: temperature values in Celsius.
     * salinity: salinity values.
     """
-
-    return seawater.satO2(salinity, temperature)
+    
+    return gsw.O2sol_SP_pt(salinity, temperature)
 
 
 def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarray:
@@ -193,6 +194,7 @@ def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndar
     * salinity: salinity values.
     """
 
+    # 01/19/2024 gsw-python has not brought over N2sol yet
     return seawater.satN2(salinity, temperature)
 
 
@@ -227,7 +229,7 @@ def sspeed(
             if ax > press.ndim - 1 or press.shape[ax] != val:
                 press = np.expand_dims(press, axis=ax)
 
-    speed = seawater.svel(salinity, temperature, press)
+    speed = gsw.sound_speed(salinity, temperature, press)
     return np.squeeze(speed)
 
 
@@ -244,7 +246,7 @@ def density(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    density = seawater.dens(salinity, temperature, press)
+    density = gsw.density.rho(salinity, temperature, press)
     return np.array(density)
 
 
@@ -261,7 +263,7 @@ def heatcap(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    heatcap = seawater.cp(salinity, temperature, press)
+    heatcap = gsw.cp_t_exact(salinity, temperature, press)
     return np.array(heatcap)
 
 

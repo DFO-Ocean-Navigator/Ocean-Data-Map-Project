@@ -5,7 +5,7 @@ import os
 
 import defopt
 import pandas as pd
-import seawater
+import gsw
 import xarray as xr
 
 import data.observational
@@ -72,7 +72,7 @@ def main(uri: str, filename: str):
             p.stations.append(s)
             data.observational.db.session.commit()
 
-            ds["level"] = seawater.dpth(ds.level.values, ds.latitude[0].values)
+            ds["level"] = gsw.conversions.z_from_p(ds.level.values, ds.latitude[0].values)
 
             # Generate the samples
             for var, dt in datatype_map.items():
