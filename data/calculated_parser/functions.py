@@ -7,7 +7,6 @@ import metpy.calc
 import numpy as np
 import numpy.ma
 import scipy.signal as spsignal
-import seawater
 import gsw
 import xarray as xr
 from metpy.units import units
@@ -194,8 +193,34 @@ def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndar
     * salinity: salinity values.
     """
 
-    # 01/19/2024 gsw-python has not brought over N2sol yet
-    return seawater.satN2(salinity, temperature)
+    # 01/19/2024 gsw-python has not brought over N2sol from MATLAB
+    ##########################################################
+    ## Calculation taken from gsw matlab: gsw_N2sol_SP_pt.m ##
+    transposed = False
+    if len(salinity) == 1:
+        temperature = np.transpose(temperature)
+        salinity = np.transpose(salinity)
+        transposed = True
+    x = salinity
+    T0 = 273.15
+    y = np.log((298.15 - temperature)/(T0 + temperature))
+    # The coefficents below are from Table 4 of Hamme and Emerson (2004)
+    a0 = 6.42931
+    a1 = 2.92704
+    a2 = 4.32531
+    a3 = 4.69149
+    b0 = -7.44129e-3
+    b1 = -8.02566e-3
+    b2 = -1.46775e-2
+
+    N2sol = np.exp(a0 + y*(a1 + y*(a2 + a3*y)) + x*(b0 + y*(b1 + b2*y)))
+
+    if transposed:
+        N2sol = np.transpose(N2sol)
+
+    return N2sol
+
+    ##########################################################
 
 
 def sspeed(
@@ -284,7 +309,8 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    tempgradient = seawater.adtg(salinity, temperature, press)
+    tempgradient = gsw.adiabatic_lapse_rate_from_CT(salinity, temperature, press)
+    # K/Pa
     return np.array(tempgradient)
 
 
