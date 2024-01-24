@@ -344,7 +344,6 @@ https://conda.anaconda.org/conda-forge/noarch/pydantic-2.5.2-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pykdtree-1.3.10-py312hc7c0aa3_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pywavelets-1.4.1-py312hc7c0aa3_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/scipy-1.11.4-py312heda63a1_0.conda
-https://conda.anaconda.org/conda-forge/noarch/seawater-3.3.4-py_1.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/shapely-2.0.2-py312h9e6bd2c_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/aws-sdk-cpp-1.11.210-h967ea9e_4.conda
 https://conda.anaconda.org/conda-forge/noarch/bokeh-3.3.2-pyhd8ed1ab_0.conda
