@@ -97,6 +97,7 @@ dependencies:
   - greenlet=3.0.2=py312h30efb56_0
   - gst-plugins-base=1.22.7=h8e1006c_1
   - gstreamer=1.22.7=h98fc4e7_1
+  - gsw=3.6.17=py312hc7c0aa3_1
   - h11=0.14.0=pyhd8ed1ab_0
   - h2=4.1.0=pyhd8ed1ab_0
   - harfbuzz=8.3.0=h3d44ed6_0
@@ -382,7 +383,7 @@ dependencies:
   - zlib-ng=2.0.7=h0b41bf4_0
   - zstd=1.5.5=hfc55251_0
   - pip:
-    - pydantic-settings==2.1.0
-    - python-dotenv==1.0.0
-    - visvalingamwyatt==0.2.0
-prefix: /home/ubuntu/onav-cloud/tools/miniconda/envs/navigator
+      - pydantic-settings==2.1.0
+      - python-dotenv==1.0.0
+      - visvalingamwyatt==0.2.0
+prefix: /home/ubuntu/onav-cloud/tools/miniconda/3/amd64/envs/navigator

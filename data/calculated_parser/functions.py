@@ -120,15 +120,14 @@ def unstaggered_speed(u_vel, v_vel):
 def __calc_pressure(depth, latitude):
     pressure = []
     try:
-        pressure = [gsw.conversions.p_from_z(d,latitude) for d in depth]
+        pressure = [gsw.conversions.p_from_z(d, latitude) for d in depth]
     except TypeError:
-        pressure = gsw.conversions.p_from_z(depth,latitude)
+        pressure = gsw.conversions.p_from_z(depth, latitude)
 
     return np.array(pressure)
 
 
 def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
-
     if type(depth) is not np.ndarray:
         depth = np.array(depth)
 
@@ -145,7 +144,6 @@ def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
 
 
 def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-
     if not np.ma.is_masked(data):
         # Mask out NaN values to prevent an exception blow-up.
         masked = np.ma.masked_array(data, np.isnan(data))
@@ -157,7 +155,6 @@ def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarra
 
 
 def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-
     if not np.ma.is_masked(data):
         # Mask out NaN values to prevent an exception blow-up.
         masked = np.ma.masked_array(data, np.isnan(data))
@@ -178,7 +175,7 @@ def oxygensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarra
     * temperature: temperature values in Celsius.
     * salinity: salinity values.
     """
-    
+
     return gsw.O2sol_SP_pt(salinity, temperature)
 
 
@@ -203,7 +200,7 @@ def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndar
         transposed = True
     x = salinity
     T0 = 273.15
-    y = np.log((298.15 - temperature)/(T0 + temperature))
+    y = np.log((298.15 - temperature) / (T0 + temperature))
     # The coefficents below are from Table 4 of Hamme and Emerson (2004)
     a0 = 6.42931
     a1 = 2.92704
@@ -213,7 +210,7 @@ def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndar
     b1 = -8.02566e-3
     b2 = -1.46775e-2
 
-    N2sol = np.exp(a0 + y*(a1 + y*(a2 + a3*y)) + x*(b0 + y*(b1 + b2*y)))
+    N2sol = np.exp(a0 + y * (a1 + y * (a2 + a3 * y)) + x * (b0 + y * (b1 + b2 * y)))
 
     if transposed:
         N2sol = np.transpose(N2sol)
@@ -329,7 +326,6 @@ def __get_soniclayerdepth_mask(
 def __soniclayerdepth_from_sound_speed(
     soundspeed: np.ndarray, depth: np.ndarray
 ) -> np.ndarray:
-
     min_indices = __find_depth_index_of_min_value(soundspeed)
 
     mask = __get_soniclayerdepth_mask(soundspeed, min_indices)

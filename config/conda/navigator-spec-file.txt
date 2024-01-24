@@ -327,6 +327,7 @@ https://conda.anaconda.org/conda-forge/noarch/colorspacious-1.1.2-pyh24bf2e0_0.t
 https://conda.anaconda.org/conda-forge/linux-64/contourpy-1.2.0-py312h8572e83_0.conda
 https://conda.anaconda.org/conda-forge/noarch/dask-core-2023.12.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/gst-plugins-base-1.22.7-h8e1006c_1.conda
+https://conda.anaconda.org/conda-forge/linux-64/gsw-3.6.17-py312hc7c0aa3_1.conda
 https://conda.anaconda.org/conda-forge/noarch/httpx-0.26.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/hypercorn-0.14.3-py312h7900ff3_2.conda
 https://conda.anaconda.org/conda-forge/linux-64/imagecodecs-2023.9.18-py312ha6884dc_2.conda
