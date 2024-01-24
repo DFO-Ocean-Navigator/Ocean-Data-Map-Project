@@ -27,9 +27,9 @@ def generatePython(url: str, plot_type: str, script_Type: str) -> BytesIO:
         template = str(f.read())
 
         if script_Type == "plot":
-            template = template.format(q=query, p=plot_type, var=var, f=fname+' + ".png"')
+            template = template.format(q=query, p=plot_type, var=var, f=fname)
         elif script_Type == "csv":
-            template = template.format(q=query, p=plot_type, var=var, f=fname+' + ".csv"')
+            template = template.format(q=query, p=plot_type, var=var, f=fname)
         else:
             template = template.format(q=query, var=var, f=fname)
 

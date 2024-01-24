@@ -21,14 +21,14 @@ def requestFile():
 
    # Assemble full request
    base_url = "https://navigator.oceansdata.ca/api/v2.0/plot/{p}?"
-   url = base_url + urlencode({"query": json.dumps(query)}) + "&format=png&size=10x7&dpi=" + str(dpi)
+   url = base_url + urlencode({{"query": json.dumps(query)}}) + "&format=png&size=10x7&dpi=" + str(dpi)
    print(url)
 
 
    #Open URL and save response
    with closing(urlopen(url)) as f:
       img = Image.open(f)
-      fname = {f}
+      fname = {f} + ".png"
       print("Saving as " + fname + " and exiting...")
       img.save(fname , "PNG")
 
