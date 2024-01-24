@@ -3,7 +3,7 @@ import re
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
-import seawater
+import gsw
 
 import plotting.utils as utils
 from data import open_dataset
@@ -117,7 +117,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         for j in range(0, int(ydim)):
             for i in range(0, int(xdim)):
-                dens[j, i] = seawater.dens(si[i], ti[j], 0)
+                dens[j, i] = gsw.density.rho(si[i], ti[j], 0)
 
         dens -= 1000
 
