@@ -23,7 +23,13 @@ function AxisRange(props) {
   }, [min, max]);
 
   const updateParent = (newRange) => {
-    props.onUpdate("variable_range", [props.variable, newRange]);
+    if (auto) {
+      props.onUpdate("variable_range", [props.variable, null]);
+    }
+    else {
+      props.onUpdate("variable_range", [props.variable, newRange]);
+    }
+    
   };
 
   const changed = (key, e) => {
