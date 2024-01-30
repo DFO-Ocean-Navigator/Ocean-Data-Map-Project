@@ -437,7 +437,6 @@ function OceanNavigator(props) {
       modalTitle = __("Info/Help");
       break;
   }
-  console.log(dataset0)
   return (
     <div className="OceanNavigator">
       <ScaleViewer
