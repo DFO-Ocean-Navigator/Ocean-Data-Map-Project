@@ -285,16 +285,16 @@ function OceanNavigator(props) {
   const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
-    if (subquery !== undefined) {
-      query.subquery = subquery;
-      query.showModal = true;
-      query.modalType = uiSettings.modalType;
-      query.names = names;
-      query.vectorId = vectorId;
-      query.vectorType = vectorType;
-      query.vectorCoordinates = vectorCoordinates;
-      query.selectedCoordinates = selectedCoordinates;
-    }
+  
+    query.subquery = subquery;
+    query.showModal = uiSettings.showModal;
+    query.modalType = uiSettings.modalType;
+    query.names = names;
+    query.vectorId = vectorId;
+    query.vectorType = vectorType;
+    query.vectorCoordinates = vectorCoordinates;
+    query.selectedCoordinates = selectedCoordinates;
+    
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
@@ -437,7 +437,7 @@ function OceanNavigator(props) {
       modalTitle = __("Info/Help");
       break;
   }
-
+  console.log(dataset0)
   return (
     <div className="OceanNavigator">
       <ScaleViewer
