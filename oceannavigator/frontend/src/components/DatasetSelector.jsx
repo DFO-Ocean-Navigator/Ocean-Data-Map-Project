@@ -79,7 +79,7 @@ function DatasetSelector(props) {
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
         let newVariable = currentVariable;
-        let newVariableScale = dataset.variable_scale;
+        let newVariableScale = props.mountedDataset.variable_scale;
         let variable_range = {};
         variable_range[newVariable] = null;
         let interpType = props.mapSettings.interpType;
