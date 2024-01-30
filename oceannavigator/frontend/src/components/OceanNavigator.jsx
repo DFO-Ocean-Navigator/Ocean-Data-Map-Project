@@ -510,9 +510,7 @@ function OceanNavigator(props) {
         backdrop={true}
       >
         <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
-          <Modal.Title>
-            <Icon icon="link" alt={"Share Link"} /> {__("Share Link")}
-          </Modal.Title>
+          <Modal.Title>{__("Share Link")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Permalink
@@ -522,9 +520,7 @@ function OceanNavigator(props) {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => setShowPermalink(false)}>
-            <Icon icon="close" alt={__("Close")} /> {__("Close")}
-          </Button>
+          <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
     </div>

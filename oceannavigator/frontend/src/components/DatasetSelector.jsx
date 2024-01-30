@@ -34,9 +34,7 @@ function DatasetSelector(props) {
   const [datasetTimestamps, setDatasetTimestamps] = useState([]);
   const [datasetDepths, setDatasetDepths] = useState([]);
   const [options, setOptions] = useState(props.options);
-  const [dataset, setDataset] = useState(
-    props.mountedDataset ? props.mountedDataset : DATASET_DEFAULTS
-  );
+  const [dataset, setDataset] = useState(props.mountedDataset);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
 
@@ -48,12 +46,7 @@ function DatasetSelector(props) {
 
   useEffect(() => {
     if (availableDatasets.length > 0) {
-      if (props.mountedDataset) {
-        changeDataset(props.mountedDataset.id, props.mountedDataset.variable);
-      } else {
-        // Use defaults in DATASET_DEFAULTS
-        changeDataset(dataset.id, dataset.variable, true);
-      }
+      changeDataset(props.mountedDataset.id, props.mountedDataset.variable);
     }
   }, [availableDatasets]);
 

@@ -74,6 +74,7 @@ function MapInputs(props) {
             <DatasetSelector
               key="map_inputs_dataset_1"
               id="dataset_1"
+              mountedDataset={props.dataset1}
               onUpdate={props.updateDataset1}
               mapSettings={props.mapSettings}
               action={props.action}
