@@ -327,6 +327,7 @@ https://conda.anaconda.org/conda-forge/noarch/colorspacious-1.1.2-pyh24bf2e0_0.t
 https://conda.anaconda.org/conda-forge/linux-64/contourpy-1.2.0-py312h8572e83_0.conda
 https://conda.anaconda.org/conda-forge/noarch/dask-core-2023.12.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/gst-plugins-base-1.22.7-h8e1006c_1.conda
+https://conda.anaconda.org/conda-forge/linux-64/gsw-3.6.17-py312hc7c0aa3_1.conda
 https://conda.anaconda.org/conda-forge/noarch/httpx-0.26.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/hypercorn-0.14.3-py312h7900ff3_2.conda
 https://conda.anaconda.org/conda-forge/linux-64/imagecodecs-2023.9.18-py312ha6884dc_2.conda
@@ -343,7 +344,6 @@ https://conda.anaconda.org/conda-forge/noarch/pydantic-2.5.2-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pykdtree-1.3.10-py312hc7c0aa3_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pywavelets-1.4.1-py312hc7c0aa3_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/scipy-1.11.4-py312heda63a1_0.conda
-https://conda.anaconda.org/conda-forge/noarch/seawater-3.3.4-py_1.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/shapely-2.0.2-py312h9e6bd2c_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/aws-sdk-cpp-1.11.210-h967ea9e_4.conda
 https://conda.anaconda.org/conda-forge/noarch/bokeh-3.3.2-pyhd8ed1ab_0.conda
