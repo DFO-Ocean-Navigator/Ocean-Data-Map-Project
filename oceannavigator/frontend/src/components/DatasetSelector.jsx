@@ -46,7 +46,7 @@ function DatasetSelector(props) {
 
   useEffect(() => {
     if (availableDatasets.length > 0) {
-      changeDataset(props.mountedDataset.id, props.mountedDataset.variable);
+      changeDataset(props.mountedDataset.id, props.mountedDataset.variable, true);
     }
   }, [availableDatasets]);
 
