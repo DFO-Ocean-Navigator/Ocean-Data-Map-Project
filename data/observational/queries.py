@@ -400,7 +400,7 @@ def get_stations(
 
 
 def __get_bounding_latlon(lat, lon, distance):
-    # angular di      stance in radians on a great circle
+    # angular distance in radians on a great circle
     radDist = distance / EARTH_RADIUS
 
     minLat = math.radians(lat) - radDist
