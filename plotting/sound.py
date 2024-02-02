@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import numpy as np
 import pint
-import seawater
+import gsw
 
 import plotting.utils as utils
 from plotting.ts import TemperatureSalinityPlotter
@@ -19,7 +19,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         super(SoundSpeedPlotter, self).load_data()
 
         self.pressure = [
-            seawater.pres(self.temperature_depths[idx], ll[0])
+            gsw.conversions.p_from_z(self.temperature_depths[idx], ll[0])
             for idx, ll in enumerate(self.points)
         ]
 
@@ -39,7 +39,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         else:
             temperature_c = self.temperature
 
-        self.sspeed = seawater.svel(self.salinity, temperature_c, self.pressure)
+        self.sspeed = gsw.sound_speed(self.salinity, temperature_c, self.pressure)
 
     def plot(self):
         # Create base figure
