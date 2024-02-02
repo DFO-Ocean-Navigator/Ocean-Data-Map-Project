@@ -3,7 +3,6 @@ import math
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
-from sqlalchemy.dialects import mysql
 from sqlalchemy import and_, func
 from sqlalchemy.orm import Session, joinedload
 
@@ -329,6 +328,9 @@ def __build_station_query(
 ):
     query = session.query(Station)
 
+    # Use index hint
+    query = query.with_hint(Station, "USE INDEX (idx_stations_time)")
+
     # Joins to Sample
     if variable is not None or mindepth is not None or maxdepth is not None:
         query = __add_sample_filters(
@@ -358,8 +360,6 @@ def __build_station_query(
     return query.distinct()
 
 
-# updated get_station def
-
 def get_stations(
     session: Session,
     variable: Optional[str] = None,
@@ -378,64 +378,25 @@ def get_stations(
     """
     Queries for stations, given the optional query filters.
     """
-
-    query = session.query(
-        Station.id,
-        Station.name,
-        Station.platform_id,
-        Station.time,
-        Station.latitude,
-        Station.longitude
-    ).with_hint(Station, "USE INDEX (idx_stations_time)")
-
-    query = query.join(Sample, Station.id == Sample.station_id)
-    query = query.join(Platform, Platform.id == Station.platform_id, isouter=True)
-
-    # if datatype_key:
-    query = query.filter(Sample.datatype_key == variable)
-    # query = query.filter(Station.time >= starttime)
-    # query = query.filter(Station.time <= endtime)
-
-    if minlat:
-        query = query.filter(Station.latitude >= minlat)
-
-    if maxlat:
-        query = query.filter(Station.latitude <= maxlat)
-
-    if minlon:
-        query = query.filter(Station.longitude >= minlon)
-
-    if maxlon:
-        query = query.filter(Station.longitude <= maxlon)
-
-    if starttime:
-        query = query.filter(Station.time >= starttime)
-
-    if endtime:
-        query = query.filter(Station.time <= endtime)
-        
-    if variable:
-        query = query.filter(Sample.datatype_key == variable)
-
-    if mindepth:
-        query = query.filter(Sample.depth >= mindepth)
-
-    if maxdepth:
-        query = query.filter(Sample.depth <= maxdepth)
-
-    if platform_types:
-        query = query.filter(Platform.type.in_(platform_types))
-
-    # Joins to PlatformMetadata
-    if meta_key is not None:
-        query = query.join(PlatformMetadata).filter(
-            and_(
-                PlatformMetadata.key == meta_key,
-                PlatformMetadata.value.ilike(f"%{meta_value}%"),
-            )
+    return (
+        __build_station_query(
+            session=session,
+            variable=variable,
+            mindepth=mindepth,
+            maxdepth=maxdepth,
+            minlat=minlat,
+            maxlat=maxlat,
+            minlon=minlon,
+            maxlon=maxlon,
+            starttime=starttime,
+            endtime=endtime,
+            platform_types=platform_types,
+            meta_key=meta_key,
+            meta_value=meta_value,
         )
-
-    return query.all()
+        .join(Platform)
+        .all()
+    )
 
 
 def __get_bounding_latlon(lat, lon, distance):
@@ -457,7 +418,6 @@ def __get_bounding_latlon(lat, lon, distance):
         maxLon = math.radians(lon) + deltaLon
         if maxLon > math.pi:
             maxLon -= 2.0 * math.pi
-
         else:
             # a pole is within the distance
             minLat = max(minLat, -math.pi / 2.0)
