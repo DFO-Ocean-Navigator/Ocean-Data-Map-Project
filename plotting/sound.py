@@ -19,7 +19,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         super(SoundSpeedPlotter, self).load_data()
 
         self.pressure = [
-            gsw.conversions.p_from_z(self.temperature_depths[idx], ll[0])
+            gsw.conversions.p_from_z(-self.temperature_depths[idx], ll[0])
             for idx, ll in enumerate(self.points)
         ]
 
