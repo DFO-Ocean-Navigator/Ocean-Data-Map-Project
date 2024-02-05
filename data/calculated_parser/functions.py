@@ -7,7 +7,7 @@ import metpy.calc
 import numpy as np
 import numpy.ma
 import scipy.signal as spsignal
-import seawater
+import gsw
 import xarray as xr
 from metpy.units import units
 from pint import UnitRegistry
@@ -120,15 +120,14 @@ def unstaggered_speed(u_vel, v_vel):
 def __calc_pressure(depth, latitude):
     pressure = []
     try:
-        pressure = [seawater.pres(d, latitude) for d in depth]
+        pressure = [gsw.conversions.p_from_z(d, latitude) for d in depth]
     except TypeError:
-        pressure = seawater.pres(depth, latitude)
+        pressure = gsw.conversions.p_from_z(depth, latitude)
 
     return np.array(pressure)
 
 
 def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
-
     if type(depth) is not np.ndarray:
         depth = np.array(depth)
 
@@ -145,7 +144,6 @@ def __validate_depth_lat_temp_sal(depth, latitude, temperature, salinity):
 
 
 def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-
     if not np.ma.is_masked(data):
         # Mask out NaN values to prevent an exception blow-up.
         masked = np.ma.masked_array(data, np.isnan(data))
@@ -157,7 +155,6 @@ def __find_depth_index_of_min_value(data: np.ndarray, depth_axis=0) -> np.ndarra
 
 
 def __find_depth_index_of_max_value(data: np.ndarray, depth_axis=0) -> np.ndarray:
-
     if not np.ma.is_masked(data):
         # Mask out NaN values to prevent an exception blow-up.
         masked = np.ma.masked_array(data, np.isnan(data))
@@ -179,7 +176,7 @@ def oxygensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarra
     * salinity: salinity values.
     """
 
-    return seawater.satO2(salinity, temperature)
+    return gsw.O2sol_SP_pt(salinity, temperature)
 
 
 def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndarray:
@@ -193,7 +190,34 @@ def nitrogensaturation(temperature: np.ndarray, salinity: np.ndarray) -> np.ndar
     * salinity: salinity values.
     """
 
-    return seawater.satN2(salinity, temperature)
+    # 01/19/2024 gsw-python has not brought over N2sol from MATLAB
+    ##########################################################
+    ## Calculation taken from gsw matlab: gsw_N2sol_SP_pt.m ##
+    transposed = False
+    if len(salinity) == 1:
+        temperature = np.transpose(temperature)
+        salinity = np.transpose(salinity)
+        transposed = True
+    x = salinity
+    T0 = 273.15
+    y = np.log((298.15 - temperature) / (T0 + temperature))
+    # The coefficents below are from Table 4 of Hamme and Emerson (2004)
+    a0 = 6.42931
+    a1 = 2.92704
+    a2 = 4.32531
+    a3 = 4.69149
+    b0 = -7.44129e-3
+    b1 = -8.02566e-3
+    b2 = -1.46775e-2
+
+    N2sol = np.exp(a0 + y * (a1 + y * (a2 + a3 * y)) + x * (b0 + y * (b1 + b2 * y)))
+
+    if transposed:
+        N2sol = np.transpose(N2sol)
+
+    return N2sol
+
+    ##########################################################
 
 
 def sspeed(
@@ -227,7 +251,7 @@ def sspeed(
             if ax > press.ndim - 1 or press.shape[ax] != val:
                 press = np.expand_dims(press, axis=ax)
 
-    speed = seawater.svel(salinity, temperature, press)
+    speed = gsw.sound_speed(salinity, temperature, press)
     return np.squeeze(speed)
 
 
@@ -244,7 +268,7 @@ def density(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    density = seawater.dens(salinity, temperature, press)
+    density = gsw.density.rho(salinity, temperature, press)
     return np.array(density)
 
 
@@ -261,7 +285,7 @@ def heatcap(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    heatcap = seawater.cp(salinity, temperature, press)
+    heatcap = gsw.cp_t_exact(salinity, temperature, press)
     return np.array(heatcap)
 
 
@@ -282,7 +306,8 @@ def tempgradient(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
-    tempgradient = seawater.adtg(salinity, temperature, press)
+    tempgradient = gsw.adiabatic_lapse_rate_from_CT(salinity, temperature, press)
+    # K/Pa
     return np.array(tempgradient)
 
 
@@ -301,7 +326,6 @@ def __get_soniclayerdepth_mask(
 def __soniclayerdepth_from_sound_speed(
     soundspeed: np.ndarray, depth: np.ndarray
 ) -> np.ndarray:
-
     min_indices = __find_depth_index_of_min_value(soundspeed)
 
     mask = __get_soniclayerdepth_mask(soundspeed, min_indices)
@@ -577,6 +601,23 @@ def potentialsubsurfacechannel(
     Returns 1 if the profile has a sub-surface channel, 0 if the profile does not have
     a sub-surface channel
     """
+
+    def find_point_extrema(sound_speed, depth_index):
+        sound_speed_rolled = np.rollaxis(sound_speed, depth_index)
+        sound_speed_rs = sound_speed_rolled.reshape(sound_speed_rolled.shape[0], -1)
+
+        minima = np.empty(sound_speed_rs.shape[-1], dtype=object)
+        maxima = np.empty(sound_speed_rs.shape[-1], dtype=object)
+
+        for idx, row in enumerate(sound_speed_rs.transpose()):
+            minima[idx] = spsignal.find_peaks(-row)[0]
+            maxima[idx] = spsignal.find_peaks(row)[0]
+
+        minima = minima.reshape(sound_speed_rolled.shape[1:])
+        maxima = maxima.reshape(sound_speed_rolled.shape[1:])
+
+        return minima, maxima
+
     depth, latitude, temperature, salinity = __validate_depth_lat_temp_sal(
         depth, latitude, temperature, salinity
     )
@@ -593,10 +634,7 @@ def potentialsubsurfacechannel(
     sal = np.take(salinity, indices=range(0, depth_length), axis=depth_index)
 
     sound_speed = sspeed(depth, latitude, temp, sal)
-    minima = np.apply_along_axis(spsignal.find_peaks, depth_index, -sound_speed)
-    maxima = np.apply_along_axis(spsignal.find_peaks, depth_index, sound_speed)
-    minima = np.squeeze(np.delete(minima, 1, axis=depth_index))
-    maxima = np.squeeze(np.delete(maxima, 1, axis=depth_index))
+    minima, maxima = find_point_extrema(sound_speed, depth_index)
 
     delC = calculate_del_C(depth, sound_speed, minima, maxima, freq_cutoff, depth_index)
     hasPSSC = np.zeros_like(minima, dtype="float")

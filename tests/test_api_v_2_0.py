@@ -26,10 +26,13 @@ class TestAPIv2:
     def test_generate_script(self) -> None:
         for lang in e.ScriptLang:
             for script_type in e.ScriptType:
-
                 response = self.client.get(
                     "/api/v2.0/generate_script",
-                    params={"query": "", "lang": lang, "script_type": script_type},
+                    params={
+                        "query": "",
+                        "lang": lang.value,
+                        "script_type": script_type.value,
+                    },
                 )
 
                 assert response.status_code == 200
@@ -163,7 +166,6 @@ class TestAPIv2:
         assert data[0]["value"] == "2014-05-17T00:00:00+00:00"
 
     def test_timestamps_endpoint_xarray(self):
-
         response = self.client.get("/api/v2.0/dataset/giops/votemper/timestamps")
         data = json.loads(response.content)
 
@@ -208,14 +210,12 @@ class TestAPIv2:
         assert response.status_code == 200
 
     def test_subset_endpoint(self):
-
         response = self.client.get(self.api_links["subset"])
 
         assert response.status_code == 200
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_plot_map_endpoint(self):
-
         response = self.client.get(self.api_links["plot_map"])
         assert response.status_code == 200
 
@@ -233,7 +233,6 @@ class TestAPIv2:
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_plot_transect_endpoint(self):
-
         response = self.client.get(self.api_links["plot_transect"])
         assert response.status_code == 200
 
@@ -244,7 +243,6 @@ class TestAPIv2:
         assert response.status_code == 200
 
     def test_plot_timeseries_endpoint(self):
-
         response = self.client.get(self.api_links["plot_timeseries"])
         assert response.status_code == 200
 
@@ -255,7 +253,6 @@ class TestAPIv2:
         assert response.status_code == 200
 
     def test_plot_ts_endpoint(self):
-
         response = self.client.get(self.api_links["plot_ts"])
         assert response.status_code == 200
 

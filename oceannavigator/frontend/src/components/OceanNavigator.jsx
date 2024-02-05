@@ -49,6 +49,7 @@ function OceanNavigator(props) {
     projection: "EPSG:3857", // Map projection
     basemap: "topo",
     extent: [],
+    hideDataLayer: false,
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
@@ -474,6 +475,7 @@ function OceanNavigator(props) {
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
+        updateMapSettings={updateMapSettings}
         updateDataset0={updateDataset0}
         updateDataset1={updateDataset1}
         uiSettings={uiSettings}

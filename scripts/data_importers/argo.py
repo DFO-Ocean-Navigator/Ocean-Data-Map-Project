@@ -6,7 +6,7 @@ import sys
 
 import defopt
 import pandas as pd
-import seawater
+import gsw
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -96,7 +96,7 @@ def main(uri: str, filename: str):
                     # We need to commit the station here so that it'll have an id
                     session.commit()
 
-                    depth = seawater.dpth(
+                    depth = gsw.conversions.z_from_p(
                         ds.PRES[prof].dropna("N_LEVELS").values,
                         ds.LATITUDE.values[prof],
                     )
