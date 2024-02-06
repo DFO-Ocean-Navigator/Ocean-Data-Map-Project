@@ -5,7 +5,8 @@ import ColormapRange from "./ColormapRange.jsx";
 
 function ScaleViewer(props) {
   const [source, setSource] = useState(
-    "/api/v2.0/scale/giops_day/votemper/-5,30"
+    `/api/v2.0/scale/${props.dataset.id}/${props.dataset.variable}` +
+        `/${props.dataset.variable_scale[0]},${props.dataset.variable_scale[1]}`
   );
   const [scale, setScale] = useState(props.dataset.variable_scale);
   const [defaultScale, setDefaultScale] = useState(
