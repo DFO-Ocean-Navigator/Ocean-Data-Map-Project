@@ -111,7 +111,7 @@ def main(uri: str, filename: str):
                                 DataType.key == ds[variable].standard_name
                             )
                             dt = session.execute(statement).all()
-                            if dt is None:
+                            if not dt:
                                 dt = DataType(
                                     key=ds[variable].standard_name,
                                     name=ds[variable].long_name,
@@ -128,7 +128,7 @@ def main(uri: str, filename: str):
                             else:
                                 dt = dt[0][0]  # fix this
                         else:
-                            dt = datatype_map[variable][0]
+                            dt = datatype_map[variable]
 
                         values = ds[variable][prof].dropna("N_LEVELS").values
 
@@ -151,4 +151,4 @@ def main(uri: str, filename: str):
 
 
 if __name__ == "__main__":
-    defopt.run(main)
+    defopt.run(main)    
