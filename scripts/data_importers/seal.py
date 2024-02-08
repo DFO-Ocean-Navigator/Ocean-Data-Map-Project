@@ -2,14 +2,20 @@
 
 import glob
 import os
+import sys
 
 import defopt
 import numpy as np
 import pandas as pd
 import gsw
 import xarray as xr
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
-import data.observational
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(os.path.dirname(current))
+sys.path.append(parent)
+
 from data.observational import DataType, Platform, Sample, Station
 
 VARIABLES = ["TEMP", "PSAL"]
@@ -29,107 +35,120 @@ datatype_map = {}
 
 
 def main(uri: str, filename: str):
-    """Import Seal Profiles
+    """Import Argo Profiles
 
     :param str uri: Database URI
-    :param str filename: Seal NetCDF Filename, or directory of files
+    :param str filename: Argo NetCDF Filename, or directory of files
     """
-    data.observational.init_db(uri, echo=False)
-    data.observational.create_tables()
 
-    if os.path.isdir(filename):
-        filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
-    else:
-        filenames = [filename]
+    engine = create_engine(
+        uri,
+        connect_args={"connect_timeout": 10},
+        pool_recycle=3600,
+    )
 
-    for fname in filenames:
-        print(fname)
-        # We're only loading Temperature and Salinity from these files, so
-        # we'll just make sure the DataTypes are in the db now.
-        if DataType.query.get("sea_water_temperature") is None:
-            dt = DataType(
-                key="sea_water_temperature",
-                name="Water Temperature",
-                unit="degree_Celsius",
-            )
-            data.observational.db.session.add(dt)
+    with Session(engine) as session:
 
-        if DataType.query.get("sea_water_temperature") is None:
-            dt = DataType(key="sea_water_salinity", name="Water Salinity", unit="PSU")
-            data.observational.db.session.add(dt)
+        if os.path.isdir(filename):
+            filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        else:
+            filenames = [filename]
 
-        data.observational.db.session.commit()
-
-        with xr.open_dataset(fname) as ds:
-            ds["TIME"] = ds.JULD.to_index().to_datetimeindex()
-            ds["TIME"] = ds.TIME.swap_dims({"TIME": "N_PROF"})
-            depth = gsw.conversions.z_from_p(
-                ds.PRES_ADJUSTED,
-                np.tile(ds.LATITUDE, (ds.PRES.shape[1], 1)).transpose(),
-            )
-            ds["DEPTH"] = (["N_PROF", "N_LEVELS"], depth)
-
-            # This is a single platform, so we can construct it here.
-            p = Platform(type=Platform.Type.animal, unique_id=ds.reference_file_name)
-            p.attrs = {
-                "Principle Investigator": ds.pi_name,
-                "Platform Code": ds.platform_code,
-                "Species": ds.species,
-            }
-
-            data.observational.db.session.add(p)
-            data.observational.db.session.commit()
-
-            # Generate Stations
-            df = ds[["LATITUDE", "LONGITUDE", "TIME"]].to_dataframe()
-            stations = [
-                Station(
-                    platform_id=p.id,
-                    latitude=row.LATITUDE,
-                    longitude=row.LONGITUDE,
-                    time=row.TIME,
+        for fname in filenames:
+            print(fname)
+            # We're only loading Temperature and Salinity from these files, so
+            # we'll just make sure the DataTypes are in the db now.
+            if DataType.query.get("sea_water_temperature") is None:
+                dt = DataType(
+                    key="sea_water_temperature",
+                    name="Water Temperature",
+                    unit="degree_Celsius",
                 )
-                for idx, row in df.iterrows()
-            ]
+                session.add(dt)
 
-            # Using return_defaults=True here so that the stations will get
-            # updated with id's. It's slower, but it means that we can just
-            # put all the station ids into a pandas series to use when
-            # constructing the samples.
-            data.observational.db.session.bulk_save_objects(
-                stations, return_defaults=True
-            )
-            df["STATION_ID"] = [s.id for s in stations]
+            if DataType.query.get("sea_water_temperature") is None:
+                dt = DataType(
+                    key="sea_water_salinity",
+                    name="Water Salinity",
+                    unit="PSU"
+                )
+                session.add(dt)
 
-            # Generate Samples
-            df_samp = (
-                ds[["TEMP_ADJUSTED", "PSAL_ADJUSTED", "DEPTH"]]
-                .to_dataframe()
-                .reorder_levels(["N_PROF", "N_LEVELS"])
-            )
+            session.commit()
 
-            samples = [
-                [
-                    Sample(
-                        station_id=df.STATION_ID[idx[0]],
-                        datatype_key="sea_water_temperature",
-                        value=row.TEMP_ADJUSTED,
-                        depth=row.DEPTH,
-                    ),
-                    Sample(
-                        station_id=df.STATION_ID[idx[0]],
-                        datatype_key="sea_water_salinity",
-                        value=row.PSAL_ADJUSTED,
-                        depth=row.DEPTH,
-                    ),
+            with xr.open_dataset(fname) as ds:
+                ds["TIME"] = ds.JULD.to_index().to_datetimeindex()
+                ds["TIME"] = ds.TIME.swap_dims({"TIME": "N_PROF"})
+                depth = gsw.conversions.z_from_p(
+                    ds.PRES_ADJUSTED,
+                    np.tile(ds.LATITUDE, (ds.PRES.shape[1], 1)).transpose(),
+                )
+                ds["DEPTH"] = (["N_PROF", "N_LEVELS"], depth)
+
+                # This is a single platform, so we can construct it here.
+                p = Platform(
+                    type=Platform.Type.animal,
+                    unique_id=ds.reference_file_name
+                )
+                p.attrs = {
+                    "Principle Investigator": ds.pi_name,
+                    "Platform Code": ds.platform_code,
+                    "Species": ds.species,
+                }
+
+                session.add(p)
+                session.commit()
+
+                # Generate Stations
+                df = ds[["LATITUDE", "LONGITUDE", "TIME"]].to_dataframe()
+                stations = [
+                    Station(
+                        platform_id=p.id,
+                        latitude=row.LATITUDE,
+                        longitude=row.LONGITUDE,
+                        time=row.TIME,
+                    )
+                    for idx, row in df.iterrows()
                 ]
-                for idx, row in df_samp.iterrows()
-            ]
-            samples = [item for sublist in samples for item in sublist]
-            samples = [s for s in samples if not pd.isna(s.value)]
 
-            data.observational.db.session.bulk_save_objects(samples)
-            data.observational.db.session.commit()
+                # Using return_defaults=True here so that the stations will get
+                # updated with id's. It's slower, but it means that we can just
+                # put all the station ids into a pandas series to use when
+                # constructing the samples.
+                session.bulk_save_objects(
+                    stations, return_defaults=True
+                )
+                df["STATION_ID"] = [s.id for s in stations]
+
+                # Generate Samples
+                df_samp = (
+                    ds[["TEMP_ADJUSTED", "PSAL_ADJUSTED", "DEPTH"]]
+                    .to_dataframe()
+                    .reorder_levels(["N_PROF", "N_LEVELS"])
+                )
+
+                samples = [
+                    [
+                        Sample(
+                            station_id=df.STATION_ID[idx[0]],
+                            datatype_key="sea_water_temperature",
+                            value=row.TEMP_ADJUSTED,
+                            depth=row.DEPTH,
+                        ),
+                        Sample(
+                            station_id=df.STATION_ID[idx[0]],
+                            datatype_key="sea_water_salinity",
+                            value=row.PSAL_ADJUSTED,
+                            depth=row.DEPTH,
+                        ),
+                    ]
+                    for idx, row in df_samp.iterrows()
+                ]
+                samples = [item for sublist in samples for item in sublist]
+                samples = [s for s in samples if not pd.isna(s.value)]
+
+                session.bulk_save_objects(samples)
+                session.commit()
 
 
 if __name__ == "__main__":
