@@ -161,6 +161,7 @@ def get_platform_tracks(
     )
 
     query = query.group_by(Platform.id, funcs[quantum](Station.time))
+
     return query.order_by(Platform.id, funcs[quantum](Station.time)).all()
 
 
@@ -327,6 +328,9 @@ def __build_station_query(
 ):
     query = session.query(Station)
 
+    # Use index hint
+    query = query.with_hint(Station, "USE INDEX (idx_stations_time)")
+
     # Joins to Sample
     if variable is not None or mindepth is not None or maxdepth is not None:
         query = __add_sample_filters(
@@ -372,10 +376,27 @@ def get_stations(
     meta_value: Optional[str] = None,
 ) -> List[Station]:
     """
-    Queries for stations, givent the optional query filters.
+    Queries for stations, given the optional query filters.
     """
-
-    return __build_station_query(**locals()).options(joinedload("platform")).all()
+    return (
+        __build_station_query(
+            session=session,
+            variable=variable,
+            mindepth=mindepth,
+            maxdepth=maxdepth,
+            minlat=minlat,
+            maxlat=maxlat,
+            minlon=minlon,
+            maxlon=maxlon,
+            starttime=starttime,
+            endtime=endtime,
+            platform_types=platform_types,
+            meta_key=meta_key,
+            meta_value=meta_value,
+        )
+        .join(Platform)
+        .all()
+    )
 
 
 def __get_bounding_latlon(lat, lon, distance):
@@ -397,7 +418,6 @@ def __get_bounding_latlon(lat, lon, distance):
         maxLon = math.radians(lon) + deltaLon
         if maxLon > math.pi:
             maxLon -= 2.0 * math.pi
-
         else:
             # a pole is within the distance
             minLat = max(minLat, -math.pi / 2.0)
@@ -490,6 +510,7 @@ def get_meta_keys(session: Session, platform_types: List[str]) -> List[str]:
         .order_by(PlatformMetadata.key)
         .all()
     )
+
     data = [item[0] for item in data]
     return data
 
@@ -508,6 +529,7 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
         .order_by(PlatformMetadata.value)
         .all()
     )
+
     data = [item[0] for item in data]
     return data
 
