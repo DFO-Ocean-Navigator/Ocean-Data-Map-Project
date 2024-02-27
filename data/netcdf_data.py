@@ -996,6 +996,10 @@ class NetCDFData(Data):
                 raise RuntimeError("Error finding timestamp(s) in database.")
 
             file_list = db.get_netcdf_files(timestamp, variables_to_load)
+            if len(file_list) > 50:
+                file_list = np.array(file_list)
+                idx = np.linspace(0, file_list.size - 1, 50, dtype=int)
+                file_list = file_list[idx].tolist()
             if not file_list:
                 raise RuntimeError("NetCDF file list is empty.")
 
