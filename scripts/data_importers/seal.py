@@ -63,7 +63,6 @@ def main(uri: str, filename: str):
         with xr.open_dataset(fname) as ds:
             ds["TIME"] = ds.JULD.to_index().to_datetimeindex()
             ds["TIME"] = ds.TIME.swap_dims({"TIME": "N_PROF"})
-            
             depth = abs(gsw.conversions.z_from_p(
                 ds.PRES_ADJUSTED,
                 np.tile(ds.LATITUDE, (ds.PRES.shape[1], 1)).transpose(),
