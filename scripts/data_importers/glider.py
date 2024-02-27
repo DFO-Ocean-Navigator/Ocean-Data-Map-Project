@@ -39,7 +39,6 @@ def main(uri: str, filename: str):
                 .dropna()
             )
 
-
             df["DEPTH"] = abs(gsw.conversions.z_from_p(df.PRES, df.LATITUDE))
 
             for variable in variables:
