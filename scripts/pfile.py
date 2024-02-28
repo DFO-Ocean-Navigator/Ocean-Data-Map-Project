@@ -192,9 +192,9 @@ class PFile:
         )
 
         if "pres" in self.dataframe.columns.values:
-            self.dataframe["depth"] = gsw.conversions.z_from_p(
+            self.dataframe["depth"] = abs(gsw.conversions.z_from_p(
                 self.dataframe["pres"], self.meta["latitude"]
-            )
+            ))
 
     def remove_upcast(self):
         df = self.dataframe
