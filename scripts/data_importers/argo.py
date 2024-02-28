@@ -84,9 +84,9 @@ def main(uri: str, filename: str):
                 # We need to commit the station here so that it'll have an id
                 session.commit()
 
-                depth = gsw.conversions.z_from_p(
+                depth = abs(gsw.conversions.z_from_p(
                     ds.PRES[prof].dropna("N_LEVELS").values, ds.LATITUDE.values[prof]
-                )
+                ))
 
                 samples = []
                 for variable in VARIABLES:
