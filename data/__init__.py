@@ -6,7 +6,10 @@ from data.mercator import Mercator
 from data.nemo import Nemo
 from oceannavigator.dataset_config import DatasetConfig
 
+from utils.decorators import hashable_lru
 
+
+@hashable_lru
 def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
     """Open a dataset.
 
