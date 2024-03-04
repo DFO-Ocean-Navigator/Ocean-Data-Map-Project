@@ -807,12 +807,15 @@ async def data_tile(
         f"{y}.png",
     )
 
+    """ Commented out for testing
+
     if os.path.isfile(f):
         return FileResponse(
             f,
             media_type="image/png",
             headers={"Cache-Control": f"max-age={MAX_CACHE}"},
         )
+    """
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
