@@ -3,38 +3,6 @@
 import json
 from functools import lru_cache, wraps
 
-from frozendict import frozendict
-
-
-def freeze_args(func):
-    """Decorator to transform mutable dictionnary into immutable.
-    Useful to be compatible with cache.
-
-    Note: Does NOT work on kwargs containing non-hashable
-        types (e.g. list).
-
-    Usage:
-        @freeze_args
-        def my_function(arg1, arg2):
-            ...
-    """
-
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        args = tuple(
-            [frozendict(arg) if isinstance(arg, dict) else arg for arg in args]
-        )
-        kwargs = {
-            k: frozendict(v) if isinstance(v, dict) else v for k, v in kwargs.items()
-        }
-
-        return func(*args, **kwargs)
-
-    wrapped.cache_info = func.cache_info
-    wrapped.cache_clear = func.cache_clear
-
-    return wrapped
-
 
 def hashable_lru(func):
     """Decorator to auto-magically cache the return
@@ -79,7 +47,14 @@ def hashable_lru(func):
             k: json.dumps(v, sort_keys=True) if type(v) in (list, dict) else v
             for k, v in kwargs.items()
         }
-        return cached_function(*_args, **_kwargs)
+
+        cached = cached_function(*_args, **_kwargs)
+
+        print("**********************************************************************")
+        print(cached_function.cache_info())
+        print("**********************************************************************")
+
+        return cached
 
     lru_decorator.cache_info = cached_function.cache_info
     lru_decorator.cache_clear = cached_function.cache_clear
