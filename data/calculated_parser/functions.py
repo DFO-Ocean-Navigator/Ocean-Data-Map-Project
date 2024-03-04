@@ -120,9 +120,9 @@ def unstaggered_speed(u_vel, v_vel):
 def __calc_pressure(depth, latitude):
     pressure = []
     try:
-        pressure = [gsw.conversions.p_from_z(d, latitude) for d in depth]
+        pressure = [gsw.conversions.p_from_z(d, latitude) for d in -depth]
     except TypeError:
-        pressure = gsw.conversions.p_from_z(depth, latitude)
+        pressure = gsw.conversions.p_from_z(-depth, latitude)
 
     return np.array(pressure)
 
