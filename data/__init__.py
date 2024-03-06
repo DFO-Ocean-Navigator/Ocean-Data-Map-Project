@@ -8,8 +8,11 @@ from oceannavigator.dataset_config import DatasetConfig
 
 from utils.decorators import hashable_lru
 
+import redis
+import pickle
 
-@hashable_lru
+r = redis.Redis(host='172.17.0.1', port=6379)
+#@hashable_lru
 def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
     """Open a dataset.
 
@@ -38,11 +41,22 @@ def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
             in the dataset, and will perform a binary search to find the nearest
             timestamp that is less-than-or-equal-to the given starttime (and endtime).
     """
+    
+    
+    
     MODEL_CLASSES = {
         "mercator": Mercator,
         "nemo": Nemo,
         "fvcom": Fvcom,
     }
+    redis_key = str(dataset+str(kwargs['variable'])+str(kwargs['timestamp']))
+    if r.exists(redis_key):
+        data_bytes = r.get(redis_key)
+        data = pickle.loads(data_bytes)
+        return data 
+
+    if not isinstance(dataset, DatasetConfig):
+        dataset = DatasetConfig(dataset)
 
     if not dataset:
         raise ValueError(f"Unknown dataset: {dataset}")
@@ -75,4 +89,8 @@ def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
     )
 
     nc_data = CalculatedData(url, **kwargs)
+
+    pickled_data = pickle.dumps(model_class(nc_data))
+    r.set(redis_key, pickled_data)
+
     return model_class(nc_data)
