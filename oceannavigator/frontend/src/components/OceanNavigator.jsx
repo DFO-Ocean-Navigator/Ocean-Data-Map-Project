@@ -49,6 +49,7 @@ function OceanNavigator(props) {
     projection: "EPSG:3857", // Map projection
     basemap: "topo",
     extent: [],
+    hideDataLayer: false,
     ...MAP_DEFAULTS,
   });
   const [uiSettings, setUiSettings] = useState({
@@ -284,16 +285,16 @@ function OceanNavigator(props) {
   const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
-    if (subquery !== undefined) {
-      query.subquery = subquery;
-      query.showModal = true;
-      query.modalType = uiSettings.modalType;
-      query.names = names;
-      query.vectorId = vectorId;
-      query.vectorType = vectorType;
-      query.vectorCoordinates = vectorCoordinates;
-      query.selectedCoordinates = selectedCoordinates;
-    }
+  
+    query.subquery = subquery;
+    query.showModal = uiSettings.showModal;
+    query.modalType = uiSettings.modalType;
+    query.names = names;
+    query.vectorId = vectorId;
+    query.vectorType = vectorType;
+    query.vectorCoordinates = vectorCoordinates;
+    query.selectedCoordinates = selectedCoordinates;
+    
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
@@ -436,7 +437,6 @@ function OceanNavigator(props) {
       modalTitle = __("Info/Help");
       break;
   }
-
   return (
     <div className="OceanNavigator">
       <ScaleViewer
@@ -474,6 +474,7 @@ function OceanNavigator(props) {
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
+        updateMapSettings={updateMapSettings}
         updateDataset0={updateDataset0}
         updateDataset1={updateDataset1}
         uiSettings={uiSettings}
@@ -508,9 +509,7 @@ function OceanNavigator(props) {
         backdrop={true}
       >
         <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
-          <Modal.Title>
-            <Icon icon="link" alt={"Share Link"} /> {__("Share Link")}
-          </Modal.Title>
+          <Modal.Title>{__("Share Link")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Permalink
@@ -520,9 +519,7 @@ function OceanNavigator(props) {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => setShowPermalink(false)}>
-            <Icon icon="close" alt={__("Close")} /> {__("Close")}
-          </Button>
+          <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
     </div>

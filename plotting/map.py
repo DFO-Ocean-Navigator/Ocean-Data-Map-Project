@@ -119,8 +119,7 @@ class MapPlotter(Plotter):
         for co in area["polygons"] + area["innerrings"]:
             polys.append(np.array(co))
 
-        area_poly = Poly(polys[0])
-        path = Path(area_poly.boundary)
+        path = Path(polys[0])
 
         points = [
             (lat, lon)

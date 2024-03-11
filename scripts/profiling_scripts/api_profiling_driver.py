@@ -30,13 +30,14 @@ class ONav_Profiling_Driver:
         config_url: the filepath/name of the configuration file
         user_id: a unique identifier for output file names
         prof_path: the path to the directory containing server profiling results
-        max_attempts: the number of attempts allowed to connect to API endpoints (default 1)
+        max_attempts: the number of attempts allowed to connect to API endpoints
+                      (default 1)
         max_time: the maxium time to wait for a response in seconds (default 120)
         """
         if base_url[-1] == "/":
             base_url = base_url[:-1]
         self.base_url = base_url.split("//")[1]
-        self.api_url = base_url + "/api/v1.0/"
+        self.api_url = base_url + "/api/v2.0/"
         self.csv_file = csv_file
         self.user_id = user_id
         self.prof_path = prof_path
@@ -64,8 +65,8 @@ class ONav_Profiling_Driver:
 
     def send_req(self, url):
         """
-        This method sends the requests to the given url and logs the results and time taken. It
-        also handles and logs raised exceptions.
+        This method sends the requests to the given url and logs the results and time
+        taken. It also handles and logs raised exceptions.
         """
         logging.info(f"URL: {url}")
         for i in range(self.max_attempts):
@@ -80,7 +81,8 @@ class ONav_Profiling_Driver:
                     if total_time < 1:
                         time.sleep(1)
                     logging.info(
-                        f"*** Response recieved. ***\n Total request time: {total_time} seconds."
+                        f"*** Response recieved. ***\n Total request time: \
+                            {total_time} seconds."
                     )
                     return resp, start_time, total_time
                 elif resp.status_code == 500:
@@ -94,7 +96,8 @@ class ONav_Profiling_Driver:
             except requests.ReadTimeout:
                 end_time = time.time()
                 logging.warning(
-                    f"*** Client timed out after {end_time-start_time} seconds (max_time = {self.max_time} seconds). ***"
+                    f"*** Client timed out after {end_time-start_time} seconds \
+                        (max_time = {self.max_time} seconds). ***"
                 )
             except requests.exceptions.ConnectionError:
                 logging.warning("*** Connection aborted. ***")
@@ -182,7 +185,7 @@ class ONav_Profiling_Driver:
                             "station": config["station"],
                             "time": timestamps[-1]["id"],
                             "variable": v,
-                        }
+                        },
                     )
 
                     self.results.append(["profile", ds, v, start_time, resp_time])
@@ -219,7 +222,7 @@ class ONav_Profiling_Driver:
                             "starttime": timestamps[start_idx]["id"],
                             "station": config["station"],
                             "variable": v,
-                        }
+                        },
                     )
 
                     self.results.append(
@@ -258,7 +261,7 @@ class ONav_Profiling_Driver:
                             "surfacevariable": "none",
                             "time": timestamps[-1]["id"],
                             "variable": v,
-                        }
+                        },
                     )
 
                     self.results.append(["transect", ds, v, start_time, resp_time])
@@ -295,7 +298,7 @@ class ONav_Profiling_Driver:
                             "showmap": 1,
                             "starttime": timestamps[start_idx]["id"],
                             "variable": v,
-                        }
+                        },
                     )
 
                     self.results.append(["hovmoller", ds, v, start_time, resp_time])
@@ -348,7 +351,7 @@ class ONav_Profiling_Driver:
                             "showarea": 1,
                             "time": timestamps[-1]["id"],
                             "variable": v,
-                        }
+                        },
                     )
 
                     self.results.append(["area", ds, v, start_time, resp_time])
@@ -378,7 +381,7 @@ class ONav_Profiling_Driver:
                                 [str(timestamps[-1]["id"]), str(timestamps[-1]["id"])]
                             ),
                             "user_grid": 0,
-                        }
+                        },
                     )
 
                     self.results.append(["subset", ds, v, start_time, resp_time])
@@ -404,7 +407,7 @@ class ONav_Profiling_Driver:
                     "plotTitle": "",
                     "quantum": "day",
                     "variable": ["votemper"],
-                }
+                },
             )
 
             self.results.append(["observation", o, "", start_time, resp_time])
@@ -427,7 +430,7 @@ class ONav_Profiling_Driver:
                     "forecast": "best",
                     "models": [],
                     "showmap": 0,
-                }
+                },
             )
 
             self.results.append(["class4", c, "", start_time, resp_time])
@@ -496,7 +499,8 @@ class ONav_Profiling_Driver:
 
     def run(self):
         logging.info(
-            f"Profile testing start time: {time.ctime(self.start_time)} ({self.start_time:.0f})."
+            f"Profile testing start time: {time.ctime(self.start_time)} \
+                ({self.start_time:.0f})."
         )
 
         if "profile_plot" in self.test_list:
@@ -518,7 +522,8 @@ class ONav_Profiling_Driver:
 
         end_time = time.time()
         logging.info(
-            f"Profile testing start time:  {time.ctime(self.start_time)} ({self.start_time:.0f})."
+            f"Profile testing start time:  {time.ctime(self.start_time)} \
+                ({self.start_time:.0f})."
         )
         logging.info(f"Profile testing end time:  {time.ctime(end_time)} ({end_time}).")
         logging.info(
@@ -535,28 +540,33 @@ class ONav_Profiling_Driver:
 
 if __name__ == "__main__":
     """
-    The api_profiling_driver scripts is intendend to target Ocean Navigator API endpoints as specified in a
-    configuration file so that profiles for these functions can be collected for performance analysis while
-    collecting client-side metrics for each. This script can log the status of each request and produce a csv
-    file contained the tabulated results (enabled by default). It is designed to be run from the command line
-    with flags specifying file locaitons and options as described in the example below:
+    The api_profiling_driver scripts is intendend to target Ocean Navigator API
+    endpoints as specified in a configuration file so that profiles for these functions
+    can be collected for performance analysis while collecting client-side metrics for
+    each. This script can log the status of each request and produce a csv file
+    contained the tabulated results (enabled by default). It is designed to be run from
+    the command line with flags specifying file locaitons and options as described in
+    the example below:
 
-    python api_profiling_driver.py --url https://navigator.oceansdata.ca --config api_profiling_config.json --id usr -a 1 -t 120
+    python api_profiling_driver.py --url https://navigator.oceansdata.ca
+        --config api_profiling_config.json --id usr -a 1 -t 120
 
     where:
 
     --url: the url of the Navigator instance that's being profiled
     --config: the path of configuration file
-    --csv: the path of csv file for output data (Optional, one will be created if not provided)
-    --prof: the path to the directory containing server profiling results (Optional, requires
-            running script on server with Navigator, or remote access to /profiler_results/)
+    --csv: the path of csv file for output data (Optional, one will be created if not
+            provided)
+    --prof: the path to the directory containing server profiling results (Optional,
+            requires running script on server with Navigator, or remote access to
+            /profiler_results/)
     --id: a unique user identifer for output file names
     -a: the number of attempts to reach each end point allowed
     -t: the maxium time to wait for a response from each endpoint
     """
 
     # default options
-    url = "https://10.118.169.120:5000"
+    url = "https://navigator.oceansdata.ca"
     config = "scripts/profiling_scripts/api_profiling_config.json"
     csv_file = None
     prof_path = None

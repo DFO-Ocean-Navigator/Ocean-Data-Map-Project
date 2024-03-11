@@ -68,7 +68,7 @@ class NetCDFData(Data):
                             self._nc_files[0],
                             decode_times=decode_times,
                         )
-                except xarray.core.variable.MissingDimensionsError:
+                except ValueError:
                     # xarray won't open FVCOM files due to dimension/coordinate/
                     # variable label duplication issue, so fall back to using
                     # netCDF4.Dataset()
@@ -88,7 +88,7 @@ class NetCDFData(Data):
                     fields = self._construct_remote_ds(url, decode_times)
                 else:
                     fields = xarray.open_mfdataset(url, decode_times=decode_times)
-            except xarray.core.variable.MissingDimensionsError:
+            except ValueError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
                 fields = netCDF4.Dataset(self.url)
@@ -316,23 +316,35 @@ class NetCDFData(Data):
         # calculated variables.
         if not entire_globe:
             # Find closest indices in dataset corresponding to each calculated point
-            ymin_index, xmin_index, _ = find_nearest_grid_point(
+            y0_index, x0_index, _ = find_nearest_grid_point(
                 bottom_left[0],
                 bottom_left[1],
                 self.get_dataset_variable(lat_var),
                 self.get_dataset_variable(lon_var),
             )
-            ymax_index, xmax_index, _ = find_nearest_grid_point(
-                top_right[0],
-                top_right[1],
-                self.get_dataset_variable(lat_var),
-                self.get_dataset_variable(lon_var),
-            )
+            y1_index, x1_index, _ = find_nearest_grid_point(
+                            top_right[0],
+                            top_right[1],
+                            self.get_dataset_variable(lat_var),
+                            self.get_dataset_variable(lon_var),
+                        )
+            y2_index, x2_index, _ = find_nearest_grid_point(
+                            bottom_left[0],
+                            top_right[1],
+                            self.get_dataset_variable(lat_var),
+                            self.get_dataset_variable(lon_var),
+                        )
+            y3_index, x3_index, _ = find_nearest_grid_point(
+                            top_right[0],
+                            bottom_left[1],
+                            self.get_dataset_variable(lat_var),
+                            self.get_dataset_variable(lon_var),
+                        )
 
             # Compute min/max for each slice in case the values are flipped
             # the netCDF4 module does not support unordered slices
-            y_slice = slice(min(ymin_index, ymax_index), max(ymin_index, ymax_index))
-            x_slice = slice(min(xmin_index, xmax_index), max(xmin_index, xmax_index))
+            y_slice = slice(min(y0_index, y1_index, y2_index, y3_index), max(y0_index, y1_index, y2_index, y3_index))
+            x_slice = slice(min(x0_index, x1_index, x2_index, x3_index), max(x0_index, x1_index, x2_index, x3_index))
 
             # Get nicely formatted bearings
             p0 = geopy.Point(bottom_left)
@@ -442,7 +454,7 @@ class NetCDFData(Data):
 
                 # Perform regridding using nearest neighbour weighting
                 regridded = pyresample.kd_tree.resample_nearest(
-                    input_def, data, output_def, 50000, fill_value=None, nprocs=8
+                    input_def, data, output_def, 50000, fill_value=None
                 )
                 # Move merged axis back to front
                 regridded = np.moveaxis(regridded, -1, 0)
@@ -876,7 +888,7 @@ class NetCDFData(Data):
                     ds = xarray.open_mfdataset(url, decode_times=False)
                 # Cache the list for later
                 self._variable_list = self._get_xarray_data_variables(ds)
-            except xarray.core.variable.MissingDimensionsError:
+            except ValueError:
                 # xarray won't open FVCOM files due to dimension/coordinate/variable
                 # label duplication issue, so fall back to using netCDF4.Dataset()
                 with netCDF4.Dataset(self.url) as ds:
@@ -996,6 +1008,10 @@ class NetCDFData(Data):
                 raise RuntimeError("Error finding timestamp(s) in database.")
 
             file_list = db.get_netcdf_files(timestamp, variables_to_load)
+            if len(file_list) > 50:
+                file_list = np.array(file_list)
+                idx = np.linspace(0, file_list.size - 1, 50, dtype=int)
+                file_list = file_list[idx].tolist()
             if not file_list:
                 raise RuntimeError("NetCDF file list is empty.")
 
