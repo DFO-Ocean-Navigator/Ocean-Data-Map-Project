@@ -20,12 +20,12 @@ VARIABLES = ["PSAL", "TEMP", "CNDC"]
 
 
 def main(uri: str, filename: str):
+
     """Import Glider NetCDF
 
     :param str uri: Database URI
     :param str filename: Glider Filename, or directory of NetCDF files
     """
-
     engine = create_engine(
         uri,
         connect_args={"connect_timeout": 10},
@@ -74,7 +74,8 @@ def main(uri: str, filename: str):
                 session.commit()
 
                 p = Platform(
-                    type=Platform.Type.glider, id=f"{ds.platform_code}"
+                    type=Platform.Type.glider, unique_id=f"{ds.attrs["platform_code"]}"
+
                 )
                 attrs = {
                     "Glider Platform": ds.attrs["platform_code"],
