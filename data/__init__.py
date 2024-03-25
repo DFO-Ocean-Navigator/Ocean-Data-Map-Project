@@ -11,7 +11,7 @@ from utils.decorators import hashable_lru
 import redis
 import pickle
 
-r = redis.Redis(host='172.17.0.1', port=6379)
+r = redis.Redis(host='172.17.0.1', port=3278)
 #@hashable_lru
 def open_dataset(dataset: Union[DatasetConfig, str], **kwargs):
     """Open a dataset.

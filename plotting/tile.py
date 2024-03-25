@@ -22,8 +22,6 @@ from data.transformers.geojson import data_array_to_geojson
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
 
-import redis
-import pickle
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -230,7 +228,6 @@ def scale(args):
 
 
 async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
-    r = redis.Redis(host='172.17.0.1', port=6379)
     settings = get_settings()
 
     lat, lon = get_latlon_coords(projection, x, y, z)
@@ -249,12 +246,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     scale = [float(component) for component in scale.split(",")]
 
     time = args.get("time")
-
-    redis_key = str(dataset_name+str(variable)+str(time)+"img")
-    if r.exists(redis_key):
-        data_bytes = r.get(redis_key)
-        im = pickle.loads(data_bytes)
-        return im
 
     data = []
     with open_dataset(dataset_name, variable=variable, timestamp=time) as dataset:
@@ -307,8 +298,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     img = sm.to_rgba(np.ma.masked_invalid(np.squeeze(data)))
     im = Image.fromarray((img * 255.0).astype(np.uint8))
 
-    pickled_data = pickle.dumps(im)
-    r.set(redis_key, pickled_data)
 
     return im
 
