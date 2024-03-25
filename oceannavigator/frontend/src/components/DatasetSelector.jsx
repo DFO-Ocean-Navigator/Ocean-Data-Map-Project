@@ -80,6 +80,8 @@ function DatasetSelector(props) {
         setLoadingPercent(33);
         let newVariable = currentVariable;
         let newVariableScale = props.mountedDataset.variable_scale;
+        let newQuiver = props.mountedDataset.quiverVariable;
+        let newQuiverDensity = props.mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
         let interpType = props.mapSettings.interpType;
@@ -142,8 +144,8 @@ function DatasetSelector(props) {
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
-                  quiverVariable: "None",
-                  quiverDensity: 0,
+                  quiverVariable: newQuiver,
+                  quiverDensity: newQuiverDensity,
                   default_location: currentDataset.default_location
                 });
                 setDatasetVariables(variableResult.data);
