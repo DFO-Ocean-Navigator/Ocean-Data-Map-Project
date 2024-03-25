@@ -5,7 +5,7 @@ import os
 
 import defopt
 import pandas as pd
-import seawater
+import gsw
 import xarray as xr
 
 import data.observational
@@ -84,9 +84,9 @@ def main(uri: str, filename: str):
                 # We need to commit the station here so that it'll have an id
                 session.commit()
 
-                depth = seawater.dpth(
+                depth = abs(gsw.conversions.z_from_p(
                     ds.PRES[prof].dropna("N_LEVELS").values, ds.LATITUDE.values[prof]
-                )
+                ))
 
                 samples = []
                 for variable in VARIABLES:

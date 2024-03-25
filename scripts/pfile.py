@@ -7,7 +7,7 @@ or to use the file as a Pandas Dataframe.
 import dateutil
 import numpy as np
 import pandas as pd
-import seawater
+import gsw
 
 SHIP_NUMBERS = {
     "00": "Unknown",
@@ -192,9 +192,9 @@ class PFile:
         )
 
         if "pres" in self.dataframe.columns.values:
-            self.dataframe["depth"] = seawater.eos80.dpth(
+            self.dataframe["depth"] = abs(gsw.conversions.z_from_p(
                 self.dataframe["pres"], self.meta["latitude"]
-            )
+            ))
 
     def remove_upcast(self):
         df = self.dataframe

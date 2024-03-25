@@ -148,7 +148,7 @@ const DailyCalendar = React.forwardRef((props, ref) => {
       style = "date-selected";
       disabled = false;
     } else if (
-      datesEnabled.find((date) => date.getTime() === dateObj.getTime())
+      datesEnabled.find((date) => date.setHours(0) === dateObj.getTime())
     ) {
       style = "date-button-enabled";
       disabled = false;
