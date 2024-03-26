@@ -28,7 +28,7 @@ def requestFile():
    dump = data_file.raw
    # change this if you want a different save location
    location = os.getcwd()
-   fname = 'ONAV_CSV_'+str(query['dataset']) + '_' + str(query['variable'])+'.csv'
+   fname = {f} + ".csv"
    with open(fname, "wb") as location:
       print('Saving File')
       shutil.copyfileobj(dump, location)

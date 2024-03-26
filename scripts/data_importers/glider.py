@@ -4,7 +4,7 @@ import glob
 import os
 
 import defopt
-import seawater
+import gsw
 import xarray as xr
 
 import data.observational
@@ -39,7 +39,7 @@ def main(uri: str, filename: str):
                 .dropna()
             )
 
-            df["DEPTH"] = seawater.dpth(df.PRES, df.LATITUDE)
+            df["DEPTH"] = abs(gsw.conversions.z_from_p(df.PRES, df.LATITUDE))
 
             for variable in variables:
                 if variable not in datatype_map:

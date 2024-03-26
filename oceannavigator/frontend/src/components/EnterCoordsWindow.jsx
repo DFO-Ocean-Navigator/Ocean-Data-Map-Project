@@ -46,13 +46,8 @@ function EnterCoordsWindow(props) {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        props.action(
-          "updatePoint",
-          parseInt(e.target.id),
-          0,
-          parseFloat(e.target.value)
-        ),
-        500
+        updateCoordinate(parseInt(e.target.id), 0, parseFloat(e.target.value)),
+        1000
       )
     );
   };
@@ -61,16 +56,17 @@ function EnterCoordsWindow(props) {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        props.action(
-          "updatePoint",
-          parseInt(e.target.id),
-          1,
-          parseFloat(e.target.value)
-        ),
-        500
+        updateCoordinate(parseInt(e.target.id), 1, parseFloat(e.target.value)),
+        1000
       )
     );
   };
+
+  const updateCoordinate = (row, col, value) => {
+    if (!isNaN(value)) {
+      props.action("updatePoint", row, col, value)
+    }
+  }
 
   const handleClear = () => {
     props.action("clearPoints");
