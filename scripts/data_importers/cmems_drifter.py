@@ -69,6 +69,8 @@ def main(uri: str, filename: str):
                         type=Platform.Type.drifter,
                         # attributes={key: str(ds.attrs[key]) for key in ds.attrs},
                     )
+                    
+                    platform = Platform(type=Platform.Type.drifter)
                     session.add(platform)
                     session.commit()
 
