@@ -2,8 +2,8 @@ import copernicusmarine
 
 output_dir = "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/cmems_obs/"
 
-obs_types = ["GL","DB","PF","CT"] 
-    
+obs_types = ["GL", "DB", "PF", "CT"]
+
 for obs in obs_types:
     filter = f"*_*_{obs}*.nc"
     copernicusmarine.get(
