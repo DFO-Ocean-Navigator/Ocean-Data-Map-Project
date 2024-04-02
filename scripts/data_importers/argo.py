@@ -96,9 +96,12 @@ def main(uri: str, filename: str):
                     # We need to commit the station here so that it'll have an id
                     session.commit()
 
-                depth = abs(gsw.conversions.z_from_p(
-                    ds.PRES[prof].dropna("N_LEVELS").values, ds.LATITUDE.values[prof]
-                ))
+                    depth = abs(
+                        gsw.conversions.z_from_p(
+                            ds.PRES[prof].dropna("N_LEVELS").values,
+                            ds.LATITUDE.values[prof],
+                        )
+                    )
 
                     samples = []
                     for variable in VARIABLES:
@@ -150,4 +153,4 @@ def main(uri: str, filename: str):
 
 
 if __name__ == "__main__":
-    defopt.run(main)    
+    defopt.run(main)

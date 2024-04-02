@@ -23,10 +23,10 @@ datatype_map = {}
 
 
 def main(uri: str, filename: str):
-    """Import Argo Profiles
+    """Import NAFC CTD
 
     :param str uri: Database URI
-    :param str filename: Argo NetCDF Filename, or directory of files
+    :param str filename: NetCDF file, or directory of files
     """
 
     engine = create_engine(
@@ -34,14 +34,6 @@ def main(uri: str, filename: str):
         connect_args={"connect_timeout": 10},
         pool_recycle=3600,
     )
-# def main(uri: str, filename: str):
-#     """Import NAFC CTD
-
-#     :param str uri: Database URI
-#     :param str filename: NetCDF file, or directory of files
-#     """
-#     data.observational.init_db(uri, echo=False)
-#     data.observational.create_tables()
 
     with Session(engine) as session:
         if os.path.isdir(filename):
