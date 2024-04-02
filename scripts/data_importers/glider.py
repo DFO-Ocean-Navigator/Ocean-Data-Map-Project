@@ -2,12 +2,18 @@
 
 import glob
 import os
+import sys
 
 import defopt
 import gsw
 import xarray as xr
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
-import data.observational
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(os.path.dirname(current))
+sys.path.append(parent)
+
 from data.observational import DataType, Platform, Sample, Station
 
 VARIABLES = ["CHLA", "PSAL", "TEMP", "CNDC"]
@@ -19,42 +25,49 @@ def main(uri: str, filename: str):
     :param str uri: Database URI
     :param str filename: Glider Filename, or directory of NetCDF files
     """
-    data.observational.init_db(uri, echo=False)
-    data.observational.create_tables()
+    engine = create_engine(
+        uri,
+        connect_args={"connect_timeout": 10},
+        pool_recycle=3600,
+    )
 
-    if os.path.isdir(filename):
-        filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
-    else:
-        filenames = [filename]
+    with Session(engine) as session:
+        if os.path.isdir(filename):
+            filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        else:
+            filenames = [filename]
 
-    datatype_map = {}
-    for fname in filenames:
-        print(fname)
-        with xr.open_dataset(fname) as ds:
-            variables = [v for v in VARIABLES if v in ds.variables]
-            df = (
-                ds[["TIME", "LATITUDE", "LONGITUDE", "PRES", *variables]]
-                .to_dataframe()
-                .reset_index()
-                .dropna()
-            )
+        datatype_map = {}
+        for fname in filenames:
+            print(fname)
+            with xr.open_dataset(fname) as ds:
+                variables = [v for v in VARIABLES if v in ds.variables]
+                df = (
+                    ds[["TIME", "LATITUDE", "LONGITUDE", "PRES", *variables]]
+                    .to_dataframe()
+                    .reset_index()
+                    .dropna()
+                )
 
             df["DEPTH"] = abs(gsw.conversions.z_from_p(df.PRES, df.LATITUDE))
 
             for variable in variables:
                 if variable not in datatype_map:
-                    dt = DataType.query.get(ds[variable].standard_name)
-                    if dt is None:
+                    statement = select(DataType).where(
+                        DataType.key == ds[variable].standard_name
+                    )
+                    dt = session.execute(statement).all()
+                    if not dt:
                         dt = DataType(
                             key=ds[variable].standard_name,
                             name=ds[variable].long_name,
                             unit=ds[variable].units,
                         )
-                        data.observational.db.session.add(dt)
+                        session.add(dt)
 
                     datatype_map[variable] = dt
 
-            data.observational.db.session.commit()
+            session.commit()
 
             p = Platform(
                 type=Platform.Type.glider, unique_id=f"glider_{ds.deployment_label}"
@@ -67,8 +80,8 @@ def main(uri: str, filename: str):
                 "Contact": ds.contact,
             }
             p.attrs = attrs
-            data.observational.db.session.add(p)
-            data.observational.db.session.commit()
+            session.add(p)
+            session.commit()
 
             stations = [
                 Station(
@@ -84,9 +97,7 @@ def main(uri: str, filename: str):
             # updated with id's. It's slower, but it means that we can just
             # put all the station ids into a pandas series to use when
             # constructing the samples.
-            data.observational.db.session.bulk_save_objects(
-                stations, return_defaults=True
-            )
+            session.bulk_save_objects(stations, return_defaults=True)
             df["STATION_ID"] = [s.id for s in stations]
 
             samples = [
@@ -101,12 +112,10 @@ def main(uri: str, filename: str):
                 ]
                 for idx, row in df.iterrows()
             ]
-            data.observational.db.session.bulk_save_objects(
-                [item for sublist in samples for item in sublist]
-            )
-            data.observational.db.session.commit()
+            session.bulk_save_objects([item for sublist in samples for item in sublist])
+            session.commit()
 
-        data.observational.db.session.commit()
+        session.commit()
 
 
 if __name__ == "__main__":
