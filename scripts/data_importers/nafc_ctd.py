@@ -93,10 +93,7 @@ def main(uri: str, filename: str):
                 p.stations.append(s)
                 session.commit()
 
-                ds["level"] = gsw.conversions.z_from_p(
-                    ds.level.values,
-                    ds.latitude[0].values
-                )
+            ds["level"] = abs(gsw.conversions.z_from_p(ds.level.values, ds.latitude[0].values))
 
                 # Generate the samples
                 for var, dt in datatype_map.items():

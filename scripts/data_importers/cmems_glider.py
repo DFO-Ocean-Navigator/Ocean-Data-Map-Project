@@ -5,7 +5,7 @@ import os
 import sys
 
 import defopt
-import gsw
+import seawater
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -16,10 +16,11 @@ sys.path.append(parent)
 
 from data.observational import DataType, Platform, Sample, Station
 
-VARIABLES = ["CHLA", "PSAL", "TEMP", "CNDC"]
+VARIABLES = ["PSAL", "TEMP", "CNDC"]
 
 
 def main(uri: str, filename: str):
+
     """Import Glider NetCDF
 
     :param str uri: Database URI
@@ -32,6 +33,7 @@ def main(uri: str, filename: str):
     )
 
     with Session(engine) as session:
+
         if os.path.isdir(filename):
             filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
         else:
@@ -49,35 +51,36 @@ def main(uri: str, filename: str):
                     .dropna()
                 )
 
-            df["DEPTH"] = abs(gsw.conversions.z_from_p(df.PRES, df.LATITUDE))
+                df["DEPTH"] = seawater.dpth(df.PRES, df.LATITUDE)
 
                 for variable in variables:
                     if variable not in datatype_map:
                         statement = select(DataType).where(
-                                DataType.key == ds[variable].standard_name
-                            )
+                            DataType.key == ds[variable].standard_name
+                        )
                         dt = session.execute(statement).all()
-                        if not dt :
+                        if not dt:
                             dt = DataType(
                                 key=ds[variable].standard_name,
                                 name=ds[variable].long_name,
                                 unit=ds[variable].units,
                             )
                             session.add(dt)
+                        else:
+                            dt = dt[0][0]
 
                         datatype_map[variable] = dt
 
                 session.commit()
 
                 p = Platform(
-                    type=Platform.Type.glider, unique_id=f"glider_{ds.deployment_label}"
+                    type=Platform.Type.glider, unique_id=f"{ds.attrs["platform_code"]}"
+
                 )
                 attrs = {
-                    "Glider Platform": ds.platform_code,
-                    "WMO": ds.wmo_platform_code,
-                    "Deployment": ds.deployment_label,
-                    "Institution": ds.institution,
-                    "Contact": ds.contact,
+                    "Glider Platform": ds.attrs["platform_code"],
+                    "WMO": ds.attrs["wmo_platform_code"],
+                    "Institution": ds.attrs["institution"],
                 }
                 p.attrs = attrs
                 session.add(p)
@@ -116,8 +119,6 @@ def main(uri: str, filename: str):
                     [item for sublist in samples for item in sublist]
                 )
                 session.commit()
-
-            session.commit()
 
 
 if __name__ == "__main__":
