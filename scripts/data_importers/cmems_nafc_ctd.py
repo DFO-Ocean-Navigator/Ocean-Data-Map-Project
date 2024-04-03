@@ -34,10 +34,13 @@ def main(uri: str, filename: str):
     with Session(engine) as session:
         datatype_map = {}
 
-        if os.path.isdir(filename):
-            filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        if not isinstance(filename, list):
+            if os.path.isdir(filename):
+                filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+            else:
+                filenames = [filename]
         else:
-            filenames = [filename]
+            filenames = filename
 
         for fname in filenames:
             print(fname)

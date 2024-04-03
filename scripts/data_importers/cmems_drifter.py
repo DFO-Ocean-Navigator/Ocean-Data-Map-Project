@@ -37,12 +37,15 @@ def main(uri: str, filename: str):
     )
     with Session(engine) as session:
 
-        if os.path.isdir(filename):
-            filename = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        if not isinstance(filename, list):
+            if os.path.isdir(filename):
+                filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+            else:
+                filenames = [filename]
         else:
-            filename = [filename]
+            filenames = filename
 
-        for fname in filename:
+        for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
                 df = ds.to_dataframe().reset_index()
