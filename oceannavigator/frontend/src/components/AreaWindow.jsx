@@ -24,8 +24,8 @@ class AreaWindow extends React.Component {
 
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.dataset_0.scale + ",auto",
-      scale_1: props.dataset_1.scale_1 + ",auto",
+      scale: props.dataset_0.variable_scale,
+      scale_1: props.dataset_1.variable_scale_1,
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
@@ -201,7 +201,9 @@ class AreaWindow extends React.Component {
             }}
           >
             <ColormapRange
-              auto
+              //auto
+              min={this.state.scale[0]}
+              max={this.state.scale[1]}
               key="scale_diff"
               id="scale_diff"
               state={this.state.scale_diff}
@@ -294,6 +296,7 @@ class AreaWindow extends React.Component {
             onUpdate={this.props.updateDataset0}
             showQuiverSelector={false}
             showVariableRange={false}
+            showAxisRange={true}
             mapSettings={this.props.mapSettings}
             mountedDataset={this.props.dataset_0}
           />
