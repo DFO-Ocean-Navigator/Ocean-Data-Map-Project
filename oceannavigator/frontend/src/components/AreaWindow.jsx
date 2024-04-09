@@ -14,6 +14,7 @@ import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
+import { formToJSON } from "axios";
 
 class AreaWindow extends React.Component {
   constructor(props) {
@@ -24,8 +25,8 @@ class AreaWindow extends React.Component {
 
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.dataset_0.variable_scale,
-      scale_1: props.dataset_1.variable_scale_1,
+      scale: props.dataset_0.variable_scale[0] + "," +props.dataset_0.variable_scale[1] + ",auto",
+      scale_1: props.dataset_1.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
       rightColormap: "default",
@@ -191,6 +192,14 @@ class AreaWindow extends React.Component {
             {_("Swap Views")}
           </Button>
 
+          <ColormapRange
+            auto
+            key="scale"
+            id="scale"
+            state={this.state.scale}
+            onUpdate={this.onLocalUpdate}
+          />
+
           <div
             style={{
               display:
@@ -200,17 +209,7 @@ class AreaWindow extends React.Component {
                   : "none",
             }}
           >
-            <ColormapRange
-              //auto
-              min={this.state.scale[0]}
-              max={this.state.scale[1]}
-              key="scale_diff"
-              id="scale_diff"
-              state={this.state.scale_diff}
-              def={""}
-              onUpdate={this.onLocalUpdate}
-              title={_("Diff. Variable Range")}
-            />
+            
             <ComboBox
               key="colormap_diff"
               id="colormap_diff"
@@ -296,7 +295,6 @@ class AreaWindow extends React.Component {
             onUpdate={this.props.updateDataset0}
             showQuiverSelector={false}
             showVariableRange={false}
-            showAxisRange={true}
             mapSettings={this.props.mapSettings}
             mountedDataset={this.props.dataset_0}
           />
