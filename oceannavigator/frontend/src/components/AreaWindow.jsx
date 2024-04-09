@@ -25,7 +25,7 @@ class AreaWindow extends React.Component {
 
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.dataset_0.variable_scale[0] + "," +props.dataset_0.variable_scale[1] + ",auto",
+      scale: props.dataset_0.variable_scale + ",auto",
       scale_1: props.dataset_1.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
@@ -116,6 +116,16 @@ class AreaWindow extends React.Component {
         return;
       }
 
+      if (key === "scale") {
+        if (value.constructor === Array){
+          value = value[0] + ',' + value[1]
+        }
+        this.setState((prevState) => ({
+          scale: value
+        }));
+        return;
+      }
+
       let newState = {};
       if (typeof key === "string") {
         newState[key] = value;
@@ -196,7 +206,7 @@ class AreaWindow extends React.Component {
             auto
             key="scale"
             id="scale"
-            state={this.state.scale}
+            state={this.state.scale.split(',')}
             onUpdate={this.onLocalUpdate}
           />
 
