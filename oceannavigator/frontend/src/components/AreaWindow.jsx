@@ -87,6 +87,12 @@ class AreaWindow extends React.Component {
     this._mounted = false;
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.dataset_0.variable !== prevProps.dataset_0.variable) {
+      this.setState({ scale: this.props.dataset_0.variable_scale + ",auto", })
+    }
+  }
+
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitle) {
@@ -117,12 +123,10 @@ class AreaWindow extends React.Component {
       }
 
       if (key === "scale") {
-        if (value.constructor === Array){
+        if (value.constructor === Array) {
           value = value[0] + ',' + value[1]
         }
-        this.setState((prevState) => ({
-          scale: value
-        }));
+        this.setState({ scale: value });
         return;
       }
 
@@ -136,6 +140,12 @@ class AreaWindow extends React.Component {
       }
       this.setState(newState);
     }
+  }
+
+  compareChanged(checked) {
+    let newScale = checked ? "-10,10,auto" : this.props.dataset_0.variable_scale + ",auto"
+    this.setState({ scale: newScale });
+    this.props.setCompareDatasets(checked)
   }
 
   onTabChange(index) {
@@ -188,7 +198,7 @@ class AreaWindow extends React.Component {
             id="dataset_compare"
             key="dataset_compare"
             checked={this.props.dataset_compare}
-            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
+            onUpdate={(_, checked) => this.compareChanged(checked)}
             title={_("Compare Datasets")}
           />
 
@@ -214,12 +224,12 @@ class AreaWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                this.state.dataset_0.variable == this.props.dataset_1.variable
+                  this.state.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
           >
-            
+
             <ComboBox
               key="colormap_diff"
               id="colormap_diff"
@@ -406,7 +416,7 @@ class AreaWindow extends React.Component {
         plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to = { ...this.props.dataset_1 };
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;
