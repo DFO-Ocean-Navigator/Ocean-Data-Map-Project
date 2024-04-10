@@ -12,6 +12,11 @@ function ColormapRange(props) {
   const [max, setMax] = useState(parseFloat(props.state[1]).toFixed(4));
 
   useEffect(() => {
+    setMin(parseFloat(props.state[0]).toFixed(4));
+    setMax(parseFloat(props.state[1]).toFixed(4));
+  }, [props])
+
+  useEffect(() => {
     let newMin = parseFloat(min).toFixed(4);
     let newMax = parseFloat(max).toFixed(4);
     let prevMin = parseFloat(props.state[0]).toFixed(4);
