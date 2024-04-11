@@ -103,7 +103,7 @@ function ColormapRange(props) {
   }
 
   return (
-    <div className="ColormapRange">
+    <div className="ColormapRange" style={{ margin : props.auto ? '0px 0px' : '0px 5px'}}>
       <h1>{props.title}</h1>
       {props.auto ? autoCheck : null}
       <table style={{ display: useAuto ? "none" : "table" }}>
@@ -113,7 +113,7 @@ function ColormapRange(props) {
               <label htmlFor={props.id + "_min"}>{"Min:"}</label>
             </td>
             <td>
-              <input
+              <input 
                 type="number"
                 className="range-input"
                 value={min}
