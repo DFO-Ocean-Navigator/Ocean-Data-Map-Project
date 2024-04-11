@@ -68,7 +68,7 @@ def main(uri: str, filename: str):
                         session.commit()
 
                     # Create Platform object
-                    
+
                     platform = Platform(type=Platform.Type.drifter)
                     session.add(platform)
                     session.commit()
