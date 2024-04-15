@@ -102,7 +102,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(GZipMiddleware)
 
-    #configure_sentry(app)
+    configure_sentry(app)
     configure_pyinstrument(app)
     configure_dask()
     configure_exception_handlers(app)
