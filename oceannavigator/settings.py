@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     log_level: str = "DEBUG"
     observation_agg_url: str = ""
     overlay_kml_dir: str = ""
+    profilng: bool = False
     sentry_env: str = ""
     sentry_traces_rate: int = 0
     shape_file_dir: str = ""

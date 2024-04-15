@@ -5,10 +5,11 @@ import dask
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+from pyinstrument import Profiler
 
 from oceannavigator.dataset_config import DatasetConfig
 
@@ -61,6 +62,22 @@ def configure_exception_handlers(app: FastAPI) -> None:
     async def resource_not_found_handler(request: Request, exception) -> JSONResponse:
         return JSONResponse(status_code=404, content={"message": str(exception)})
 
+def configure_pyinstrument(app: FastAPI) -> None:
+    settings = get_settings()
+
+    if settings.profilng:
+        @app.middleware("http")
+        async def profile_request(request: Request, call_next):
+            profiling = request.query_params.get("profile", False)
+            if profiling:
+                profiler = Profiler(interval=0.01, async_mode="enabled")
+                profiler.start()
+                await call_next(request)
+                profiler.stop()
+                return HTMLResponse(profiler.output_html())
+            else:
+                return await call_next(request)
+    
 
 def create_app() -> FastAPI:
     get_settings.cache_clear()
@@ -85,7 +102,8 @@ def create_app() -> FastAPI:
 
     app.add_middleware(GZipMiddleware)
 
-    configure_sentry(app)
+    #configure_sentry(app)
+    configure_pyinstrument(app)
     configure_dask()
     configure_exception_handlers(app)
 
