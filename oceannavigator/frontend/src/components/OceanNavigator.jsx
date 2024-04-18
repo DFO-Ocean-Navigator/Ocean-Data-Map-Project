@@ -85,6 +85,7 @@ function OceanNavigator(props) {
         setVectorType(query.vectorType);
         setVectorCoordinates(query.vectorCoordinates);
         setSelectedCoordinates(query.selectedCoordinates);
+        setMapState(query.mapState)
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -294,6 +295,8 @@ function OceanNavigator(props) {
     query.vectorType = vectorType;
     query.vectorCoordinates = vectorCoordinates;
     query.selectedCoordinates = selectedCoordinates;
+    query.mapState = mapState;
+    
     
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
