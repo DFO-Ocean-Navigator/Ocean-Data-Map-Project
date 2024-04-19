@@ -188,8 +188,8 @@ class Plotter(metaclass=ABCMeta):
         if linearthresh is None or linearthresh == "":
             linearthresh = 200
         linearthresh = float(linearthresh)
-        if not linearthresh > 0:
-            linearthresh = 1
+        if linearthresh < 0:
+            linearthresh = 0
 
         return linearthresh
 

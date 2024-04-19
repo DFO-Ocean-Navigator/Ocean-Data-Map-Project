@@ -225,15 +225,14 @@ class LineWindow extends React.Component {
             {_("surfacevariable_help")}
           </ComboBox>
 
-          <NumberBox
+          <DepthLimit
             key="linearthresh"
             id="linearthresh"
             state={this.state.linearthresh}
             onUpdate={this.onLocalUpdate}
-            title={_("Linear Threshold")}
           >
             {_("linearthresh_help")}
-          </NumberBox>
+          </DepthLimit>
 
           <DepthLimit
             key="depth_limit"
