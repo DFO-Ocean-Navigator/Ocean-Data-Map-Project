@@ -1,3 +1,4 @@
+import defopt
 import os
 
 import copernicusmarine
@@ -56,3 +57,6 @@ def main(
 
         for file in file_list:
             os.remove(file)
+
+if __name__ == "__main__":
+    defopt.run(main)
