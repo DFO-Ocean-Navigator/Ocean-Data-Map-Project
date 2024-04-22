@@ -9,25 +9,15 @@ import cmems_glider
 import cmems_nafc_ctd
 
 
-def main(
-    uri: str,
-    output_dir: str,
-):
+def main(uri: str, output_dir: str):
     """
     Downloads today's data for the observation types given in obs_types then adds that
     data to the observation database.
-    Args:
-        uri: The URI string of the MariaDB Observation database
-        output_dir: The directory that you want to save the data to.
-
     Arguments should be passed on commandline. e.g.
-        python scripts/data_importers/sync_cmems_obs.py "mysql://usr:pwd@address/database" "/data/nrt.cmems-du.eu/"
+    python scripts/data_importers/sync_cmems_obs.py "mysql://usr:pwd@address/database" "/data/nrt.cmems-du.eu/"
 
-    Observation types are:
-        GL: glider
-        DB: drifter
-        PF: profiling float (argo)
-        CT: CTD
+    :param uri: The URI string of the MariaDB Observation database
+    :param output_dir: The directory that you want to save the data to.
     """
 
     obs_types = ["GL", "DB", "PF", "CT"]
