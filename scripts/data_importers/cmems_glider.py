@@ -5,7 +5,7 @@ import os
 import sys
 
 import defopt
-import seawater
+import gsw
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -54,7 +54,9 @@ def main(uri: str, filename: str):
                     .dropna()
                 )
 
-                df["DEPTH"] = seawater.dpth(df.PRES, df.LATITUDE)
+                ds["DEPTH"] = abs(
+                    gsw.conversions.z_from_p(ds.PRES.values, ds.LATITUDE.values)
+                )
 
                 for variable in variables:
                     if variable not in datatype_map:
