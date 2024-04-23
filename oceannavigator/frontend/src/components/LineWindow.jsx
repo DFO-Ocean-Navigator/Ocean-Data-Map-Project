@@ -30,7 +30,7 @@ class LineWindow extends React.Component {
       colormap_diff: "default", // Colourmap for difference plot
       showmap: true,
       surfacevariable: "none",
-      linearthresh: 200,
+      linearthresh: 0,
       size: "10x7",
       dpi: 144,
       depth_limit: false,
