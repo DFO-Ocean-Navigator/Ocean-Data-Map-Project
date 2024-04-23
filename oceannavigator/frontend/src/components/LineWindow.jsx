@@ -4,7 +4,6 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./ColormapRange.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
-import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
