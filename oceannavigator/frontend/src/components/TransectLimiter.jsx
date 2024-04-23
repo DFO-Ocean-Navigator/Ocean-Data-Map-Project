@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-class DepthLimit extends React.Component {
+class TransectLimiter extends React.Component {
   constructor(props) {
     super(props);
 
@@ -46,17 +46,15 @@ class DepthLimit extends React.Component {
   }
 
   render() {
-    _("Depth Limit");
-    _("Limit Depth");
     return (
-      <div className="DepthLimit">
-        <h1 className="depthlimit-title">{_("Depth Limit")}</h1>
+      <div className="TransectLimiter">
+        
 
         <Form.Check
           type="checkbox"
           checked={this.state.limit}
           onChange={this.enableChecked}
-          label={_("Limit Depth")}
+          label={this.props.title}
         />
 
         <div style={{ display: this.state.limit ? "block" : "none" }}>
@@ -65,7 +63,6 @@ class DepthLimit extends React.Component {
             id="depth"
             state={this.state.value}
             onUpdate={this.onUpdate}
-            title={_("Depth Limit")}
           />
         </div>
       </div>
@@ -74,10 +71,10 @@ class DepthLimit extends React.Component {
 }
 
 //***********************************************************************
-DepthLimit.propTypes = {
+TransectLimiter.propTypes = {
   onUpdate: PropTypes.func,
   id: PropTypes.string,
   state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
 };
 
-export default withTranslation()(DepthLimit);
+export default withTranslation()(TransectLimiter);

@@ -452,14 +452,14 @@ msgstr "Appliqué"
 msgid "Time (UTC)"
 msgstr "L'Heure (UTC)"
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:49
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:53
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:64
+#: oceannavigator/frontend/src/components/TransectLimiter.jsx:49
+#: oceannavigator/frontend/src/components/TransectLimiter.jsx:53
+#: oceannavigator/frontend/src/components/TransectLimiter.jsx:64
 msgid "Depth Limit"
 msgstr "Limite de Profondeur"
 
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:50
-#: oceannavigator/frontend/src/components/DepthLimit.jsx:56
+#: oceannavigator/frontend/src/components/TransectLimiter.jsx:50
+#: oceannavigator/frontend/src/components/TransectLimiter.jsx:56
 msgid "Limit Depth"
 msgstr "Limiter la Profondeur"
 

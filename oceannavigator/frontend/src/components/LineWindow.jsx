@@ -6,7 +6,7 @@ import Range from "./ColormapRange.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
-import DepthLimit from "./DepthLimit.jsx";
+import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
@@ -225,20 +225,22 @@ class LineWindow extends React.Component {
             {_("surfacevariable_help")}
           </ComboBox>
 
-          <DepthLimit
+          <TransectLimiter
             key="linearthresh"
             id="linearthresh"
             state={this.state.linearthresh}
             onUpdate={this.onLocalUpdate}
+            title="Linear Threshold"
           >
             {_("linearthresh_help")}
-          </DepthLimit>
+          </TransectLimiter>
 
-          <DepthLimit
+          <TransectLimiter
             key="depth_limit"
             id="depth_limit"
             state={this.state.depth_limit}
             onUpdate={this.onLocalUpdate}
+            title="Limit Depth"
           />
 
           <div
