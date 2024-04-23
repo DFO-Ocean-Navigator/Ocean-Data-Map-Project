@@ -63,6 +63,7 @@ class TransectLimiter extends React.Component {
             id="depth"
             state={this.state.value}
             onUpdate={this.onUpdate}
+            title={this.props.parameter}
           />
         </div>
       </div>
