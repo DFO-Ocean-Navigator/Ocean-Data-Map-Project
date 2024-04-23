@@ -5,7 +5,6 @@ import os
 import sys
 
 import defopt
-import gsw
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -52,10 +51,6 @@ def main(uri: str, filename: str):
                     .to_dataframe()
                     .reset_index()
                     .dropna()
-                )
-
-                ds["DEPTH"] = abs(
-                    gsw.conversions.z_from_p(ds.PRES.values, ds.LATITUDE.values)
                 )
 
                 for variable in variables:
