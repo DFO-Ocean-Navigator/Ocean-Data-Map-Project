@@ -161,6 +161,7 @@ const MainMap = forwardRef((props, ref) => {
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
+    initialView: initialView,
   }));
 
   useEffect(() => {
@@ -1171,6 +1172,11 @@ const MainMap = forwardRef((props, ref) => {
       map1layers[5].setSource(newVectorSource);
       map1layers[6].setSource(newObsDrawSource);
     }
+  };
+
+  const initialView = (mapState) => {
+    const newMapView = createMapView(mapState.center, "EPSG:3857", mapState.zoom);
+    map0.setView(newMapView);
   };
 
   const removeMapInteractions = (map, type) => {

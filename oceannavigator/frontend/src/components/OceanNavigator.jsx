@@ -85,7 +85,7 @@ function OceanNavigator(props) {
         setVectorType(query.vectorType);
         setVectorCoordinates(query.vectorCoordinates);
         setSelectedCoordinates(query.selectedCoordinates);
-        setMapState(query.mapState)
+        mapRef.current.initialView(query.mapState);
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -472,6 +472,7 @@ function OceanNavigator(props) {
         updateUI={updateUI}
         updateMapState={updateMapState}
         compareDatasets={compareDatasets}
+
       />
       <MapInputs
         dataset0={dataset0}
