@@ -62,10 +62,12 @@ def configure_exception_handlers(app: FastAPI) -> None:
     async def resource_not_found_handler(request: Request, exception) -> JSONResponse:
         return JSONResponse(status_code=404, content={"message": str(exception)})
 
+
 def configure_pyinstrument(app: FastAPI) -> None:
     settings = get_settings()
 
-    if settings.profilng:
+    if settings.profiling:
+
         @app.middleware("http")
         async def profile_request(request: Request, call_next):
             profiling = request.query_params.get("profile", False)
@@ -77,7 +79,7 @@ def configure_pyinstrument(app: FastAPI) -> None:
                 return HTMLResponse(profiler.output_html())
             else:
                 return await call_next(request)
-    
+
 
 def create_app() -> FastAPI:
     get_settings.cache_clear()
@@ -88,7 +90,7 @@ def create_app() -> FastAPI:
     DatasetConfig._get_dataset_config.cache_clear()
     DatasetConfig._get_dataset_config()
 
-    pathlib.Path('oceannavigator/frontend/public').mkdir(parents=True, exist_ok=True)
+    pathlib.Path("oceannavigator/frontend/public").mkdir(parents=True, exist_ok=True)
 
     routes = [
         Mount(
