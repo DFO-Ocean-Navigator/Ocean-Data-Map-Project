@@ -6,11 +6,12 @@ USER root
 RUN apt-get update && apt-get -y install curl gnupg2 && chown anaconda /home/anaconda/.bashrc
 
 USER anaconda
-SHELL ["/bin/bash", "-c"]
 
 ENV PYTHONUNBUFFERED 1
 ENV NVM_DIR /home/anaconda/.nvm
 ENV NODE_VERSION=20.11.1
+ENV BASH_ENV=/home/anaconda/.bashrc
+SHELL ["/bin/bash", "-c"]
 
 RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash
 
