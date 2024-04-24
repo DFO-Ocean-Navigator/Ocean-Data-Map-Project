@@ -231,11 +231,12 @@ function EnterCoordsWindow(props) {
             </ToggleButton>
           ))}
         </div>
-        <Button className="plot-button" onClick={handleUpload}>
+        <Button className="plot-button" id = "Upload-CSV" onClick={handleUpload}>
           {__("Upload CSV")}
         </Button>
         <Button
           className="plot-button"
+          id="plot-button" // Add the id attribute here
           onClick={handlePlot}
           disabled={plotDisabled}
         >
