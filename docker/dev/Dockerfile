@@ -3,7 +3,11 @@ FROM docker.io/datajoint/miniconda3
 
 USER root
 
-RUN apt-get update && apt-get -y install curl gnupg2 && chown anaconda /home/anaconda/.bashrc && chmod -R 775 /home/anaconda
+RUN apt-get update && \
+	apt-get -y install curl gnupg2 && \
+	chown anaconda /home/anaconda/.bashrc && \
+	chmod -R 776 /home/anaconda && \
+	chmod 775 /opt/conda/*
 
 USER anaconda
 
