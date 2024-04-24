@@ -59,6 +59,7 @@ function OceanNavigator(props) {
     showObservationTools: false,
   });
   const [mapState, setMapState] = useState({});
+  const [initialMapView, setInitialMapView] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [vectorId, setVectorId] = useState(null);
@@ -85,7 +86,7 @@ function OceanNavigator(props) {
         setVectorType(query.vectorType);
         setVectorCoordinates(query.vectorCoordinates);
         setSelectedCoordinates(query.selectedCoordinates);
-        mapRef.current.initialView(query.mapState);
+        setInitialMapView(query.mapState)
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -440,6 +441,7 @@ function OceanNavigator(props) {
       modalTitle = __("Info/Help");
       break;
   }
+
   return (
     <div className="OceanNavigator">
       <ScaleViewer
@@ -459,6 +461,7 @@ function OceanNavigator(props) {
       ) : null}
       <MainMap
         ref={mapRef}
+        initialMapView={initialMapView}
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}

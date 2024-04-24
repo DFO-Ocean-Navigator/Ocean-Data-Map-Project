@@ -161,7 +161,6 @@ const MainMap = forwardRef((props, ref) => {
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
-    initialView: initialView,
   }));
 
   useEffect(() => {
@@ -451,6 +450,13 @@ const MainMap = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
+
+  useEffect(() => {
+    if (map0) {
+      const newMapView = createMapView(props.initialMapView.center, props.mapSettings.projection, props.initialMapView.zoom);
+      map0.setView(newMapView);
+    }
+  }, [props.initialMapView])
 
   const createMapView = (center, projection, zoom) => {
     const newMapView = new View({
@@ -1114,10 +1120,10 @@ const MainMap = forwardRef((props, ref) => {
                 feat.set(
                   "name",
                   feat.get("name") +
-                    "<span>" +
-                    "RMS Error: " +
-                    feat.get("error").toPrecision(3) +
-                    "</span>"
+                  "<span>" +
+                  "RMS Error: " +
+                  feat.get("error").toPrecision(3) +
+                  "</span>"
                 );
               }
               if (id) {
@@ -1174,10 +1180,6 @@ const MainMap = forwardRef((props, ref) => {
     }
   };
 
-  const initialView = (mapState) => {
-    const newMapView = createMapView(mapState.center, "EPSG:3857", mapState.zoom);
-    map0.setView(newMapView);
-  };
 
   const removeMapInteractions = (map, type) => {
     const interactions = map.getInteractions();
