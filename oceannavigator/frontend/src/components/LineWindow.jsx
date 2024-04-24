@@ -229,8 +229,8 @@ class LineWindow extends React.Component {
             id="linearthresh"
             state={this.state.linearthresh}
             onUpdate={this.onLocalUpdate}
-            title="Exponential Plot"
-            parameter="Linear Threshold"
+            title={_("Exponential Plot")}
+            parameter={_("Linear Threshold")}
           >
             {_("linearthresh_help")}
           </TransectLimiter>
@@ -240,8 +240,8 @@ class LineWindow extends React.Component {
             id="depth_limit"
             state={this.state.depth_limit}
             onUpdate={this.onLocalUpdate}
-            title="Limit Depth"
-            parameter="Depth"
+            title={_("Limit Depth")}
+            parameter={_("Depth")}
           />
 
           <div
