@@ -3,7 +3,7 @@ FROM docker.io/datajoint/miniconda3
 
 USER root
 
-RUN apt-get update && apt-get -y install curl gnupg2 && chown anaconda /home/anaconda/.bashrc
+RUN apt-get update && apt-get -y install curl gnupg2 && chown anaconda /home/anaconda/.bashrc && chmod -R 775 /home/anaconda
 
 USER anaconda
 
@@ -38,4 +38,4 @@ RUN apt-get -y remove curl gnupg2 && apt -y autoremove
 
 USER anaconda
 
-CMD bin/runserver.sh 5000
+CMD bash -c 'conda activate navigator;python runserver.py'
