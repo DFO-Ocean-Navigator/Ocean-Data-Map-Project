@@ -6,6 +6,7 @@ USER root
 RUN apt-get update && apt-get -y install curl gnupg2 && chown anaconda /home/anaconda/.bashrc
 
 USER anaconda
+SHELL ["/bin/bash", "-c"]
 
 ENV PYTHONUNBUFFERED 1
 ENV NVM_DIR /home/anaconda/.nvm
