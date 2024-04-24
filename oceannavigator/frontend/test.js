@@ -198,25 +198,90 @@ const puppeteer = require('puppeteer');
 
     await new Promise(r=>setTimeout(r,5000))
     
-    // Wait for the "Upload CSV" button to become visible inside the modal
-    await page.waitForSelector('.plot-button-container .plot-button');
-    console.log('Button "Upload CSV" is visible inside the modal.');
+    // // Wait for the "Upload CSV" button to become visible inside the modal
+    // await page.waitForSelector('.plot-button-container .plot-button');
+    // console.log('Button "Upload CSV" is visible inside the modal.');
 
-    // Click on the "Upload CSV" button
-    // await page.click('.plot-button-container .plot-button');
-    await page.click('#Upload-CSV');
-    console.log('Clicked on the button "Upload CSV".');
+    // // Click on the "Upload CSV" button
+    // // await page.click('.plot-button-container .plot-button');
+    // await page.click('#Upload-CSV');
+    // console.log('Clicked on the button "Upload CSV".');
 
-     // Wait for the file input to become visible
-     await page.waitForSelector('input[type=file]');
-     console.log('File input is visible.');
+    //  // Wait for the file input to become visible
+    //  await page.waitForSelector('input[type=file]');
+    //  console.log('File input is visible.');
  
-     // Upload the CSV file
+    //  // Upload the CSV file
      
-    const filePath = 'oceannavigator/SeleniumData/Total Area Great Lakes 1.csv';
-    const fileInput = await page.$('input[type=file]');
-    await fileInput.uploadFile(filePath);
-    console.log('CSV file uploaded successfully.');
+    // const filePath = 'oceannavigator/SeleniumData/Total Area Great Lakes 1.csv';
+    // const fileInput = await page.$('input[type=file]');
+    // await fileInput.uploadFile(filePath);
+    // console.log('CSV file uploaded successfully.');
+
+    // Wait for the "Add" button to become visible
+    await page.waitForSelector('#add');
+    console.log('Button "Add" is visible.');
+
+    // Wait for the latitude input field to become available for 1st time
+    await page.waitForSelector('input#Latitude[type="number"][min="-90"][max="90"]');
+
+    // Enter latitude value into the input field
+    await page.type('input#Latitude[type="number"][min="-90"][max="90"]', '45.9945');
+
+    // Wait for the longitude input field to become available
+    await page.waitForSelector('input#Longitude[type="number"][min="-180"][max="180"]');
+
+    // Enter longitude value into the input field
+    await page.type('input#Longitude[type="number"][min="-180"][max="180"]', '-57.6699');
+
+    // Wait for the "Add" button to become available
+    await page.waitForSelector('button#add');
+
+    // Click on the "Add" button
+    await page.click('button#add');
+    console.log('Clicked on the button "Add" for 1st time.');
+
+    await new Promise(r=>setTimeout(r,5000))
+
+    // Wait for the latitude input field to become available for 2nd time
+    await page.waitForSelector('input#Latitude[type="number"][min="-90"][max="90"]');
+
+    // Enter latitude value into the input field
+    await page.type('input#Latitude[type="number"][min="-90"][max="90"]', '45.559');
+
+    // Wait for the longitude input field to become available
+    await page.waitForSelector('input#Longitude[type="number"][min="-180"][max="180"]');
+
+    // Enter longitude value into the input field
+    await page.type('input#Longitude[type="number"][min="-180"][max="180"]', '-56.9418');
+
+    // Wait for the "Add" button to become available
+    await page.waitForSelector('button#add');
+
+    // Click on the "Add" button
+    await page.click('button#add');
+    console.log('Clicked on the button "Add" for 2nd time.');
+
+    await new Promise(r=>setTimeout(r,5000))
+
+    // Wait for the latitude input field to become available for 3rd time
+    await page.waitForSelector('input#Latitude[type="number"][min="-90"][max="90"]');
+
+    // Enter latitude value into the input field
+    await page.type('input#Latitude[type="number"][min="-90"][max="90"]', '45.9945');
+
+    // Wait for the longitude input field to become available
+    await page.waitForSelector('input#Longitude[type="number"][min="-180"][max="180"]');
+
+    // Enter longitude value into the input field
+    await page.type('input#Longitude[type="number"][min="-180"][max="180"]', '-57.6699');
+
+    // Wait for the "Add" button to become available
+    await page.waitForSelector('button#add');
+
+    // Click on the "Add" button
+    await page.click('button#add');
+    console.log('Clicked on the button "Add" for 3rd time.');
 
     await new Promise(r=>setTimeout(r,8000))
 
@@ -224,10 +289,27 @@ const puppeteer = require('puppeteer');
     await page.click('#radio-2');
     console.log('Clicked on the button "Area".');
 
-     // Click on the "Plot" button
-    // await page.click('.plot-button-container .plot-button');
-    await page.click('#plot-button');
-    console.log('Clicked on the button "Plot".');
+    await new Promise(r=>setTimeout(r,8000))
+
+    // Check if the "Plot" button is disabled
+    const isPlotButtonDisabled = await page.evaluate(() => {
+      const plotButton = document.getElementById('plot-button');
+      return plotButton ? plotButton.disabled : true; // If button not found, consider it as disabled
+    });
+
+    if (isPlotButtonDisabled) {
+      console.log('Button "Plot" is disabled.');
+    } else {
+      console.log('Button "Plot" is enabled.');
+    }
+
+    // Click on the "Plot" button only if it's not disabled
+    if (!isPlotButtonDisabled) {
+      await page.click('#plot-button');
+      console.log('Clicked on the button "Plot".');
+    } else {
+      console.log('Cannot click on the disabled button "Plot".');
+    }
 
     // Wait for the modal to appear
     await page.waitForSelector('.modal-title');
@@ -242,18 +324,6 @@ const puppeteer = require('puppeteer');
     });
 
     console.log('Modal title:', modalTitle1);
-
-    // Check if "Area Settings" is present in the modal content
-    const isAreaSettingsPresent = await page.evaluate(() => {
-      const modalContent = document.querySelector('.modal-content');
-      return modalContent ? modalContent.innerText.includes('Area Settings') : false;
-    });
-
-    if (isAreaSettingsPresent) {
-      console.log('"Area Settings" is present in the modal.');
-    } else {
-      console.log('"Area Settings" is not present in the modal.');
-    }
 
   } catch (error) {
     console.error('Error:', error);
