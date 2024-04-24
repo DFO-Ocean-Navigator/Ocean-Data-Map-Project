@@ -1,33 +1,39 @@
-# build Ocean Navigator runtime image
-FROM docker.io/library/alpine:3.18.3
+# build Ocean Navigator development image
+FROM docker.io/datajoint/miniconda3
+
+USER root
+
+RUN apt-get update && apt-get -y install curl gnupg2
+
+USER anaconda
 
 ENV PYTHONUNBUFFERED 1
-ENV NODE_VERSION=12.22.1
+ENV NVM_DIR /home/anaconda/.nvm
+ENV NODE_VERSION=20.11.1
 
-# install runtime requirements
-COPY docker/dev/requirements.apk requirements.apk
-RUN apk -U add $(cat requirements.apk)
+RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash
 
-# install build requirements
-RUN apk -U add build-base curl proj-dev gdal-dev geos-dev hdf5-dev netcdf-dev openblas-dev freetype-dev python3-dev py3-pip -t .build-deps
+RUN . $NVM_DIR/nvm.sh && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default
 
-# install unofficial node-musl build
-RUN checksum=$(curl -sSL --compressed "https://unofficial-builds.nodejs.org/download/release/v${NODE_VERSION}/SHASUMS256.txt" | grep "node-v${NODE_VERSION}-linux-x64-musl.tar.xz" | cut -d' ' -f1) \
-    && curl -fsSLO --compressed "https://unofficial-builds.nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64-musl.tar.xz"; \
-    echo "$checksum  node-v$NODE_VERSION-linux-x64-musl.tar.xz" | sha256sum -c - \
-      && tar -xJf "node-v$NODE_VERSION-linux-x64-musl.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
-      && ln -sf /usr/local/bin/node /usr/local/bin/nodejs \
-      && rm -f "node-v$NODE_VERSION-linux-x64-musl.tar.xz" \
-      && node --version \
-      && npm --version
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
-# install python dependencies
-COPY docker/dev/requirements.txt requirements.txt
-RUN pip install -U pip && pip install  -r requirements.txt
+COPY --chown=anaconda:anaconda . /main
 
-# install code and frontend dependencies
-RUN mkdir /app
-COPY . /app
-WORKDIR /app/oceannavigator/frontend
+RUN conda create --quiet --name navigator --file config/conda/navigator-spec-file.txt
+RUN conda activate navigator && pip install pydantic-settings==2.1.0 python-dotenv==1.0.0 visvalingamwyatt==0.2.0
+
+WORKDIR /main/oceannavigator/frontend
 RUN npm install
-WORKDIR /app
+
+WORKDIR /main
+
+USER root
+RUN apt-get -y remove curl gnupg2 && apt -y autoremove
+
+USER anaconda
+
+CMD bin/runserver.sh 5000
