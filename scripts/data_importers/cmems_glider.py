@@ -15,7 +15,7 @@ sys.path.append(parent)
 
 from data.observational import DataType, Platform, Sample, Station
 
-VARIABLES = ["PSAL", "TEMP", "CNDC"]
+VARIABLES = ["PRES", "PSAL", "TEMP", "CNDC"]
 
 
 def main(uri: str, filename: str):
@@ -47,7 +47,7 @@ def main(uri: str, filename: str):
             with xr.open_dataset(fname) as ds:
                 variables = [v for v in VARIABLES if v in ds.variables]
                 df = (
-                    ds[["TIME", "LATITUDE", "LONGITUDE", "PRES", *variables]]
+                    ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
                     .to_dataframe()
                     .reset_index()
                     .dropna()
