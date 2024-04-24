@@ -10,6 +10,7 @@ from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from pyinstrument import Profiler
+from pyinstrument.renderers import SpeedscopeRenderer
 
 from oceannavigator.dataset_config import DatasetConfig
 
@@ -74,9 +75,11 @@ def configure_pyinstrument(app: FastAPI) -> None:
             if profiling:
                 profiler = Profiler(interval=0.01, async_mode="enabled")
                 profiler.start()
-                await call_next(request)
+                response = await call_next(request)
                 profiler.stop()
-                return HTMLResponse(profiler.output_html())
+                with open('profile.speedscope.json', 'w') as f:
+                    f.write(profiler.output(renderer=SpeedscopeRenderer()))
+                return response
             else:
                 return await call_next(request)
 
