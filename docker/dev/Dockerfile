@@ -9,7 +9,7 @@ USER anaconda
 
 ENV PYTHONUNBUFFERED 1
 ENV NVM_DIR /home/anaconda/.nvm
-ENV NODE_VERSION=20.11.1
+ENV NODE_VERSION=20.12.2
 ENV BASH_ENV=/home/anaconda/.bashrc
 SHELL ["/bin/bash", "-c"]
 
