@@ -50,7 +50,6 @@ class AreaWindow extends React.Component {
       syncLocalToGlobalState: false,
       showarea: true,
       surfacevariable: "none",
-      linearthresh: 200,
       bathymetry: true, // Show bathymetry on map
       plotTitle: undefined,
       quiver: {

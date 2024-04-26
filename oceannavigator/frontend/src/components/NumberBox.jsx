@@ -97,11 +97,6 @@ class NumberBox extends React.Component {
           <tbody>
             <tr>
               <td>
-                <label className="table-label" htmlFor={this.props.id}>
-                  {_("Value:")}
-                </label>
-              </td>
-              <td>
                 <input
                   className="table-input"
                   type="number"
