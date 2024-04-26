@@ -5640,7 +5640,7 @@ fieldset:disabled .btn {
 @media (min-width: 992px) {
   .modal-lg,
   .modal-xl {
-    --bs-modal-width: 60%;
+    --bs-modal-width: 1600px;
   }
 }
 @media (min-width: 1200px) {
