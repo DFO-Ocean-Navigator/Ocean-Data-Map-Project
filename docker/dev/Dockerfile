@@ -6,7 +6,7 @@ USER root
 RUN apt-get update && \
 	apt-get -y install curl gnupg2 && \
 	chmod -R 777 /home/anaconda && \
-	chmod 775 /opt/conda/*
+	chmod -R o+rX /opt/conda
 
 USER anaconda
 
