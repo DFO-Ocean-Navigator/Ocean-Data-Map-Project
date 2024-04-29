@@ -5,7 +5,6 @@ import os
 import sys
 
 import defopt
-import seawater
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -16,7 +15,7 @@ sys.path.append(parent)
 
 from data.observational import DataType, Platform, Sample, Station
 
-VARIABLES = ["PSAL", "TEMP", "CNDC"]
+VARIABLES = ["PRES", "PSAL", "TEMP", "CNDC"]
 
 
 def main(uri: str, filename: str):
@@ -34,10 +33,13 @@ def main(uri: str, filename: str):
 
     with Session(engine) as session:
 
-        if os.path.isdir(filename):
-            filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        if not isinstance(filename, list):
+            if os.path.isdir(filename):
+                filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+            else:
+                filenames = [filename]
         else:
-            filenames = [filename]
+            filenames = filename
 
         datatype_map = {}
         for fname in filenames:
@@ -45,13 +47,11 @@ def main(uri: str, filename: str):
             with xr.open_dataset(fname) as ds:
                 variables = [v for v in VARIABLES if v in ds.variables]
                 df = (
-                    ds[["TIME", "LATITUDE", "LONGITUDE", "PRES", *variables]]
+                    ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
                     .to_dataframe()
                     .reset_index()
                     .dropna()
                 )
-
-                df["DEPTH"] = seawater.dpth(df.PRES, df.LATITUDE)
 
                 for variable in variables:
                     if variable not in datatype_map:
