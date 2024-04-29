@@ -3,10 +3,7 @@ FROM docker.io/datajoint/miniconda3
 
 USER root
 
-RUN apt-get update && \
-	apt-get -y install curl gnupg2 && \
-	chmod -R 777 /home/anaconda && \
-	chmod -R o+rX /opt/conda
+RUN apt-get update && apt-get -y install curl gnupg2
 
 USER anaconda
 
@@ -37,7 +34,9 @@ RUN npm install
 WORKDIR /main
 
 USER root
-RUN apt-get -y remove curl gnupg2 && apt -y autoremove
+RUN apt-get -y remove curl gnupg2 && apt -y autoremove && \
+	chmod -R 777 /home/anaconda && \
+	chmod -R o+rX /opt/conda
 
 USER anaconda
 
