@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     observation_agg_url: str = ""
     overlay_kml_dir: str = ""
     profiling: bool = False
+    profiling_dir: str = ""
     sentry_env: str = ""
     sentry_traces_rate: int = 0
     shape_file_dir: str = ""
