@@ -958,10 +958,14 @@ class TransectPlotter(LinePlotter):
         ax = plt.gca()
         ax.set_title(plotTitle, fontsize=14)  # Set title of subplot
         ax.invert_yaxis()
-        if self.depth_limit is None or (
+
+        if self.linearthresh == 0:
+            plt.yscale("linear")
+        elif self.depth_limit is None or (
             self.depth_limit is not None and self.linearthresh < self.depth_limit
         ):
             plt.yscale("symlog", linthresh=self.linearthresh)
+
 
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
