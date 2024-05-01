@@ -356,7 +356,7 @@ class PlotImage extends React.PureComponent {
 
         <ButtonToolbar className="button-bar">
           <DropdownButton
-            id="save"
+            id="save-image"
             title={
               <span>
                 <Icon icon="save" /> {_("Save Image")}

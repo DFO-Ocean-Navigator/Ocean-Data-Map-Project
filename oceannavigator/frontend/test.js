@@ -2,20 +2,22 @@ const puppeteer = require('puppeteer');
 
 (async () => {
   // Launch a non-headless browser
-  const browser = await puppeteer.launch({
-    headless: false,
-    slowMo: 100, // 100 milliseconds of delay between actions
-    ignoreHTTPSErrors: true,
-    ignoreDefaultArgs: ['--disable-extensions', '--disable-setuid-sandbox', '--disable-web-security'],
-    args: ['--window-size=800,600'] // Set the initial window size
-  });
-
-  // Open a new page
-  const page = await browser.newPage();
-
-  // Navigate to the webpage
   try {
-    await page.goto('https://142.130.125.45:8443/public/');
+    const browser = await puppeteer.launch({
+      headless: false,
+      slowMo: 100, // 100 milliseconds of delay between actions
+      ignoreHTTPSErrors: true,
+      ignoreDefaultArgs: ['--disable-extensions', '--disable-setuid-sandbox', '--disable-web-security'],
+      // args: ['--window-size=800,600'] // Set the initial window size
+      args: ['--remote-debugging-port=9222', '--remote-debugging-address=0.0.0.0', '--no-sandbox', '--window-size=800,600'],
+    });
+
+    // Open a new page
+    const page = await browser.newPage();
+
+    // Navigate to the webpage
+
+    await page.goto('https://142.130.125.20:8443/public/');
     console.log('URL Hit successfully!');
 
     await new Promise(r => setTimeout(r, 5000))
@@ -48,15 +50,10 @@ const puppeteer = require('puppeteer');
       console.log("Modal is open, but the title is not 'Enter Coordinates'.");
     }
 
-    await enterCoordinates(page, '45.9945', '-57.6699'); // First set of coordinates
-    await enterCoordinates(page, '45.559', '-56.9418'); // Second set of coordinates
-    await enterCoordinates(page, '45.9945', '-57.6699'); // Third set of coordinates
+    await new Promise(r => setTimeout(r, 2000))
 
-    await new Promise(r=>setTimeout(r,8000))
-
-      // Fetch the ID of the "Area" button from the UI
+    // Fetch the ID of the "Area" button from the UI
     const areaButtonId = await page.evaluate(() => {
-      // Query the "Area" button element and extract its ID attribute
       const areaButton = document.querySelector('[name="radio"][value="area"]');
       return areaButton ? areaButton.id : null;
     });
@@ -65,14 +62,21 @@ const puppeteer = require('puppeteer');
     if (areaButtonId) {
       console.log('ID of the "Area" button:', areaButtonId);
       // Click on the "Area" button using the fetched ID
-      await page.click(`#${areaButtonId}`);
+
+      await page.evaluate(() => {
+        document.querySelector('[name="radio"][value="area"]').click();
+      });
+
       console.log('Clicked on the button "Area".');
     } else {
       console.error('Failed to fetch the ID of the "Area" button.');
     }
 
+    await enterCoordinates(page, '45.3181', '-59.3802'); // First set of coordinates
+    await enterCoordinates(page, '45.559', '-56.9418'); // Second set of coordinates
+    await enterCoordinates(page, '45.9945', '-57.6699'); // Third set of coordinates
 
-    await new Promise(r=>setTimeout(r,8000))
+    await new Promise(r => setTimeout(r, 8000))
 
     // Check if the "Plot" button is disabled
     const isPlotButtonDisabled = await page.evaluate(() => {
@@ -98,7 +102,7 @@ const puppeteer = require('puppeteer');
     await page.waitForSelector('.modal-title');
     console.log('Modal is visible.');
 
-    await new Promise(r=>setTimeout(r,5000))
+    await new Promise(r => setTimeout(r, 5000))
 
     // Fetch the title of the modal
     const modalTitle1 = await page.evaluate(() => {
@@ -119,22 +123,22 @@ const puppeteer = require('puppeteer');
     });
 
     // console.log('Image source:', imgSrc);
-    
+
     // Fetch the div class name where the "Save Image" button is present using its id
     const saveImageDivClassName = await page.evaluate(() => {
-      const saveImageButton = document.getElementById('save');
+      const saveImageButton = document.getElementById('save-image');
       return saveImageButton ? saveImageButton.closest('div').className : 'Save Image button not found';
     });
 
     console.log('Div class name where the "Save Image" button is present:', saveImageDivClassName);
 
-    await new Promise(r=>setTimeout(r,8000))
+    await new Promise(r => setTimeout(r, 8000))
 
     // Fetch the ID of the "Save Image" button from the UI
     const saveImageButtonId = await page.evaluate(() => {
       // Query the "Save Image" button element and extract its ID attribute
       // const saveImageButton = document.querySelector('#save');
-      const saveImageButton = document.getElementById('save')
+      const saveImageButton = document.getElementById('save-image')
 
       return saveImageButton ? saveImageButton.id : null;
     });
@@ -145,17 +149,18 @@ const puppeteer = require('puppeteer');
       // Click on the "Save Image" button using the fetched ID
       await page.click(`#${saveImageButtonId}`);
       console.log('Clicked on the button "Save Image".');
-    
+
       // Wait for the dropdown menu to become available
       await page.waitForSelector('.dropdown-menu.show');
-    
+
       // Select the PNG option directly by its value
-      await page.select('.dropdown-menu.show', 'png');
+      // await page.select('.dropdown-menu.show', 'png');
+      await page.click('#png');
       console.log('Selected the PNG option.');
     } else {
       console.error('Failed to fetch the ID of the "Save Image" button.');
     }
-    
+
 
     // // Wait for the "Arrows" dropdown to become available
     // await page.waitForSelector('#quiver select');
