@@ -191,6 +191,7 @@ function EnterCoordsWindow(props) {
             <label>{__("Latitude")}:</label>
             <input
               type="number"
+              id="Latitude"
               min="-90"
               max="90"
               step="0.0001"
@@ -200,13 +201,14 @@ function EnterCoordsWindow(props) {
             <label>{__("Longitude")}:</label>
             <input
               type="number"
+              id="Longitude"
               min="-180"
               max="180"
               step="0.0001"
               value={enteredLon}
               onChange={lonChangeHandler}
             />
-            <button type="submit">{__("Add")}</button>
+            <button type="submit" id="add">{__("Add")}</button>
             <button type="button" onClick={handleClear}>
               {__("Clear")}
             </button>
