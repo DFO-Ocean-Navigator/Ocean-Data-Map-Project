@@ -93,6 +93,7 @@
     "Error: you are trying to create a plot that is wider than the world.         The desired information is ambiguous please select a smaller area and try again": "Vous avez demander pour une région plus gros que notre planète.                                         Les graphe droit être mois que 360 deg de largeur.",
     "Esri Ocean Basemap": "Esri Basemap d'Océans",
     "Esri World Imagery": "Esri Imagerie Globale",
+    "Exponential Plot": "Échelle Exponentielle",
     "Fall": "Automne",
     "Feb.": "Fév.",
     "Forecast": "Prévoir",

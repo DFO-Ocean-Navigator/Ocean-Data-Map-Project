@@ -2,10 +2,22 @@ import os
 from functools import lru_cache
 from typing import List
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+
+    env_file: str = os.environ.get(
+        "ONAV_ENV_FILE", "oceannavigator/configs/default.env"
+    )
+
+    model_config = SettingsConfigDict(
+        env_file=env_file,
+        env_prefix="ONAV_",
+        case_sentive=False,
+        env_file_encoding="utf-8",
+    )
+
     api_v2_route: str = "/api/v2"
     openapi_route: str = "/api/v2/openapi.json"
 
@@ -29,6 +41,8 @@ class Settings(BaseSettings):
     log_level: str = "DEBUG"
     observation_agg_url: str = ""
     overlay_kml_dir: str = ""
+    profiling: bool = False
+    profiling_dir: str = ""
     sentry_env: str = ""
     sentry_traces_rate: int = 0
     shape_file_dir: str = ""
@@ -43,14 +57,6 @@ class Settings(BaseSettings):
     @property
     def backend_cors_origins(self) -> List[str]:
         return [x.strip() for x in self.backend_cors_origins_str.split(",") if x]
-
-    class Config:
-        case_sentive: bool = False
-        env_prefix: str = "onav_"
-        env_file: str = os.environ.get(
-            "ONAV_ENV_FILE", "oceannavigator/configs/default.env"
-        )
-        env_file_encoding: str = "utf-8"
 
 
 @lru_cache()

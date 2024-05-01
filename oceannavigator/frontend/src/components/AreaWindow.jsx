@@ -14,6 +14,7 @@ import SubsetPanel from "./SubsetPanel.jsx";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
+import { formToJSON } from "axios";
 
 class AreaWindow extends React.Component {
   constructor(props) {
@@ -24,7 +25,7 @@ class AreaWindow extends React.Component {
 
     this.state = {
       currentTab: 1, // Currently selected tab
-      scale: props.dataset_0.scale + ",auto",
+      scale: props.dataset_0.variable_scale + ",auto",
       scale_1: props.dataset_1.scale_1 + ",auto",
       scale_diff: "-10,10,auto",
       leftColormap: "default",
@@ -49,7 +50,6 @@ class AreaWindow extends React.Component {
       syncLocalToGlobalState: false,
       showarea: true,
       surfacevariable: "none",
-      linearthresh: 200,
       bathymetry: true, // Show bathymetry on map
       plotTitle: undefined,
       quiver: {
@@ -86,6 +86,12 @@ class AreaWindow extends React.Component {
     this._mounted = false;
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.dataset_0.variable !== prevProps.dataset_0.variable) {
+      this.setState({ scale: this.props.dataset_0.variable_scale + ",auto", })
+    }
+  }
+
   //Updates Plot with User Specified Title
   updatePlotTitle(title) {
     if (title !== this.state.plotTitle) {
@@ -115,6 +121,14 @@ class AreaWindow extends React.Component {
         return;
       }
 
+      if (key === "scale") {
+        if (value.constructor === Array) {
+          value = value[0] + ',' + value[1]
+        }
+        this.setState({ scale: value });
+        return;
+      }
+
       let newState = {};
       if (typeof key === "string") {
         newState[key] = value;
@@ -125,6 +139,12 @@ class AreaWindow extends React.Component {
       }
       this.setState(newState);
     }
+  }
+
+  compareChanged(checked) {
+    let newScale = checked ? "-10,10,auto" : this.props.dataset_0.variable_scale + ",auto"
+    this.setState({ scale: newScale });
+    this.props.setCompareDatasets(checked)
   }
 
   onTabChange(index) {
@@ -177,7 +197,7 @@ class AreaWindow extends React.Component {
             id="dataset_compare"
             key="dataset_compare"
             checked={this.props.dataset_compare}
-            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
+            onUpdate={(_, checked) => this.compareChanged(checked)}
             title={_("Compare Datasets")}
           />
 
@@ -191,24 +211,24 @@ class AreaWindow extends React.Component {
             {_("Swap Views")}
           </Button>
 
+          <ColormapRange
+            auto
+            key="scale"
+            id="scale"
+            state={this.state.scale.split(',')}
+            onUpdate={this.onLocalUpdate}
+          />
+
           <div
             style={{
               display:
                 this.props.dataset_compare &&
-                this.state.dataset_0.variable == this.props.dataset_1.variable
+                  this.state.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
           >
-            <ColormapRange
-              auto
-              key="scale_diff"
-              id="scale_diff"
-              state={this.state.scale_diff}
-              def={""}
-              onUpdate={this.onLocalUpdate}
-              title={_("Diff. Variable Range")}
-            />
+
             <ComboBox
               key="colormap_diff"
               id="colormap_diff"
@@ -395,7 +415,7 @@ class AreaWindow extends React.Component {
         plot_query.neighbours = this.props.mapSettings.interpNeighbours;
         plot_query.plotTitle = this.state.plotTitle;
         if (this.props.dataset_compare) {
-          plot_query.compare_to = {...this.props.dataset_1};
+          plot_query.compare_to = { ...this.props.dataset_1 };
           plot_query.compare_to.dataset = this.props.dataset_1.id;
           plot_query.compare_to.scale = this.state.scale_1;
           plot_query.compare_to.scale_diff = this.state.scale_diff;

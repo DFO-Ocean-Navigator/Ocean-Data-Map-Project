@@ -185,11 +185,9 @@ class Plotter(metaclass=ABCMeta):
 
     def __get_linear_threshold(self, linearthresh: str):
 
-        if linearthresh is None or linearthresh == "":
-            linearthresh = 200
+        if linearthresh is None or linearthresh == "" or linearthresh < 0:
+            linearthresh = 0
         linearthresh = float(linearthresh)
-        if not linearthresh > 0:
-            linearthresh = 1
 
         return linearthresh
 
