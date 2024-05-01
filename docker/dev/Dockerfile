@@ -36,7 +36,8 @@ WORKDIR /main
 USER root
 RUN apt-get -y remove curl gnupg2 && apt -y autoremove && \
 	chmod -R 777 /home/anaconda && \
-	chmod -R o+rX /opt/conda
+	chmod -R o+rX /opt/conda && \
+	chmod -R o+rwX /main
 
 USER anaconda
 
