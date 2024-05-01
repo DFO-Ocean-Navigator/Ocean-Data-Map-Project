@@ -1,11 +1,12 @@
 import logging
 import pathlib
+import time
 
 import dask
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
@@ -64,24 +65,25 @@ def configure_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=404, content={"message": str(exception)})
 
 
-def configure_pyinstrument(app: FastAPI) -> None:
-    settings = get_settings()
-
-    if settings.profiling:
-
-        @app.middleware("http")
-        async def profile_request(request: Request, call_next):
-            profiling = request.query_params.get("profile", False)
-            if profiling:
-                profiler = Profiler(interval=0.01, async_mode="enabled")
-                profiler.start()
-                response = await call_next(request)
-                profiler.stop()
-                with open('profile.speedscope.json', 'w') as f:
-                    f.write(profiler.output(renderer=SpeedscopeRenderer()))
-                return response
-            else:
-                return await call_next(request)
+def configure_pyinstrument(app: FastAPI, output_dir: str) -> None:
+    @app.middleware("http")
+    async def profile_request(request: Request, call_next):
+        api_path = request.scope["path"]
+        if "/api/v2.0/" in api_path:
+            profiler = Profiler(interval=0.01, async_mode="enabled")
+            profiler.start()
+            response = await call_next(request)
+            profiler.stop()
+            fname = (
+                f"{output_dir}"
+                + f"{api_path.replace("/api/v2.0/", "").replace("/", "_")}_"
+                + f"{int(time.time())}"
+                + ".json")
+            with open(fname, 'w') as f:
+                f.write(profiler.output(renderer=SpeedscopeRenderer()))
+            return response
+        else:
+            return await call_next(request)
 
 
 def create_app() -> FastAPI:
@@ -108,9 +110,10 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware)
 
     configure_sentry(app)
-    configure_pyinstrument(app)
     configure_dask()
     configure_exception_handlers(app)
+    if settings.profiling:
+        configure_pyinstrument(app, settings.profiling_dir)
 
     add_routes(app)
 
