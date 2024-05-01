@@ -29,7 +29,7 @@ RUN conda create --quiet --name navigator --file config/conda/navigator-spec-fil
 RUN conda activate navigator && pip install pydantic-settings==2.1.0 python-dotenv==1.0.0 visvalingamwyatt==0.2.0
 
 WORKDIR /main/oceannavigator/frontend
-RUN npm install && npm run dev
+RUN npm install && npm run build
 
 WORKDIR /main
 
