@@ -14,6 +14,7 @@ from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
 from plotting.grid import bathymetry
 from plotting.line import LinePlotter
+from plotting.profile import ProfilePlotter
 
 settings = get_settings()
 
@@ -547,7 +548,56 @@ class TransectPlotter(LinePlotter):
 
         # Plot the transect on a map
         if self.showmap:
-            utils.path_plot(self.transect_data["points"], gs[0, 0])
+            #utils.path_plot(self.transect_data["points"], gs[0, 0])
+            profile_plot_query = {
+                'dataset': self.query['dataset'],
+                'point': self.query['path'][0],
+                'showmap': False,
+                'type': "profile",
+                'time': self.query['time'],
+                'variable': self.query['variable'],
+             }
+              
+
+            plotter = ProfilePlotter(self.dataset_name, profile_plot_query)
+            profile_img, _mime, _filename = plotter.run()
+            m = plt.subplot(gs[0, 0])
+            m.imshow(
+                profile_img,
+                origin="upper",
+                extent=(-180, 180, -90, 90),
+                zorder=1,
+            )
+
+        #if self.showprofile:
+            
+            
+            # const profile_plot_query = {
+            # dataset: self.query.dataset,
+            # point: self.transect_data["points"][0],
+            # showmap: False,
+            # names: self.query.names,
+            # size: self.query.size,
+            # dpi: self.query.dpi,
+            # 
+
+            # type: "profile",
+            # time: self.query.time,
+            # variable: self.query.variable,
+            # variable_range: self.query.variable_range
+            #  };
+            #   
+
+            #plotter = ProfilePlotter(self.dataset_name, profile_plot_query, **options)
+            #profile_img, _mime, _filename = plotter.run()
+            #m = plt.subplot(gs[0, 0], projection=plot_projection)
+            #m.imshow(
+        #     profile_img,
+        #     origin="upper",
+        #     extent=(-180, 180, -90, 90),
+        #     transform=ccrs.PlateCarree(),
+        #     zorder=1,
+        # )
 
         def do_plot(
             subplots, map_subplot, data, name, cmapLabel, vmin, vmax, units, cmap
