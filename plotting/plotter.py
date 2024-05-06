@@ -2,10 +2,12 @@ import contextlib
 import datetime
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
+from pathlib import Path
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -58,6 +60,8 @@ class Plotter(metaclass=ABCMeta):
             return self.odv_ascii()
         elif self.filetype == "stats":
             return self.stats_csv()
+        elif self.filetype == "nc":
+            return self.netcdf()
         else:
             return self.plot()
 
@@ -341,6 +345,15 @@ class Plotter(metaclass=ABCMeta):
                     buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
+
+    def netcdf(self, dataset):
+
+        path = Path("/tmp/subset")
+        path.mkdir(parents=True, exist_ok=True)
+        working_dir = "/tmp/subset/" + self.filename
+        dataset.to_netcdf(working_dir)
+
+        return working_dir, self.mime, self.filename
 
     def get_variable_names(self, dataset, variables: List[str]) -> List[str]:
         """Returns a list of names for the variables.
