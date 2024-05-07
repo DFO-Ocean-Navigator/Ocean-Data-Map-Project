@@ -347,13 +347,18 @@ class Plotter(metaclass=ABCMeta):
             return (buf.getvalue(), self.mime, self.filename)
 
     def netcdf(self, dataset):
+        filename = (
+            self.query["dataset"]
+            + "_%dN%dW" % (self.query["station"][0][0], self.query["station"][0][1])
+            + f"_{self.query["time"]}_NETCDF4.nc"
+        )
 
         path = Path("/tmp/subset")
         path.mkdir(parents=True, exist_ok=True)
-        working_dir = "/tmp/subset/" + self.filename
+        working_dir = "/tmp/subset/" + filename
         dataset.to_netcdf(working_dir)
 
-        return working_dir, self.mime, self.filename
+        return working_dir, self.mime, filename
 
     def get_variable_names(self, dataset, variables: List[str]) -> List[str]:
         """Returns a list of names for the variables.

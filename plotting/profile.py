@@ -220,7 +220,7 @@ class ProfilePlotter(PointPlotter):
         data_vars = {}
         for idx, variable in enumerate(self.variables):
             data = np.nan * np.ones((1, self.depths.shape[-1], len(pts), len(pts)))
-            data[:, :, idx, idx] = self.data[idx].filled(np.nan) 
+            data[:, :, idx, idx] = self.data[idx].filled(np.nan)
             data_vars[variable] = (
                 dims,
                 data,
