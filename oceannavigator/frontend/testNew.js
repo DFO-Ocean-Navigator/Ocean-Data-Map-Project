@@ -169,7 +169,7 @@ const puppeteer = require('puppeteer');
       console.error('Failed to fetch the ID of the "Save Image" button.');
     }
 
-    // Click on the checkbox to check it
+    // Click on the dataset compare checkbox to check it
     const compareCheckbox = await page.waitForSelector('#dataset_compare');
     await compareCheckbox.click();
 
@@ -198,6 +198,73 @@ const puppeteer = require('puppeteer');
         option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
     }
     });
+
+    // // Wait for the "Variables" title to become available
+    // await page.waitForSelector('h1.combobox-title');
+
+    // // Wait for the "subset" div to become available
+    // await page.waitForSelector('div.subset');
+
+    // // Get the "Variables" title element
+    // const variablesTitle = await page.$('h1.combobox-title');
+
+    // // Get the "subset" div element
+    // const subsetDiv = await page.$('div.subset');
+
+    // // Check if both elements exist
+    // if (variablesTitle && subsetDiv) {
+    //     // Wait for the option element to become available within the subset div
+    //     await subsetDiv.waitForSelector('option[value="sspeed"][data-scale="1410,1560"][data-two_dimensional="false"][data-vector_variable="false"]');
+
+    //     // Click on the option element within the subset div
+    //     await subsetDiv.evaluate(() => {
+    //         const option = document.querySelector('option[value="sspeed"][data-scale="1410,1560"][data-two_dimensional="false"][data-vector_variable="false"]');
+    //         if (option) {
+    //             option.selected = true;
+    //             option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
+    //         }
+    //     });
+    // } else {
+    //     console.error('Variables title or subset div not found');
+    // }
+
+    // Wait for the option element to become available
+    await page.waitForSelector('option[value="sspeed"][data-scale="1410,1560"][data-two_dimensional="false"][data-vector_variable="false"]');
+
+    // Click on the option element
+    await page.evaluate(() => {
+    const option = document.querySelector('option[value="sspeed"][data-scale="1410,1560"][data-two_dimensional="false"][data-vector_variable="false"]');
+    if (option) {
+        option.selected = true;
+        option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    });
+
+
+    // Click on the Zip checkbox to check it
+    const zipCheckbox = await page.waitForSelector('#zip');
+    await zipCheckbox.click();
+
+    console.log('Checked the "compress as *.zip" checkbox.');
+
+    await new Promise(r => setTimeout(r, 5000))
+
+    // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+    await page.waitForSelector('.dd-option-button');
+
+    // Click on the button
+    await page.evaluate(() => {
+      const buttons = document.querySelectorAll('.dd-option-button');
+      for (const button of buttons) {
+        if (button.textContent.trim() === "GIOPS 10 day Forecast 3D - LatLon") {
+          button.click();
+          break;
+        }
+      }
+    });
+
+    console.log('Clicked on the button with label "GIOPS 10 day Forecast 3D - LatLon".');
+
     // Close the browser
     await browser.close();
 
