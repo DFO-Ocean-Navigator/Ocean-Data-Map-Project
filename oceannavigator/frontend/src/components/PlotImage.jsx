@@ -442,7 +442,7 @@ class PlotImage extends React.PureComponent {
           </DropdownButton>
 
           <DropdownButton
-            id="script"
+            id="APIscript"
             title={
               <span>
                 <Icon icon="file-code-o" /> {_("API Script")}
@@ -458,7 +458,7 @@ class PlotImage extends React.PureComponent {
             <Dropdown.Item eventKey="pythonPlot">
               <Icon icon="code" /> Python 3 - PLOT
             </Dropdown.Item>
-            <Dropdown.Item eventKey="pythonCSV">
+            <Dropdown.Item eventKey="pythonCSV" id="pythonCSV">
               <Icon icon="code" /> Python 3 - CSV
             </Dropdown.Item>
             <Dropdown.Item eventKey="rCSV">

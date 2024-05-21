@@ -346,7 +346,7 @@ class AreaWindow extends React.Component {
             <Card.Body className="global-settings-card">
               <DatasetSelector
                 key="area_window_dataset_1"
-                id="dataset_1"
+                id="right-map-dataset_1"
                 onUpdate={this.props.updateDataset1}
                 showQuiverSelector={false}
                 showVariableRange={false}
