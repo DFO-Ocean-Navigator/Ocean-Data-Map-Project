@@ -54,28 +54,29 @@ const puppeteer = require('puppeteer');
 
     await new Promise(r => setTimeout(r, 2000))
 
-    // Fetch the ID of the "Point" button from the UI
-    const pointButtonId = await page.evaluate(() => {
-      const pointButtonId = document.querySelector('[name="radio"][value="point"]');
-      return pointButtonId ? pointButtonId.id : null;
+    // Fetch the ID of the "Line" button from the UI
+    const lineButtonId = await page.evaluate(() => {
+      const lineButtonId = document.querySelector('[name="radio"][value="line"]');
+      return lineButtonId ? lineButtonId.id : null;
     });
 
     // Check if the ID was successfully fetched
-    if (pointButtonId) {
-      console.log('ID of the "Point" button:', pointButtonId);
+    if (lineButtonId) {
+      console.log('ID of the "Line" button:', lineButtonId);
 
-      // Click on the "Point" button using the fetched ID
+      // Click on the "Line" button using the fetched ID
 
       await page.evaluate(() => {
-        document.querySelector('[name="radio"][value="point"]').click();
+        document.querySelector('[name="radio"][value="line"]').click();
       });
 
-      console.log('Clicked on the button "Point".');
+      console.log('Clicked on the button "Line".');
     } else {
-      console.error('Failed to fetch the ID of the "Point" button.');
+      console.error('Failed to fetch the ID of the "Line" button.');
     }
 
-    await enterCoordinates(page, '44.9855', '-50.9582'); // First set of coordinates
+    await enterCoordinates(page, '47.0000', '-52.8320'); // First set of coordinates
+    await enterCoordinates(page, '47.0000', '-42.0000'); // First set of coordinates
 
     await new Promise(r => setTimeout(r, 8000))
 
@@ -139,43 +140,25 @@ const puppeteer = require('puppeteer');
       const saveImageButton = document.getElementById('save-image')
       return saveImageButton ? saveImageButton.id : null;
     });
-    
-    // Fetch the ID of the "API Script" button from the UI
-    const APIScriptButtonId = await page.evaluate(() => {
-        const APIScriptButtonId = document.getElementById('APIscript')
-        return APIScriptButtonId ? APIScriptButtonId.id : null;
-      });
 
     await new Promise(r => setTimeout(r, 5000))
-
-
-    //Click on Save Image Button
-    await clickSaveImageButton(page, saveImageButtonId);
-
-    await new Promise(r => setTimeout(r, 5000)) 
-    
-    // Click on the "Virtual Mooring" tab
-    await page.click('.nav-link[href="#"][data-rr-ui-event-key="7"]');
-    console.log('Clicked on the "Virtual Mooring" tab.');
-
-    await new Promise(r => setTimeout(r, 5000))
-
-
 
     //Click on Save Image Button
     await clickSaveImageButton(page, saveImageButtonId);
 
     await new Promise(r => setTimeout(r, 5000)) 
 
-    //Generate CSV in Save Image Button
-    await generateCSVSaveImageButton(page, saveImageButtonId);
+
+    // Click on the "Hovmöller Diagram" tab
+    await page.click('.nav-link[href="#"][data-rr-ui-event-key="2"]');
+    console.log('Clicked on the "Hovmöller Diagram" tab.');
+
+    await new Promise(r => setTimeout(r, 8000))
+
+    //Click on Save Image Button
+    await clickSaveImageButton(page, saveImageButtonId);
 
     await new Promise(r => setTimeout(r, 5000)) 
-        
-    //Click on API Script Button
-    await clickAPIScriptButton(page, APIScriptButtonId);    
-        
-    await new Promise(r => setTimeout(r, 5000))
 
     // Close the browser
     await browser.close();
@@ -206,93 +189,34 @@ const puppeteer = require('puppeteer');
    await page.click('button#add');
    console.log('Value entered and clicked on the button "Add".');
 }
- 
 async function clickSaveImageButton(page, buttonId) {
-  if (buttonId) {
-    console.log('ID of the "Save Image" button:', buttonId);
-    // Click on the "Save Image" button using the fetched ID
-    await page.click(`#${buttonId}`);
-    console.log('Clicked on the button "Save Image".');
-
-    // Wait for the dropdown menu to become available
-    await page.waitForSelector('.dropdown-menu.show');
-
-    // Fetch the ID of the "png" button from the UI
-    const pngButtonId = await page.evaluate(() => {
-      const pngButtonId = document.getElementById('png')
-      return pngButtonId ? pngButtonId.id : null;
-    });
-
-    if (pngButtonId) {
-      console.log('ID of the PNG button:', pngButtonId);
-      // Click on the PNG option
-      await page.click(`#${pngButtonId}`);
-      console.log('Selected the PNG option.');
-    } else {
-      console.error('Failed to fetch the ID of the PNG button.');
-    }
-  } else {
-    console.error('Failed to fetch the ID of the "Save Image" button.');
-  }
-}
-
-async function generateCSVSaveImageButton(page, buttonId) {
- if (buttonId) {
-   console.log('ID of the "Save Image" button:', buttonId);
-   // Click on the "Save Image" button using the fetched ID
-   await page.click(`#${buttonId}`);
-   console.log('Clicked on the button "Save Image".');
-
-   // Wait for the dropdown menu to become available
-   await page.waitForSelector('.dropdown-menu.show');
-
-   // Fetch the ID of the "csv" button from the UI
-   const csvButtonId = await page.evaluate(() => {
-     const csvButtonId = document.getElementById('csv')
-     return csvButtonId ? csvButtonId.id : null;
-   });
-
-   if (csvButtonId) {
-     console.log('ID of the CSV button:', csvButtonId);
-     // Click on the CSV option
-     await page.click(`#${csvButtonId}`);
-     console.log('Selected the CSV option.');
-   } else {
-     console.error('Failed to fetch the ID of the CSV button.');
-   }
- } else {
-   console.error('Failed to fetch the ID of the "Save Image" button.');
- }
-}
-
- async function clickAPIScriptButton(page, buttonId) {
     if (buttonId) {
-      console.log('ID of the "API Script" button:', buttonId);
-      // Click on the "API Script" button using the fetched ID
+      console.log('ID of the "Save Image" button:', buttonId);
+      // Click on the "Save Image" button using the fetched ID
       await page.click(`#${buttonId}`);
-      console.log('Clicked on the button "API Script".');
+      console.log('Clicked on the button "Save Image".');
   
       // Wait for the dropdown menu to become available
       await page.waitForSelector('.dropdown-menu.show');
   
-      // Fetch the ID of the " Python 3 - CSV" button from the UI
-      const  Python3CSVButtonId = await page.evaluate(() => {
-        const Python3CSVButtonId = document.getElementById('pythonCSV')
-        return Python3CSVButtonId ? Python3CSVButtonId.id : null;
+      // Fetch the ID of the "png" button from the UI
+      const pngButtonId = await page.evaluate(() => {
+        const pngButtonId = document.getElementById('png')
+        return pngButtonId ? pngButtonId.id : null;
       });
   
-      if (Python3CSVButtonId) {
-        console.log('ID of the Python 3 - CSV ButtonId button:', Python3CSVButtonId);
+      if (pngButtonId) {
+        console.log('ID of the PNG button:', pngButtonId);
         // Click on the PNG option
-        await page.click(`#${Python3CSVButtonId}`);
-        console.log('Selected the Python 3 - CSV ButtonId option.');
+        await page.click(`#${pngButtonId}`);
+        console.log('Selected the PNG option.');
       } else {
-        console.error('Failed to fetch the ID of the Python 3 - CSV ButtonId button.');
+        console.error('Failed to fetch the ID of the PNG button.');
       }
     } else {
-      console.error('Failed to fetch the ID of the "API Script" button.');
+      console.error('Failed to fetch the ID of the "Save Image" button.');
     }
 }
- 
- 
+
+// here the last clickSaveImageButton is not working as in dropdown the below options are dissable so not clicking on png
  

@@ -151,6 +151,12 @@ const puppeteer = require('puppeteer');
     //Click on Save Image Button
     await clickSaveImageButton(page, saveImageButtonId);
 
+    await new Promise(r => setTimeout(r, 5000))
+
+    //Generate CSV in Save Image Button
+    await generateCSVSaveImageButton(page, saveImageButtonId);
+
+
     // Click on the option with value "none" inside title "Arrows"
     await page.waitForSelector('option[value="magwatervel"][data-scale="0,3"][data-two_dimensional="false"][data-vector_variable="true"]');
 
@@ -169,13 +175,18 @@ const puppeteer = require('puppeteer');
 
     //Click on Save Image Button
     await clickSaveImageButton(page, saveImageButtonId);    
+
+    await new Promise(r => setTimeout(r, 5000))
+
+    //Generate CSV in Save Image Button
+    await generateCSVSaveImageButton(page, saveImageButtonId);
         
     await new Promise(r => setTimeout(r, 5000))
 
-     //Click on API Script Button
-     await clickAPIScriptButton(page, APIScriptButtonId);    
-        
-     await new Promise(r => setTimeout(r, 5000))
+    //Click on API Script Button
+    await clickAPIScriptButton(page, APIScriptButtonId);    
+      
+    await new Promise(r => setTimeout(r, 5000))
 
     // Close the browser
     await browser.close();
@@ -236,6 +247,35 @@ const puppeteer = require('puppeteer');
      console.error('Failed to fetch the ID of the "Save Image" button.');
    }
  }
+
+ async function generateCSVSaveImageButton(page, buttonId) {
+  if (buttonId) {
+    console.log('ID of the "Save Image" button:', buttonId);
+    // Click on the "Save Image" button using the fetched ID
+    await page.click(`#${buttonId}`);
+    console.log('Clicked on the button "Save Image".');
+
+    // Wait for the dropdown menu to become available
+    await page.waitForSelector('.dropdown-menu.show');
+
+    // Fetch the ID of the "csv" button from the UI
+    const csvButtonId = await page.evaluate(() => {
+      const csvButtonId = document.getElementById('csv')
+      return csvButtonId ? csvButtonId.id : null;
+    });
+
+    if (csvButtonId) {
+      console.log('ID of the CSV button:', csvButtonId);
+      // Click on the CSV option
+      await page.click(`#${csvButtonId}`);
+      console.log('Selected the CSV option.');
+    } else {
+      console.error('Failed to fetch the ID of the CSV button.');
+    }
+  } else {
+    console.error('Failed to fetch the ID of the "Save Image" button.');
+  }
+}
 
  async function clickAPIScriptButton(page, buttonId) {
     if (buttonId) {
