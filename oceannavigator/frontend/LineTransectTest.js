@@ -189,34 +189,35 @@ const puppeteer = require('puppeteer');
    await page.click('button#add');
    console.log('Value entered and clicked on the button "Add".');
 }
+
 async function clickSaveImageButton(page, buttonId) {
-    if (buttonId) {
-      console.log('ID of the "Save Image" button:', buttonId);
-      // Click on the "Save Image" button using the fetched ID
-      await page.click(`#${buttonId}`);
-      console.log('Clicked on the button "Save Image".');
-  
-      // Wait for the dropdown menu to become available
-      await page.waitForSelector('.dropdown-menu.show');
-  
-      // Fetch the ID of the "png" button from the UI
-      const pngButtonId = await page.evaluate(() => {
-        const pngButtonId = document.getElementById('png')
-        return pngButtonId ? pngButtonId.id : null;
-      });
-  
-      if (pngButtonId) {
-        console.log('ID of the PNG button:', pngButtonId);
-        // Click on the PNG option
-        await page.click(`#${pngButtonId}`);
-        console.log('Selected the PNG option.');
-      } else {
-        console.error('Failed to fetch the ID of the PNG button.');
-      }
+  if (buttonId) {
+    console.log('ID of the "Save Image" button:', buttonId);
+    // Click on the "Save Image" button using the fetched ID
+    await page.click(`#${buttonId}`);
+    console.log('Clicked on the button "Save Image".');
+    await new Promise(r => setTimeout(r, 5000));
+
+    // Wait for the dropdown menu to become available
+    await page.waitForSelector('.dropdown-menu.show', { visible: true, timeout: 30000 }); // Extended timeout to 30 seconds
+
+    // Fetch the ID of the "png" button from the UI
+    const pngButtonId = await page.evaluate(() => {
+      const pngButton = document.getElementById('png');
+      return pngButton ? pngButton.id : null;
+    });
+
+    if (pngButtonId) {
+      console.log('ID of the PNG button:', pngButtonId);
+      // Click on the PNG option
+      await page.click(`#${pngButtonId}`);
+      console.log('Selected the PNG option.');
     } else {
-      console.error('Failed to fetch the ID of the "Save Image" button.');
+      console.error('Failed to fetch the ID of the PNG button.');
     }
+  } else {
+    console.error('Failed to fetch the ID of the "Save Image" button.');
+  }
 }
 
-// here the last clickSaveImageButton is not working as in dropdown the below options are dissable so not clicking on png
  
