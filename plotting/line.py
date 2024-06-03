@@ -19,6 +19,9 @@ class LinePlotter(Plotter):
 
         self.surface = surface
 
+        self.profile = True
+        self.profile_dist = 10
+
         name = query.get("name")
         if name is None or name == "":
             p0 = geopy.Point(points[0])
