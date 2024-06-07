@@ -347,10 +347,14 @@ class Plotter(metaclass=ABCMeta):
             return (buf.getvalue(), self.mime, self.filename)
 
     def netcdf(self, dataset):
+        if self.query.get("time"):
+            time = self.query.get("time")
+        else:
+            time = f"{self.query.get("starttime")}_{self.query.get("endtime")}"
         filename = (
             self.query["dataset"]
             + "_%dN%dW" % (self.query["station"][0][0], self.query["station"][0][1])
-            + f"_{self.query["time"]}_NETCDF4.nc"
+            + f"_{time}_NETCDF4.nc"
         )
 
         path = Path("/tmp/subset")

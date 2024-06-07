@@ -5,12 +5,14 @@ import matplotlib
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from matplotlib.ticker import ScalarFormatter
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import plotting.colormap as colormap
 import plotting.utils as utils
 from data import open_dataset
+from data.utils import datetime_to_timestamp
 from plotting.point import PointPlotter
 
 LINEAR = 200
@@ -359,6 +361,39 @@ class TimeseriesPlotter(PointPlotter):
         ]
 
         return super(TimeseriesPlotter, self).csv(header, columns, data)
+
+    def netcdf(self):
+        pts = np.array(self.points)
+        depths = np.unique(self.depths)
+        timestamps = [
+            datetime_to_timestamp(time, self.dataset_config.time_dim_units)
+            for time in self.times
+        ]
+        data = np.nan * np.ones((self.times.size, depths.size, len(pts), len(pts)))
+        for idx in range(len(pts)):
+            data[:, :, idx, idx] = np.reshape(
+                self.data[idx], (self.times.size, depths.size)
+            )
+        data_vars = {
+            self.variables[0]: (
+                ["time", "depth", "latitude", "longitude"],
+                data,
+                {
+                    "units": self.variable_unit,
+                    "name": self.variable_unit,
+                },
+            )
+        }
+        coords = {
+            "time": (["time"], timestamps),
+            "depth": (["depth"], np.unique(self.depths)),
+            "latitude": (["latitude"], pts[:, 0]),
+            "longitude": (["longitude"], pts[:, 1]),
+        }
+        ds = xr.Dataset(data_vars=data_vars, coords=coords)
+        ds["time"].attrs = {"units": self.dataset_config.time_dim_units}
+
+        return super(TimeseriesPlotter, self).netcdf(ds)
 
     def plot(self):
         if self.scale:
