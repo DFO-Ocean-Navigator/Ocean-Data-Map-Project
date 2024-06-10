@@ -152,6 +152,11 @@ class TransectPlotter(LinePlotter):
                     "name": surface_name,
                     "units": surface_unit,
                 }
+            
+            if self.profile:
+                self.profile_data = dataset.get_profile(
+                    self.points[0][0], self.points[0][1], self.variables[0], self.time
+                )
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
@@ -944,14 +949,14 @@ class TransectPlotter(LinePlotter):
 
     def __add_profile_plot(self, axis_divider):
         ax = axis_divider.append_axes("right", size="35%", pad=0.35)
-        ax.plot([0, 1, 2, 3, 4], [0, 1, 2, 3, 4], color="r")
-
-        bearing = geo.bearing()
+        ax.plot(self.profile_data[0], self.profile_data[1],  color="r")
+        ax.invert_yaxis()
+        #bearing = geo.bearing()
+        
 
         # https://geopy.readthedocs.io/en/stable/#geopy.distance.Distance.destination
         # https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/
 
-        # use dataset  
         return
 
     def _transect_plot(
