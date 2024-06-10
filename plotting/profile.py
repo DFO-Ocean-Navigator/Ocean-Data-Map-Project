@@ -1,6 +1,7 @@
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 
 import plotting.utils as utils
 from data import open_dataset
@@ -114,6 +115,33 @@ class ProfilePlotter(PointPlotter):
         data = np.array(data).T.tolist()
 
         return super(ProfilePlotter, self).csv(header, columns, data)
+
+    def netcdf(self):
+        pts = np.array(self.points)
+        dims = ["time", "depth", "latitude", "longitude"]
+        data_vars = {}
+        for idx, variable in enumerate(self.variables):
+            data = np.nan * np.ones((1, self.depths.shape[-1], len(pts), len(pts)))
+            data[:, :, idx, idx] = self.data[idx].filled(np.nan)
+            data_vars[variable] = (
+                dims,
+                data,
+                {
+                    "units": self.dataset_config.variable[variable].unit,
+                    "name": self.dataset_config.variable[variable].name,
+                },
+            )
+
+        coords = {
+            "time": (["time"], [self.time]),
+            "depth": (["depth"], np.unique(self.depths)),
+            "latitude": (["latitude"], pts[:, 0]),
+            "longitude": (["longitude"], pts[:, 1]),
+        }
+        ds = xr.Dataset(data_vars=data_vars, coords=coords)
+        ds["time"].attrs = {"units": self.dataset_config.time_dim_units}
+
+        return super(ProfilePlotter, self).netcdf(ds)
 
     def plot(self):
         # Create base figure

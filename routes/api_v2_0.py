@@ -601,6 +601,18 @@ async def plot(
                 headers={"Cache-Control": "max-age=300"},
             )
 
+    elif format == "nc":
+
+        def make_response(data, mime):
+            return FileResponse(
+                pathlib.Path(data),
+                media_type=mime,
+                headers={
+                    "Cache-Control": "max-age=300",
+                    "Content-Disposition": f'attachment; filename="{data}"',
+                },
+            )
+
     else:
 
         def make_response(data, mime):
@@ -648,7 +660,6 @@ async def plot(
 
     if img:
         response = make_response(img, mime)
-
     else:
         raise FAILURE
 
