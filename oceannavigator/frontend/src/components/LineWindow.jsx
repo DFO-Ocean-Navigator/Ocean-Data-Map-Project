@@ -9,6 +9,7 @@ import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
+import LocationInput from "./LocationInput.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -35,6 +36,7 @@ class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
+      profile_view: props.line[0]
     };
 
     if (props.init !== null) {
@@ -244,6 +246,14 @@ class LineWindow extends React.Component {
             parameter={_("Depth")}
           />
 
+          <LocationInput
+            key="profile_view"
+            id="profile_view"
+            state={[this.state.profile_view]}
+            title={"Location"}
+            onUpdate={this.onLocalUpdate}
+          />
+
           <div
             style={{
               display:
@@ -367,6 +377,7 @@ class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
+        plot_query.profile_view = this.state.profile_view;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = { ...this.props.dataset_1 };

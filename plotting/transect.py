@@ -26,6 +26,9 @@ class TransectPlotter(LinePlotter):
         # Holds Velocity Plot Type [magnitude, parallel, perpendicular]
         self.selected_velocity_plots = None
 
+        profile_view = query.get("profile_view")
+        self.profile_view = profile_view
+
     def parse_query(self, query):
         super(TransectPlotter, self).parse_query(query)
 
@@ -41,6 +44,8 @@ class TransectPlotter(LinePlotter):
             self.depth_limit = None
         else:
             self.depth_limit = int(depth_limit)
+
+        
 
     def __fill_invalid_shift(self, z):
         for s in range(1, z.shape[0]):
@@ -155,7 +160,8 @@ class TransectPlotter(LinePlotter):
             
             if self.profile:
                 self.profile_data = dataset.get_profile(
-                    self.points[0][0], self.points[0][1], self.variables[0], self.time
+                    #self.points[0][0], self.points[0][1], self.variables[0], self.time
+                    self.profile_view[0], self.profile_view[1], self.variables[0], self.time
                 )
 
         # Load data sent from Right Map (if in compare mode)
