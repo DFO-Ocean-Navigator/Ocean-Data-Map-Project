@@ -10,6 +10,9 @@ import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import LocationInput from "./LocationInput.jsx";
+import Slider from "rc-slider";
+
+import "rc-slider/assets/index.css";
 
 import { withTranslation } from "react-i18next";
 
@@ -36,7 +39,7 @@ class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
-      profile_view: props.line[0]
+      profile_view: 0
     };
 
     if (props.init !== null) {
@@ -246,13 +249,18 @@ class LineWindow extends React.Component {
             parameter={_("Depth")}
           />
 
-          <LocationInput
-            key="profile_view"
-            id="profile_view"
-            state={[this.state.profile_view]}
-            title={"Location"}
-            onUpdate={this.onLocalUpdate}
-          />
+
+
+          <div className="slider-container">
+            <Slider
+              key="profile_view"
+              id="profile_view"
+              state={this.state.profile_view}
+              min={0}
+              max={100}
+              onChange={(x) => this.onLocalUpdate("profile_view",x)}
+            />
+          </div>
 
           <div
             style={{
