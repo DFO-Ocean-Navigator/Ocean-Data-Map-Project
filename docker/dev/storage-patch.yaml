@@ -1,0 +1,21 @@
+spec:
+  template:
+    spec:
+      volumes:
+        - name: onav-data
+          persistentVolumeClaim:
+            claimName: onav-data
+        - name: onav-configs
+          configMap:
+            name: onav-configs
+            defaultMode: 420
+      containers:
+        - name: onav-dev
+          volumeMounts:
+          - name: onav-data
+            mountPath: /data
+          - name: onav-configs
+            mountPath: /main/oceannavigator/configs
+          env:
+            - name: ONAV_ENV_FILE
+              value: /main/oceannavigator/configs/.env
