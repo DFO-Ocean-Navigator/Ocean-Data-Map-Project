@@ -394,7 +394,7 @@ class PlotImage extends React.PureComponent {
             >
               <Icon icon="file-image-o" /> GeoTIFF
             </Dropdown.Item>
-            <Dropdown.Divider/>
+            <Dropdown.Divider />
             <Dropdown.Item
               eventKey="csv"
               disabled={this.props.query.type == "hovmoller"}
@@ -413,6 +413,15 @@ class PlotImage extends React.PureComponent {
               }
             >
               <Icon icon="file-text-o" /> {_("ODV")}
+            </Dropdown.Item>
+            <Dropdown.Item
+              eventKey="nc"
+              disabled={
+                !this.props.query.type.includes("profile") &&
+                !this.props.query.type.includes("timeseries")
+              }
+            >
+              <Icon icon="file-image-o" /> NetCDF
             </Dropdown.Item>
             <Dropdown.Item
               eventKey="stats"
