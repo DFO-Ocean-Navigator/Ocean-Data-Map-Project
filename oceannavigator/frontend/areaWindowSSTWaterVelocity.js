@@ -24,6 +24,514 @@ const puppeteer = require('puppeteer');
 
     await new Promise(r => setTimeout(r, 5000))
 
+    const datasets = [
+      'GIOPS 10 day Forecast 3D - LatLon',
+      'RIOPS 10 day Forecast 3D - Polar Stereographic',
+      'CCG RIOPS Forecast Surface - LatLon',
+      'CIOPS Forecast East 3D - LatLon',
+      'CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg',
+      'SalishSeaCast 3D currents',
+      'WCPs-GLS Great Lakes'
+  ];
+
+  for (const dataset of datasets) {
+      switch (dataset) {
+          case 'GIOPS 10 day Forecast 3D - LatLon':
+              // Directly select the dataset and continue to the next iteration
+
+              break;
+          case 'RIOPS 10 day Forecast 3D - Polar Stereographic':
+              // Select 'RIOPS Forecast' and then 'RIOPS 10 day Forecast 3D - Polar Stereographic'
+
+               // Fetch the div class name and ID where the "Dataset" button is present using its id
+              const DatasetDivInfoRIOPS3DPolar = await page.evaluate(() => {
+                const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+                if (DatasetButton) {
+                    const div = DatasetButton.closest('div');
+                    return {
+                        className: div.className,
+                        id: div.id
+                    };
+                } else {
+                    return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+                }
+              });
+
+              console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoRIOPS3DPolar.className);
+              console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoRIOPS3DPolar.id);
+
+              
+              // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+              await page.waitForSelector('.dd-option-button');
+
+              // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+              const clickedButtonName1RIOPS3DPolar = await page.evaluate(() => {
+                const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+                if (giopsButton) {
+                    giopsButton.click();
+                    return giopsButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName1RIOPS3DPolar);
+
+              // Click on the "RIOPS Forecast" button
+              const clickedButtonName2RIOPS3DPolar = await page.evaluate(() => {
+                const riopsButton = document.querySelector('#accordion_RIOPS Forecast .accordion-button');
+                if (riopsButton) {
+                    riopsButton.click();
+                    return riopsButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName2RIOPS3DPolar);  
+
+              // Click on the "RIOPS Forecast 3D - Polar Stereographic" button inside the "accordion_RIOPS Forecast" div
+              const clickedButtonName3RIOPS3DPolar = await page.evaluate(() => {
+                const riopsAccordion = document.getElementById('accordion_RIOPS Forecast');
+                if (riopsAccordion) {
+                  const buttons = riopsAccordion.querySelectorAll('.dd-option-button');
+                  for (let button of buttons) {
+                    if (button.textContent.trim() === 'RIOPS Forecast 3D - Polar Stereographic') {
+                      button.click();
+                      return button.textContent.trim(); // Return the name of the clicked button
+                    }
+                  }
+                }
+              });
+
+
+              console.log('Clicked button:', clickedButtonName3RIOPS3DPolar);
+
+              await new Promise(r => setTimeout(r, 5000))
+
+              // Click on the "Go" button
+              const clickedButtonName43RIOPS3DPolar = await page.evaluate(() => {
+                const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+                if (goButton) {
+                    goButton.click();
+                    return goButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName43RIOPS3DPolar);
+              await new Promise(r => setTimeout(r, 50000))
+
+              break;
+          case 'CCG RIOPS Forecast Surface - LatLon':
+              // Select 'RIOPS Forecast' and then 'CCG RIOPS Forecast Surface - LatLon'
+              
+               // Fetch the div class name and ID where the "Dataset" button is present using its id
+               const DatasetDivInfoCCGRIOPS = await page.evaluate(() => {
+                const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+                if (DatasetButton) {
+                    const div = DatasetButton.closest('div');
+                    return {
+                        className: div.className,
+                        id: div.id
+                    };
+                } else {
+                    return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+                }
+              });
+
+              console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCCGRIOPS.className);
+              console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCCGRIOPS.id);
+
+              
+              // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+              await page.waitForSelector('.dd-option-button');
+
+              // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+              const clickedButtonName1CCGRIOPS = await page.evaluate(() => {
+                const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+                if (giopsButton) {
+                    giopsButton.click();
+                    return giopsButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName1CCGRIOPS);
+
+              // Click on the "RIOPS Forecast" button
+              const clickedButtonName2CCGRIOPS = await page.evaluate(() => {
+                const riopsButton = document.querySelector('#accordion_RIOPS Forecast .accordion-button');
+                if (riopsButton) {
+                    riopsButton.click();
+                    return riopsButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName2CCGRIOPS);  
+
+              // Click on the "CCG RIOPS Forecast Surface - LatLon" button inside the "accordion_RIOPS Forecast" div
+              const clickedButtonName3CCGRIOPS = await page.evaluate(() => {
+                const riopsAccordion = document.getElementById('accordion_RIOPS Forecast');
+                if (riopsAccordion) {
+                  const buttons = riopsAccordion.querySelectorAll('.dd-option-button');
+                  for (let button of buttons) {
+                    if (button.textContent.trim() === 'CCG RIOPS Forecast Surface - LatLon') {
+                      button.click();
+                      return button.textContent.trim(); // Return the name of the clicked button
+                    }
+                  }
+                }
+              });
+
+
+              console.log('Clicked button:', clickedButtonName3CCGRIOPS);
+
+              await new Promise(r => setTimeout(r, 5000))
+
+              // Click on the "Go" button
+              const clickedButtonName43CCGRIOPS = await page.evaluate(() => {
+                const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+                if (goButton) {
+                    goButton.click();
+                    return goButton.textContent.trim(); // Return the name of the clicked button
+                }
+              });
+
+              console.log('Clicked button:', clickedButtonName43CCGRIOPS);
+              await new Promise(r => setTimeout(r, 50000))  
+
+              break;
+          case 'CIOPS Forecast East 3D - LatLon':
+                // Fetch the div class name and ID where the "Dataset" button is present using its id
+                const DatasetDivInfoCIOPSEast3D = await page.evaluate(() => {
+                  const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+                  if (DatasetButton) {
+                      const div = DatasetButton.closest('div');
+                      return {
+                          className: div.className,
+                          id: div.id
+                      };
+                  } else {
+                      return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+                  }
+                });
+  
+                console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCIOPSEast3D .className);
+                console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCIOPSEast3D .id);
+  
+                
+                // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+                await page.waitForSelector('.dd-option-button');
+  
+                // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+                const clickedButtonName1CIOPSEast3D = await page.evaluate(() => {
+                  const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+                  if (giopsButton) {
+                      giopsButton.click();
+                      return giopsButton.textContent.trim(); // Return the name of the clicked button
+                  }
+                });
+  
+                console.log('Clicked button:', clickedButtonName1CIOPSEast3D);
+  
+                // Click on the "CIOPS Forecast" button
+                const clickedButtonName2CIOPSEast3D = await page.evaluate(() => {
+                  const CIOPSButton = document.querySelector('#accordion_CIOPS Forecast .accordion-button');
+                  if (CIOPSButton) {
+                    CIOPSButton.click();
+                      return CIOPSButton.textContent.trim(); // Return the name of the clicked button
+                  }
+                });
+  
+                console.log('Clicked button:', clickedButtonName2CIOPSEast3D);  
+  
+                // Click on the "CIOPS Forecast East 3D - LatLon" button inside the "accordion_CIOPS Forecast" div
+                const clickedButtonName3CIOPSEast3D = await page.evaluate(() => {
+                  const CIOPSAccordion = document.getElementById('accordion_CIOPS Forecast');
+                  if (CIOPSAccordion) {
+                    const buttons = CIOPSAccordion.querySelectorAll('.dd-option-button');
+                    for (let button of buttons) {
+                      if (button.textContent.trim() === 'CIOPS Forecast East 3D - LatLon') {
+                        button.click();
+                        return button.textContent.trim(); // Return the name of the clicked button
+                      }
+                    }
+                  }
+                });
+  
+  
+                console.log('Clicked button:', clickedButtonName3CIOPSEast3D);
+  
+                await new Promise(r => setTimeout(r, 5000))
+  
+                // Click on the "Go" button
+                const clickedButtonName43CIOPSEast3D = await page.evaluate(() => {
+                  const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+                  if (goButton) {
+                      goButton.click();
+                      return goButton.textContent.trim(); // Return the name of the clicked button
+                  }
+                });
+  
+                console.log('Clicked button:', clickedButtonName43CIOPSEast3D);
+                await new Promise(r => setTimeout(r, 50000))
+  
+  
+              break;
+
+          case 'CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg':
+            // Select 'CMEMS' and then 'CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg'
+
+              // Fetch the div class name and ID where the "Dataset" button is present using its id
+            const DatasetDivInfoCMEMS = await page.evaluate(() => {
+              const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+              if (DatasetButton) {
+                  const div = DatasetButton.closest('div');
+                  return {
+                      className: div.className,
+                      id: div.id
+                  };
+              } else {
+                  return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+              }
+            });
+
+            console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCMEMS.className);
+            console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoCMEMS.id);
+
+            
+            // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+            await page.waitForSelector('.dd-option-button');
+
+            // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+            const clickedButtonName1CMEMS = await page.evaluate(() => {
+              const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+              if (giopsButton) {
+                  giopsButton.click();
+                  return giopsButton.textContent.trim(); // Return the name of the clicked button
+              }
+            });
+
+            console.log('Clicked button:', clickedButtonName1CMEMS);
+
+            // Click on the "CMEMS" button
+            const clickedButtonName2CMEMS = await page.evaluate(() => {
+              const CMEMSButton = document.querySelector('#aaccordion_CMEMS .accordion-button');
+              if (CMEMSButton) {
+                CMEMSButton.click();
+                  return CMEMSButton.textContent.trim(); // Return the name of the clicked button
+              }
+            });
+
+            console.log('Clicked button:', clickedButtonName2CMEMS);  
+
+            // Click on the "CMEMS Global Ocean PHYS Reanalysis Climatology (Monthly mean) 1/12 deg" button inside the "accordion_CMEMS" div
+            const clickedButtonName3CMEMS = await page.evaluate(() => {
+              const CMEMSAccordion = document.getElementById('accordion_CMEMS');
+              if (CMEMSAccordion) {
+                const buttons = CMEMSAccordion.querySelectorAll('.dd-option-button');
+                for (let button of buttons) {
+                  if (button.textContent.trim() === 'CMEMS Global Ocean PHYS Reanalysis Climatology (Monthly mean) 1/12 deg') {
+                    button.click();
+                    return button.textContent.trim(); // Return the name of the clicked button
+                  }
+                }
+              }
+            });
+
+
+            console.log('Clicked button:', clickedButtonName3CMEMS);
+
+            await new Promise(r => setTimeout(r, 5000))
+
+            // Click on the "Go" button
+            const clickedButtonName4CMEMS = await page.evaluate(() => {
+              const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+              if (goButton) {
+                  goButton.click();
+                  return goButton.textContent.trim(); // Return the name of the clicked button
+              }
+            });
+
+            console.log('Clicked button:', clickedButtonName4CMEMS);
+            await new Promise(r => setTimeout(r, 50000))
+
+            break; 
+            
+        case 'SalishSeaCast 3D currents':
+          // Select 'SalishSeaCast' and then 'SalishSeaCast 3D Currents'
+
+            // Fetch the div class name and ID where the "Dataset" button is present using its id
+            const DatasetDivInfoSalishSeaCast = await page.evaluate(() => {
+            const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+            if (DatasetButton) {
+                const div = DatasetButton.closest('div');
+                return {
+                    className: div.className,
+                    id: div.id
+                };
+            } else {
+                return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+            }
+          });
+
+          console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoSalishSeaCast.className);
+          console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoSalishSeaCast.id);
+
+          
+          // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+          await page.waitForSelector('.dd-option-button');
+
+          // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+          const clickedButtonName1SalishSeaCast = await page.evaluate(() => {
+            const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+            if (giopsButton) {
+                giopsButton.click();
+                return giopsButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName1SalishSeaCast);
+
+          // Click on the "SalishSeaCast" button
+          const clickedButtonName2SalishSeaCast = await page.evaluate(() => {
+            const SalishSeaCastButton = document.querySelector('#accordion_SalishSeaCast .accordion-button');
+            if (SalishSeaCastButton) {
+              SalishSeaCastButton.click();
+                return SalishSeaCastButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName2SalishSeaCast);  
+
+          // Click on the "SalishSeaCast 3D Currents" button inside the "accordion_SalishSeaCast" div
+          const clickedButtonName3SalishSeaCast = await page.evaluate(() => {
+            const SalishSeaCastAccordion = document.getElementById('accordion_SalishSeaCast');
+            if (SalishSeaCastAccordion) {
+              const buttons = SalishSeaCastAccordion.querySelectorAll('.dd-option-button');
+              for (let button of buttons) {
+                if (button.textContent.trim() === 'SalishSeaCast 3D Currents') {
+                  button.click();
+                  return button.textContent.trim(); // Return the name of the clicked button
+                }
+              }
+            }
+          });
+
+
+          console.log('Clicked button:', clickedButtonName3SalishSeaCast);
+
+          await new Promise(r => setTimeout(r, 5000))
+
+          // Wait for the option element to become available
+          await page.waitForSelector('option[value="current_speed"]');
+
+          // Click on the option element
+          await page.evaluate(() => {
+          const option = document.querySelector('option[value="current_speed"]');
+          if (option) {
+              option.selected = true;
+              option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          });
+
+          console.log('current_speed selected!');
+
+          await new Promise(r => setTimeout(r, 6000))
+
+          // Click on the "Go" button
+          const clickedButtonName4SalishSeaCast = await page.evaluate(() => {
+            const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+            if (goButton) {
+                goButton.click();
+                return goButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName4SalishSeaCast);
+          await new Promise(r => setTimeout(r, 50000))
+      
+         break;
+
+      case 'WCPs-GLS Great Lakes':
+          // Select 'WCPS Forecast' and then 'WCPS-GLS Great Lakes Coupled Atmosphere-Ocean-Ice Forecast - LatLon'
+
+           // Fetch the div class name and ID where the "Dataset" button is present using its id
+          const DatasetDivInfoWCPS  = await page.evaluate(() => {
+            const DatasetButton = document.getElementById('dataset-selector-dataset_0');
+            if (DatasetButton) {
+                const div = DatasetButton.closest('div');
+                return {
+                    className: div.className,
+                    id: div.id
+                };
+            } else {
+                return { className: 'Dataset in dataset-selector-dataset_0 not found', id: null };
+            }
+          });
+
+          console.log('Div class name where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoWCPS.className);
+          console.log('Div ID where the dataset-selector-dataset_0 Dataset is present:', DatasetDivInfoWCPS.id);
+
+          
+          // Wait for the button with the label "GIOPS 10 day Forecast 3D - LatLon" to become available
+          await page.waitForSelector('.dd-option-button');
+
+          // Click on the "GIOPS 10 day Forecast 3D - LatLon" button
+          const clickedButtonName1WCPS = await page.evaluate(() => {
+            const giopsButton = document.querySelector('#dataset-selector-dataset_0 .dd-option-button');
+            if (giopsButton) {
+                giopsButton.click();
+                return giopsButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName1WCPS);
+
+          // Click on the "WCPS Forecast" button
+          const clickedButtonName2WCPS = await page.evaluate(() => {
+            const WCPSButton = document.querySelector('#accordion_WCPS Forecast .accordion-button');
+            if (WCPSButton) {
+              WCPSButton.click();
+                return WCPSButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName2WCPS);  
+
+          // Click on the "WCPS-GLS Great Lakes Coupled Atmosphere-Ocean-Ice Forecast - LatLon" button inside the "accordion_WCPS Forecast" div
+          const clickedButtonName3WCPS = await page.evaluate(() => {
+            const WCPSAccordion = document.getElementById('accordion_WCPS Forecast');
+            if (WCPSAccordion) {
+              const buttons = WCPSAccordion.querySelectorAll('.dd-option-button');
+              for (let button of buttons) {
+                if (button.textContent.trim() === 'WCPS-GLS Great Lakes Coupled Atmosphere-Ocean-Ice Forecast - LatLon') {
+                  button.click();
+                  return button.textContent.trim(); // Return the name of the clicked button
+                }
+              }
+            }
+          });
+
+
+          console.log('Clicked button:', clickedButtonName3WCPS);
+
+          await new Promise(r => setTimeout(r, 5000))
+
+          // Click on the "Go" button
+          const clickedButtonName4WCPS = await page.evaluate(() => {
+            const goButton = document.querySelector('#dataset-selector-dataset_0 .go-button');
+            if (goButton) {
+                goButton.click();
+                return goButton.textContent.trim(); // Return the name of the clicked button
+            }
+          });
+
+          console.log('Clicked button:', clickedButtonName4WCPS);
+          await new Promise(r => setTimeout(r, 50000))
+
+          break;             
+
+          default:
+              console.log(`Dataset ${dataset} not recognized.`);
+              continue;
+      }
+
     // Wait for the button with the ID "enter-button" to become visible
     await page.waitForSelector('#enter-button', { visible: true });
     console.log('Button "enter-button" is visible on the page.');
@@ -74,9 +582,29 @@ const puppeteer = require('puppeteer');
       console.error('Failed to fetch the ID of the "Area" button.');
     }
 
-    await enterCoordinates(page, '45.3181', '-59.3802'); // First set of coordinates
-    await enterCoordinates(page, '45.559', '-56.9418'); // Second set of coordinates
-    await enterCoordinates(page, '45.9945', '-57.6699'); // Third set of coordinates
+    if (['GIOPS 10 day Forecast 3D - LatLon', 'RIOPS 10 day Forecast 3D - Polar Stereographic', 
+    'CCG RIOPS Forecast Surface - LatLon', 'CIOPS Forecast East 3D - LatLon', 
+    'CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg'].includes(dataset)) {
+
+      await enterCoordinates(page, '45.3181', '-59.3802'); // First set of coordinates
+      await enterCoordinates(page, '45.559', '-56.9418'); // Second set of coordinates
+      await enterCoordinates(page, '45.9945', '-57.6699'); // Third set of coordinates
+
+    } 
+    
+    else if (dataset === 'SalishSeaCast 3D currents') {
+      
+      await enterCoordinates(page, '49.3144', '-123.68'); // First set of coordinates
+      await enterCoordinates(page, '49.2905', '-123.327'); // Second set of coordinates
+      await enterCoordinates(page, '49.0367', '-123.4583'); // Third set of coordinates
+    }
+
+    else if (dataset === 'WCPs-GLS Great Lakes'){
+
+      await enterCoordinates(page, '47.322', '-86.807'); // First set of coordinates
+      await enterCoordinates(page, '47.8006', '-87.4289'); // Second set of coordinates
+      await enterCoordinates(page, '48.0384', '-86.807'); // Third set of coordinates
+      }
 
     await new Promise(r => setTimeout(r, 8000))
 
@@ -133,7 +661,7 @@ const puppeteer = require('puppeteer');
 
     console.log('Div class name where the "Save Image" button is present:', saveImageDivClassName);
 
-    await new Promise(r => setTimeout(r, 5000))
+    await new Promise(r => setTimeout(r, 7000))
 
     // Fetch the ID of the "Save Image" button from the UI
     const saveImageButtonId = await page.evaluate(() => {
@@ -148,6 +676,8 @@ const puppeteer = require('puppeteer');
         return APIScriptButtonId ? APIScriptButtonId.id : null;
       });
 
+    await new Promise(r => setTimeout(r, 50000))
+
     //Click on Save Image Button
     await clickSaveImageButton(page, saveImageButtonId);
 
@@ -156,22 +686,47 @@ const puppeteer = require('puppeteer');
     //Generate CSV in Save Image Button
     await generateCSVSaveImageButton(page, saveImageButtonId);
 
-
-    // Click on the option with value "none" inside title "Arrows"
-    await page.waitForSelector('option[value="magwatervel"][data-scale="0,3"][data-two_dimensional="false"][data-vector_variable="true"]');
-
-    // Click on the option element
-    await page.evaluate(() => {
-    const option = document.querySelector('option[value="magwatervel"][data-scale="0,3"][data-two_dimensional="false"][data-vector_variable="true"]');
-    if (option) {
-        option.selected = true;
-        option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    });
-
-    console.log('Clicked on the option with value "water velocity" inside the "Arrows" ComboBox.');
-
     await new Promise(r => setTimeout(r, 5000))
+
+    if (['GIOPS 10 day Forecast 3D - LatLon', 'RIOPS 10 day Forecast 3D - Polar Stereographic', 
+    'CCG RIOPS Forecast Surface - LatLon', 'CIOPS Forecast East 3D - LatLon', 
+    'CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg', 'WCPs-GLS Great Lakes'].includes(dataset)) {
+
+        // Click on the option with value "none" inside title "Arrows"
+        await page.waitForSelector('option[value="magwatervel"][data-scale="0,3"][data-two_dimensional="false"][data-vector_variable="true"]');
+
+        // Click on the option element
+        await page.evaluate(() => {
+        const option = document.querySelector('option[value="magwatervel"][data-scale="0,3"][data-two_dimensional="false"][data-vector_variable="true"]');
+        if (option) {
+            option.selected = true;
+            option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        });
+
+        console.log('Clicked on the option with value "water velocity" inside the "Arrows" ComboBox.');
+
+        await new Promise(r => setTimeout(r, 5000))
+    }
+
+    else if (dataset === 'SalishSeaCast 3D currents') {
+      
+        // Wait for the option element to become available
+        await page.waitForSelector('option[value="uVelocity"][data-scale="-3,3"][data-two_dimensional="false"][data-vector_variable="false"]');
+
+        // Click on the option element
+        await page.evaluate(() => {
+        const option = document.querySelector('option[value="uVelocity"][data-scale="-3,3"][data-two_dimensional="false"][data-vector_variable="false"]');
+        if (option) {
+            option.selected = true;
+            option.parentElement.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        });
+
+        console.log('Additional Contours - Eastward Current Selected!');
+
+        await new Promise(r => setTimeout(r, 50000))
+    }
 
     //Click on Save Image Button
     await clickSaveImageButton(page, saveImageButtonId);    
@@ -187,6 +742,12 @@ const puppeteer = require('puppeteer');
     await clickAPIScriptButton(page, APIScriptButtonId);    
       
     await new Promise(r => setTimeout(r, 5000))
+
+    // Refresh the page
+    await page.reload();
+    await new Promise(r => setTimeout(r, 5000));
+    console.log('Page reloaded.');
+  }
 
     // Close the browser
     await browser.close();
@@ -218,13 +779,13 @@ const puppeteer = require('puppeteer');
    console.log('Value entered and clicked on the button "Add".');
  }
  
- 
  async function clickSaveImageButton(page, buttonId) {
    if (buttonId) {
      console.log('ID of the "Save Image" button:', buttonId);
      // Click on the "Save Image" button using the fetched ID
      await page.click(`#${buttonId}`);
      console.log('Clicked on the button "Save Image".');
+     await new Promise(r => setTimeout(r, 5000));
  
      // Wait for the dropdown menu to become available
      await page.waitForSelector('.dropdown-menu.show');
