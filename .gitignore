@@ -91,6 +91,6 @@ ENV/
 *.out
 data/calculated_parser/parsetab.py
 
+.odo
 node_modules/
 oceannavigator/frontend/public/
-
