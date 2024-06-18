@@ -45,8 +45,6 @@ class TransectPlotter(LinePlotter):
         else:
             self.depth_limit = int(depth_limit)
 
-        
-
     def __fill_invalid_shift(self, z):
         for s in range(1, z.shape[0]):
             if z.mask.any():
@@ -157,24 +155,31 @@ class TransectPlotter(LinePlotter):
                     "name": surface_name,
                     "units": surface_unit,
                 }
-            
+
             if self.profile_view >= 0:
                 start = self.points[0]
                 end = self.points[1]
-                fraction = self.profile_view/100
+                fraction = self.profile_view / 100
                 total_distance = GeodesicDistance(start, end).meters
                 self.profile_distance = fraction * total_distance
 
-                dLon = (end[1]- start[1])
+                dLon = end[1] - start[1]
                 x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
-                y = np.cos(np.radians(start[0])) * np.sin(np.radians(end[0])) - np.sin(np.radians(start[0])) * np.cos(np.radians(end[0])) * np.cos(np.radians(dLon))
-                brng = np.arctan2(x,y)
+                y = np.cos(np.radians(start[0])) * np.sin(np.radians(end[0])) - np.sin(
+                    np.radians(start[0])
+                ) * np.cos(np.radians(end[0])) * np.cos(np.radians(dLon))
+                brng = np.arctan2(x, y)
                 brng = np.degrees(brng)
-    
-                destination = GeodesicDistance(meters=self.profile_distance).destination(point=start, bearing=brng)
+
+                destination = GeodesicDistance(
+                    meters=self.profile_distance
+                ).destination(point=start, bearing=brng)
                 self.profile_data = dataset.get_profile(
-                    #self.points[0][0], self.points[0][1], self.variables[0], self.time
-                    destination.latitude, destination.longitude, self.variables[0], self.time
+                    # self.points[0][0], self.points[0][1], self.variables[0], self.time
+                    destination.latitude,
+                    destination.longitude,
+                    self.variables[0],
+                    self.time,
                 )
 
         # Load data sent from Right Map (if in compare mode)
@@ -968,7 +973,7 @@ class TransectPlotter(LinePlotter):
 
     def __add_profile_plot(self, axis_divider):
         ax = axis_divider.append_axes("right", size="35%", pad=1)
-        ax.plot(self.profile_data[0], self.profile_data[1],  color="r")
+        ax.plot(self.profile_data[0], self.profile_data[1], color="r")
         ax.invert_yaxis()
         if self.depth_limit:
             ax.set_ylim(self.depth_limit, 0)
@@ -1060,7 +1065,7 @@ class TransectPlotter(LinePlotter):
         )
 
         if self.profile_view >= 0:
-            plt.axvline(x=self.profile_distance/1000, color='r', linestyle='--')
+            plt.axvline(x=self.profile_distance / 1000, color="r", linestyle="--")
 
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
