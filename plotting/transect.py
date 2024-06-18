@@ -158,18 +158,20 @@ class TransectPlotter(LinePlotter):
                     "units": surface_unit,
                 }
             
-            if self.profile:
+            if self.profile_view >= 0:
                 start = self.points[0]
                 end = self.points[1]
                 fraction = self.profile_view/100
                 total_distance = GeodesicDistance(start, end).meters
+                self.profile_distance = fraction * total_distance
 
                 dLon = (end[1]- start[1])
                 x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
                 y = np.cos(np.radians(start[0])) * np.sin(np.radians(end[0])) - np.sin(np.radians(start[0])) * np.cos(np.radians(end[0])) * np.cos(np.radians(dLon))
                 brng = np.arctan2(x,y)
                 brng = np.degrees(brng)
-                destination = GeodesicDistance(meters=fraction * total_distance).destination(point=start, bearing=brng)
+    
+                destination = GeodesicDistance(meters=self.profile_distance).destination(point=start, bearing=brng)
                 self.profile_data = dataset.get_profile(
                     #self.points[0][0], self.points[0][1], self.variables[0], self.time
                     destination.latitude, destination.longitude, self.variables[0], self.time
@@ -599,7 +601,7 @@ class TransectPlotter(LinePlotter):
             if self.surface:
                 self.__add_surface_plot(divider)
 
-            if self.profile:
+            if self.profile_view >= 0:
                 self.__add_profile_plot(divider)
 
         def find_minmax(scale, data):
@@ -965,15 +967,15 @@ class TransectPlotter(LinePlotter):
         ax.axes.get_xaxis().set_visible(False)
 
     def __add_profile_plot(self, axis_divider):
-        ax = axis_divider.append_axes("right", size="35%", pad=0.35)
+        ax = axis_divider.append_axes("right", size="35%", pad=1)
         ax.plot(self.profile_data[0], self.profile_data[1],  color="r")
         ax.invert_yaxis()
-        #bearing = geo.bearing()
-        
-
-        # https://geopy.readthedocs.io/en/stable/#geopy.distance.Distance.destination
-        # https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/
-
+        if self.depth_limit:
+            ax.set_ylim(self.depth_limit, 0)
+        else:
+            deep = np.amax(self.bathymetry["y"] * -1)
+            lim = 10 ** np.floor(np.log10(deep))
+            ax.set_ylim(np.ceil(deep / lim) * lim, 0)
         return
 
     def _transect_plot(
@@ -1056,6 +1058,9 @@ class TransectPlotter(LinePlotter):
             "k:",
             alpha=1.0,
         )
+
+        if self.profile_view >= 0:
+            plt.axvline(x=self.profile_distance/1000, color='r', linestyle='--')
 
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)

@@ -39,7 +39,9 @@ class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
-      profile_view: 0
+      profile_view: -1,
+      show_profile: false,
+      timer: null
     };
 
     if (props.init !== null) {
@@ -51,6 +53,8 @@ class LineWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
+    this.handleProfileCheck = this.handleProfileCheck.bind(this);
+    this.handleSliderChange = this.handleSliderChange.bind(this);
   }
 
   componentDidMount() {
@@ -120,6 +124,29 @@ class LineWindow extends React.Component {
     this.setState({
       selected: parseInt(key),
     });
+  }
+
+  handleProfileCheck(key, value) {
+    if (value){
+      this.setState({
+        show_profile: true,
+        profile_view: 0,
+      });
+    }
+    else{
+      this.setState({
+        show_profile: false,
+        profile_view: -1,
+      });
+    }
+  }
+
+  handleSliderChange(key, value) {
+    clearTimeout(this.state.timer);
+    const newTimer = setTimeout(() => {
+      this.setState({ profile_view: value });
+    }, 1000);
+    this.setState({ timer: newTimer });
   }
 
   render() {
@@ -251,17 +278,31 @@ class LineWindow extends React.Component {
 
 
 
-          <div className="slider-container">
-            <Slider
-              key="profile_view"
-              id="profile_view"
-              state={this.state.profile_view}
-              min={0}
-              max={100}
-              onChange={(x) => this.onLocalUpdate("profile_view",x)}
-            />
-          </div>
+          <div>
+            <CheckBox
+              key="show_profile"
+              id="show_profile"
+              checked={this.state.show_profile}
+              onUpdate={this.handleProfileCheck}
+              title={_("Extract Point Plot")}
+            >
+            </CheckBox>
 
+            {this.state.show_profile && (
+              <div className="slider-container">
+                <Slider
+                  key="profile_view"
+                  id="profile_view"
+                  state={this.state.profile_view}
+                  min={0}
+                  max={100}
+                  step={10}
+                  dots
+                  onChange={(x) => this.handleSliderChange("profile_view",x)}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{
               display:
