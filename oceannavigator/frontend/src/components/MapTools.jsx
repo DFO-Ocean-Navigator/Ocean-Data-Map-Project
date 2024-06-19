@@ -66,6 +66,7 @@ function MapTools(props) {
       >
         <Button
           key="enter-button"
+          id="enter-button"
           className="tool-button"
           onClick={() => handleShowModal("enterCoords")}
         >

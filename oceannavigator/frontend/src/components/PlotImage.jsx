@@ -356,7 +356,7 @@ class PlotImage extends React.PureComponent {
 
         <ButtonToolbar className="button-bar">
           <DropdownButton
-            id="save"
+            id="save-image"
             title={
               <span>
                 <Icon icon="save" /> {_("Save Image")}
@@ -366,43 +366,43 @@ class PlotImage extends React.PureComponent {
             onSelect={this.saveImage}
             drop={"up"}
           >
-            <Dropdown.Item eventKey="png">
+            <Dropdown.Item eventKey="png" id="png">
               <Icon icon="file-image-o" /> PNG
             </Dropdown.Item>
-            <Dropdown.Item eventKey="jpeg">
+            <Dropdown.Item eventKey="jpeg" id="jpeg">
               <Icon icon="file-image-o" /> JPG
             </Dropdown.Item>
-            <Dropdown.Item eventKey="pdf">
+            <Dropdown.Item eventKey="pdf" id="pdf">
               <Icon icon="file-pdf-o" /> PDF
             </Dropdown.Item>
-            <Dropdown.Item eventKey="svg">
+            <Dropdown.Item eventKey="svg" id="svg">
               <Icon icon="file-code-o" /> SVG
             </Dropdown.Item>
-            <Dropdown.Item eventKey="ps">
+            <Dropdown.Item eventKey="ps" id="ps">
               <Icon icon="file-pdf-o" /> PS
             </Dropdown.Item>
-            <Dropdown.Item eventKey="eps">
+            <Dropdown.Item eventKey="eps" id="eps">
               <Icon icon="file-pdf-o" /> EPS
             </Dropdown.Item>
-            <Dropdown.Item eventKey="tiff">
+            <Dropdown.Item eventKey="tiff" id="tiff">
               <Icon icon="file-image-o" /> TIFF
             </Dropdown.Item>
             <Dropdown.Item
-              eventKey="geotiff"
+              eventKey="geotiff" id="geotiff"
               disabled={this.props.query.type != "map"}
             >
               <Icon icon="file-image-o" /> GeoTIFF
             </Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item
-              eventKey="csv"
+              eventKey="csv" id="csv"
               disabled={this.props.query.type == "hovmoller"}
               onSelect={this.saveImage}
             >
               <Icon icon="file-text-o" /> {_("CSV")}
             </Dropdown.Item>
             <Dropdown.Item
-              eventKey="odv"
+              eventKey="odv" id="odv"
               onSelect={this.saveImage}
               disabled={
                 !this.props.query.type.includes("profile") &&
@@ -451,7 +451,7 @@ class PlotImage extends React.PureComponent {
           </DropdownButton>
 
           <DropdownButton
-            id="script"
+            id="APIscript"
             title={
               <span>
                 <Icon icon="file-code-o" /> {_("API Script")}
@@ -467,7 +467,7 @@ class PlotImage extends React.PureComponent {
             <Dropdown.Item eventKey="pythonPlot">
               <Icon icon="code" /> Python 3 - PLOT
             </Dropdown.Item>
-            <Dropdown.Item eventKey="pythonCSV">
+            <Dropdown.Item eventKey="pythonCSV" id="pythonCSV">
               <Icon icon="code" /> Python 3 - CSV
             </Dropdown.Item>
             <Dropdown.Item eventKey="rCSV">
