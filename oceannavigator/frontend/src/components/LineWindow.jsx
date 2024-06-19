@@ -284,7 +284,7 @@ class LineWindow extends React.Component {
               id="show_profile"
               checked={this.state.show_profile}
               onUpdate={this.handleProfileCheck}
-              title={_("Extract Point Plot")}
+              title={_("Extract Profile Plot")}
             >
             </CheckBox>
 

@@ -175,12 +175,12 @@ class TransectPlotter(LinePlotter):
                     meters=self.profile_distance
                 ).destination(point=start, bearing=brng)
                 self.profile_data = dataset.get_profile(
-                    # self.points[0][0], self.points[0][1], self.variables[0], self.time
                     destination.latitude,
                     destination.longitude,
                     self.variables[0],
                     self.time,
                 )
+                self.destination = destination
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
@@ -975,12 +975,15 @@ class TransectPlotter(LinePlotter):
         ax = axis_divider.append_axes("right", size="35%", pad=1)
         ax.plot(self.profile_data[0], self.profile_data[1], color="r")
         ax.invert_yaxis()
+        ax.set_yticks([])
+        ax.set_xlabel(self.variables[0])
         if self.depth_limit:
             ax.set_ylim(self.depth_limit, 0)
         else:
             deep = np.amax(self.bathymetry["y"] * -1)
             lim = 10 ** np.floor(np.log10(deep))
             ax.set_ylim(np.ceil(deep / lim) * lim, 0)
+        self.plotTitle = "Transect Data for:\n%s" % (self.name) + "\nProfile: " + str(self.destination.latitude) + " " + str(self.destination.longitude)
         return
 
     def _transect_plot(
