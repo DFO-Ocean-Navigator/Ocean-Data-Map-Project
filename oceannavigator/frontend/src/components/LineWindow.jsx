@@ -39,7 +39,7 @@ class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
-      profile_view: -1,
+      profile_distance: -1,
       show_profile: false,
       timer: null
     };
@@ -130,13 +130,13 @@ class LineWindow extends React.Component {
     if (value){
       this.setState({
         show_profile: true,
-        profile_view: 0,
+        profile_distance: 0,
       });
     }
     else{
       this.setState({
         show_profile: false,
-        profile_view: -1,
+        profile_distance: -1,
       });
     }
   }
@@ -144,7 +144,7 @@ class LineWindow extends React.Component {
   handleSliderChange(key, value) {
     clearTimeout(this.state.timer);
     const newTimer = setTimeout(() => {
-      this.setState({ profile_view: value });
+      this.setState({ profile_distance: value/100*this.props.line_distance });
     }, 1000);
     this.setState({ timer: newTimer });
   }
@@ -161,6 +161,15 @@ class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
+
+    const line_distance = this.props.line_distance;
+    const slider_marks = {
+      0:'0km',
+      25:(line_distance/1000/4).toFixed(1),
+      50:(line_distance/1000/2).toFixed(1),
+      75:(line_distance/1000*(3/4)).toFixed(1),
+      100:(line_distance/1000).toFixed(1)+"km",
+    }
 
     const plotOptions = (
       <div>
@@ -291,14 +300,10 @@ class LineWindow extends React.Component {
             {this.state.show_profile && (
               <div className="slider-container">
                 <Slider
-                  key="profile_view"
-                  id="profile_view"
-                  state={this.state.profile_view}
                   min={0}
                   max={100}
-                  step={10}
-                  dots
-                  onChange={(x) => this.handleSliderChange("profile_view",x)}
+                  marks={slider_marks}
+                  onChange={(x) => this.handleSliderChange("profile_distance",x)}
                 />
               </div>
             )}
@@ -426,7 +431,7 @@ class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
-        plot_query.profile_view = this.state.profile_view;
+        plot_query.profile_distance = this.state.profile_distance;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = { ...this.props.dataset_1 };

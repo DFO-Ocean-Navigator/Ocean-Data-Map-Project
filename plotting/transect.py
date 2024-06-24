@@ -26,8 +26,8 @@ class TransectPlotter(LinePlotter):
         # Holds Velocity Plot Type [magnitude, parallel, perpendicular]
         self.selected_velocity_plots = None
 
-        profile_view = query.get("profile_view")
-        self.profile_view = profile_view
+        profile_distance = query.get("profile_distance")
+        self.profile_distance = profile_distance
 
     def parse_query(self, query):
         super(TransectPlotter, self).parse_query(query)
@@ -156,12 +156,9 @@ class TransectPlotter(LinePlotter):
                     "units": surface_unit,
                 }
 
-            if self.profile_view >= 0:
+            if self.profile_distance >= 0:
                 start = self.points[0]
                 end = self.points[1]
-                fraction = self.profile_view / 100
-                total_distance = GeodesicDistance(start, end).meters
-                self.profile_distance = fraction * total_distance
 
                 dLon = end[1] - start[1]
                 x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
@@ -606,7 +603,7 @@ class TransectPlotter(LinePlotter):
             if self.surface:
                 self.__add_surface_plot(divider)
 
-            if self.profile_view >= 0:
+            if self.profile_distance >= 0:
                 self.__add_profile_plot(divider)
 
         def find_minmax(scale, data):
@@ -1067,7 +1064,7 @@ class TransectPlotter(LinePlotter):
             alpha=1.0,
         )
 
-        if self.profile_view >= 0:
+        if self.profile_distance >= 0:
             plt.axvline(x=self.profile_distance / 1000, color="r", linestyle="--")
 
         divider = make_axes_locatable(ax)

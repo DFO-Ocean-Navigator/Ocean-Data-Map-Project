@@ -191,7 +191,7 @@ class PlotImage extends React.PureComponent {
         query.depth_limit = q.depth_limit;
         query.colormap = q.colormap;
         query.selectedPlots = q.selectedPlots;
-        query.profile_view = q.profile_view;
+        query.profile_distance = q.profile_distance;
 
         if (q.compare_to) {
           query.compare_to = {
