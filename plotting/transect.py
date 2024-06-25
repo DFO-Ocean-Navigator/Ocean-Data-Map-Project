@@ -157,8 +157,15 @@ class TransectPlotter(LinePlotter):
                 }
 
             if self.profile_distance >= 0:
-                start = self.points[0]
-                end = self.points[1]
+                dist = 0
+                for i in range(1,len(self.points)):
+                    dist += GeodesicDistance(self.points[i-1], self.points[i]).meters
+                    if self.profile_distance < dist:
+                        start = self.points[i-1]
+                        end = self.points[i]
+                        break
+                    
+                
 
                 dLon = end[1] - start[1]
                 x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
