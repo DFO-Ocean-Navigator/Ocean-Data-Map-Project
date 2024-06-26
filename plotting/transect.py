@@ -158,14 +158,12 @@ class TransectPlotter(LinePlotter):
 
             if self.profile_distance >= 0:
                 dist = 0
-                for i in range(1,len(self.points)):
-                    dist += GeodesicDistance(self.points[i-1], self.points[i]).meters
+                for i in range(1, len(self.points)):
+                    dist += GeodesicDistance(self.points[i - 1], self.points[i]).meters
                     if self.profile_distance < dist:
-                        start = self.points[i-1]
+                        start = self.points[i - 1]
                         end = self.points[i]
                         break
-                    
-                
 
                 dLon = end[1] - start[1]
                 x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
@@ -533,6 +531,10 @@ class TransectPlotter(LinePlotter):
                 width = 1  # 1 column
                 width_ratios = [1]
 
+        if self.profile_distance >= 0:
+            Col = Col + 1
+            width_ratios.append(2)
+
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         figuresize = list(map(float, self.size.split("x")))
         if self.compare:
@@ -611,7 +613,7 @@ class TransectPlotter(LinePlotter):
                 self.__add_surface_plot(divider)
 
             if self.profile_distance >= 0:
-                self.__add_profile_plot(divider)
+                self.__add_profile_plot(subplots)
 
         def find_minmax(scale, data):
             """
@@ -975,8 +977,8 @@ class TransectPlotter(LinePlotter):
         ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
-    def __add_profile_plot(self, axis_divider):
-        ax = axis_divider.append_axes("right", size="35%", pad=1)
+    def __add_profile_plot(self, gs):
+        ax = plt.subplot(gs[0, gs.ncols - 1])
         ax.plot(self.profile_data[0], self.profile_data[1], color="r")
         ax.invert_yaxis()
         ax.set_yticks([])
@@ -987,8 +989,13 @@ class TransectPlotter(LinePlotter):
             deep = np.amax(self.bathymetry["y"] * -1)
             lim = 10 ** np.floor(np.log10(deep))
             ax.set_ylim(np.ceil(deep / lim) * lim, 0)
-        self.plotTitle = "Transect Data for:\n%s" % (self.name) + "\nProfile: " + str(self.destination.latitude) + " " + str(self.destination.longitude)
-        return
+        self.plotTitle = (
+            "Transect Data for:\n%s" % (self.name)
+            + "\nProfile: "
+            + str(self.destination.latitude)
+            + " "
+            + str(self.destination.longitude)
+        )
 
     def _transect_plot(
         self, values, depths, plotTitle, vmin, vmax, cmapLabel, unit, cmap
