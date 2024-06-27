@@ -340,11 +340,13 @@ function OceanNavigator(props) {
       modalTitle = modalTitle.join(", ");
       break;
     case "line":
+      const line_distance = mapRef.current.getLineDistance(selectedCoordinates);
       modalBodyContent = (
         <LineWindow
           dataset_0={dataset0}
           dataset_1={dataset1}
           line={selectedCoordinates}
+          line_distance={line_distance}
           mapSettings={mapSettings}
           names={names}
           onUpdate={updateDataset0}
