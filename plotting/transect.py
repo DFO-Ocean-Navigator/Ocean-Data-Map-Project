@@ -992,9 +992,9 @@ class TransectPlotter(LinePlotter):
         self.plotTitle = (
             "Transect Data for:\n%s" % (self.name)
             + "\nProfile: "
-            + str(self.destination.latitude)
+            + format(self.destination.latitude, '.4f')
             + " "
-            + str(self.destination.longitude)
+            + format(self.destination.longitude, '.4f')
         )
 
     def _transect_plot(

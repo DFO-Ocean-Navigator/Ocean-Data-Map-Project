@@ -168,7 +168,7 @@ class LineWindow extends React.Component {
       25:(line_distance/1000/4).toFixed(1),
       50:(line_distance/1000/2).toFixed(1),
       75:(line_distance/1000*(3/4)).toFixed(1),
-      100:(line_distance/1000).toFixed(1)+"km",
+      100:(line_distance/1000).toFixed(1)
     }
 
     const plotOptions = (
