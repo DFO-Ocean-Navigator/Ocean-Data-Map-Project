@@ -2,10 +2,12 @@ import contextlib
 import datetime
 from abc import ABCMeta, abstractmethod
 from io import BytesIO, StringIO
+from pathlib import Path
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -58,6 +60,8 @@ class Plotter(metaclass=ABCMeta):
             return self.odv_ascii()
         elif self.filetype == "stats":
             return self.stats_csv()
+        elif self.filetype == "nc":
+            return self.netcdf()
         else:
             return self.plot()
 
@@ -185,11 +189,9 @@ class Plotter(metaclass=ABCMeta):
 
     def __get_linear_threshold(self, linearthresh: str):
 
-        if linearthresh is None or linearthresh == "":
-            linearthresh = 200
+        if linearthresh is None or linearthresh == "" or linearthresh < 0:
+            linearthresh = 0
         linearthresh = float(linearthresh)
-        if not linearthresh > 0:
-            linearthresh = 1
 
         return linearthresh
 
@@ -343,6 +345,24 @@ class Plotter(metaclass=ABCMeta):
                     buf.write("\n")
 
             return (buf.getvalue(), self.mime, self.filename)
+
+    def netcdf(self, dataset):
+        if self.query.get("time"):
+            time = self.query.get("time")
+        else:
+            time = f"{self.query.get("starttime")}_{self.query.get("endtime")}"
+        filename = (
+            self.query["dataset"]
+            + "_%dN%dW" % (self.query["station"][0][0], self.query["station"][0][1])
+            + f"_{time}_NETCDF4.nc"
+        )
+
+        path = Path("/tmp/subset")
+        path.mkdir(parents=True, exist_ok=True)
+        working_dir = "/tmp/subset/" + filename
+        dataset.to_netcdf(working_dir)
+
+        return working_dir, self.mime, filename
 
     def get_variable_names(self, dataset, variables: List[str]) -> List[str]:
         """Returns a list of names for the variables.

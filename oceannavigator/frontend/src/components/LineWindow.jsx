@@ -4,9 +4,8 @@ import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
 import Range from "./ColormapRange.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
-import NumberBox from "./NumberBox.jsx";
 import ImageSize from "./ImageSize.jsx";
-import DepthLimit from "./DepthLimit.jsx";
+import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
@@ -30,7 +29,7 @@ class LineWindow extends React.Component {
       colormap_diff: "default", // Colourmap for difference plot
       showmap: true,
       surfacevariable: "none",
-      linearthresh: 200,
+      linearthresh: 0,
       size: "10x7",
       dpi: 144,
       depth_limit: false,
@@ -225,21 +224,24 @@ class LineWindow extends React.Component {
             {_("surfacevariable_help")}
           </ComboBox>
 
-          <NumberBox
+          <TransectLimiter
             key="linearthresh"
             id="linearthresh"
             state={this.state.linearthresh}
             onUpdate={this.onLocalUpdate}
-            title={_("Linear Threshold")}
+            title={_("Exponential Plot")}
+            parameter={_("Linear Threshold")}
           >
             {_("linearthresh_help")}
-          </NumberBox>
+          </TransectLimiter>
 
-          <DepthLimit
+          <TransectLimiter
             key="depth_limit"
             id="depth_limit"
             state={this.state.depth_limit}
             onUpdate={this.onLocalUpdate}
+            title={_("Limit Depth")}
+            parameter={_("Depth")}
           />
 
           <div

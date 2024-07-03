@@ -17,8 +17,8 @@ body {
     min-height: calc(100% - 2 * #{$modal-margin});
     display: flex;
     flex-direction: column;
-    width: 200%;
-    transform: translateX(-25%);
+    width: 100%;
+    max-width: 100%;
 
     .modal-header {
       .modal-title {

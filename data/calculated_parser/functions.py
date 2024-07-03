@@ -268,6 +268,14 @@ def density(depth, latitude, temperature, salinity) -> np.ndarray:
 
     press = __calc_pressure(depth, latitude)
 
+    if salinity.shape != press.shape:
+        # Need to pad press so it can broadcast against temperature and salinity.
+        # eg. if using GIOPS and salinity has shape (3, 50, 3, 12) then press has
+        # shape (50, 3). This logic pads press to give shape (1, 50, 3, 1).
+        for ax, val in enumerate(salinity.shape):
+            if ax > press.ndim - 1 or press.shape[ax] != val:
+                press = np.expand_dims(press, axis=ax)
+
     density = gsw.density.rho(salinity, temperature, press)
     return np.array(density)
 

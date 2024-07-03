@@ -410,7 +410,9 @@ dependencies:
   - zlib-ng=2.0.7=h0b41bf4_0
   - zstd=1.5.5=hfc55251_0
   - pip:
-    - pydantic-settings==2.1.0
-    - python-dotenv==1.0.0
-    - visvalingamwyatt==0.2.0
+      - async-timeout==4.0.3
+      - pydantic-settings==2.1.0
+      - pyinstrument==4.6.2
+      - python-dotenv==1.0.0
+      - visvalingamwyatt==0.2.0
 prefix: /home/ubuntu/onav-cloud/tools/miniconda/3/amd64/envs/navigator
