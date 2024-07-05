@@ -5,8 +5,10 @@ import os
 import sys
 
 import defopt
+import numpy as np
 import xarray as xr
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -83,24 +85,41 @@ def main(uri: str, filename: str):
                     "Institution": ds.attrs["institution"],
                 }
                 p.attrs = attrs
-                session.add(p)
-                session.commit()
 
-                stations = [
-                    Station(
-                        platform_id=p.id,
-                        time=row.TIME,
-                        latitude=row.LATITUDE,
-                        longitude=row.LONGITUDE,
-                    )
-                    for idx, row in df.iterrows()
-                ]
+                try:
+                    session.add(p)
+                    session.commit()
+                except IntegrityError:
+                    print("Error committing platform.")
+                    session.rollback()
+                    stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
+                    p.id = session.execute(stmt).first()[0]
+                    pass
 
-                # Using return_defaults=True here so that the stations will get
-                # updated with id's. It's slower, but it means that we can just
-                # put all the station ids into a pandas series to use when
-                # constructing the samples.
-                session.bulk_save_objects(stations, return_defaults=True)
+                n_chunks = np.ceil(len(df)/1e6)
+
+                for chunk in np.array_split(df, n_chunks):
+                    stations = [
+                        Station(
+                            platform_id=p.id,
+                            time=row.TIME,
+                            latitude=row.LATITUDE,
+                            longitude=row.LONGITUDE,
+                        )
+                        for idx, row in chunk.iterrows()
+                    ]
+
+                    # Using return_defaults=True here so that the stations will get
+                    # updated with id's. It's slower, but it means that we can just
+                    # put all the station ids into a pandas series to use when
+                    # constructing the samples.
+                    try:
+                        session.bulk_save_objects(stations, return_defaults=True)
+                    except IntegrityError:
+                        print("Error committing station.")
+                        session.rollback()
+                        pass
+
                 df["STATION_ID"] = [s.id for s in stations]
 
                 samples = [
@@ -115,9 +134,14 @@ def main(uri: str, filename: str):
                     ]
                     for idx, row in df.iterrows()
                 ]
-                session.bulk_save_objects(
-                    [item for sublist in samples for item in sublist]
-                )
+                try:
+                    session.bulk_save_objects(
+                        [item for sublist in samples for item in sublist]
+                    )
+                except IntegrityError:
+                    print("Error committing sample.")
+                    session.rollback()
+                    pass
                 session.commit()
 
 
