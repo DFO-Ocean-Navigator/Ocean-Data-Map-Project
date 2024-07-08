@@ -94,7 +94,6 @@ def main(uri: str, filename: str):
                     session.rollback()
                     stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
                     p.id = session.execute(stmt).first()[0]
-                    pass
 
                 n_chunks = np.ceil(len(df)/1e6)
 
@@ -118,31 +117,32 @@ def main(uri: str, filename: str):
                     except IntegrityError:
                         print("Error committing station.")
                         session.rollback()
-                        pass
+                        stmt = select(Station).where(Station.platform_id==p.id)
+                        chunk["STATION_ID"] = session.execute(stmt).all()
 
-                df["STATION_ID"] = [s.id for s in stations]
+                    chunk["STATION_ID"] = [s.id for s in stations]
 
-                samples = [
-                    [
-                        Sample(
-                            station_id=row.STATION_ID,
-                            depth=row.DEPTH,
-                            value=row[variable],
-                            datatype_key=datatype_map[variable].key,
-                        )
-                        for variable in variables
+                    samples = [
+                        [
+                            Sample(
+                                station_id=row.STATION_ID,
+                                depth=row.DEPTH,
+                                value=row[variable],
+                                datatype_key=datatype_map[variable].key,
+                            )
+                            for variable in variables
+                        ]
+                        for idx, row in chunk.iterrows()
                     ]
-                    for idx, row in df.iterrows()
-                ]
-                try:
-                    session.bulk_save_objects(
-                        [item for sublist in samples for item in sublist]
-                    )
-                except IntegrityError:
-                    print("Error committing sample.")
-                    session.rollback()
-                    pass
-                session.commit()
+                    try:
+                        session.bulk_save_objects(
+                            [item for sublist in samples for item in sublist]
+                        )
+                    except IntegrityError:
+                        print("Error committing sample.")
+                        session.rollback()
+
+                    session.commit()
 
 
 if __name__ == "__main__":

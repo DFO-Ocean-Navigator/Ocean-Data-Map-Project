@@ -7,6 +7,7 @@ import defopt
 
 import xarray as xr
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -72,6 +73,12 @@ def main(uri: str, filename: str):
                     platform = Platform(type=Platform.Type.drifter)
                     session.add(platform)
                     session.commit()
+                    try:
+                        session.add(platform)
+                        session.commit()
+                    except IntegrityError:
+                        print("Error committing platform.")
+                        session.rollback()
 
                     # Iterate over rows in the DataFrame
                     for index, row in df.iterrows():
@@ -88,8 +95,13 @@ def main(uri: str, filename: str):
                             longitude=longitude,
                             platform_id=platform.id,
                         )
-                        session.add(station)
-                        session.commit()
+
+                        try:
+                            session.add(station)
+                            session.commit()
+                        except IntegrityError:
+                            print("Error committing station.")
+                            session.rollback()
 
                         # Create Sample object
                         sample = Sample(
@@ -98,7 +110,13 @@ def main(uri: str, filename: str):
                             datatype_key=data_type[0][0].key,
                             station_id=station.id,
                         )
-                        session.add(sample)
+                        
+                        try:
+                            session.add(sample)
+                            session.commit()
+                        except IntegrityError:
+                            print("Error committing sample.")
+                            session.rollback()
 
                     session.commit()
 
