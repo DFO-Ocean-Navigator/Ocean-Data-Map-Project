@@ -1438,8 +1438,8 @@ const MainMap = forwardRef((props, ref) => {
   const getLineDistance = (line) => {
     var dist = 0;
     for (let i = 1; i < line.length; i++) {
-      let start = line[i - 1].reverse()
-      let end = line[i].reverse()
+      let start = [line[i - 1][1], line[i - 1][0]]
+      let end = [line[i][1], line[i][0]]
       dist += getDistance(start, end);
     }
 
