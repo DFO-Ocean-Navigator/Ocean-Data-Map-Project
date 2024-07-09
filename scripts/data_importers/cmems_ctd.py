@@ -9,6 +9,7 @@ import pandas as pd
 import xarray as xr
 
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -78,8 +79,13 @@ def main(uri: str, filename: str):
                     "Institution": ds.attrs["institution"],
                 }
                 p.attrs = attrs
-                session.add(p)
-                session.commit()
+
+                try:
+                    session.add(p)
+                    session.commit()
+                except IntegrityError:
+                    print("Error committing platform.")
+                    session.rollback()
 
                 # Generate the station
                 s = Station(
@@ -88,7 +94,14 @@ def main(uri: str, filename: str):
                     time=pd.Timestamp(ds.TIME.values[0]),
                 )
                 p.stations.append(s)
-                session.commit()
+
+                try:
+                    session.add(p)
+                    session.commit()
+                except IntegrityError:
+                    print("Error committing station.")
+                    session.rollback()
+
 
                 # Generate the samples
                 for var, dt in datatype_map.items():
@@ -102,7 +115,12 @@ def main(uri: str, filename: str):
                             )
                             for value, depth in zip(ds[var][0].values, ds['DEPTH'].values)
                         ]
+
+                    try:
                         session.bulk_save_objects(samples)
+                    except IntegrityError:
+                        print("Error committing samples.")
+                        session.rollback()
 
                 session.commit()
 
