@@ -5,7 +5,7 @@ import os
 import cmems_argo
 import cmems_drifter
 import cmems_glider
-import cmems_nafc_ctd
+import cmems_ctd
 
 
 def main(uri: str, output_dir: str):
@@ -33,7 +33,7 @@ def main(uri: str, output_dir: str):
             elif "PF" in obs:
                 cmems_argo.main(uri, file)
             elif "CT" in obs:
-                cmems_nafc_ctd.main(uri, file)
+                cmems_ctd.main(uri, file)
             # os.remove(file)
 
 

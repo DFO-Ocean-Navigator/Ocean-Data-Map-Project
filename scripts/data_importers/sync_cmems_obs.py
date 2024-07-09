@@ -6,7 +6,7 @@ import copernicusmarine
 import cmems_argo
 import cmems_drifter
 import cmems_glider
-import cmems_nafc_ctd
+import cmems_ctd
 
 
 def main(uri: str, output_dir: str):
@@ -43,7 +43,7 @@ def main(uri: str, output_dir: str):
         elif "PF" in obs_filter:
             cmems_argo.main(uri, file_list)
         elif "CT" in obs_filter:
-            cmems_nafc_ctd.main(uri, file_list)
+            cmems_ctd.main(uri, file_list)
 
 
 if __name__ == "__main__":
