@@ -982,7 +982,7 @@ class TransectPlotter(LinePlotter):
         ax.plot(self.profile_data[0], self.profile_data[1], color="r")
         ax.invert_yaxis()
         ax.set_yticks([])
-        ax.set_xlabel(self.variables[0])
+        ax.set_xlabel(self.transect_data["name"])
         if self.depth_limit:
             ax.set_ylim(self.depth_limit, 0)
         else:
