@@ -54,7 +54,6 @@ class LineWindow extends React.Component {
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
     this.handleProfileCheck = this.handleProfileCheck.bind(this);
-    this.handleSliderChange = this.handleSliderChange.bind(this);
   }
 
   componentDidMount() {
@@ -139,14 +138,6 @@ class LineWindow extends React.Component {
         profile_distance: -1,
       });
     }
-  }
-
-  handleSliderChange(key, value) {
-    clearTimeout(this.state.timer);
-    const newTimer = setTimeout(() => {
-      this.setState({ profile_distance: value/100*this.props.line_distance });
-    }, 1000);
-    this.setState({ timer: newTimer });
   }
 
   render() {
@@ -303,7 +294,7 @@ class LineWindow extends React.Component {
                   min={0}
                   max={100}
                   marks={slider_marks}
-                  onChange={(x) => this.handleSliderChange("profile_distance",x)}
+                  onAfterChange={(x) => this.onLocalUpdate("profile_distance",x/100*this.props.line_distance)}
                 />
               </div>
             )}
