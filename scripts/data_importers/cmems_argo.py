@@ -8,6 +8,7 @@ import pandas as pd
 import gsw
 import xarray as xr
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -105,7 +106,13 @@ def main(uri: str, filename: str):
                     longitude=ds["LONGITUDE"].values[0],
                 )
                 platform.stations.append(station)
-                session.commit()
+
+                try:
+                    session.add(p)
+                    session.commit()
+                except IntegrityError:
+                    print("Error committing station.")
+                    session.rollback()
 
                 depth = gsw.conversions.z_from_p(
                     -ds["PRES"].dropna("DEPTH").values,
@@ -146,7 +153,11 @@ def main(uri: str, filename: str):
                         for pair in zip(depth.flatten(), values.flatten())
                     ]
 
-                    session.bulk_save_objects(samples)
+                    try:
+                        session.bulk_save_objects(samples)
+                    except IntegrityError:
+                        print("Error committing samples.")
+                        session.rollback()
 
                 session.commit()
 
