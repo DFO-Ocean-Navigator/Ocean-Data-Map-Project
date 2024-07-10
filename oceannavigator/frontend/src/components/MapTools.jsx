@@ -95,6 +95,7 @@ function MapTools(props) {
       >
         <Button
           key="obs-button"
+          id="obs-tooltip"
           className="tool-button"
           onClick={handleObservations}
         >

@@ -53,7 +53,7 @@ function ObservationTools(props) {
 
   return (
     <div className={"obs-tools"}>
-      <Button className="plot-button" onClick={handleAll}>
+      <Button className="plot-button" id="all_button" onClick={handleAll}>
         {__("All")}
       </Button>
       <Button className="plot-button" onClick={handleArea}>
