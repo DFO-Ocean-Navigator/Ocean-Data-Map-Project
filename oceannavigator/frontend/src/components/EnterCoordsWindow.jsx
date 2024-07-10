@@ -191,6 +191,7 @@ function EnterCoordsWindow(props) {
             <label>{__("Latitude")}:</label>
             <input
               type="number"
+              id="Latitude"
               min="-90"
               max="90"
               step="0.0001"
@@ -200,13 +201,14 @@ function EnterCoordsWindow(props) {
             <label>{__("Longitude")}:</label>
             <input
               type="number"
+              id="Longitude"
               min="-180"
               max="180"
               step="0.0001"
               value={enteredLon}
               onChange={lonChangeHandler}
             />
-            <button type="submit">{__("Add")}</button>
+            <button type="submit" id="add">{__("Add")}</button>
             <button type="button" onClick={handleClear}>
               {__("Clear")}
             </button>
@@ -231,11 +233,12 @@ function EnterCoordsWindow(props) {
             </ToggleButton>
           ))}
         </div>
-        <Button className="plot-button" onClick={handleUpload}>
+        <Button className="plot-button" id = "Upload-CSV" onClick={handleUpload}>
           {__("Upload CSV")}
         </Button>
         <Button
           className="plot-button"
+          id="plot-button" // Add the id attribute here
           onClick={handlePlot}
           disabled={plotDisabled}
         >

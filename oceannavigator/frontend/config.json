@@ -1,0 +1,183 @@
+{    
+    "area_plot" : {
+        "datasets": {
+            "GIOPS 10 day Forecast 3D - LatLon": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["45.3181", "-59.3802"],
+                    ["45.559", "-56.9418"],
+                    ["45.9945", "-57.6699"]
+                ]
+            },               
+            
+            "RIOPS 10 day Forecast 3D - Polar Stereographic": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["45.3181", "-59.3802"],
+                    ["45.559", "-56.9418"],
+                    ["45.9945", "-57.6699"]
+                ]
+            },
+            "CCG RIOPS Forecast Surface - LatLon": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["45.3181", "-59.3802"],
+                    ["45.559", "-56.9418"],
+                    ["45.9945", "-57.6699"]
+                ]
+            },
+            "CIOPS Forecast East 3D - LatLon": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["45.3181", "-59.3802"],
+                    ["45.559", "-56.9418"],
+                    ["45.9945", "-57.6699"]
+                ]
+            },
+            "CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["45.3181", "-59.3802"],
+                    ["45.559", "-56.9418"],
+                    ["45.9945", "-57.6699"]
+                ]
+            },
+            "SalishSeaCast 3D currents": {
+                "variables" : ["current_speed"],
+                "Additional_Contours":["uVelocity"],
+                "coordinates": [
+                    ["49.3144", "-123.68"],
+                    ["49.2905", "-123.327"],
+                    ["49.0367", "-123.4583"]
+                ]
+            },
+            "WCPs-GLS Great Lakes": {
+                "variables" : ["votemper"],
+                "Arrows":["magwatervel"],
+                "coordinates": [
+                    ["47.322", "-86.807"],
+                    ["47.8006", "-87.4289"],
+                    ["48.0384", "-86.807"]
+                ]
+            }
+        }
+    },
+
+    "line_plot" : {
+        "datasets": {
+            "GIOPS 10 day Forecast 3D - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            },
+            
+            
+            "RIOPS 10 day Forecast 3D - Polar Stereographic": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            },
+            "CCG RIOPS Forecast Surface - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            },
+            "CIOPS Forecast East 3D - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            },
+            "CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            },
+            "SalishSeaCast 3D currents": {
+                "variables" : ["current_speed"],
+                "coordinates": [
+                    ["48.24", "-123.03"],
+                    ["48.30", "-124.22"]
+                ]
+            },
+            "WCPs-GLS Great Lakes": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.0000", "-52.8320"],
+                    ["47.0000", "-42.0000"]
+                ]
+            }
+        }
+    },
+
+    "point_plot" : {
+        "datasets": {
+            "GIOPS 10 day Forecast 3D - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["44.9855", "-50.9582"]
+                ]
+            },
+            
+            
+            "RIOPS 10 day Forecast 3D - Polar Stereographic": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["44.9855", "-50.9582"]
+                ]
+            },
+            "CCG RIOPS Forecast Surface - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["44.9855", "-50.9582"]
+                ]
+            },
+            "CIOPS Forecast East 3D - LatLon": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["44.9855", "-50.9582"]
+                ]
+            },
+            "CMEMS Global Ocean PHYS Reanalysis (Monthly 1/12) deg": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["44.9855", "-50.9582"]
+                ]
+            },
+            "SalishSeaCast 3D currents": {
+                "variables" : ["current_speed"],               
+                "coordinates": [
+                    ["49.3144", "-123.68"]
+                ]
+            },
+            "WCPs-GLS Great Lakes": {
+                "variables" : ["votemper"],
+                "coordinates": [
+                    ["47.322", "-86.703"]
+                ]
+            }
+        }
+    },
+
+    "observations" : {
+        "observation_type": [ "point-check"],
+        "start_date":["2020-01-01"],
+        "end_date":["2020-12-31"],
+        "data_type":["sea_water_temperature"]
+    }
+
+}

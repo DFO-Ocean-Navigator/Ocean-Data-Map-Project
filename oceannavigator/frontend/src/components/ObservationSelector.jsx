@@ -385,6 +385,7 @@ function ObservationSelector(props) {
       </Card>
       <Button
         variant="primary"
+        id="apply-button"
         onClick={function () {
           observationSelect();
         }}
