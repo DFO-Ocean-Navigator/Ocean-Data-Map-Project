@@ -9,9 +9,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
-from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from pyinstrument import Profiler
 from pyinstrument.renderers import SpeedscopeRenderer
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
 from oceannavigator.dataset_config import DatasetConfig
 
@@ -78,7 +78,8 @@ def configure_pyinstrument(app: FastAPI, output_dir: str) -> None:
                 f"{output_dir}"
                 + f"{api_path.replace("/api/v2.0/", "").replace("/", "_")}_"
                 + f"{int(time.time())}"
-                + ".json")
+                + ".json"
+            )
             with open(fname, 'w') as f:
                 f.write(profiler.output(renderer=SpeedscopeRenderer()))
             return response

@@ -47,6 +47,8 @@ def get_mimetype(filetype: str):
         filetype = "txt"
     elif filetype == "stats":
         mime = "text/csv"
+    elif filetype == "nc":
+        mime = "application/postscript"
     else:
         filetype = "png"
         mime = "image/png"

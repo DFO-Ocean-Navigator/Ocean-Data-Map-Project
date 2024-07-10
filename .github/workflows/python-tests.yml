@@ -33,13 +33,13 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - name: Set up Python 3.10.6
+    - name: Set up Python 3.12.0
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10.6
+        python-version: 3.12.0
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.10.6
+        python-version: 3.12.0
     - name: Update environment
       run: conda env update -f config/conda/environment.yml --name test --quiet
     - name: Run tests
