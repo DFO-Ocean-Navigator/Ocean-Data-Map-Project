@@ -49,7 +49,7 @@ def main(uri: str, filename: str):
         for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
-                df = ds.to_dataframe().reset_index()
+                df = ds.to_dataframe().reset_index().dropna(axis=1, how="all").dropna()
 
                 # Iterate over variables defined in the mapping
                 for var_name, (key, name, unit) in VARIABLE_MAPPING.items():
@@ -58,7 +58,7 @@ def main(uri: str, filename: str):
 
                     # Create or retrieve DataType object
                     statement = select(DataType).where(DataType.key == key)
-                    data_type = session.execute(statement).all()
+                    data_type = session.execute(statement).first()
                     if data_type is None:
                         data_type = DataType(
                             key=key,
@@ -67,6 +67,8 @@ def main(uri: str, filename: str):
                         )
                         session.add(data_type)
                         session.commit()
+                    else:
+                        data_type = data_type[0]
 
                     # Create Platform object
 
@@ -107,10 +109,10 @@ def main(uri: str, filename: str):
                         sample = Sample(
                             depth=depth,
                             value=value,
-                            datatype_key=data_type[0][0].key,
+                            datatype_key=data_type.key,
                             station_id=station.id,
                         )
-                        
+
                         try:
                             session.add(sample)
                             session.commit()

@@ -52,8 +52,12 @@ def main(uri: str, filename: str):
                     ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
                     .to_dataframe()
                     .reset_index()
+                    .dropna(axis=1, how='all')
                     .dropna()
                 )
+
+                # remove missing variables from variables list
+                variables = [v for v in VARIABLES if v in df.columns]
 
                 for variable in variables:
                     if variable not in datatype_map:
@@ -95,7 +99,10 @@ def main(uri: str, filename: str):
                     stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
                     p.id = session.execute(stmt).first()[0]
 
-                n_chunks = np.ceil(len(df)/1e6)
+                n_chunks = np.ceil(len(df)/1e4)
+
+                if n_chunks < 1:
+                    continue
 
                 for chunk in np.array_split(df, n_chunks):
                     stations = [
@@ -139,7 +146,7 @@ def main(uri: str, filename: str):
                             [item for sublist in samples for item in sublist]
                         )
                     except IntegrityError:
-                        print("Error committing sample.")
+                        print("Error committing samples.")
                         session.rollback()
 
                     session.commit()
