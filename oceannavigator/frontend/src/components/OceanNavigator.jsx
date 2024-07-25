@@ -19,7 +19,7 @@ import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
 import Class4Selector from "./Class4Selector.jsx";
 import Class4Window from "./Class4Window.jsx";
-import Icon from "./lib/Icon.jsx";
+import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
@@ -385,6 +385,21 @@ function OceanNavigator(props) {
 
       modalTitle = "";
       break;
+    case "track":
+      modalBodyContent = (
+        <TrackWindow
+            dataset={dataset0}
+            track={selectedCoordinates}
+            names={names}
+            onUpdate={updateDataset0}
+            init={subquery}
+            action={action}
+            obs_query={vectorId}
+          />
+        );
+
+        modalTitle = "";
+        break;
     case "presetFeatures":
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
