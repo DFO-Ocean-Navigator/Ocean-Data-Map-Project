@@ -5,6 +5,8 @@ import os
 import sys
 
 import defopt
+import gsw
+import numpy as np
 import pandas as pd
 import xarray as xr
 
@@ -46,6 +48,13 @@ def main(uri: str, filename: str):
         for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
+                
+                if ds.LATITUDE.size == 1:
+                    print("Moored instrument: skipping file.")
+                    continue
+        
+                times = pd.to_datetime(ds.TIME.values)
+
                 if len(datatype_map) == 0:
                     # Generate the DataTypes; only consider variables that have depth
                     for var in filter(
@@ -86,41 +95,64 @@ def main(uri: str, filename: str):
                 except IntegrityError:
                     print("Error committing platform.")
                     session.rollback()
+                    stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
+                    p.id = session.execute(stmt).first()[0]
 
-                # Generate the station
-                s = Station(
-                    latitude=ds.LATITUDE.values,
-                    longitude=ds.LONGITUDE.values,
-                    time=pd.Timestamp(ds.TIME.values[0]),
-                )
-                p.stations.append(s)
-
-                try:
-                    session.add(p)
-                    session.commit()
-                except IntegrityError:
-                    print("Error committing station.")
-                    session.rollback()
-
-
-                # Generate the samples
-                for var, dt in datatype_map.items():
-                    if var in ds.variables:
-                        samples = [
-                            Sample(
-                                value=value,
-                                depth=depth,
-                                datatype_key=dt.key,
-                                station_id=s.id,
-                            )
-                            for value, depth in zip(ds[var][0].values, ds['DEPTH'].values)
-                        ]
-
+                for idx, time in enumerate(times):
+                    # Generate the station
+                    s = Station(
+                        latitude=ds.LATITUDE.values[idx],
+                        longitude=ds.LONGITUDE.values[idx],
+                        time=time,
+                        platform_id=p.id
+                    )
                     try:
-                        session.bulk_save_objects(samples)
+                        session.add(s)
+                        session.commit()
                     except IntegrityError:
-                        print("Error committing samples.")
+                        print("Error committing station.")
                         session.rollback()
+
+                    # Generate the samples
+                    for var, dt in datatype_map.items():
+                        if "DEPH" in ds.variables:
+                            depth = ds.DEPH.isel(TIME=idx).values
+                        elif "PRES" in ds.variables:
+                            pres = ds["PRES"].isel(TIME=idx).values
+                            lat = ds["LATITUDE"][idx].values
+
+                            depth = gsw.conversions.z_from_p(
+                                -pres,
+                                lat,
+                            )
+
+                        if var in ds.variables:
+                            values = ds[var].isel(TIME=idx).values
+
+                            data = np.stack(
+                                [
+                                    depth.flatten(),
+                                    values.flatten(),
+                                ],
+                                axis=1,
+                            )
+                            data = data[~np.isnan(data).any(axis=1)]
+
+                            samples = [
+                                Sample(
+                                    depth=pair[0],
+                                    datatype_key=dt.key,
+                                    value=pair[1],
+                                    station_id=s.id,
+                                )
+                                for pair in data
+                            ]
+
+                        try:
+                            session.bulk_save_objects(samples)
+                        except IntegrityError:
+                            print("Error committing samples.")
+                            session.rollback()
 
                 session.commit()
 
