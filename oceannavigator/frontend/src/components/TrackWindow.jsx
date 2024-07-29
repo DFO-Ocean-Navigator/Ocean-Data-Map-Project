@@ -153,7 +153,7 @@ class TrackWindow extends React.Component {
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</CheckBox>;
 
-    var starttime = <div>
+    var starttime = <div key="starttime-div">
       <h1 className="time-label">Start Date</h1>
       <DatePicker
         key='starttime'
@@ -166,7 +166,7 @@ class TrackWindow extends React.Component {
       />
     </div>
 
-    var endtime = <div>
+    var endtime = <div key="endtime-div">
       <h1 className="time-label">End Date</h1>
       <DatePicker
         key='endtime'
@@ -203,7 +203,7 @@ class TrackWindow extends React.Component {
       title={_("Saved Image Size")}
     />;
 
-    var accordion = <Accordion>
+    var accordion = <Accordion key="plot-options-accordion">
       <Accordion.Header>Plot Options</Accordion.Header>
       <Accordion.Body className="plot-accordion">
         {size}
@@ -216,7 +216,7 @@ class TrackWindow extends React.Component {
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={`/api/v2.0/dataset/${this.props.dataset.id}/${this.state.variable}/depths?include_all_key=true`}
+      url={`/api/v2.0/dataset/${this.props.dataset.id}/${this.state.variable[0]}/depths?include_all_key=true`}
       title={_("Depth")}
     />;
 
@@ -260,7 +260,7 @@ class TrackWindow extends React.Component {
               <Card.Header>{_("Track Settings")}</Card.Header>
               <Card.Body className="global-settings-card">
                 <div className="inputs-container">
-                {inputs}
+                  {inputs}
                 </div>
               </Card.Body>
             </Card>
