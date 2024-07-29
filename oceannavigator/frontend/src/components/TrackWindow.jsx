@@ -1,6 +1,6 @@
 import React from "react";
 import Accordion from "react-bootstrap/Accordion";
-import { Col, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
@@ -105,6 +105,7 @@ class TrackWindow extends React.Component {
     _("Start Time");
     _("End Time");
     _("Saved Image Size");
+
     var dataset = <ComboBox
       key='dataset'
       id='dataset'
@@ -113,6 +114,7 @@ class TrackWindow extends React.Component {
       url='/api/v2.0/datasets'
       title={_("Dataset")}
     />;
+
     var trackvariable = <ComboBox
       key='trackvariable'
       id='trackvariable'
@@ -123,6 +125,7 @@ class TrackWindow extends React.Component {
       url={`/api/v2.0/observation/variables/platform=${this.props.track[0]}.json`}
       title={_("Observed Variable")}
     ><h1>Track Variable</h1></ComboBox>;
+
     var variable = <ComboBox
       key='variable'
       id='variable'
@@ -133,6 +136,7 @@ class TrackWindow extends React.Component {
       url={`/api/v2.0/dataset/${this.props.dataset.id}/variables`}
       title={_("Variable")}
     ><h1>Variable</h1></ComboBox>;
+
     var showmap = <CheckBox
       key='showmap'
       id='showmap'
@@ -140,6 +144,7 @@ class TrackWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       title={_("Show Map")}
     >{_("showmap_help")}</CheckBox>;
+
     var latlon = <CheckBox
       key='latlon'
       id='latlon'
@@ -148,33 +153,31 @@ class TrackWindow extends React.Component {
       title={_("Show Latitude/Longitude Plots")}
     >{_("latlon_help")}</CheckBox>;
 
-    var starttime = <>
-      <h1 style={{fontSize: "small", fontWeight: "bold"}}>Start Date</h1>
+    var starttime = <div>
+      <h1 className="time-label">Start Date</h1>
       <DatePicker
         key='starttime'
         id="starttime"
         dateFormat="yyyy-MM-dd"
         selected={this.state.starttime}
-        popperPlacement="top"
         onChange={(newDate) => this.onLocalUpdate("starttime", newDate)}
         minDate={this.state.mindate}
         maxDate={this.state.endtime}
       />
-    </>
+    </div>
 
-    var endtime = <>
-      <h1 style={{fontSize: "small", fontWeight: "bold"}}>End Date</h1>
+    var endtime = <div>
+      <h1 className="time-label">End Date</h1>
       <DatePicker
         key='endtime'
         id="endtime"
         dateFormat="yyyy-MM-dd"
         selected={this.state.endtime}
-        popperPlacement="top"
         onChange={(newDate) => this.onLocalUpdate("endtime", newDate)}
         minDate={this.state.starttime}
         maxDate={this.state.maxdate}
       />
-    </>
+    </div>
 
     var track_quantum = <ComboBox
       key='track_quantum'
@@ -191,6 +194,7 @@ class TrackWindow extends React.Component {
       title='Track Simplification'
       onUpdate={this.onLocalUpdate}
     />;
+
     var size = <ImageSize
       key='size'
       id='size'
@@ -214,13 +218,12 @@ class TrackWindow extends React.Component {
       onUpdate={this.onLocalUpdate}
       url={`/api/v2.0/dataset/${this.props.dataset.id}/${this.state.variable}/depths?include_all_key=true`}
       title={_("Depth")}
-    ></ComboBox>;
+    />;
 
     var inputs = [];
     var plot_query = {
       dataset: this.props.dataset.id,
       quantum: this.props.dataset.quantum,
-      // scale: this.state.scale,
       name: this.props.name,
       type: "track",
       track: this.props.track,
@@ -233,6 +236,7 @@ class TrackWindow extends React.Component {
       depth: this.state.depth,
       track_quantum: this.state.track_quantum,
     };
+
     if (this.state.starttime) {
       if (plot_query.starttime instanceof Date) {
         plot_query.starttime = this.state.starttime.toISOString();
@@ -242,6 +246,7 @@ class TrackWindow extends React.Component {
         plot_query.endtime = this.state.endtime;
       }
     }
+
     inputs = [
       dataset, showmap, latlon, starttime, endtime, track_quantum,
       trackvariable, variable, depth, accordion
@@ -251,7 +256,14 @@ class TrackWindow extends React.Component {
       <div className='TrackWindow'>
         <Row>
           <Col className="settings-col" lg={2}>
-            {inputs}
+            <Card variant="primary" key="map_settings">
+              <Card.Header>{_("Track Settings")}</Card.Header>
+              <Card.Body className="global-settings-card">
+                <div className="inputs-container">
+                {inputs}
+                </div>
+              </Card.Body>
+            </Card>
           </Col>
           <Col className="plot-col" lg={8}>
             <PlotImage
@@ -268,14 +280,10 @@ class TrackWindow extends React.Component {
 
 //***********************************************************************
 TrackWindow.propTypes = {
-  // generatePermLink: PropTypes.func,
   track: PropTypes.array,
-  // quantum: PropTypes.string,
-  // dataset: PropTypes.string,
   dataset: PropTypes.object,
   onUpdate: PropTypes.func,
   init: PropTypes.object,
-  //variable: PropTypes.string,
   action: PropTypes.func,
   obs_query: PropTypes.string
 };

@@ -48,3 +48,7 @@ export function GetPresetAreasPromise() {
 export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
+
+export function GetTrackTimeRangePromise(track) {
+  return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
+}
