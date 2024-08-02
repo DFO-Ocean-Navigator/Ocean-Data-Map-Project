@@ -1,0 +1,45 @@
+.TrackWindow {
+
+    .timepicker-label {
+        font-size: small;
+        font-weight: bold;
+    }
+
+    .settings-col {
+        padding: unset;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .plot-col {
+        padding: unset;
+        display: flex;
+        justify-content: center;
+    }
+
+    .global-settings-card {
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .inputs-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 8px;
+    }
+
+    .time-label {
+        font-size: small;
+        font-weight: bold;
+    }
+
+    .react-datepicker__input-container {
+        input {
+            width: auto;
+        }
+    }
+}
