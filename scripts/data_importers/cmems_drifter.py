@@ -72,15 +72,15 @@ def main(uri: str, filename: str):
 
                     # Create Platform object
 
-                    platform = Platform(type=Platform.Type.drifter)
-                    session.add(platform)
-                    session.commit()
+                    platform = Platform(type=Platform.Type.drifter, unique_id=f"{ds.attrs["platform_code"]}")
                     try:
                         session.add(platform)
                         session.commit()
                     except IntegrityError:
                         print("Error committing platform.")
                         session.rollback()
+                        stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
+                        platform.id = session.execute(stmt).first()[0]
 
                     # Iterate over rows in the DataFrame
                     for index, row in df.iterrows():
