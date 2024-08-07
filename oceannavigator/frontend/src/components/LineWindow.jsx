@@ -9,6 +9,10 @@ import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
+import LocationInput from "./LocationInput.jsx";
+import Slider from "rc-slider";
+
+import "rc-slider/assets/index.css";
 
 import { withTranslation } from "react-i18next";
 
@@ -35,6 +39,9 @@ class LineWindow extends React.Component {
       depth_limit: false,
       plotTitles: Array(2).fill(""),
       selectedPlots: [0, 1, 1],
+      profile_distance: -1,
+      show_profile: false,
+      timer: null
     };
 
     if (props.init !== null) {
@@ -46,6 +53,7 @@ class LineWindow extends React.Component {
     this.onSelect = this.onSelect.bind(this);
     this.updatePlotTitle = this.updatePlotTitle.bind(this);
     this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
+    this.handleProfileCheck = this.handleProfileCheck.bind(this);
   }
 
   componentDidMount() {
@@ -117,6 +125,21 @@ class LineWindow extends React.Component {
     });
   }
 
+  handleProfileCheck(key, value) {
+    if (value){
+      this.setState({
+        show_profile: true,
+        profile_distance: 0,
+      });
+    }
+    else{
+      this.setState({
+        show_profile: false,
+        profile_distance: -1,
+      });
+    }
+  }
+
   render() {
     _("Dataset");
     _("Time");
@@ -129,6 +152,15 @@ class LineWindow extends React.Component {
     _("Linear Threshold");
     _("Surface Variable");
     _("Saved Image Size");
+
+    const line_distance = this.props.line_distance;
+    const slider_marks = {
+      0:'0km',
+      25:(line_distance/1000/4).toFixed(1),
+      50:(line_distance/1000/2).toFixed(1),
+      75:(line_distance/1000*(3/4)).toFixed(1),
+      100:(line_distance/1000).toFixed(1)
+    }
 
     const plotOptions = (
       <div>
@@ -244,6 +276,29 @@ class LineWindow extends React.Component {
             parameter={_("Depth")}
           />
 
+
+
+          <div>
+            <CheckBox
+              key="show_profile"
+              id="show_profile"
+              checked={this.state.show_profile}
+              onUpdate={this.handleProfileCheck}
+              title={_("Extract Profile Plot")}
+            >
+            </CheckBox>
+
+            {this.state.show_profile && (
+              <div className="slider-container">
+                <Slider
+                  min={0}
+                  max={100}
+                  marks={slider_marks}
+                  onAfterChange={(x) => this.onLocalUpdate("profile_distance",x/100*this.props.line_distance)}
+                />
+              </div>
+            )}
+          </div>
           <div
             style={{
               display:
@@ -367,6 +422,7 @@ class LineWindow extends React.Component {
         plot_query.surfacevariable = this.state.surfacevariable;
         plot_query.linearthresh = this.state.linearthresh;
         plot_query.depth_limit = this.state.depth_limit;
+        plot_query.profile_distance = this.state.profile_distance;
         plot_query.selectedPlots = this.state.selectedPlots.toString();
         if (this.props.dataset_compare) {
           plot_query.compare_to = { ...this.props.dataset_1 };

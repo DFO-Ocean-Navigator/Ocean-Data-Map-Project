@@ -26,6 +26,9 @@ class TransectPlotter(LinePlotter):
         # Holds Velocity Plot Type [magnitude, parallel, perpendicular]
         self.selected_velocity_plots = None
 
+        profile_distance = query.get("profile_distance")
+        self.profile_distance = profile_distance
+
     def parse_query(self, query):
         super(TransectPlotter, self).parse_query(query)
 
@@ -152,6 +155,34 @@ class TransectPlotter(LinePlotter):
                     "name": surface_name,
                     "units": surface_unit,
                 }
+
+            if self.profile_distance >= 0:
+                dist = 0
+                for i in range(1, len(self.points)):
+                    dist += GeodesicDistance(self.points[i - 1], self.points[i]).meters
+                    if self.profile_distance < dist:
+                        start = self.points[i - 1]
+                        end = self.points[i]
+                        break
+
+                dLon = end[1] - start[1]
+                x = np.cos(np.radians(end[0])) * np.sin(np.radians(dLon))
+                y = np.cos(np.radians(start[0])) * np.sin(np.radians(end[0])) - np.sin(
+                    np.radians(start[0])
+                ) * np.cos(np.radians(end[0])) * np.cos(np.radians(dLon))
+                brng = np.arctan2(x, y)
+                brng = np.degrees(brng)
+
+                destination = GeodesicDistance(
+                    meters=self.profile_distance
+                ).destination(point=start, bearing=brng)
+                self.profile_data = dataset.get_profile(
+                    destination.latitude,
+                    destination.longitude,
+                    self.variables[0],
+                    self.time,
+                )
+                self.destination = destination
 
         # Load data sent from Right Map (if in compare mode)
         if self.compare:
@@ -364,13 +395,13 @@ class TransectPlotter(LinePlotter):
         data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
         data.append(
-                [
-                    np.nanmin(self.transect_data['data']),
-                    np.nanmax(self.transect_data['data']),
-                    np.nanmean(self.transect_data['data']),
-                    np.nanstd(self.transect_data['data']),
-                ]
-            )
+            [
+                np.nanmin(self.transect_data["data"]),
+                np.nanmax(self.transect_data["data"]),
+                np.nanmean(self.transect_data["data"]),
+                np.nanstd(self.transect_data["data"]),
+            ]
+        )
 
         data = np.array(data).T.tolist()
 
@@ -500,6 +531,10 @@ class TransectPlotter(LinePlotter):
                 width = 1  # 1 column
                 width_ratios = [1]
 
+        if self.profile_distance >= 0:
+            Col = Col + 1
+            width_ratios.append(2)
+
         # Setup grid (rows, columns, column/row ratios) depending on view mode
         figuresize = list(map(float, self.size.split("x")))
         if self.compare:
@@ -577,6 +612,9 @@ class TransectPlotter(LinePlotter):
             if self.surface:
                 self.__add_surface_plot(divider)
 
+            if self.profile_distance >= 0:
+                self.__add_profile_plot(subplots)
+
         def find_minmax(scale, data):
             """
             Finds and returns the correct min/max values for the variable scale
@@ -606,10 +644,10 @@ class TransectPlotter(LinePlotter):
                     gs,
                     [Row, Col],
                     self.transect_data["magnitude"],
-                    "Magnitude" #gettext("Magnitude")
-                    + " for " # + gettext(" for ")
+                    "Magnitude"  # gettext("Magnitude")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
-                    "Magnitude", # gettext("Magnitude"),
+                    "Magnitude",  # gettext("Magnitude"),
                     vmin,
                     vmax,
                     self.transect_data["units"],
@@ -623,11 +661,11 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["parallel"],
                     self.transect_data["name"]
                     + " ("
-                    + "Parallel" # + gettext("Parallel")
+                    + "Parallel"  # + gettext("Parallel")
                     + ")"
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
-                    "Parallel", # gettext("Parallel"),
+                    "Parallel",  # gettext("Parallel"),
                     vmin,
                     vmax,
                     self.transect_data["units"],
@@ -642,11 +680,11 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["perpendicular"],
                     self.transect_data["name"]
                     + " ("
-                    + "Perpendicular" # + gettext("Perpendicular")
+                    + "Perpendicular"  # + gettext("Perpendicular")
                     + ")"
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
-                    "Perpendicular", # gettext("Perpendicular"),
+                    "Perpendicular",  # gettext("Perpendicular"),
                     vmin,
                     vmax,
                     self.transect_data["units"],
@@ -686,11 +724,11 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["parallel"],
                     self.transect_data["name"]
                     + " ("
-                    + "Parallel" # + gettext("Parallel")
+                    + "Parallel"  # + gettext("Parallel")
                     + ")"
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
-                    "Parallel", # gettext("Parallel"),
+                    "Parallel",  # gettext("Parallel"),
                     vmin,
                     vmax,
                     self.transect_data["units"],
@@ -703,11 +741,11 @@ class TransectPlotter(LinePlotter):
                     self.transect_data["perpendicular"],
                     self.transect_data["name"]
                     + " ("
-                    + "Perpendicular" # + gettext("Perpendicular")
+                    + "Perpendicular"  # + gettext("Perpendicular")
                     + ")"
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
-                    "Perpendicular", # gettext("Perpendicular"),
+                    "Perpendicular",  # gettext("Perpendicular"),
                     vmin,
                     vmax,
                     self.transect_data["units"],
@@ -742,11 +780,11 @@ class TransectPlotter(LinePlotter):
                         self.compare["parallel"],
                         self.transect_data["name"]
                         + " ("
-                        + "Parallel" # + gettext("Parallel")
+                        + "Parallel"  # + gettext("Parallel")
                         + ")"
-                        + " for " # + gettext(" for ")
+                        + " for "  # + gettext(" for ")
                         + self.date_formatter(self.compare["iso_timestamp"]),
-                        "Parallel", # gettext("Parallel"),
+                        "Parallel",  # gettext("Parallel"),
                         vmin,
                         vmax,
                         self.transect_data["units"],
@@ -759,11 +797,11 @@ class TransectPlotter(LinePlotter):
                         self.compare["perpendicular"],
                         self.transect_data["name"]
                         + " ("
-                        + "Perpendicular" # + gettext("Perpendicular")
+                        + "Perpendicular"  # + gettext("Perpendicular")
                         + ")"
-                        + " for " # + gettext(" for ")
+                        + " for "  # + gettext(" for ")
                         + self.date_formatter(self.compare["iso_timestamp"]),
-                        "Perpendicular", # gettext("Perpendicular"),
+                        "Perpendicular",  # gettext("Perpendicular"),
                         vmin,
                         vmax,
                         self.transect_data["units"],
@@ -787,7 +825,7 @@ class TransectPlotter(LinePlotter):
                     [0, Col],
                     self.transect_data["data"],
                     self.transect_data["name"]
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.iso_timestamp),
                     self.transect_data["name"],
                     vmin,
@@ -811,7 +849,7 @@ class TransectPlotter(LinePlotter):
                     [1, Col],
                     self.transect_data["compare_data"],
                     self.compare["name"]
-                    + " for " # + gettext(" for ")
+                    + " for "  # + gettext(" for ")
                     + self.date_formatter(self.compare["iso_timestamp"]),
                     self.compare["name"],
                     vmin,
@@ -843,7 +881,8 @@ class TransectPlotter(LinePlotter):
                         gs,
                         [2, Col],
                         self.transect_data["difference"],
-                        self.transect_data["name"] + " Difference", # self.transect_data["name"] + gettext(" Difference"),
+                        self.transect_data["name"]
+                        + " Difference",  # self.transect_data["name"] + gettext(" Difference"),
                         self.transect_data["name"],
                         vmin,
                         vmax,
@@ -938,6 +977,26 @@ class TransectPlotter(LinePlotter):
         ax.yaxis.grid(True)
         ax.axes.get_xaxis().set_visible(False)
 
+    def __add_profile_plot(self, gs):
+        ax = plt.subplot(gs[0, gs.ncols - 1])
+        ax.plot(self.profile_data[0], self.profile_data[1], color="r")
+        ax.invert_yaxis()
+        ax.set_yticks([])
+        ax.set_xlabel(self.transect_data["name"])
+        if self.depth_limit:
+            ax.set_ylim(self.depth_limit, 0)
+        else:
+            deep = np.amax(self.bathymetry["y"] * -1)
+            lim = 10 ** np.floor(np.log10(deep))
+            ax.set_ylim(np.ceil(deep / lim) * lim, 0)
+        self.plotTitle = (
+            "Transect Data for:\n%s" % (self.name)
+            + "\nProfile: "
+            + format(self.destination.latitude, '.4f')
+            + " "
+            + format(self.destination.longitude, '.4f')
+        )
+
     def _transect_plot(
         self, values, depths, plotTitle, vmin, vmax, cmapLabel, unit, cmap
     ):
@@ -966,7 +1025,6 @@ class TransectPlotter(LinePlotter):
         ):
             plt.yscale("symlog", linthresh=self.linearthresh)
 
-
         ax.yaxis.set_major_formatter(ScalarFormatter())
 
         var_unit = utils.mathtext(unit)
@@ -992,8 +1050,8 @@ class TransectPlotter(LinePlotter):
         )
         ax.set_facecolor("dimgray")
 
-        plt.xlabel("Distance (km)") # plt.xlabel(gettext("Distance (km)"))
-        plt.ylabel("Depth (m)") # plt.ylabel(gettext("Depth (m)"))
+        plt.xlabel("Distance (km)")  # plt.xlabel(gettext("Distance (km)"))
+        plt.ylabel("Depth (m)")  # plt.ylabel(gettext("Depth (m)"))
         plt.xlim(
             [self.transect_data["distance"][0], self.transect_data["distance"][-1]]
         )
@@ -1019,6 +1077,9 @@ class TransectPlotter(LinePlotter):
             "k:",
             alpha=1.0,
         )
+
+        if self.profile_distance >= 0:
+            plt.axvline(x=self.profile_distance / 1000, color="r", linestyle="--")
 
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
