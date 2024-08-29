@@ -8,8 +8,14 @@ import CheckBox from "./lib/CheckBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
+import DatasetDropdown from "./DatasetDropdown.jsx";
+import SelectBox from "./lib/SelectBox.jsx";
 
-import { GetTrackTimeRangePromise } from "../remote/OceanNavigator.js";
+import {
+  GetDatasetsPromise,
+  GetVariablesPromise,
+  GetTrackTimeRangePromise
+} from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -17,10 +23,14 @@ class TrackWindow extends React.Component {
 
   constructor(props) {
     super(props);
+    console.log(props.dataset)
 
     this.state = {
       showmap: true,
-      variable: props.dataset.variable.indexOf(",") == -1 ? [props.dataset.variable] : props.dataset.variable.split(","),
+      dataset: props.dataset,
+      variable: props.dataset.variable,
+      availableDatasets: [],
+      availableVariables: [],
       latlon: false,
       trackvariable: [0],
       starttime: null,
@@ -48,6 +58,12 @@ class TrackWindow extends React.Component {
   }
 
   componentDidMount() {
+    GetDatasetsPromise().then((result) => {
+      this.setState({ availableDatasets: result.data })
+    });
+
+    this.getVariables(this.state.dataset.id)
+
     GetTrackTimeRangePromise(this.props.track).then(
       (result) => {
         let starttime = this.state.starttime
@@ -72,8 +88,27 @@ class TrackWindow extends React.Component {
     )
   }
 
+  getVariables(dataset) {
+    GetVariablesPromise(dataset).then(
+      (variableResult) => {
+        let variables = variableResult.data
+        variables = variables.filter((v) => {
+          return v.two_dimensional === false;
+        });
+        this.setState({ availableVariables: variables })
+      }
+    )
+  }
+
   onLocalUpdate(key, value) {
     var newState = {};
+    if (key == "dataset") {
+      let newDataset = this.state.availableDatasets.filter((d) => {
+        return d.id === value;
+      })[0];
+      this.getVariables(newDataset.id)
+      newState[key] = newDataset
+    } else 
     if (typeof (key) === "string") {
       newState[key] = value;
     } else {
@@ -81,6 +116,7 @@ class TrackWindow extends React.Component {
         newState[key[i]] = value[i];
       }
     }
+
     this.setState(newState);
 
     var parentKeys = [];
@@ -106,14 +142,31 @@ class TrackWindow extends React.Component {
     _("End Time");
     _("Saved Image Size");
 
-    var dataset = <ComboBox
-      key='dataset'
-      id='dataset'
-      state={this.props.dataset.id}
-      def=''
-      url='/api/v2.0/datasets'
-      title={_("Dataset")}
-    />;
+    let dataset = null;
+    let variable = null;
+    if (this.state.availableDatasets.length > 0) {
+      dataset = <DatasetDropdown
+        id={"dataset"}
+        key={"dataset"}
+        options={this.state.availableDatasets}
+        label={_("Dataset")}
+        placeholder={_("Dataset")}
+        onChange={this.onLocalUpdate}
+        selected={this.state.dataset.id}
+      />
+    }
+
+    if (this.state.availableVariables.length > 0) {
+      variable = <SelectBox
+        id={"variable"}
+        name={_("variable")}
+        label={_("Variable")}
+        placeholder={_("Variable")}
+        options={this.state.availableVariables}
+        onChange={this.onLocalUpdate}
+        selected={this.state.variable}
+      />
+    }
 
     var trackvariable = <ComboBox
       key='trackvariable'
@@ -126,16 +179,6 @@ class TrackWindow extends React.Component {
       title={_("Observed Variable")}
     ><h1>Track Variable</h1></ComboBox>;
 
-    var variable = <ComboBox
-      key='variable'
-      id='variable'
-      multiple
-      state={this.state.variable}
-      def=''
-      onUpdate={this.onLocalUpdate}
-      url={`/api/v2.0/dataset/${this.props.dataset.id}/variables`}
-      title={_("Variable")}
-    ><h1>Variable</h1></ComboBox>;
 
     var showmap = <CheckBox
       key='showmap'
@@ -216,14 +259,14 @@ class TrackWindow extends React.Component {
       state={this.state.depth}
       def={""}
       onUpdate={this.onLocalUpdate}
-      url={`/api/v2.0/dataset/${this.props.dataset.id}/${this.state.variable[0]}/depths?include_all_key=true`}
+      url={`/api/v2.0/dataset/${this.props.dataset.id}/${this.state.variable}/depths?include_all_key=true`}
       title={_("Depth")}
     />;
 
     var inputs = [];
     var plot_query = {
-      dataset: this.props.dataset.id,
-      quantum: this.props.dataset.quantum,
+      dataset: this.state.dataset.id,
+      quantum: this.state.dataset.quantum,
       name: this.props.name,
       type: "track",
       track: this.props.track,
@@ -248,8 +291,8 @@ class TrackWindow extends React.Component {
     }
 
     inputs = [
-      dataset, showmap, latlon, starttime, endtime, track_quantum,
-      trackvariable, variable, depth, accordion
+      dataset, variable, showmap, latlon, starttime, endtime, track_quantum,
+      trackvariable, depth, accordion
     ];
 
     return (
