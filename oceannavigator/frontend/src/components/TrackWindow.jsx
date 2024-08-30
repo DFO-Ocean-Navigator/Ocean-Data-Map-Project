@@ -91,11 +91,20 @@ class TrackWindow extends React.Component {
   getVariables(dataset) {
     GetVariablesPromise(dataset).then(
       (variableResult) => {
+        let newState = {}
         let variables = variableResult.data
-        variables = variables.filter((v) => {
-          return v.two_dimensional === false;
-        });
-        this.setState({ availableVariables: variables })
+
+        newState["availableVariables"] = variables
+
+        let currentVariable = variables.filter((v) => {
+          return v.id === this.state.variable;
+        })[0];
+
+        if (!currentVariable) {
+          newState["variable"] = variables[0].id
+        }
+
+        this.setState(newState)
       }
     )
   }
@@ -108,28 +117,16 @@ class TrackWindow extends React.Component {
       })[0];
       this.getVariables(newDataset.id)
       newState[key] = newDataset
-    } else 
-    if (typeof (key) === "string") {
-      newState[key] = value;
-    } else {
-      for (var i = 0; i < key.length; i++) {
-        newState[key[i]] = value[i];
+    } else
+      if (typeof (key) === "string") {
+        newState[key] = value;
+      } else {
+        for (var i = 0; i < key.length; i++) {
+          newState[key[i]] = value[i];
+        }
       }
-    }
 
     this.setState(newState);
-
-    var parentKeys = [];
-    var parentValues = [];
-
-    if (newState.hasOwnProperty("variable") && newState.variable.length == 1) {
-      parentKeys.push("variable");
-      parentValues.push(newState.variable[0]);
-    }
-
-    if (parentKeys.length > 0) {
-      this.props.onUpdate(parentKeys, parentValues);
-    }
   }
 
   render() {
@@ -146,8 +143,8 @@ class TrackWindow extends React.Component {
     let variable = null;
     if (this.state.availableDatasets.length > 0) {
       dataset = <DatasetDropdown
-        id={"dataset"}
-        key={"dataset"}
+        id="dataset"
+        key="dataset"
         options={this.state.availableDatasets}
         label={_("Dataset")}
         placeholder={_("Dataset")}
@@ -158,7 +155,8 @@ class TrackWindow extends React.Component {
 
     if (this.state.availableVariables.length > 0) {
       variable = <SelectBox
-        id={"variable"}
+        key="variable"
+        id="variable"
         name={_("variable")}
         label={_("Variable")}
         placeholder={_("Variable")}
