@@ -646,7 +646,7 @@ async def plot(
     elif plot_type == "observation":
         plotter = ObservationPlotter(dataset, query, db, **options)
     elif plot_type == "track":
-        plotter = TrackPlotter(dataset, query, **options)
+        plotter = TrackPlotter(dataset, query, db, **options)
     elif plot_type == "class4":
         plotter = Class4Plotter(dataset, query, **options)
     elif plot_type == "stick":

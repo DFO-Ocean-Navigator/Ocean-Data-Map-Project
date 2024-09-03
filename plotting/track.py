@@ -10,6 +10,8 @@ import visvalingamwyatt as vw
 from geopy.distance import distance
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import interp1d
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -18,7 +20,6 @@ from data.observational import (
     DataType,
     Platform,
     Sample,
-    SessionLocal,
     Station,
 )
 from data.observational.queries import get_platform_variable_track
@@ -26,18 +27,11 @@ from data.utils import datetime_to_timestamp
 from plotting.plotter import Plotter
 
 
-def get_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
-
-
 class TrackPlotter(Plotter):
-    def __init__(self, dataset_name: str, query: str, **kwargs):
+    def __init__(self, dataset_name: str, query: str, db: Session, **kwargs):
         self.plottype: str = "track"
         super().__init__(dataset_name, query, **kwargs)
+        self.db = db
         self.size: str = "11x5"
         self.model_depths = None
 
@@ -66,21 +60,21 @@ class TrackPlotter(Plotter):
         self.track_quantum = query.get("track_quantum", "hour")
 
     def load_data(self):
-        db = get_db
-        platform = db.session.query(Platform).get(self.platform)
+        platform = self.db.query(Platform).get(self.platform)
         self.name = platform.unique_id
 
         # First get the variable
-        st0 = db.session.query(Station).filter(Station.platform == platform).first()
-        datatype_keys = (
-            db.session.query(db.func.distinct(Sample.datatype_key))
+        st0 = self.db.query(Station).filter(Station.platform == platform).first()
+        datatype_keys = [
+            k[0]
+            for k in self.db.query(func.distinct(Sample.datatype_key))
             .filter(Sample.station == st0)
             .all()
-        )
+        ]
 
         datatypes = (
-            db.session.query(DataType)
-            .filter(DataType.key.in_([d for d, in datatype_keys]))
+            self.db.query(DataType)
+            .filter(DataType.key.in_([d for d in datatype_keys]))
             .order_by(DataType.key)
             .all()
         )
@@ -94,7 +88,7 @@ class TrackPlotter(Plotter):
         for v in variables:
             d.append(
                 get_platform_variable_track(
-                    db.session,
+                    self.db,
                     platform,
                     v.key,
                     self.track_quantum,
@@ -188,9 +182,9 @@ class TrackPlotter(Plotter):
                             od = md
 
                         # Clear model data beneath observed data
-                        od[
-                            np.where(self.model_depths > max(self.depth))[0][1:], :
-                        ] = np.nan
+                        od[np.where(self.model_depths > max(self.depth))[0][1:], :] = (
+                            np.nan
+                        )
 
                         d.append(od)
 
@@ -414,7 +408,10 @@ class TrackPlotter(Plotter):
         # latlon
         if self.latlon:
             for j, label in enumerate(
-                ["Latitude (degrees)", "Longitude (degrees)"] #[gettext("Latitude (degrees)"), gettext("Longitude (degrees)")]
+                [
+                    "Latitude (degrees)",
+                    "Longitude (degrees)",
+                ]  # [gettext("Latitude (degrees)"), gettext("Longitude (degrees)")]
             ):
                 plt.subplot(gs[subplot])
                 subplot += subplot_inc
@@ -425,7 +422,7 @@ class TrackPlotter(Plotter):
                 plt.setp(plt.gca().get_xticklabels(), rotation=30)
 
         fig.suptitle(
-            "Track Plot (Observed %s - %s, Modelled %s - %s)" # gettext("Track Plot (Observed %s - %s, Modelled %s - %s)")
+            "Track Plot (Observed %s - %s, Modelled %s - %s)"  # gettext("Track Plot (Observed %s - %s, Modelled %s - %s)")
             % (
                 self.times[0].strftime("%Y-%m-%d"),
                 self.times[-1].strftime("%Y-%m-%d"),
