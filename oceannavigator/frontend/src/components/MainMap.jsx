@@ -41,6 +41,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
+import {getDistance} from 'ol/sphere';
 import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
@@ -161,6 +162,7 @@ const MainMap = forwardRef((props, ref) => {
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
+    getLineDistance: getLineDistance,
   }));
 
   useEffect(() => {
@@ -1432,6 +1434,17 @@ const MainMap = forwardRef((props, ref) => {
       removeMapInteractions(map1);
     }
   };
+
+  const getLineDistance = (line) => {
+    var dist = 0;
+    for (let i = 1; i < line.length; i++) {
+      let start = [line[i - 1][1], line[i - 1][0]]
+      let end = [line[i][1], line[i][0]]
+      dist += getDistance(start, end);
+    }
+
+    return dist;
+  }
 
   const pushSelection = function (selectedFeatures) {
     var t = undefined;
