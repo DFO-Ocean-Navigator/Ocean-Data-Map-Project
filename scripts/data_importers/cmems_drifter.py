@@ -7,6 +7,7 @@ import defopt
 
 import xarray as xr
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -37,15 +38,18 @@ def main(uri: str, filename: str):
     )
     with Session(engine) as session:
 
-        if os.path.isdir(filename):
-            filename = sorted(glob.glob(os.path.join(filename, "*.nc")))
+        if not isinstance(filename, list):
+            if os.path.isdir(filename):
+                filenames = sorted(glob.glob(os.path.join(filename, "*.nc")))
+            else:
+                filenames = [filename]
         else:
-            filename = [filename]
+            filenames = filename
 
-        for fname in filename:
+        for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
-                df = ds.to_dataframe().reset_index()
+                df = ds.to_dataframe().reset_index().dropna(axis=1, how="all").dropna()
 
                 # Iterate over variables defined in the mapping
                 for var_name, (key, name, unit) in VARIABLE_MAPPING.items():
@@ -54,7 +58,7 @@ def main(uri: str, filename: str):
 
                     # Create or retrieve DataType object
                     statement = select(DataType).where(DataType.key == key)
-                    data_type = session.execute(statement).all()
+                    data_type = session.execute(statement).first()
                     if data_type is None:
                         data_type = DataType(
                             key=key,
@@ -63,12 +67,20 @@ def main(uri: str, filename: str):
                         )
                         session.add(data_type)
                         session.commit()
+                    else:
+                        data_type = data_type[0]
 
                     # Create Platform object
-                    
-                    platform = Platform(type=Platform.Type.drifter)
-                    session.add(platform)
-                    session.commit()
+
+                    platform = Platform(type=Platform.Type.drifter, unique_id=f"{ds.attrs["platform_code"]}")
+                    try:
+                        session.add(platform)
+                        session.commit()
+                    except IntegrityError:
+                        print("Error committing platform.")
+                        session.rollback()
+                        stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
+                        platform.id = session.execute(stmt).first()[0]
 
                     # Iterate over rows in the DataFrame
                     for index, row in df.iterrows():
@@ -85,17 +97,28 @@ def main(uri: str, filename: str):
                             longitude=longitude,
                             platform_id=platform.id,
                         )
-                        session.add(station)
-                        session.commit()
+
+                        try:
+                            session.add(station)
+                            session.commit()
+                        except IntegrityError:
+                            print("Error committing station.")
+                            session.rollback()
 
                         # Create Sample object
                         sample = Sample(
                             depth=depth,
                             value=value,
-                            datatype_key=data_type[0][0].key,
+                            datatype_key=data_type.key,
                             station_id=station.id,
                         )
-                        session.add(sample)
+
+                        try:
+                            session.add(sample)
+                            session.commit()
+                        except IntegrityError:
+                            print("Error committing sample.")
+                            session.rollback()
 
                     session.commit()
 
