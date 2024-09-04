@@ -3,7 +3,7 @@
 # platform: linux-64
 @EXPLICIT
 https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/ca-certificates-2024.7.4-hbcca054_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/ca-certificates-2024.7.2-h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/font-ttf-inconsolata-3.000-h77eed37_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/font-ttf-source-code-pro-2.038-h77eed37_0.tar.bz2
@@ -158,7 +158,7 @@ https://conda.anaconda.org/conda-forge/linux-64/aws-c-http-0.7.14-hd268abd_3.con
 https://conda.anaconda.org/conda-forge/linux-64/brotli-1.1.0-hd590300_1.conda
 https://conda.anaconda.org/conda-forge/linux-64/brotli-python-1.1.0-py312h30efb56_1.conda
 https://conda.anaconda.org/conda-forge/noarch/cachetools-5.3.2-pyhd8ed1ab_0.conda
-https://conda.anaconda.org/conda-forge/noarch/certifi-2024.6.2-pyhd8ed1ab_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/certifi-2024.7.4-py312h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/noarch/charset-normalizer-3.3.2-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/click-8.1.7-unix_pyh707e725_0.conda
 https://conda.anaconda.org/conda-forge/noarch/cloudpickle-3.0.0-pyhd8ed1ab_0.conda
@@ -401,7 +401,6 @@ https://conda.anaconda.org/conda-forge/noarch/opentelemetry-instrumentation-fast
 https://repo.anaconda.com/pkgs/main/linux-64/panel-1.3.1-py312h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/pyqt-5.15.9-py312h949fe66_5.conda
 https://conda.anaconda.org/conda-forge/linux-64/scikit-image-0.22.0-py312hfb8ada1_2.conda
-https://conda.anaconda.org/conda-forge/noarch/copernicusmarine-1.1.1-pyhd8ed1ab_0.conda
 https://repo.anaconda.com/pkgs/main/linux-64/holoviews-1.18.1-py312h06a4308_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/libarrow-acero-14.0.1-h59595ed_9_cpu.conda
 https://conda.anaconda.org/conda-forge/linux-64/libarrow-flight-14.0.1-h120cb0d_9_cpu.conda
