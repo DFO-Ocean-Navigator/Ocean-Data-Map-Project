@@ -31,7 +31,7 @@ class Station(Base):
         if self.latitude > 90 or self.latitude < -90:
             raise ValueError(f"Latitude {self.latitude} out of range (-90,90)")
 
-        if self.longitude > 180 or self.longitude < -180:
+        if self.longitude > 360 or self.longitude < -360:
             raise ValueError(f"Longitude {self.longitude} out of range (-180,180)")
 
     def __repr__(self):

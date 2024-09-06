@@ -41,7 +41,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import {getDistance} from 'ol/sphere';
+import { getDistance } from 'ol/sphere';
 import { isMobile } from "react-device-detect";
 
 import "ol/ol.css";
@@ -197,7 +197,6 @@ const MainMap = forwardRef((props, ref) => {
       mapRef0
     );
 
-    // let newSelect = createSelect();
     const newSelect = new olinteraction.Select({
       style: function (feat, res) {
         if (feat.get("type") != "area") {
@@ -1115,10 +1114,10 @@ const MainMap = forwardRef((props, ref) => {
                 feat.set(
                   "name",
                   feat.get("name") +
-                    "<span>" +
-                    "RMS Error: " +
-                    feat.get("error").toPrecision(3) +
-                    "</span>"
+                  "<span>" +
+                  "RMS Error: " +
+                  feat.get("error").toPrecision(3) +
+                  "</span>"
                 );
               }
               if (id) {
@@ -1461,7 +1460,7 @@ const MainMap = forwardRef((props, ref) => {
           let c = feature
             .getGeometry()
             .clone()
-            .transform(props.mapSettings.projection, "EPSG:4326")
+            .transform(props.mapSettings.projection, "EPSG:3857")
             .getCoordinates();
           content.push([c[1], c[0], feature.get("id")]);
         }
