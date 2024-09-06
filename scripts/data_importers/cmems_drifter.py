@@ -5,6 +5,7 @@ import os
 import sys
 import defopt
 
+import numpy as np
 import xarray as xr
 from sqlalchemy import create_engine, select
 from sqlalchemy.exc import IntegrityError
@@ -23,6 +24,31 @@ VARIABLE_MAPPING = {
     # Add more variables here if necessary
 }
 
+def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Shifts coordinates so that tracks are continuous on each side of map limits
+    (-180,180 degrees longitude). i.e if a track crosses -180 deg such that the
+    first point is -178 and the next is 178 then the second coordinate will be
+    replaced with -182. This allows the navigator to draw the track continusouly
+    without bounching between points on the far sides of the map.
+    """
+
+    lons = ds.LONGITUDE.data.copy()
+
+    lon_diff = np.diff(lons)
+    crossings = np.where(np.abs(lon_diff) > 180)[0]
+
+    while len(crossings) > 0:
+        if lons[crossings[0]] > lons[crossings[0] + 1]:
+            lons[crossings[0] + 1 :] = 360 + lons[crossings[0] + 1 :]
+        else:
+            lons[crossings[0] + 1 :] = -360 + lons[crossings[0] + 1 :]
+        lon_diff = np.diff(lons)
+        crossings = np.where(np.abs(lon_diff) > 180)[0]
+
+    ds.LONGITUDE.data = lons
+
+    return ds
 
 def main(uri: str, filename: str):
     """Import data from NetCDF file(s) into the database.
@@ -49,6 +75,9 @@ def main(uri: str, filename: str):
         for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
+
+                ds = reformat_coordinates(ds)
+                
                 df = ds.to_dataframe().reset_index().dropna(axis=1, how="all").dropna()
 
                 # Iterate over variables defined in the mapping

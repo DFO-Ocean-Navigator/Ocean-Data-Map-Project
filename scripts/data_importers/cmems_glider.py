@@ -20,8 +20,34 @@ from data.observational import DataType, Platform, Sample, Station
 VARIABLES = ["PRES", "PSAL", "TEMP", "CNDC"]
 
 
-def main(uri: str, filename: str):
+def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Shifts coordinates so that tracks are continuous on each side of map limits
+    (-180,180 degrees longitude). i.e if a track crosses -180 deg such that the
+    first point is -178 and the next is 178 then the second coordinate will be
+    replaced with -182. This allows the navigator to draw the track continusouly
+    without bounching between points on the far sides of the map.
+    """
 
+    lons = ds.LONGITUDE.data.copy()
+
+    lon_diff = np.diff(lons)
+    crossings = np.where(np.abs(lon_diff) > 180)[0]
+
+    while len(crossings) > 0:
+        if lons[crossings[0]] > lons[crossings[0] + 1]:
+            lons[crossings[0] + 1 :] = 360 + lons[crossings[0] + 1 :]
+        else:
+            lons[crossings[0] + 1 :] = -360 + lons[crossings[0] + 1 :]
+        lon_diff = np.diff(lons)
+        crossings = np.where(np.abs(lon_diff) > 180)[0]
+
+    ds.LONGITUDE.data = lons
+
+    return ds
+
+
+def main(uri: str, filename: str):
     """Import Glider NetCDF
 
     :param str uri: Database URI
@@ -46,8 +72,8 @@ def main(uri: str, filename: str):
         datatype_map = {}
         for fname in filenames:
             print(fname)
-            with xr.open_dataset(fname).drop_duplicates("TIME") as ds:   
-                time_diff = np.diff(ds.TIME.data).astype('timedelta64[D]').astype(int)
+            with xr.open_dataset(fname).drop_duplicates("TIME") as ds:
+                time_diff = np.diff(ds.TIME.data).astype("timedelta64[D]").astype(int)
                 breaks = np.argwhere(time_diff > 5).flatten()
                 deployment_times = np.split(ds.TIME, breaks + 1)
 
@@ -55,12 +81,14 @@ def main(uri: str, filename: str):
 
                 for deployment in deployment_times:
                     subset = ds.sel(TIME=deployment)
-                    dep_date = np.datetime_as_string(deployment, unit='D')[0]
+                    subset = reformat_coordinates(subset)
+
+                    dep_date = np.datetime_as_string(deployment, unit="D")[0]
                     df = (
                         subset[["TIME", "LATITUDE", "LONGITUDE", *variables]]
                         .to_dataframe()
                         .reset_index()
-                        .dropna(axis=1, how='all')
+                        .dropna(axis=1, how="all")
                         .dropna()
                     )
 
@@ -90,7 +118,6 @@ def main(uri: str, filename: str):
                     platform_id = subset.attrs["platform_code"]
                     p = Platform(
                         type=Platform.Type.glider, unique_id=f"{platform_id}-{dep_date}"
-
                     )
                     attrs = {
                         "Glider Platform": platform_id,
@@ -105,10 +132,12 @@ def main(uri: str, filename: str):
                     except IntegrityError:
                         print("Error committing platform.")
                         session.rollback()
-                        stmt = select(Platform.id).where(Platform.unique_id == f"{platform_id}-{dep_date}")
+                        stmt = select(Platform.id).where(
+                            Platform.unique_id == f"{platform_id}-{dep_date}"
+                        )
                         p.id = session.execute(stmt).first()[0]
 
-                    n_chunks = np.ceil(len(df)/1e4)
+                    n_chunks = np.ceil(len(df) / 1e4)
 
                     if n_chunks < 1:
                         continue
@@ -133,7 +162,7 @@ def main(uri: str, filename: str):
                         except IntegrityError:
                             print("Error committing station.")
                             session.rollback()
-                            stmt = select(Station).where(Station.platform_id==p.id)
+                            stmt = select(Station).where(Station.platform_id == p.id)
                             chunk["STATION_ID"] = session.execute(stmt).all()
 
                         chunk["STATION_ID"] = [s.id for s in stations]
