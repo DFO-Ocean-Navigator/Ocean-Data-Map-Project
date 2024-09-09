@@ -8,8 +8,8 @@ class ImageSize extends React.Component {
     super(props);
 
     this.state = {
-      width: 12,
-      height: 7.5,
+      width: 10,
+      height: 7,
       dpi: 144,
     };
   }
@@ -30,12 +30,15 @@ class ImageSize extends React.Component {
       height: this.state.height,
     };
 
-    newstate[key] = value;
-    this.setState(newstate);
-    if (key == "width" || key == "height") {
-      this.props.onUpdate("size", newstate.width + "x" + newstate.height);
-    } else if (key == "dpi") {
-      this.props.onUpdate("dpi", value);
+    let newValue = parseFloat(value);
+    if (!isNaN(newValue)) {
+      newstate[key] = newValue;
+      this.setState(newstate);
+      if (key == "width" || key == "height") {
+        this.props.onUpdate("size", newstate.width + "x" + newstate.height);
+      } else if (key == "dpi") {
+        this.props.onUpdate("dpi", value);
+      }
     }
   }
 
@@ -57,9 +60,10 @@ class ImageSize extends React.Component {
                   id={this.props.id + "_width"}
                   type="number"
                   value={this.state.width}
-                  onChange={(n, s) => this.changed("width", n)}
+                  onChange={(n) => this.changed("width", n.target.value)}
                   step={0.25}
                   precision={2}
+                  min={0}
                 />
               </td>
             </tr>
@@ -74,10 +78,11 @@ class ImageSize extends React.Component {
                   className="size-input"
                   id={this.props.id + "_height"}
                   type="number"
-                  value={this.state.width}
-                  onChange={(n, s) => this.changed("height", n)}
+                  value={this.state.height}
+                  onChange={(n) => this.changed("height", n.target.value)}
                   step={0.25}
                   precision={2}
+                  min={0}
                 />
               </td>
             </tr>
@@ -91,9 +96,10 @@ class ImageSize extends React.Component {
                   id={this.props.id + "_dpi"}
                   type="number"
                   value={this.state.dpi}
-                  onChange={(n, s) => this.changed("dpi", n)}
+                  onChange={(n) => this.changed("dpi", n.target.value)}
                   step={1}
                   precision={0}
+                  min={1}
                 />
               </td>
             </tr>

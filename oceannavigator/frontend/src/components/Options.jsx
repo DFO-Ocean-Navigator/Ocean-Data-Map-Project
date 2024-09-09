@@ -1,6 +1,5 @@
 import React from "react";
 import { Row, FormControl, ControlLabel, Col, Card, Button } from "react-bootstrap";
-// import NumericInput from "react-numeric-input";
 import Icon from "./lib/Icon.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
