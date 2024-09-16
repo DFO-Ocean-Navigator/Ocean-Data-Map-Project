@@ -172,7 +172,7 @@ function ObservationSelector(props) {
       .map(function (key) {
         return `${key}=${selection[key]}`;
       })
-      .join(",");
+      .join("&");
     if (type == "track") {
       props.action("show", "observation_tracks", result);
     } else {

@@ -1189,7 +1189,7 @@ def observation_track(
     """
     Observational query for tracks. Used in ObservationSelector.
     """
-    query_dict = {key: value for key, value in [q.split("=") for q in query.split(",")]}
+    query_dict = {key: value for key, value in [q.split("=") for q in query.split("&")]}
     data = []
     params = {}
 
@@ -1298,7 +1298,7 @@ def observation_point(
     """
     Observational query for points. Used in ObservationSelector.
     """
-    query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
+    query_dict = {key: value for key, value in [q.split("=") for q in query.split("&")]}
     data = []
     params = {}
     MAPPING = {
