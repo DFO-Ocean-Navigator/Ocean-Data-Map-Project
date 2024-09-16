@@ -1182,7 +1182,7 @@ def observation_tracktime(
 def observation_track(
     query: str = Path(
         title="List of key=value pairs, seperated by ,",
-        examples=["start_date=2019-01-01;end_date=2019-06-01;quantum=year"],
+        examples=["start_date=2019-01-01&end_date=2019-06-01&quantum=year"],
     ),
     db: Session = Depends(get_db),
 ):
@@ -1288,7 +1288,7 @@ def observation_point(
         title="List of key=value pairs, seperated by ,",
         examples=[
             (
-                "start_date=2019-01-01;end_date=2019-06-01;"
+                "start_date=2019-01-01&end_date=2019-06-01&"
                 + "datatype=sea_water_temperature"
             )
         ],
