@@ -1181,7 +1181,7 @@ def observation_tracktime(
 @router.get("/observation/track/{query}.json")
 def observation_track(
     query: str = Path(
-        title="List of key=value pairs, seperated by ;",
+        title="List of key=value pairs, seperated by ,",
         examples=["start_date=2019-01-01;end_date=2019-06-01;quantum=year"],
     ),
     db: Session = Depends(get_db),
@@ -1189,7 +1189,7 @@ def observation_track(
     """
     Observational query for tracks. Used in ObservationSelector.
     """
-    query_dict = {key: value for key, value in [q.split("=") for q in query.split(";")]}
+    query_dict = {key: value for key, value in [q.split("=") for q in query.split(",")]}
     data = []
     params = {}
 
@@ -1285,7 +1285,7 @@ def observation_track(
 @router.get("/observation/point/{query}.json")
 def observation_point(
     query: str = Path(
-        title="List of key=value pairs, seperated by ;",
+        title="List of key=value pairs, seperated by ,",
         examples=[
             (
                 "start_date=2019-01-01;end_date=2019-06-01;"
