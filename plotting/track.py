@@ -50,6 +50,8 @@ class TrackPlotter(Plotter):
         trackvariable = query.get("trackvariable")
         if isinstance(trackvariable, str):
             trackvariables = trackvariable.split(",")
+        elif not isinstance(trackvariable, list):
+            trackvariables = [trackvariable]
         else:
             trackvariables = trackvariable
 
