@@ -141,6 +141,7 @@ class Nemo(Model):
             ["latitude_u", "longitude_u"],
             ["latitude_v", "longitude_v"],
             ["latitude", "longitude"],
+            ["lat", "lon"],
         ]
 
         if "coordinates" in attrs:
