@@ -76,7 +76,8 @@ def main(uri: str, filename: str):
             print(fname)
             with xr.open_dataset(fname) as ds:
 
-                ds = reformat_coordinates(ds)
+                if ds.LATITUDE.size > 1:
+                    ds = reformat_coordinates(ds)
                 
                 df = ds.to_dataframe().reset_index().dropna(axis=1, how="all").dropna()
 
