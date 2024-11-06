@@ -47,16 +47,16 @@ import { isMobile } from "react-device-detect";
 import "ol/ol.css";
 
 // CHS S111 standard arrows for quiver layer
-const I0 = require("../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
-const I1 = require("../images/s111/I1.svg").default;
-const I2 = require("../images/s111/I2.svg").default;
-const I3 = require("../images/s111/I3.svg").default;
-const I4 = require("../images/s111/I4.svg").default;
-const I5 = require("../images/s111/I5.svg").default;
-const I6 = require("../images/s111/I6.svg").default;
-const I7 = require("../images/s111/I7.svg").default;
-const I8 = require("../images/s111/I8.svg").default;
-const I9 = require("../images/s111/I9.svg").default;
+const I0 = require("../../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
+const I1 = require("../../images/s111/I1.svg").default;
+const I2 = require("../../images/s111/I2.svg").default;
+const I3 = require("../../images/s111/I3.svg").default;
+const I4 = require("../../images/s111/I4.svg").default;
+const I5 = require("../../images/s111/I5.svg").default;
+const I6 = require("../../images/s111/I6.svg").default;
+const I7 = require("../../images/s111/I7.svg").default;
+const I8 = require("../../images/s111/I8.svg").default;
+const I9 = require("../../images/s111/I9.svg").default;
 
 const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
@@ -181,6 +181,7 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
+      wrapX: true,
     });
 
     const newObsDrawSource = new VectorSource({
@@ -1157,6 +1158,7 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
+      wrapX: true,
     });
     layerVector.setSource(newVectorSource);
     setVectorSource(newVectorSource);

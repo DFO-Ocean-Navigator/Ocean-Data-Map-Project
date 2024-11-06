@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-import MainMap from "./MainMap.jsx";
+import Map from "./map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
@@ -471,7 +471,7 @@ function OceanNavigator(props) {
           right={true}
         />
       ) : null}
-      <MainMap
+      <Map
         ref={mapRef}
         mapSettings={mapSettings}
         dataset0={dataset0}
