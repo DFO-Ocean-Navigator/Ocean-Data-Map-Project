@@ -148,9 +148,10 @@ class MapPlotter(Plotter):
                 )
                 width_scale = 1.5
             else:
-                self.plot_projection = ccrs.LambertConformal(
-                    central_latitude=self.centroid[0],
+                self.plot_projection = ccrs.Mercator(
                     central_longitude=self.centroid[1],
+                    min_latitude=-85,
+                    max_latitude=85,
                 )
         elif self.projection == "EPSG:3031":  # south pole projection
             near_pole, covers_pole = self.pole_proximity(self.points[0])
@@ -167,16 +168,17 @@ class MapPlotter(Plotter):
                 )
                 width_scale = 1.5
             else:
-                self.plot_projection = ccrs.LambertConformal(
-                    central_latitude=self.centroid[0],
+                self.plot_projection = ccrs.Mercator(
                     central_longitude=self.centroid[1],
+                    min_latitude=-85,
+                    max_latitude=85,
                 )
 
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
             if abs(self.bounds[3] - self.bounds[1]) > 360:
                 raise ClientError(
-                    ( # gettext(
+                    (  # gettext(
                         "You have requested an area that exceeds the width \
                         of the world. Thinking big is good but plots need to \
                         be less than 360 deg wide."
@@ -185,16 +187,20 @@ class MapPlotter(Plotter):
             self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
 
         else:
-            self.plot_projection = ccrs.LambertConformal(
-                central_latitude=self.centroid[0], central_longitude=self.centroid[1]
+            self.plot_projection = ccrs.Mercator(
+                central_longitude=self.centroid[1],
+                min_latitude=-85,
+                max_latitude=85,
             )
 
         proj_bounds = self.plot_projection.transform_points(
             self.pc_projection,
-            np.array([self.bounds[1], self.bounds[3]]),
-            np.array([self.bounds[0], self.bounds[2]]),
+            np.array([self.bounds[1], self.bounds[3], self.centroid[1]]),
+            np.array([self.bounds[0], self.bounds[2], self.centroid[0]]),
         )
-        proj_size = np.diff(proj_bounds, axis=0)
+
+        proj_size = np.diff(proj_bounds[:2, :2], axis=0)
+        proj_centroid = proj_bounds[2, :2]
 
         width = proj_size[0][0] * width_scale
         height = proj_size[0][1] * height_scale
@@ -213,8 +219,8 @@ class MapPlotter(Plotter):
             self.plot_projection,
             gridx,
             gridy,
-            x_extents=(-width / 2, width / 2),
-            y_extents=(-height / 2, height / 2),
+            x_extents=(-width / 2, width / 2) + proj_centroid[0],
+            y_extents=(-height / 2, height / 2) + proj_centroid[1],
         )
 
         latlon_grid = self.pc_projection.transform_points(
