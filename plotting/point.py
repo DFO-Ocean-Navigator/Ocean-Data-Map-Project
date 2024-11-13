@@ -29,6 +29,12 @@ class PointPlotter(Plotter):
     def parse_names_points(self, names, points):
         if points is None or len(points) < 1:
             points = [[47.546667, -52.586667]]
+        else:
+            for p in points:
+                if p[1] > 180:
+                    p[1] = -360 + p[1]
+                if p[1] < -180:
+                    p[1] = 360 + p[1]
 
         if (
             names is None
