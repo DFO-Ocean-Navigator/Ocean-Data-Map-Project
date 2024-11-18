@@ -72,7 +72,7 @@ function OceanNavigator(props) {
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
-    
+
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
@@ -224,7 +224,7 @@ function OceanNavigator(props) {
         [key]: value,
       };
     });
-  }
+  };
 
   const updateDataset0 = (key, value) => {
     switch (key) {
@@ -285,7 +285,7 @@ function OceanNavigator(props) {
   const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
-  
+
     query.subquery = subquery;
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
@@ -294,7 +294,7 @@ function OceanNavigator(props) {
     query.vectorType = vectorType;
     query.vectorCoordinates = vectorCoordinates;
     query.selectedCoordinates = selectedCoordinates;
-    
+
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
@@ -390,18 +390,18 @@ function OceanNavigator(props) {
     case "track":
       modalBodyContent = (
         <TrackWindow
-            dataset={dataset0}
-            track={selectedCoordinates}
-            names={names}
-            onUpdate={updateDataset0}
-            init={subquery}
-            action={action}
-            obs_query={vectorId}
-          />
-        );
+          dataset={dataset0}
+          track={selectedCoordinates}
+          names={names}
+          onUpdate={updateDataset0}
+          init={subquery}
+          action={action}
+          obs_query={vectorId}
+        />
+      );
 
-        modalTitle = "";
-        break;
+      modalTitle = "";
+      break;
     case "presetFeatures":
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
