@@ -8,7 +8,6 @@ import React, {
 import axios from "axios";
 import proj4 from "proj4";
 import View from "ol/View.js";
-import Feature from "ol/Feature.js";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
 import { Style, Circle, Stroke, Fill } from "ol/style";
@@ -17,16 +16,21 @@ import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
-import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
 import * as olgeom from "ol/geom";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { getDistance } from "ol/sphere";
 
 import { createMap, getDataSource, getQuiverSource } from "./utils";
+import {
+  drawAction,
+  pointFeature,
+  getLineDistance,
+  obsPointDrawAction,
+  obsAreaDrawAction,
+} from "./drawing";
 
 import "ol/ol.css";
 
@@ -633,27 +637,13 @@ const MainMap = forwardRef((props, ref) => {
 
     //Resets map (in case other plots have been drawn)
     resetMap();
-    const draw = new olinteraction.Draw({
-      source: obsDrawSource,
-      type: "Point",
-      stopClick: true,
-    });
-    draw.set("type", "Point");
-    draw.on("drawend", function (e) {
-      // Disable zooming when drawing
-      const lonlat = olProj.transform(
-        e.feature.getGeometry().getCoordinates(),
-        props.mapSettings.projection,
-        "EPSG:4326"
-      );
-
-      // Send area to Observation Selector
-      obsDrawSource.clear();
-      props.action("setObsArea", [[lonlat[1], lonlat[0]]]);
-
-      map0.removeInteraction(draw);
-    });
-    map0.addInteraction(draw);
+    let drawAction = obsPointDrawAction(
+      map0,
+      obsDrawSource,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(drawAction);
   };
 
   const drawObsArea = () => {
@@ -662,107 +652,36 @@ const MainMap = forwardRef((props, ref) => {
     }
 
     resetMap();
-    const draw = new Draw({
-      source: obsDrawSource,
-      type: "Polygon",
-      stopClick: true,
-    });
-    draw.set("type", "Polygon");
-    draw.on("drawend", function (e) {
-      // Disable zooming when drawing
-      const points = e.feature
-        .getGeometry()
-        .getCoordinates()[0]
-        .map(function (c) {
-          const lonlat = olProj.transform(
-            c,
-            props.mapSettings.projection,
-            "EPSG:4326"
-          );
-          return [lonlat[1], lonlat[0]];
-        });
-      // Send area to Observation Selector
-      props.action("setObsArea", points);
-      map0.removeInteraction(draw);
-      setTimeout(function () {
-        obsDrawSource.clear();
-      }, 251);
-    });
-    map0.addInteraction(draw);
+    let drawAction = obsAreaDrawAction(
+      map0,
+      obsDrawSource,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(drawAction);
   };
 
   const startDrawing = () => {
-    const addDrawInteraction = (map) => {
-      const drawAction = new olinteraction.Draw({
-        source: vectorSource,
-        type: "Point",
-        stopClick: true,
-        wrapX: true,
-      });
-
-      drawAction.set("type", props.vectorType);
-      drawAction.on("drawend", function (e) {
-        // Disable zooming when drawing
-        const latlon = olProj
-          .transform(
-            e.feature.getGeometry().getCoordinates(),
-            props.mapSettings.projection,
-            "EPSG:4326"
-          )
-          .reverse();
-        // Draw point on map(s)
-        props.action("addPoints", [latlon]);
-      });
-      map.addInteraction(drawAction);
-    };
-
-    addDrawInteraction(map0);
+    let newDrawAction = drawAction(
+      vectorSource,
+      props.vectorType,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(newDrawAction);
     if (props.compareDatasets) {
-      addDrawInteraction(map1);
+      map1.addInteraction(newDrawAction);
     }
   };
 
   const drawPoints = (vectorSource) => {
-    let geom;
-    let feat;
-    if ((props.vectorType === "point") | (props.vectorCoordinates.length < 2)) {
-      for (let c of props.vectorCoordinates) {
-        geom = new olgeom.Point([c[1], c[0]]);
-        geom = geom.transform("EPSG:4326", props.mapSettings.projection);
-        feat = new Feature({
-          geometry: geom,
-          name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-          type: "point",
-        });
-        vectorSource.addFeature(feat);
-      }
-    } else if (props.vectorType === "line") {
-      geom = new olgeom.LineString(
-        props.vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        })
+    if (props.vectorCoordinates.length > 0) {
+      let feat = pointFeature(
+        props.vectorType,
+        props.vectorCoordinates,
+        props.mapSettings.projection
       );
 
-      geom.transform("EPSG:4326", props.mapSettings.projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "line",
-      });
-
-      vectorSource.addFeature(feat);
-    } else if (props.vectorType === "area") {
-      geom = new olgeom.Polygon([
-        props.vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        }),
-      ]);
-      const centroid = olExtent.getCenter(geom.getExtent());
-      geom.transform("EPSG:4326", props.mapSettings.projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "area",
-        centroid: centroid,
-      });
       vectorSource.addFeature(feat);
     }
   };
@@ -772,17 +691,6 @@ const MainMap = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       removeMapInteractions(map1);
     }
-  };
-
-  const getLineDistance = (line) => {
-    var dist = 0;
-    for (let i = 1; i < line.length; i++) {
-      let start = [line[i - 1][1], line[i - 1][0]];
-      let end = [line[i][1], line[i][0]];
-      dist += getDistance(start, end);
-    }
-
-    return dist;
   };
 
   const pushSelection = function (selectedFeatures) {
