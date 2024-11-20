@@ -5,75 +5,34 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
-import { renderToString } from "react-dom/server";
 import axios from "axios";
 import proj4 from "proj4";
-import { Map, View } from "ol";
-import Feature from "ol/Feature.js";
+import View from "ol/View.js";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import {
-  Style,
-  Circle,
-  Icon,
-  Stroke,
-  Fill,
-  Text,
-  RegularShape,
-} from "ol/style";
+import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
-import VectorTileLayer from "ol/layer/VectorTile.js";
 import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
-import TileWMS from "ol/source/TileWMS";
-import Draw from "ol/interaction/Draw";
-import { defaults as defaultControls } from "ol/control/defaults";
-import MousePosition from "ol/control/MousePosition.js";
-import Graticule from "ol/layer/Graticule.js";
-import * as olExtent from "ol/extent";
 import * as olinteraction from "ol/interaction";
-import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { getDistance } from 'ol/sphere';
-import { isMobile } from "react-device-detect";
+
+import { createMap, getDataSource, getQuiverSource } from "./utils";
+import {
+  drawAction,
+  pointFeature,
+  getLineDistance,
+  obsPointDrawAction,
+  obsAreaDrawAction,
+} from "./drawing";
 
 import "ol/ol.css";
-
-// CHS S111 standard arrows for quiver layer
-const I0 = require("../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
-const I1 = require("../images/s111/I1.svg").default;
-const I2 = require("../images/s111/I2.svg").default;
-const I3 = require("../images/s111/I3.svg").default;
-const I4 = require("../images/s111/I4.svg").default;
-const I5 = require("../images/s111/I5.svg").default;
-const I6 = require("../images/s111/I6.svg").default;
-const I7 = require("../images/s111/I7.svg").default;
-const I8 = require("../images/s111/I8.svg").default;
-const I9 = require("../images/s111/I9.svg").default;
-
-const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
-
-function deg2rad(deg) {
-  return (deg * Math.PI) / 180.0;
-}
-
-const COLORS = [
-  [0, 0, 255],
-  [0, 128, 0],
-  [255, 0, 0],
-  [0, 255, 255],
-  [255, 0, 255],
-  [255, 255, 0],
-  [0, 0, 0],
-  [255, 255, 255],
-];
 
 const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
@@ -98,8 +57,6 @@ const MAX_ZOOM = {
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };
-
-var drifter_color = {};
 
 proj4.defs(
   "EPSG:32661",
@@ -135,6 +92,7 @@ const MainMap = forwardRef((props, ref) => {
   const [layerData0, setLayerData0] = useState(
     new TileLayer({
       preload: 1,
+      zIndex: 1,
     })
   );
   const [layerData1, setLayerData1] = useState(
@@ -156,7 +114,7 @@ const MainMap = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    startDrawing: draw,
+    startDrawing: startDrawing,
     stopDrawing: stopDrawing,
     show: show,
     drawObsPoint: drawObsPoint,
@@ -181,6 +139,7 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
+      wrapX: true,
     });
 
     const newObsDrawSource = new VectorSource({
@@ -188,12 +147,14 @@ const MainMap = forwardRef((props, ref) => {
     });
 
     const newMap = createMap(
+      props.mapSettings,
       overlay,
       popupElement0,
       newMapView,
       layerData0,
       newVectorSource,
       newObsDrawSource,
+      MAX_ZOOM[props.mapSettings.projection],
       mapRef0
     );
 
@@ -284,12 +245,14 @@ const MainMap = forwardRef((props, ref) => {
       });
 
       newMap = createMap(
+        props.mapSettings,
         overlay,
         popupElement1,
         mapView,
         layerData1,
         vectorSource,
         obsDrawSource,
+        MAX_ZOOM[props.mapSettings.projection],
         mapRef1
       );
 
@@ -334,7 +297,9 @@ const MainMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (props.dataset0.time >= 0) {
-      layerData0.setSource(new XYZ(getDataSource(props.dataset0)));
+      layerData0.setSource(
+        new XYZ(getDataSource(props.dataset0, props.mapSettings))
+      );
     }
   }, [
     props.dataset0.id,
@@ -346,7 +311,9 @@ const MainMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (props.dataset1.time >= 0) {
-      layerData1.setSource(new XYZ(getDataSource(props.dataset1)));
+      layerData1.setSource(
+        new XYZ(getDataSource(props.dataset1, props.mapSettings))
+      );
     }
   }, [
     props.dataset1.id,
@@ -360,7 +327,7 @@ const MainMap = forwardRef((props, ref) => {
     if (layerQuiver) {
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
-        source = getQuiverSource(props.dataset0);
+        source = getQuiverSource(props.dataset0, props.mapSettings);
       }
       layerQuiver.setSource(source);
     }
@@ -375,7 +342,7 @@ const MainMap = forwardRef((props, ref) => {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
-        source = getQuiverSource(props.dataset1);
+        source = getQuiverSource(props.dataset1, props.mapSettings);
       }
       quiverLayer.setSource(source);
     }
@@ -462,540 +429,6 @@ const MainMap = forwardRef((props, ref) => {
     });
 
     return newMapView;
-  };
-
-  const createMap = (
-    overlay,
-    popupElement,
-    newMapView,
-    newLayerData,
-    newVectorSource,
-    newObsDrawSource,
-    mapRef
-  ) => {
-    const newLayerBasemap = getBasemap(
-      props.mapSettings.basemap,
-      props.mapSettings.projection,
-      props.mapSettings.basemap_attribution
-    );
-
-    const vectorTileGrid = new olTilegrid.createXYZ({
-      tileSize: 512,
-      maxZoom: MAX_ZOOM[props.mapSettings.projection],
-    });
-
-    const newLayerLandShapes = new VectorTileLayer({
-      opacity: 1,
-      style: new Style({
-        stroke: new Stroke({
-          color: "rgba(0, 0, 0, 1)",
-        }),
-        fill: new Fill({
-          color: "white",
-        }),
-      }),
-      source: new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    });
-
-    const newLayerBath = new TileLayer({
-      source: new XYZ({
-        url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-      opacity: props.mapSettings.mapBathymetryOpacity,
-      visible: props.mapSettings.bathymetry,
-      preload: 1,
-    });
-
-    const newLayerBathShapes = new VectorTileLayer({
-      opacity: props.mapSettings.mapBathymetryOpacity,
-      visible: props.mapSettings.bathymetry,
-      style: new Style({
-        stroke: new Stroke({
-          color: "rgba(0, 0, 0, 1)",
-        }),
-      }),
-      source: new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    });
-
-    const newLayerVector = new VectorLayer({
-      source: newVectorSource,
-      style: function (feat, res) {
-        if (feat.get("class") == "observation") {
-          if (feat.getGeometry() instanceof olgeom.LineString) {
-            let color = drifter_color[feat.get("id")];
-
-            if (color === undefined) {
-              color = COLORS[Object.keys(drifter_color).length % COLORS.length];
-              drifter_color[feat.get("id")] = color;
-            }
-            const styles = [
-              new Style({
-                stroke: new Stroke({
-                  color: [color[0], color[1], color[2], 0.004],
-                  width: 8,
-                }),
-              }),
-              new Style({
-                stroke: new Stroke({
-                  color: color,
-                  width: isMobile ? 4 : 2,
-                }),
-              }),
-            ];
-
-            return styles;
-          }
-
-          let image = new Circle({
-            radius: isMobile ? 6 : 4,
-            fill: new Fill({
-              color: "#ff0000",
-            }),
-            stroke: new Stroke({
-              color: "#000000",
-              width: 1,
-            }),
-          });
-          let stroke = new Stroke({ color: "#000000", width: 1 });
-          let radius = isMobile ? 9 : 6;
-          switch (feat.get("type")) {
-            case "argo":
-              image = new Circle({
-                radius: isMobile ? 6 : 4,
-                fill: new Fill({ color: "#ff0000" }),
-                stroke: stroke,
-              });
-              break;
-            case "mission":
-              image = new RegularShape({
-                points: 3,
-                radius: radius,
-                fill: new Fill({ color: "#ffff00" }),
-                stroke: stroke,
-              });
-              break;
-            case "drifter":
-              image = new RegularShape({
-                points: 4,
-                radius: radius,
-                fill: new Fill({ color: "#00ff00" }),
-                stroke: stroke,
-              });
-              break;
-            case "glider":
-              image = new RegularShape({
-                points: 5,
-                radius: radius,
-                fill: new Fill({ color: "#00ffff" }),
-                stroke: stroke,
-              });
-              break;
-            case "animal":
-              image = new RegularShape({
-                points: 6,
-                radius: radius,
-                fill: new Fill({ color: "#0000ff" }),
-                stroke: stroke,
-              });
-              break;
-          }
-          return new Style({ image: image });
-        } else {
-          switch (feat.get("type")) {
-            case "area":
-              if (feat.get("key")) {
-                return [
-                  new Style({
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 2,
-                    }),
-                    fill: new Fill({
-                      color: "#ffffff00",
-                    }),
-                  }),
-                  new Style({
-                    stroke: new Stroke({
-                      color: "#000000",
-                      width: 1,
-                    }),
-                  }),
-                  new Style({
-                    geometry: new olgeom.Point(
-                      olProj.transform(
-                        feat.get("centroid"),
-                        "EPSG:4326",
-                        props.mapSettings.projection
-                      )
-                    ),
-                    text: new Text({
-                      text: feat.get("name"),
-                      font: "14px sans-serif",
-                      fill: new Fill({
-                        color: "#000",
-                      }),
-                      stroke: new Stroke({
-                        color: "#ffffff",
-                        width: 2,
-                      }),
-                    }),
-                  }),
-                ];
-              } else {
-                return [
-                  new Style({
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 5,
-                    }),
-                  }),
-                  new Style({
-                    stroke: new Stroke({
-                      color: "#ff0000",
-                      width: 3,
-                    }),
-                  }),
-                ];
-              }
-            case "line":
-              return [
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 5,
-                  }),
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ff0000",
-                    width: 3,
-                  }),
-                }),
-              ];
-            case "point":
-              return new Style({
-                image: new Circle({
-                  radius: 4,
-                  fill: new Fill({
-                    color: "#ff0000",
-                  }),
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 2,
-                  }),
-                }),
-              });
-            case "GKHdrifter": {
-              const start = feat.getGeometry().getCoordinateAt(0);
-              const end = feat.getGeometry().getCoordinateAt(1);
-              let endImage;
-              let color = drifter_color[feat.get("name")];
-
-              if (color === undefined) {
-                color =
-                  COLORS[Object.keys(drifter_color).length % COLORS.length];
-                drifter_color[feat.get("name")] = color;
-              }
-              if (
-                feat.get("status") == "inactive" ||
-                feat.get("status") == "not responding"
-              ) {
-                endImage = new Icon({
-                  src: X_IMAGE,
-                  scale: 0.75,
-                });
-              } else {
-                endImage = new Circle({
-                  radius: isMobile ? 6 : 4,
-                  fill: new Fill({
-                    color: "#ff0000",
-                  }),
-                  stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
-                  }),
-                });
-              }
-
-              const styles = [
-                new Style({
-                  stroke: new Stroke({
-                    color: [color[0], color[1], color[2], 0.004],
-                    width: 8,
-                  }),
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: color,
-                    width: isMobile ? 4 : 2,
-                  }),
-                }),
-                new Style({
-                  geometry: new olgeom.Point(end),
-                  image: endImage,
-                }),
-                new Style({
-                  geometry: new olgeom.Point(start),
-                  image: new Circle({
-                    radius: isMobile ? 6 : 4,
-                    fill: new Fill({
-                      color: "#008000",
-                    }),
-                    stroke: new Stroke({
-                      color: "#000000",
-                      width: 1,
-                    }),
-                  }),
-                }),
-              ];
-
-              return styles;
-            }
-
-            case "class4": {
-              const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
-              const green = Math.min(
-                255,
-                (255 * (1 - feat.get("error_norm"))) / 0.5
-              );
-
-              return new Style({
-                image: new Circle({
-                  radius: isMobile ? 6 : 4,
-                  fill: new Fill({
-                    color: [red, green, 0, 1],
-                  }),
-                  stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
-                  }),
-                }),
-              });
-            }
-          }
-        }
-      },
-    });
-
-    const newLayerObsDraw = new VectorLayer({ source: newObsDrawSource });
-
-    const anchor = [0.5, 0.5];
-    const newLayerQuiver = new VectorTileLayer({
-      source: null, // set source during update function below
-      style: function (feature, resolution) {
-        let scale = feature.get("scale");
-        let rotation = null;
-        if (!feature.get("bearing")) {
-          // bearing-only variable (no magnitude)
-          rotation = deg2rad(parseFloat(feature.get("data")));
-        } else {
-          rotation = deg2rad(parseFloat(feature.get("bearing")));
-        }
-        return new Style({
-          image: new Icon({
-            scale: 0.2 + (scale + 1) / 16,
-            src: arrowImages[scale],
-            opacity: 1,
-            anchor: anchor,
-            rotation: rotation,
-          }),
-        });
-      },
-    });
-
-    let options = {
-      view: newMapView,
-      layers: [
-        newLayerBasemap,
-        newLayerData,
-        newLayerLandShapes,
-        newLayerBath,
-        newLayerBathShapes,
-        newLayerVector,
-        newLayerObsDraw,
-        newLayerQuiver,
-      ],
-      controls: defaultControls({
-        zoom: true,
-      }).extend([
-        new MousePosition({
-          projection: "EPSG:4326",
-          coordinateFormat: function (c) {
-            return (
-              "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>"
-            );
-          },
-        }),
-        new Graticule({
-          strokeStyle: new Stroke({
-            color: "rgba(128, 128, 128, 0.9)",
-            lineDash: [0.5, 4],
-          }),
-        }),
-      ]),
-
-      overlays: [overlay],
-    };
-
-    let mapObject = new Map(options);
-    mapObject.setTarget(mapRef.current);
-
-    let selected = null;
-    mapObject.on("pointermove", function (e) {
-      if (selected !== null) {
-        selected.setStyle(undefined);
-        selected = null;
-      }
-      const feature = mapObject.forEachFeatureAtPixel(
-        mapObject.getEventPixel(e.originalEvent),
-        function (feature, layer) {
-          return feature;
-        }
-      );
-      if (feature && feature.get("name")) {
-        overlay.setPosition(e.coordinate);
-        if (feature.get("data")) {
-          let bearing = feature.get("bearing");
-          popupElement.current.innerHTML = renderToString(
-            <table>
-              <tr>
-                <td>Variable</td>
-                <td>{feature.get("name")}</td>
-              </tr>
-              <tr>
-                <td>Data</td>
-                <td>{feature.get("data")}</td>
-              </tr>
-              <tr>
-                <td>Units</td>
-                <td>{feature.get("units")}</td>
-              </tr>
-              {bearing && (
-                <tr>
-                  <td>Bearing (+ve deg clockwise N)</td>
-                  <td>{bearing}</td>
-                </tr>
-              )}
-            </table>
-          );
-        } else {
-          popupElement.current.innerHTML = feature.get("name");
-        }
-
-        if (feature.get("type") == "area") {
-          mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
-            selected = f;
-            f.setStyle([
-              new Style({
-                stroke: new Stroke({
-                  color: "#ffffff",
-                  width: 2,
-                }),
-                fill: new Fill({
-                  color: "#ffffff80",
-                }),
-              }),
-              new Style({
-                stroke: new Stroke({
-                  color: "#000000",
-                  width: 1,
-                }),
-              }),
-              new Style({
-                geometry: new olgeom.Point(
-                  olProj.transform(
-                    f.get("centroid"),
-                    "EPSG:4326",
-                    props.mapSettings.projection
-                  )
-                ),
-                text: new Text({
-                  text: f.get("name"),
-                  font: "14px sans-serif",
-                  fill: new Fill({
-                    color: "#000000",
-                  }),
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 2,
-                  }),
-                }),
-              }),
-            ]);
-            return true;
-          });
-        }
-      } else if (feature && feature.get("class") == "observation") {
-        if (feature.get("meta")) {
-          overlay.setPosition(e.coordinate);
-          popupElement.current.innerHTML = feature.get("meta");
-        } else {
-          let type = "station";
-          if (feature.getGeometry() instanceof olgeom.LineString) {
-            type = "platform";
-          }
-          axios
-            .get(
-              `/api/v2.0/observation/meta/${type}/${feature.get("id")}}.json`
-            )
-            .then(function (response) {
-              overlay.setPosition(e.coordinate);
-              feature.set(
-                "meta",
-                renderToString(
-                  <table>
-                    {Object.keys(response.data).map((key) => (
-                      <tr key={key}>
-                        <td>{key}</td>
-                        <td>{response.data[key]}</td>
-                      </tr>
-                    ))}
-                  </table>
-                )
-              );
-              popupElement.current.innerHTML = feature.get("meta");
-            })
-            .catch();
-        }
-      } else {
-        overlay.setPosition(undefined);
-      }
-    });
-
-    mapObject.on("pointermove", function (e) {
-      var pixel = mapObject.getEventPixel(e.originalEvent);
-      var hit = mapObject.hasFeatureAtPixel(pixel);
-      mapObject.getViewport().style.cursor = hit ? "pointer" : "";
-    });
-
-    const dragBox = new olinteraction.DragBox({
-      condition: olcondition.platformModifierKeyOnly,
-    });
-    mapObject.addInteraction(dragBox);
-
-    newLayerBasemap.setZIndex(0);
-    layerData0.setZIndex(1);
-    newLayerLandShapes.setZIndex(2);
-    newLayerBath.setZIndex(3);
-    newLayerBathShapes.setZIndex(4);
-    newLayerVector.setZIndex(5);
-    newLayerObsDraw.setZIndex(6);
-    newLayerQuiver.setZIndex(100);
-
-    return mapObject;
   };
 
   const createSelect = () => {
@@ -1114,10 +547,10 @@ const MainMap = forwardRef((props, ref) => {
                 feat.set(
                   "name",
                   feat.get("name") +
-                  "<span>" +
-                  "RMS Error: " +
-                  feat.get("error").toPrecision(3) +
-                  "</span>"
+                    "<span>" +
+                    "RMS Error: " +
+                    feat.get("error").toPrecision(3) +
+                    "</span>"
                 );
               }
               if (id) {
@@ -1157,6 +590,7 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
+      wrapX: true,
     });
     layerVector.setSource(newVectorSource);
     setVectorSource(newVectorSource);
@@ -1196,93 +630,6 @@ const MainMap = forwardRef((props, ref) => {
     props.updateState(["vectorId", "vectorType"], [key, type]);
   };
 
-  const getBasemap = (source, projection, attribution) => {
-    switch (source) {
-      case "topo":
-        const shadedRelief = props.mapSettings.topoShadedRelief
-          ? "true"
-          : "false";
-        return new TileLayer({
-          preload: 1,
-          source: new XYZ({
-            url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-            projection: projection,
-          }),
-        });
-      case "ocean":
-        return new TileLayer({
-          preload: 1,
-          source: new XYZ({
-            url: "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-          }),
-        });
-      case "world":
-        return new TileLayer({
-          preload: 1,
-          source: new XYZ({
-            url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            projection: "EPSG:3857",
-          }),
-        });
-      case "chs":
-        return new TileLayer({
-          source: new TileWMS({
-            url: "https://gisp.dfo-mpo.gc.ca/arcgis/rest/services/CHS/ENC_MaritimeChartService/MapServer/exts/MaritimeChartService/WMSServer",
-            params: {
-              LAYERS: "1:1",
-            },
-            projection: "EPSG:3857",
-          }),
-        });
-    }
-  };
-
-  const getDataSource = (dataset) => {
-    let scale = dataset.variable_scale;
-    if (Array.isArray(scale)) {
-      scale = scale.join(",");
-    }
-
-    let dataSource = {};
-    dataSource.url =
-      "/api/v2.0/tiles" +
-      `/${dataset.id}` +
-      `/${dataset.variable}` +
-      `/${dataset.time}` +
-      `/${dataset.depth}` +
-      "/{z}/{x}/{y}" +
-      `?projection=${props.mapSettings.projection}` +
-      `&scale=${scale}` +
-      `&interp=${props.mapSettings.interpType}` +
-      `&radius=${props.mapSettings.interpRadius}` +
-      `&neighbours=${props.mapSettings.interpNeighbours}`;
-    dataSource.projection = props.mapSettings.projection;
-
-    return dataSource;
-  };
-
-  const getQuiverSource = (dataset) => {
-    const quiverSource = new VectorTile({
-      url:
-        "/api/v2.0/tiles/quiver" +
-        `/${dataset.id}` +
-        `/${dataset.quiverVariable}` +
-        `/${dataset.time}` +
-        `/${dataset.depth}` +
-        `/${dataset.quiverDensity}` +
-        "/{z}/{x}/{y}" +
-        `?projection=${props.mapSettings.projection}`,
-      projection: props.mapSettings.projection,
-      format: new GeoJSON({
-        featureProjection: olProj.get("EPSG:3857"),
-        dataProjection: olProj.get("EPSG:4326"),
-      }),
-    });
-
-    return quiverSource;
-  };
-
   const drawObsPoint = () => {
     if (removeMapInteractions(map0, "Point")) {
       return;
@@ -1290,27 +637,13 @@ const MainMap = forwardRef((props, ref) => {
 
     //Resets map (in case other plots have been drawn)
     resetMap();
-    const draw = new olinteraction.Draw({
-      source: obsDrawSource,
-      type: "Point",
-      stopClick: true,
-    });
-    draw.set("type", "Point");
-    draw.on("drawend", function (e) {
-      // Disable zooming when drawing
-      const lonlat = olProj.transform(
-        e.feature.getGeometry().getCoordinates(),
-        props.mapSettings.projection,
-        "EPSG:4326"
-      );
-
-      // Send area to Observation Selector
-      obsDrawSource.clear();
-      props.action("setObsArea", [[lonlat[1], lonlat[0]]]);
-
-      map0.removeInteraction(draw);
-    });
-    map0.addInteraction(draw);
+    let drawAction = obsPointDrawAction(
+      map0,
+      obsDrawSource,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(drawAction);
   };
 
   const drawObsArea = () => {
@@ -1319,111 +652,37 @@ const MainMap = forwardRef((props, ref) => {
     }
 
     resetMap();
-    const draw = new Draw({
-      source: obsDrawSource,
-      type: "Polygon",
-      stopClick: true,
-    });
-    draw.set("type", "Polygon");
-    draw.on("drawend", function (e) {
-      // Disable zooming when drawing
-      const points = e.feature
-        .getGeometry()
-        .getCoordinates()[0]
-        .map(function (c) {
-          const lonlat = olProj.transform(
-            c,
-            props.mapSettings.projection,
-            "EPSG:4326"
-          );
-          return [lonlat[1], lonlat[0]];
-        });
-      // Send area to Observation Selector
-      props.action("setObsArea", points);
-      map0.removeInteraction(draw);
-      setTimeout(function () {
-        obsDrawSource.clear();
-      }, 251);
-    });
-    map0.addInteraction(draw);
+    let drawAction = obsAreaDrawAction(
+      map0,
+      obsDrawSource,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(drawAction);
   };
 
-  const draw = () => {
-    const addDrawInteraction = (map) => {
-      const drawAction = new Draw({
-        source: vectorSource,
-        type: "Point",
-        stopClick: true,
-      });
-
-      drawAction.set("type", props.vectorType);
-      drawAction.on("drawend", function (e) {
-        // Disable zooming when drawing
-        const latlon = olProj
-          .transform(
-            e.feature.getGeometry().getCoordinates(),
-            props.mapSettings.projection,
-            "EPSG:4326"
-          )
-          .reverse();
-        // Draw point on map(s)
-        props.action("addPoints", [latlon]);
-      });
-      map.addInteraction(drawAction);
-    };
-
-    addDrawInteraction(map0);
+  const startDrawing = () => {
+    let newDrawAction = drawAction(
+      vectorSource,
+      props.vectorType,
+      props.mapSettings.projection,
+      props.action
+    );
+    map0.addInteraction(newDrawAction);
     if (props.compareDatasets) {
-      addDrawInteraction(map1);
+      map1.addInteraction(newDrawAction);
     }
   };
 
   const drawPoints = (vectorSource) => {
-    let geom;
-    let feat;
-    switch (props.vectorType) {
-      case "point":
-        for (let c of props.vectorCoordinates) {
-          geom = new olgeom.Point([c[1], c[0]]);
-          geom = geom.transform("EPSG:4326", props.mapSettings.projection);
-          feat = new Feature({
-            geometry: geom,
-            name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-            type: "point",
-          });
-          vectorSource.addFeature(feat);
-        }
-        break;
-      case "line":
-        geom = new olgeom.LineString(
-          props.vectorCoordinates.map(function (c) {
-            return [c[1], c[0]];
-          })
-        );
+    if (props.vectorCoordinates.length > 0) {
+      let feat = pointFeature(
+        props.vectorType,
+        props.vectorCoordinates,
+        props.mapSettings.projection
+      );
 
-        geom.transform("EPSG:4326", props.mapSettings.projection);
-        feat = new Feature({
-          geometry: geom,
-          type: "line",
-        });
-
-        vectorSource.addFeature(feat);
-        break;
-      case "area":
-        geom = new olgeom.Polygon([
-          props.vectorCoordinates.map(function (c) {
-            return [c[1], c[0]];
-          }),
-        ]);
-        const centroid = olExtent.getCenter(geom.getExtent());
-        geom.transform("EPSG:4326", props.mapSettings.projection);
-        feat = new Feature({
-          geometry: geom,
-          type: "area",
-          centroid: centroid,
-        });
-        vectorSource.addFeature(feat);
-        break;
+      vectorSource.addFeature(feat);
     }
   };
 
@@ -1433,17 +692,6 @@ const MainMap = forwardRef((props, ref) => {
       removeMapInteractions(map1);
     }
   };
-
-  const getLineDistance = (line) => {
-    var dist = 0;
-    for (let i = 1; i < line.length; i++) {
-      let start = [line[i - 1][1], line[i - 1][0]]
-      let end = [line[i][1], line[i][0]]
-      dist += getDistance(start, end);
-    }
-
-    return dist;
-  }
 
   const pushSelection = function (selectedFeatures) {
     var t = undefined;
@@ -1552,7 +800,10 @@ const MainMap = forwardRef((props, ref) => {
 
     const dataSource = mapLayers[layerDataIdx].getSource();
     const dataProps = dataSource.getProperties();
-    const newProps = { ...dataProps, ...getDataSource(dataset) };
+    const newProps = {
+      ...dataProps,
+      ...getDataSource(dataset, props.mapSettings),
+    };
     const newSource = new XYZ(newProps);
 
     mapLayers[layerDataIdx].setSource(newSource);
@@ -1686,7 +937,10 @@ const MainMap = forwardRef((props, ref) => {
 
     const dataSource = mapLayers[layerDataIdx].getSource();
     const dataProps = dataSource.getProperties();
-    const newProps = { ...dataProps, ...getDataSource(dataset) };
+    const newProps = {
+      ...dataProps,
+      ...getDataSource(dataset, props.mapSettings),
+    };
     const newSource = new XYZ(newProps);
 
     mapLayers[layerDataIdx].setSource(newSource);
@@ -1723,8 +977,8 @@ const MainMap = forwardRef((props, ref) => {
     }
   }
 
-  layerData0.setVisible(!props.mapSettings.hideDataLayer)
-  layerData1.setVisible(!props.mapSettings.hideDataLayer)
+  layerData0.setVisible(!props.mapSettings.hideDataLayer);
+  layerData1.setVisible(!props.mapSettings.hideDataLayer);
 
   return (
     <div className="map-container">
