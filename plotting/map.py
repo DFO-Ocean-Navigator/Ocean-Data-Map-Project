@@ -136,47 +136,69 @@ class MapPlotter(Plotter):
         width_scale = 1.25
         height_scale = 1.25
 
-        if self.projection == "EPSG:32661":  # north pole projection
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+        near_pole, covers_pole = self.pole_proximity(self.points[0])
+
+        if self.projection == "EPSG:32661" and (
+            self.centroid[0] > 80 or near_pole or covers_pole
+        ):  # north pole projection
+
             blat = min(self.bounds[0], self.bounds[2])
             blat = 5 * np.floor(blat / 5)
 
-            if self.centroid[0] > 80 or near_pole or covers_pole:
-                self.plot_projection = ccrs.Stereographic(
-                    central_latitude=self.centroid[0],
-                    central_longitude=self.centroid[1],
-                )
-                width_scale = 1.5
-            else:
-                self.plot_projection = ccrs.LambertConformal(
-                    central_latitude=self.centroid[0],
-                    central_longitude=self.centroid[1],
-                )
-        elif self.projection == "EPSG:3031":  # south pole projection
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
+            self.plot_projection = ccrs.Stereographic(
+                central_latitude=90,
+                central_longitude=0,
+            )
+            width_scale = 1.5
+
+            proj_pts = self.plot_projection.transform_points(
+                self.pc_projection,
+                self.points[0][:, 1],
+                self.points[0][:, 0],
+            )
+
+            proj_bounds = np.array(
+                [
+                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                ]
+            )
+
+        elif self.projection == "EPSG:3031" and (
+            (
+                (self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80)
+                or covers_pole
+            )
+            or near_pole
+        ):  # south pole projection
             blat = max(self.bounds[0], self.bounds[2])
             blat = 5 * np.ceil(blat / 5)
             # is centerered close to the south pole
-            if (
-                (self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80)
-                or covers_pole
-            ) or near_pole:
-                self.plot_projection = ccrs.Stereographic(
-                    central_latitude=self.centroid[0],
-                    central_longitude=self.centroid[1],
-                )
-                width_scale = 1.5
-            else:
-                self.plot_projection = ccrs.LambertConformal(
-                    central_latitude=self.centroid[0],
-                    central_longitude=self.centroid[1],
-                )
+
+            self.plot_projection = ccrs.Stereographic(
+                central_latitude=-90,
+                central_longitude=0,
+            )
+            width_scale = 1.5
+
+            proj_pts = self.plot_projection.transform_points(
+                self.pc_projection,
+                self.points[0][:, 1],
+                self.points[0][:, 0],
+            )
+
+            proj_bounds = np.array(
+                [
+                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                ]
+            )
 
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
             if abs(self.bounds[3] - self.bounds[1]) > 360:
                 raise ClientError(
-                    ( # gettext(
+                    (  # gettext(
                         "You have requested an area that exceeds the width \
                         of the world. Thinking big is good but plots need to \
                         be less than 360 deg wide."
@@ -185,21 +207,25 @@ class MapPlotter(Plotter):
             self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
 
         else:
-            self.plot_projection = ccrs.LambertConformal(
-                central_latitude=self.centroid[0], central_longitude=self.centroid[1]
+            self.plot_projection = ccrs.Mercator(
+                central_longitude=self.centroid[1],
+                min_latitude=-85,
+                max_latitude=85,
             )
 
-        proj_bounds = self.plot_projection.transform_points(
-            self.pc_projection,
-            np.array([self.bounds[1], self.bounds[3]]),
-            np.array([self.bounds[0], self.bounds[2]]),
-        )
-        proj_size = np.diff(proj_bounds, axis=0)
+            proj_bounds = self.plot_projection.transform_points(
+                self.pc_projection,
+                np.array([self.bounds[1], self.bounds[3]]),
+                np.array([self.bounds[0], self.bounds[2]]),
+            )
+
+        proj_size = np.diff(proj_bounds[:2, :2], axis=0)
+        proj_centroid = np.mean(proj_bounds[:2, :2], axis=0)
 
         width = proj_size[0][0] * width_scale
         height = proj_size[0][1] * height_scale
 
-        aspect_ratio = height / width
+        aspect_ratio = abs(height / width)
         if aspect_ratio < 1:
             gridx = 500
             gridy = int(500 * aspect_ratio)
@@ -213,8 +239,8 @@ class MapPlotter(Plotter):
             self.plot_projection,
             gridx,
             gridy,
-            x_extents=(-width / 2, width / 2),
-            y_extents=(-height / 2, height / 2),
+            x_extents=(-width / 2, width / 2) + proj_centroid[0],
+            y_extents=(-height / 2, height / 2) + proj_centroid[1],
         )
 
         latlon_grid = self.pc_projection.transform_points(

@@ -417,7 +417,7 @@ function InfoHelpWindow(props) {
         setContent(
           <iframe
             className="content-iframe"
-            src="https://navigator.oceansdata.ca/docs"
+            src="https://oceannavigator.ca/docs"
           ></iframe>
         );
         break;
