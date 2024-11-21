@@ -99,11 +99,11 @@ function SubsetPanel(props) {
 
     window.location.href =
       window.location.origin +
-      "/api/v2.0/generate_script/?query=" +
+      "/api/v2.0/generate_script?query=" +
       JSON.stringify(query) +
       "&lang=" +
       key +
-      "&scriptType=subset";
+      "&script_type=subset";
   };
 
   const getSubsetVariables = () => {
