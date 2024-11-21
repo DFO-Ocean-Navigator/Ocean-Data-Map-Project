@@ -139,7 +139,6 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
-      wrapX: true,
     });
 
     const newObsDrawSource = new VectorSource({
@@ -590,7 +589,6 @@ const MainMap = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
       loader: loader,
-      wrapX: true,
     });
     layerVector.setSource(newVectorSource);
     setVectorSource(newVectorSource);
@@ -676,13 +674,12 @@ const MainMap = forwardRef((props, ref) => {
 
   const drawPoints = (vectorSource) => {
     if (props.vectorCoordinates.length > 0) {
-      let feat = pointFeature(
+      pointFeature(
         props.vectorType,
         props.vectorCoordinates,
+        vectorSource,
         props.mapSettings.projection
       );
-
-      vectorSource.addFeature(feat);
     }
   };
 

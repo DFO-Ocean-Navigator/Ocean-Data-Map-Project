@@ -14,6 +14,7 @@ import {
 import VectorTile from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile.js";
 import VectorLayer from "ol/layer/Vector.js";
+import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
