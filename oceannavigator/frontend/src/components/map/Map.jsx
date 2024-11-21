@@ -82,7 +82,7 @@ proj3031.setExtent([
   3087442.345821846,
 ]);
 
-const MainMap = forwardRef((props, ref) => {
+const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
@@ -1003,4 +1003,4 @@ const MainMap = forwardRef((props, ref) => {
   );
 });
 
-export default MainMap;
+export default Map;
