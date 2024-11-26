@@ -520,7 +520,7 @@ class NetCDFData(Data):
             )
             ds.description = "Converted " + dataset_name
             ds.history = "Created: " + str(datetime.datetime.now())
-            ds.source = "www.navigator.oceansdata.ca"
+            ds.source = "www.oceannavigator.ca"
 
             # Create the netcdf dimensions
             ds.createDimension("lat", GRID_RESOLUTION)
@@ -642,7 +642,7 @@ class NetCDFData(Data):
                 "%s%s.nc" % (working_dir, filename),
                 Path("%s%s.nc" % (working_dir, filename)).name,
             )
-            myzip.comment = b"Generated from www.navigator.oceansdata.ca"
+            myzip.comment = b"Generated from www.oceannavigator.ca"
             myzip.close()  # Must be called to actually create zip
             return working_dir, filename + ".zip"
 

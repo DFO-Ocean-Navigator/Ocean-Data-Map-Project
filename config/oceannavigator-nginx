@@ -4,12 +4,12 @@ server {
     listen 80 default_server;
     server_name localhost ;
 
-    return 301 http://navigator.oceansdata.ca$request_uri;
+    return 301 https://oceannavigator.ca$request_uri;
 }
 
 server {
     listen 80;
-    server_name .navigator.oceansdata.ca ;
+    server_name .oceannavigator.ca ;
     charset     utf-8;
     client_max_body_size 75M;
 

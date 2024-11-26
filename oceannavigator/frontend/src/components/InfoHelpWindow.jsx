@@ -471,7 +471,7 @@ function InfoHelpWindow(props) {
         url = `https://youtu.be/${selectedItem}`;
         break;
       case 5:
-        url = "https://navigator.oceansdata.ca/docs";
+        url = "https://oceannavigator.ca/docs";
         break;
     }
 

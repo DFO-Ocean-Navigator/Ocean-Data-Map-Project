@@ -72,7 +72,7 @@ class TestDatasetConfig(unittest.TestCase):
 
     def test_all_urls_point_to_localhost(self):
 
-        prog = re.compile(r"^.*navigator.oceansdata.ca.*$")
+        prog = re.compile(r"^.*oceannavigator.ca.*$")
 
         for ds in self.datasetConfig:
             self.assertFalse(prog.match(self.datasetConfig[ds]["url"]))
