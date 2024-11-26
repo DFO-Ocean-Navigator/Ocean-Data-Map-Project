@@ -1,8 +1,6 @@
 import requests
 import os
 import shutil
-from urllib.request import urlopen
-from contextlib import closing
 
 
 def requestFile():
@@ -11,7 +9,7 @@ def requestFile():
 
 
    # Assemble full request
-   base_url = "https://navigator.oceansdata.ca/api/v2.0/subset/?"
+   base_url = "https://oceannavigator.ca/api/v2.0/subset/"+query["dataset_name"]+"/"+query["variables"]+"?"
    url = base_url
    for key in query:
       url += f"&{{key}}={{query[key]}}"
