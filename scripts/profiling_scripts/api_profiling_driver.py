@@ -548,7 +548,7 @@ if __name__ == "__main__":
     the command line with flags specifying file locaitons and options as described in
     the example below:
 
-    python api_profiling_driver.py --url https://navigator.oceansdata.ca
+    python api_profiling_driver.py --url https://oceannavigator.ca
         --config api_profiling_config.json --id usr -a 1 -t 120
 
     where:
@@ -566,7 +566,7 @@ if __name__ == "__main__":
     """
 
     # default options
-    url = "https://navigator.oceansdata.ca"
+    url = "https://oceannavigator.ca"
     config = "scripts/profiling_scripts/api_profiling_config.json"
     csv_file = None
     prof_path = None

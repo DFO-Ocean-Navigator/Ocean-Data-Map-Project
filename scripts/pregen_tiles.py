@@ -13,7 +13,7 @@ parser.add_argument(
     required=True,
     help=(
         "Root URL to Navigator instance. Ex: "
-        + "https://navigator.oceansdata.ca or http://10.5.166.251:5000"
+        + "https://oceannavigator.ca or http://10.5.166.251:5000"
     ),
 )
 args = parser.parse_args()

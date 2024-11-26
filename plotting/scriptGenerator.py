@@ -51,8 +51,6 @@ def generateR(url, plot_type: str, script_Type: str) -> BytesIO:
         query = query.replace("true", "1")
     if "false" in query:
         query = query.replace("false", "0")
-    if "null" in query:
-        query = query.replace("null", "None")
 
     with open(f"plotting/templates/r_{script_Type}_template.txt", "r") as f:
         template = str(f.read())

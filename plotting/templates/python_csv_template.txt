@@ -1,14 +1,6 @@
 import requests
 import os
-import shutil
-from urllib.request import urlopen
 from urllib.parse import urlencode
-from contextlib import closing
-try:
-   from PIL import Image
-except:
-   print("If you are on a Windows machine, please install PIL (imaging library) using 'python -m pip install Pillow' in the Anaconda Prompt")
-   exit()
 import json
 
 
@@ -18,20 +10,19 @@ def requestFile():
 
 
    # Assemble full request
-   base_url = "https://navigator.oceansdata.ca/api/v2.0/plot/{p}?"
+   base_url = "https://oceannavigator.ca/api/v2.0/plot/{p}?"
    url = base_url + urlencode({{"query": json.dumps(query)}}) + '&save=True&format=csv&size=10x7&dpi=144'
    print(url)
 
 
    # Save file and finish
    data_file = requests.get(url, stream=True)
-   dump = data_file.raw
    # change this if you want a different save location
    location = os.getcwd()
    fname = {f} + ".csv"
    with open(fname, "wb") as location:
       print('Saving File')
-      shutil.copyfileobj(dump, location)
+      location.write(data_file.content)
       print('Done')
 
 

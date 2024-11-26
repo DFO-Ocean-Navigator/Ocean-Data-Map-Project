@@ -7,7 +7,7 @@ dpi <- 144
 queryObj <- fromJSON(query)
 fname <- paste("ONAV_CSV_", queryObj["dataset"],"_", queryObj["variable"],".csv", sep="")
 gsub("[\r\n]", "", query)
-base_url <- "https://navigator.oceansdata.ca/api/v2.0/plot/{p}?"
+base_url <- "https://oceannavigator.ca/api/v2.0/plot/{p}?"
 url <- paste(base_url,"&query=",URLencode(query),"&save=True&format=csv&size=10x7&dpi=",toString(dpi), sep="")
 print(url)
 

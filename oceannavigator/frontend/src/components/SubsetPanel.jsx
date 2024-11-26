@@ -82,7 +82,7 @@ function SubsetPanel(props) {
 
   const saveScript = (key) => {
     let query = {
-      outputFormat: outputFormat,
+      output_format: outputFormat,
       dataset_name: props.dataset.id,
       variables: outputVariables.join(),
       time: [outputStarttime, outputEndtime].join(),
