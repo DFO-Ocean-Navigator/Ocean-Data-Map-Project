@@ -1,6 +1,5 @@
 import requests
 import os
-import shutil
 
 
 def requestFile():
@@ -23,7 +22,7 @@ def requestFile():
    location = os.getcwd()
    with open("script_output.nc", "wb") as location:
       print('Saving File')
-      shutil.copyfileobj(dump, location)
+      location.write(data_file.content)
       print('Done')
 
 
