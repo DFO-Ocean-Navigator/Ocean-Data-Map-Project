@@ -5,6 +5,7 @@ import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
+import DynamicModal from "./lib/DynamicModal.jsx";
 import Map from "./map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
@@ -505,7 +506,7 @@ function OceanNavigator(props) {
       <ToggleLanguage />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-      <Modal
+      {/* <Modal
         show={uiSettings.showModal}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
@@ -518,7 +519,10 @@ function OceanNavigator(props) {
         <Modal.Footer>
           <Button onClick={closeModal}>{__("Close")}</Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
+      <DynamicModal>
+
+      </DynamicModal>
       <Modal
         show={showPermalink}
         onHide={() => setShowPermalink(false)}

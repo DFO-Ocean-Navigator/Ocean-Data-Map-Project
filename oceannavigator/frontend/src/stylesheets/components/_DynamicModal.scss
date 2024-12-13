@@ -1,0 +1,33 @@
+.modal-title {
+  width: 100%;
+  cursor: move;
+}
+
+.modal-content {
+  /* this is because we can resize this background so we'll hide it. The coloring will
+    now be maintained by the modal-resizable class */
+  background: transparent;
+}
+
+.modal-content > .modal-resizable {
+  background-color: white;
+  background-clip: padding-box;
+  border: 1px solid #ebedee;
+  border: 0;
+  border-radius: 0.2em;
+  box-shadow: 0 0 0 1px rgba(101, 108, 126, 0.5) inset,
+    0 1px 3px 1px rgba(64, 64, 64, 0.5);
+}
+
+.modal-resizable > .modal-body {
+  /* This is to account for the height of the footer */
+  padding: 1em 1em 5em 1em;
+}
+
+.modal-footer {
+  /* this is to keep the footer pinned to the bottom when we resize */
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 10;
+}
