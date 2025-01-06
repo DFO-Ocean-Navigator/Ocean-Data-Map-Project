@@ -157,48 +157,7 @@ const Map = forwardRef((props, ref) => {
       mapRef0
     );
 
-    const newSelect = new olinteraction.Select({
-      style: function (feat, res) {
-        if (feat.get("type") != "area") {
-          return new Style({
-            stroke: new Stroke({
-              color: "#0099ff",
-              width: 4,
-            }),
-            image: new Circle({
-              radius: 4,
-              fill: new Fill({
-                color: "#0099ff",
-              }),
-              stroke: new Stroke({
-                color: "#ffffff",
-                width: 1,
-              }),
-            }),
-          });
-        }
-      },
-    });
-
-    newSelect.on("select", function (e) {
-      let selectedFeatures = this.getFeatures();
-      if (
-        e.selected.length > 0 &&
-        (e.selected[0].line || e.selected[0].drifter)
-      ) {
-        selectedFeatures.clear();
-        selectedFeatures.push(e.selected[0]);
-      }
-      if (e.selected.length == 0) {
-        props.updateState("plotEnabled", true);
-        props.action("point", props.vectorCoordinates);
-      }
-      pushSelection(selectedFeatures);
-
-      if (e.selected[0].get("type") == "area") {
-        selectedFeatures.clear();
-      }
-    });
+    const newSelect = createSelect()
     newMap.addInteraction(newSelect);
 
     newMap.on("moveend", function () {
@@ -464,7 +423,6 @@ const Map = forwardRef((props, ref) => {
         selectedFeatures.push(e.selected[0]);
       }
       if (e.selected.length == 0) {
-        props.updateState("plotEnabled", true);
         props.action("point", props.vectorCoordinates);
       }
       pushSelection(selectedFeatures);
