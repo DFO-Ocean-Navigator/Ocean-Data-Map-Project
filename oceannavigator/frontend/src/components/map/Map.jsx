@@ -414,8 +414,12 @@ const Map = forwardRef((props, ref) => {
     });
 
     newSelect.on("select", function (e) {
-      let shiftHeld = e.mapBrowserEvent.originalEvent.shiftKey;
       let selectedFeatures = this.getFeatures();
+      if (selectedFeatures.getLength() === 0) {
+        return;
+      }
+
+      let shiftHeld = e.mapBrowserEvent.originalEvent.shiftKey;
       if (shiftHeld && e.selected[0].get("type") == "point") {
         props.updateState(["multiSelect"], true);
       }
@@ -429,6 +433,7 @@ const Map = forwardRef((props, ref) => {
       if (e.selected.length == 0) {
         props.action("point", props.vectorCoordinates);
       }
+
       pushSelection(selectedFeatures);
 
       if (e.selected[0].get("type") == "area") {
