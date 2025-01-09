@@ -23,6 +23,7 @@ import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
+import FeatureWindow from "./featurewindow/FeatureWindow.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -473,6 +474,7 @@ function OceanNavigator(props) {
 
   return (
     <div className="OceanNavigator">
+      <FeatureWindow></FeatureWindow>
       <ScaleViewer
         dataset={dataset0}
         mapSettings={mapSettings}
