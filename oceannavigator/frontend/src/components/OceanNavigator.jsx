@@ -69,6 +69,7 @@ function OceanNavigator(props) {
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
+  const [multiSelect, setMultiSelect] = useState(false);
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -103,7 +104,18 @@ function OceanNavigator(props) {
         console.error(err);
       }
     }
+
+    window.addEventListener("keyup", upHandler);
+    return () => {
+      window.removeEventListener("keyup", upHandler);
+    };
   }, []);
+
+  const upHandler = (e) => {
+    if (e.key === "Shift") {
+      setMultiSelect(false);
+    }
+  };
 
   const action = (name, arg, arg2, arg3) => {
     switch (name) {
@@ -213,6 +225,10 @@ function OceanNavigator(props) {
           break;
         case "names":
           setNames(value[i]);
+          break;
+        case "multiSelect":
+          setMultiSelect(value[i]);
+          break;
       }
     }
   };
@@ -454,6 +470,7 @@ function OceanNavigator(props) {
       modalTitle = __("Info/Help");
       break;
   }
+
   return (
     <div className="OceanNavigator">
       <ScaleViewer
@@ -505,20 +522,26 @@ function OceanNavigator(props) {
       <ToggleLanguage />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-      <Modal
-        show={uiSettings.showModal}
-        onHide={closeModal}
-        dialogClassName="full-screen-modal"
-        size={modalSize}
-      >
-        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
-          <Modal.Title>{modalTitle}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{modalBodyContent}</Modal.Body>
-        <Modal.Footer>
-          <Button onClick={closeModal}>{__("Close")}</Button>
-        </Modal.Footer>
-      </Modal>
+      {multiSelect ? null : (
+        <Modal
+          show={uiSettings.showModal}
+          onHide={closeModal}
+          dialogClassName="full-screen-modal"
+          size={modalSize}
+        >
+          <Modal.Header
+            closeButton
+            closeVariant="white"
+            closeLabel={__("Close")}
+          >
+            <Modal.Title>{modalTitle}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{modalBodyContent}</Modal.Body>
+          <Modal.Footer>
+            <Button onClick={closeModal}>{__("Close")}</Button>
+          </Modal.Footer>
+        </Modal>
+      )}
       <Modal
         show={showPermalink}
         onHide={() => setShowPermalink(false)}

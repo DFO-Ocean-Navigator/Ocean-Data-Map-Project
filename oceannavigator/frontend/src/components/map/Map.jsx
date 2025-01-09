@@ -157,7 +157,7 @@ const Map = forwardRef((props, ref) => {
       mapRef0
     );
 
-    const newSelect = createSelect()
+    const newSelect = createSelect();
     newMap.addInteraction(newSelect);
 
     newMap.on("moveend", function () {
@@ -414,7 +414,11 @@ const Map = forwardRef((props, ref) => {
     });
 
     newSelect.on("select", function (e) {
+      let shiftHeld = e.mapBrowserEvent.originalEvent.shiftKey;
       let selectedFeatures = this.getFeatures();
+      if (shiftHeld && e.selected[0].get("type") == "point") {
+        props.updateState(["multiSelect"], true);
+      }
       if (
         e.selected.length > 0 &&
         (e.selected[0].line || e.selected[0].drifter)
@@ -731,7 +735,7 @@ const Map = forwardRef((props, ref) => {
 
     props.action(actionType, content);
     props.updateUI({ modalType: t, showModal: true });
-    props.updateState("names", names);
+    props.updateState(["names"], [names]);
   };
 
   const updateSelectFilter = (select) => {
