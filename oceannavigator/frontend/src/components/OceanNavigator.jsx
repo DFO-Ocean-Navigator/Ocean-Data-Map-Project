@@ -41,7 +41,8 @@ function formatLatLon(latitude, longitude) {
 }
 
 function OceanNavigator(props) {
-  const mapRef = useRef(null);
+  const mapRef = useRef();
+  const typeRef = useRef("point");
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
   const [compareDatasets, setCompareDatasets] = useState(false);
@@ -61,6 +62,8 @@ function OceanNavigator(props) {
   const [mapState, setMapState] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
+  const [mapFeatures, setMapFeatures] = useState([]);
+  const [newFeatures, setNewFeatures] = useState([]);
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
@@ -127,6 +130,7 @@ function OceanNavigator(props) {
         mapRef.current.stopDrawing();
         break;
       case "vectorType":
+        typeRef.current = arg;
         setVectorType(arg);
         break;
       case "undoPoints":
@@ -148,6 +152,30 @@ function OceanNavigator(props) {
       case "removePoint":
         let coords = vectorCoordinates.filter((coord, index) => index !== arg);
         setVectorCoordinates(coords);
+        break;
+      case "addNewFeature":
+        setNewFeatures((prevFeatures) => {
+          if (typeRef.current === "point" || prevFeatures.length === 0) {
+            let newFeat = {
+              id: "id" + Math.random().toString(16).slice(2),
+              type: typeRef.current,
+              coords: arg,
+            };
+            return [...prevFeatures, newFeat];
+          } else {
+            return [
+              {
+                id: prevFeatures[0].id,
+                type: prevFeatures[0].type,
+                coords: [...prevFeatures[0].coords, ...arg],
+              },
+            ];
+          }
+        });
+        break;
+      case "saveFeature":
+        setMapFeatures((prevFeatures) => [...prevFeatures, ...newFeatures]);
+        setNewFeatures([]);
         break;
       case "updatePoint":
         let newCoords = null;
@@ -493,6 +521,7 @@ function OceanNavigator(props) {
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}
+        features={[...mapFeatures, ...newFeatures]}
         vectorId={vectorId}
         vectorType={vectorType}
         vectorCoordinates={vectorCoordinates}

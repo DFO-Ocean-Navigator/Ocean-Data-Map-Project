@@ -28,6 +28,11 @@ function DrawingTools(props) {
     props.action("undoPoints");
   };
 
+  const handleSave = () => {
+    props.action("saveFeature");
+  };
+
+
   const handleClose = () => {
     props.updateUI({ showDrawingTools: false });
     props.action("stopDrawing");
@@ -75,6 +80,9 @@ function DrawingTools(props) {
 
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
+      </Button>
+      <Button className="save-button" onClick={handleSave}>
+        {__("Save")}
       </Button>
       <Button className="close-button" onClick={handleClose}>
         {__("Close")}

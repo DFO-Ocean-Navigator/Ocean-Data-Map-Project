@@ -319,7 +319,7 @@ const Map = forwardRef((props, ref) => {
         updateSelectFilter(select1);
       }
     }
-  }, [props.vectorCoordinates, props.vectorType, layerVector]);
+  }, [props.features, layerVector]);
 
   useEffect(() => {
     if (props.vectorId && props.vectorType) {
@@ -640,10 +640,9 @@ const Map = forwardRef((props, ref) => {
   };
 
   const drawPoints = (vectorSource) => {
-    if (props.vectorCoordinates.length > 0) {
+    if (props.features.length > 0) {
       pointFeature(
-        props.vectorType,
-        props.vectorCoordinates,
+        props.features,
         vectorSource,
         props.mapSettings.projection
       );

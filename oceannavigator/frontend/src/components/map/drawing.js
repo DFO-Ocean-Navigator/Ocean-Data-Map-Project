@@ -5,7 +5,7 @@ import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
 import { getDistance } from "ol/sphere";
 
-export const drawAction = (vectorSource, vectorType, projection, action) => {
+export const drawAction = (vectorSource, projection, action) => {
   const drawAction = new Draw({
     source: vectorSource,
     type: "Point",
@@ -13,7 +13,6 @@ export const drawAction = (vectorSource, vectorType, projection, action) => {
     wrapX: true,
   });
 
-  drawAction.set("type", vectorType);
   drawAction.on("drawend", function (e) {
     // Disable zooming when drawing
     const latlon = olProj
@@ -24,67 +23,67 @@ export const drawAction = (vectorSource, vectorType, projection, action) => {
       )
       .reverse();
     // Draw point on map(s)
-    action("addPoints", [latlon]);
+    action("addNewFeature", [latlon]);
   });
   return drawAction;
 };
 
-export const pointFeature = (
-  vectorType,
-  vectorCoordinates,
-  vectorSource,
-  projection
-) => {
-  if (vectorCoordinates.length < 2) {
-    vectorType = "point";
-  }
+export const pointFeature = (features, vectorSource, projection) => {
+  for (const feature of features) {
+    let vectorType = feature.type;
 
-  let geom;
-  let feat;
+    if (feature.coords.length < 2) {
+      vectorType = "point";
+    }
 
-  switch (vectorType) {
-    case "point":
-      for (let c of vectorCoordinates) {
+    let geom;
+    let feat;
+
+    switch (vectorType) {
+      case "point":
+        let c = feature.coords[0];
         geom = new olgeom.Point([c[1], c[0]]);
         geom = geom.transform("EPSG:4326", projection);
         feat = new Feature({
           geometry: geom,
           name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
           type: "point",
+          id: feature.id,
         });
         vectorSource.addFeature(feat);
-      }
-      break;
-    case "line":
-      geom = new olgeom.LineString(
-        vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        })
-      );
 
-      geom.transform("EPSG:4326", projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "line",
-      });
+        break;
+      case "line":
+        geom = new olgeom.LineString(
+          feature.coords.map(function (c) {
+            return [c[1], c[0]];
+          })
+        );
 
-      vectorSource.addFeature(feat);
-      break;
-    case "area":
-      geom = new olgeom.Polygon([
-        vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        }),
-      ]);
-      const centroid = olExtent.getCenter(geom.getExtent());
-      geom.transform("EPSG:4326", projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "area",
-        centroid: centroid,
-      });
-      vectorSource.addFeature(feat);
-      break;
+        geom.transform("EPSG:4326", projection);
+        feat = new Feature({
+          geometry: geom,
+          type: "line",
+        });
+
+        vectorSource.addFeature(feat);
+        break;
+      case "area":
+        geom = new olgeom.Polygon([
+          feature.coords.map(function (c) {
+            return [c[1], c[0]];
+          }),
+        ]);
+        const centroid = olExtent.getCenter(geom.getExtent());
+        geom.transform("EPSG:4326", projection);
+        feat = new Feature({
+          geometry: geom,
+          type: "area",
+          centroid: centroid,
+        });
+        vectorSource.addFeature(feat);
+        break;
+    }
   }
 };
 
