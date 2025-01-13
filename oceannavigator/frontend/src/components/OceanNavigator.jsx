@@ -132,6 +132,7 @@ function OceanNavigator(props) {
       case "vectorType":
         typeRef.current = arg;
         setVectorType(arg);
+        setNewFeatures((prevFeatures) => updateFeatType(prevFeatures));
         break;
       case "undoPoints":
         setVectorCoordinates(
@@ -324,6 +325,42 @@ function OceanNavigator(props) {
       };
       return newMapSettings;
     });
+  };
+
+  const updateFeatType = (features) => {
+    let prevType = features[0].type;
+    let nextType = typeRef.current;
+    let updatedFeat = {};
+
+    if (prevType === "point" && (nextType === "line" || nextType === "area")) {
+      let nextCoords = features.map((feat) => {
+        return feat.coords[0];
+      });
+      updatedFeat = [
+        {
+          id: features[0].id,
+          type: nextType,
+          coords: nextCoords,
+        },
+      ];
+    } else if (
+      (prevType === "line" || prevType === "area") &&
+      nextType === "point"
+    ) {
+      let nextCoords = features[0].coords;
+      updatedFeat = nextCoords.map((coord) => {
+        return {
+          id: "id" + Math.random().toString(16).slice(2),
+          type: nextType,
+          coords: [coord],
+        };
+      });
+    } else {
+      updatedFeat = features;
+      updatedFeat[0].type = nextType;
+    }
+
+    return updatedFeat;
   };
 
   const generatePermLink = (permalinkSettings) => {
