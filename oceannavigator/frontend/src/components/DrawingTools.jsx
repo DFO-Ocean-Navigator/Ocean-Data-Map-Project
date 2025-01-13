@@ -25,7 +25,7 @@ function DrawingTools(props) {
   };
 
   const handleUndo = () => {
-    props.action("undoPoints");
+    props.action("undoMapFeature");
   };
 
   const handleSave = () => {

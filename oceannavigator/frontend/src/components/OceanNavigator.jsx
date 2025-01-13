@@ -134,10 +134,16 @@ function OceanNavigator(props) {
         setVectorType(arg);
         setNewFeatures((prevFeatures) => updateFeatType(prevFeatures));
         break;
-      case "undoPoints":
-        setVectorCoordinates(
-          vectorCoordinates.slice(0, vectorCoordinates.length - 1)
-        );
+      case "undoMapFeature":
+        if (newFeatures.length > 0) {
+          setNewFeatures((prevFeatures) => {
+            return prevFeatures.slice(0, prevFeatures.length - 1);
+          });
+        } else {
+          setMapFeatures((prevFeatures) => {
+            return prevFeatures.slice(0, prevFeatures.length - 1);
+          });
+        }
         break;
       case "clearPoints":
         setVectorCoordinates([]);
