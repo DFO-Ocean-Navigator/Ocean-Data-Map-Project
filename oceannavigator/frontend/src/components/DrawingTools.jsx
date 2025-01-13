@@ -38,16 +38,6 @@ function DrawingTools(props) {
     props.action("stopDrawing");
   };
 
-  const handlePlot = () => {
-    props.action("selectPoints");
-    props.updateUI({ modalType: vectorType, showModal: true });
-  };
-
-  const plotDisabled =
-    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
-    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
-    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
-
   return (
     <div className={"drawing-tools"}>
       <div>
@@ -66,14 +56,6 @@ function DrawingTools(props) {
           </ToggleButton>
         ))}
       </div>
-
-      <Button
-        className="plot-button"
-        onClick={handlePlot}
-        disabled={plotDisabled}
-      >
-        {__("Plot")}
-      </Button>
       <Button className="plot-button" onClick={handleClear}>
       {__("Clear")}
       </Button>
