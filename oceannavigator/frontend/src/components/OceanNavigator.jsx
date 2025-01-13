@@ -1,6 +1,7 @@
 import { nominalTypeHack } from "prop-types";
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
@@ -73,6 +74,8 @@ function OceanNavigator(props) {
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
   const [multiSelect, setMultiSelect] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState([]);
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -245,6 +248,10 @@ function OceanNavigator(props) {
       case "permalink":
         setSubquery(null);
         setShowPermalink(true);
+        break;
+      case "showAlert":
+        setShowAlert(true);
+        setAlertMessage(arg);
         break;
     }
   };
@@ -572,7 +579,6 @@ function OceanNavigator(props) {
         features={[...mapFeatures, ...newFeatures]}
         vectorId={vectorId}
         vectorType={vectorType}
-        vectorCoordinates={vectorCoordinates}
         class4Type={class4Type}
         updateState={updateState}
         action={action}
@@ -585,6 +591,7 @@ function OceanNavigator(props) {
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
+        newFeatures={newFeatures}
         updateMapSettings={updateMapSettings}
         updateDataset0={updateDataset0}
         updateDataset1={updateDataset1}
@@ -594,7 +601,6 @@ function OceanNavigator(props) {
         action={action}
         showCompare={true}
         vectorType={vectorType}
-        vectorCoordinates={vectorCoordinates}
       />
       <ToggleLanguage />
       <LinkButton action={action} />
@@ -639,6 +645,16 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
+      {showAlert ? (
+        <Alert
+          variant="warning"
+          onClose={() => setShowAlert(false)}
+          dismissible
+        >
+          <Alert.Heading>{alertMessage[0]}</Alert.Heading>
+          <p>{alertMessage[1]}</p>
+        </Alert>
+      ) : null}
     </div>
   );
 }

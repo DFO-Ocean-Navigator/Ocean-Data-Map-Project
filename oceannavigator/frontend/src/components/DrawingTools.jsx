@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,8 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withTranslation } from "react-i18next";
 
 function DrawingTools(props) {
-  const [vectorType, setVectorType] = useState(props.vectorType);
-
   const radios = [
     { name: __("Point"), value: "point" },
     { name: __("Line"), value: "line" },
@@ -16,7 +14,6 @@ function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    setVectorType(type);
     props.action("vectorType", type);
   };
 
@@ -29,13 +26,34 @@ function DrawingTools(props) {
   };
 
   const handleSave = () => {
-    props.action("saveFeature");
+    if (checkFeaturePoints()) {
+      props.action("saveFeature");
+    }
   };
 
-
   const handleClose = () => {
-    props.updateUI({ showDrawingTools: false });
-    props.action("stopDrawing");
+    if (checkFeaturePoints()) {
+      props.action("saveFeature");
+      props.updateUI({ showDrawingTools: false });
+      props.action("stopDrawing");
+    }
+  };
+
+  const checkFeaturePoints = () => {
+    let message = ["Insufficient Points"];
+    if (props.newFeatures.length > 0) {
+      let nCoords = props.newFeatures[0].coords.length;
+      if (props.vectorType === "line" && nCoords < 2) {
+        message.push("Line features require a minimum of 2 vertices.");
+        props.action("showAlert", message);
+        return false;
+      } else if (props.vectorType === "area" && nCoords < 3) {
+        message.push("Area features require a minimum of 3 vertices.");
+        props.action("showAlert", message);
+        return false;
+      }
+    }
+    return true;
   };
 
   return (
@@ -57,9 +75,8 @@ function DrawingTools(props) {
         ))}
       </div>
       <Button className="plot-button" onClick={handleClear}>
-      {__("Clear")}
+        {__("Clear")}
       </Button>
-
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
       </Button>

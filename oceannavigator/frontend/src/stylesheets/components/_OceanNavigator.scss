@@ -54,3 +54,11 @@ body {
     }
   }
 }
+
+.alert {
+  z-index: 100;
+  position: absolute;
+  top: 33%;
+  left: 33%;
+  width: 33%;
+}
