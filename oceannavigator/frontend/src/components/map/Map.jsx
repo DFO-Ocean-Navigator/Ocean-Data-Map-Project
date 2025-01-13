@@ -629,7 +629,6 @@ const Map = forwardRef((props, ref) => {
   const startDrawing = () => {
     let newDrawAction = drawAction(
       vectorSource,
-      props.vectorType,
       props.mapSettings.projection,
       props.action
     );

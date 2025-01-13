@@ -1,8 +1,8 @@
 import Feature from "ol/Feature.js";
-import * as olExtent from "ol/extent";
+import { getCenter } from "ol/extent";
 import Draw from "ol/interaction/Draw";
-import * as olgeom from "ol/geom";
-import * as olProj from "ol/proj";
+import { Point, LineString, Polygon } from "ol/geom";
+import { transform } from "ol/proj";
 import { getDistance } from "ol/sphere";
 
 export const drawAction = (vectorSource, projection, action) => {
@@ -15,13 +15,8 @@ export const drawAction = (vectorSource, projection, action) => {
 
   drawAction.on("drawend", function (e) {
     // Disable zooming when drawing
-    const latlon = olProj
-      .transform(
-        e.feature.getGeometry().getCoordinates(),
-        projection,
-        "EPSG:4326"
-      )
-      .reverse();
+    let coords = e.feature.getGeometry().getCoordinates();
+    const latlon = transform(coords, projection, "EPSG:4326").reverse();
     // Draw point on map(s)
     action("addNewFeature", [latlon]);
   });
@@ -42,7 +37,7 @@ export const pointFeature = (features, vectorSource, projection) => {
     switch (vectorType) {
       case "point":
         let c = feature.coords[0];
-        geom = new olgeom.Point([c[1], c[0]]);
+        geom = new Point([c[1], c[0]]);
         geom = geom.transform("EPSG:4326", projection);
         feat = new Feature({
           geometry: geom,
@@ -54,7 +49,7 @@ export const pointFeature = (features, vectorSource, projection) => {
 
         break;
       case "line":
-        geom = new olgeom.LineString(
+        geom = new LineString(
           feature.coords.map(function (c) {
             return [c[1], c[0]];
           })
@@ -69,12 +64,12 @@ export const pointFeature = (features, vectorSource, projection) => {
         vectorSource.addFeature(feat);
         break;
       case "area":
-        geom = new olgeom.Polygon([
+        geom = new Polygon([
           feature.coords.map(function (c) {
             return [c[1], c[0]];
           }),
         ]);
-        const centroid = olExtent.getCenter(geom.getExtent());
+        const centroid = getCenter(geom.getExtent());
         geom.transform("EPSG:4326", projection);
         feat = new Feature({
           geometry: geom,
@@ -107,7 +102,7 @@ export const obsPointDrawAction = (map, obsDrawSource, projection, action) => {
   drawAction.set("type", "Point");
   drawAction.on("drawend", function (e) {
     // Disable zooming when drawing
-    const lonlat = olProj.transform(
+    const lonlat = transform(
       e.feature.getGeometry().getCoordinates(),
       projection,
       "EPSG:4326"
@@ -136,7 +131,7 @@ export const obsAreaDrawAction = (map, obsDrawSource, projection, action) => {
       .getGeometry()
       .getCoordinates()[0]
       .map(function (c) {
-        const lonlat = olProj.transform(c, projection, "EPSG:4326");
+        const lonlat = transform(c, projection, "EPSG:4326");
         return [lonlat[1], lonlat[0]];
       });
     // Send area to Observation Selector
