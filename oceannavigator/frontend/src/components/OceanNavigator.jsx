@@ -124,6 +124,8 @@ function OceanNavigator(props) {
   };
 
   const action = (name, arg, arg2, arg3) => {
+    let featIdx = null;
+    let updatedFeatures = null;
     switch (name) {
       case "startDrawing":
         setVectorId(null);
@@ -135,7 +137,9 @@ function OceanNavigator(props) {
       case "vectorType":
         typeRef.current = arg;
         setVectorType(arg);
-        setNewFeatures((prevFeatures) => updateFeatType(prevFeatures));
+        setNewFeatures((prevFeatures) =>
+          updateFeatType(prevFeatures, typeRef.current)
+        );
         break;
       case "undoMapFeature":
         if (newFeatures.length > 0) {
@@ -158,10 +162,6 @@ function OceanNavigator(props) {
         break;
       case "addPoints":
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
-        break;
-      case "removePoint":
-        let coords = vectorCoordinates.filter((coord, index) => index !== arg);
-        setVectorCoordinates(coords);
         break;
       case "addNewFeature":
         setNewFeatures((prevFeatures) => {
@@ -187,15 +187,61 @@ function OceanNavigator(props) {
         setMapFeatures((prevFeatures) => [...prevFeatures, ...newFeatures]);
         setNewFeatures([]);
         break;
-      case "updatePoint":
-        let newCoords = null;
-        if (!isNaN(arg2) && !isNaN(arg3)) {
-          newCoords = [...vectorCoordinates];
-          newCoords[arg][arg2] = arg3;
+      case "updateFeatureCoordinate":
+        featIdx = mapFeatures.findIndex((feat) => {
+          return feat.id === arg;
+        });
+
+        updatedFeatures = [...mapFeatures];
+        if (arg2[0] >= updatedFeatures[featIdx].coords.length) {
+          updatedFeatures[featIdx].coords.push([0, 0]);
         } else {
-          newCoords = arg;
+          updatedFeatures[featIdx].coords[arg2[0]][arg2[1]] = arg3;
         }
-        setVectorCoordinates(newCoords);
+        setMapFeatures(updatedFeatures);
+        break;
+      case "updateFeatureType":
+        featIdx = mapFeatures.findIndex((feat) => {
+          return feat.id === arg;
+        });
+
+        updatedFeatures = [...mapFeatures];
+        let prevType = updatedFeatures[featIdx].type;
+        let nextType = arg2;
+
+        if (nextType === "point" && prevType !== "point") {
+          let newFeats = updateFeatType([updatedFeatures[featIdx]], nextType);
+          updatedFeatures = [
+            ...updatedFeatures.slice(0, featIdx),
+            ...newFeats,
+            ...updatedFeatures.slice(-featIdx, updatedFeatures.length),
+          ];
+        } else {
+          updatedFeatures[featIdx].type = arg2;
+        }
+        setMapFeatures(updatedFeatures);
+        break;
+      case "removeFeature":
+        featIdx = mapFeatures.findIndex((feat) => {
+          return feat.id === arg;
+        });
+
+        updatedFeatures = [...mapFeatures];
+        updatedFeatures.splice(featIdx, 1);
+        setMapFeatures(updatedFeatures);
+        break;
+      case "removeFeatureCoord":
+        featIdx = mapFeatures.findIndex((feat) => {
+          return feat.id === arg;
+        });
+        updatedFeatures = [...mapFeatures];
+
+        if (updatedFeatures[featIdx].coords.length === 1) {
+          updatedFeatures.splice(featIdx, 1);
+        } else {
+          updatedFeatures[featIdx].coords.splice(arg2, 1);
+        }
+        setMapFeatures(updatedFeatures);
         break;
       case "selectPoints":
         if (!arg) {
@@ -340,12 +386,11 @@ function OceanNavigator(props) {
     });
   };
 
-  const updateFeatType = (features) => {
+  const updateFeatType = (features, nextType) => {
     let updatedFeat = [];
 
     if (features.length > 0) {
       let prevType = features[0].type;
-      let nextType = typeRef.current;
 
       if (
         prevType === "point" &&
@@ -512,6 +557,7 @@ function OceanNavigator(props) {
           updateUI={updateUI}
           vectorType={vectorType}
           vectorCoordinates={vectorCoordinates}
+          mapFeatures={mapFeatures}
         />
       );
       modalTitle = __("Enter Coordinates");

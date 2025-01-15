@@ -1,52 +1,39 @@
 import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 
-import { Button, ToggleButton } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
 import { withTranslation } from "react-i18next";
 
-function EnterCoordsWindow(props) {
-  const [enteredLat, setEnteredLat] = useState("");
-  const [enteredLon, setEnteredLon] = useState("");
+function FeatureCard(props) {
   const [timer, setTimer] = useState(null);
-  const fileForm = useRef(null);
-  const fileInput = useRef(null);
 
-  const radios = [
-    { name: __("Point"), value: "point" },
-    { name: __("Line"), value: "line" },
-    { name: __("Area"), value: "area" },
-  ];
-
-  const handleRadio = (e) => {
-    let type = e.currentTarget.value;
-    props.action("vectorType", type);
-  };
-
-  const submitHandler = (e) => {
-    e.preventDefault();
-    if (enteredLat & enteredLon) {
-      props.action("addPoints", [[enteredLat, enteredLon]]);
-      setEnteredLat("");
-      setEnteredLon("");
+  const updateCoordinate = (id, row, col, value) => {
+    if (!isNaN(value)) {
+      props.action("updateFeatureCoordinate", id, [row, col], value);
     }
   };
 
-  const latChangeHandler = (e) => {
-    setEnteredLat(parseFloat(e.target.value));
+  const updateType = (e) => {
+    props.action("updateFeatureType", props.feature.id, e.target.value);
   };
 
-  const lonChangeHandler = (e) => {
-    setEnteredLon(parseFloat(e.target.value));
+  const removeFeature = () => {
+    props.action("removeFeature", props.feature.id);
   };
 
   const updateLat = (e) => {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        updateCoordinate(parseInt(e.target.id), 0, parseFloat(e.target.value)),
+        updateCoordinate(
+          props.feature.id,
+          parseInt(e.target.id),
+          0,
+          parseFloat(e.target.value)
+        ),
         1000
       )
     );
@@ -56,32 +43,22 @@ function EnterCoordsWindow(props) {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        updateCoordinate(parseInt(e.target.id), 1, parseFloat(e.target.value)),
+        updateCoordinate(
+          props.feature.id,
+          parseInt(e.target.id),
+          1,
+          parseFloat(e.target.value)
+        ),
         1000
       )
     );
   };
 
-  const updateCoordinate = (row, col, value) => {
-    if (!isNaN(value)) {
-      props.action("updatePoint", row, col, value)
-    }
-  }
-
-  const handleClear = () => {
-    props.action("clearPoints");
+  const addRow = () => {
+    updateCoordinate(props.feature.id, props.feature.coords.length, 0, 0);
   };
 
-  const handleUpload = () => {
-    fileInput.current.click();
-  };
-
-  const handlePlot = () => {
-    props.action("selectPoints");
-    props.updateUI({ modalType: props.vectorType, showModal: true });
-  };
-
-  const tableEntries = props.vectorCoordinates.map((coord, index) => {
+  const tableEntries = props.feature.coords.map((coord, index) => {
     return (
       <tr key={`row_${index}`}>
         <td>
@@ -107,12 +84,55 @@ function EnterCoordsWindow(props) {
         <td>
           <button
             className="remove-button"
-            onClick={() => props.action("removePoint", index)}
+            onClick={() =>
+              props.action("removeFeatureCoord", props.feature.id, index)
+            }
           >
             <X />
           </button>
         </td>
       </tr>
+    );
+  });
+
+  return (
+    <div>
+      <div>
+        <select value={props.feature.type} onChange={updateType}>
+          <option value="point">Point</option>
+          <option value="line">Line</option>
+          <option value="area">Area</option>
+        </select>
+        <Button disabled={props.feature.type === "point"} onClick={addRow}>
+          +
+        </Button>
+        <Button onClick={removeFeature}>
+          <X />
+        </Button>
+      </div>
+      <div>
+        <Table bordered size="sm">
+          <thead>
+            <tr>
+              <th>{"Latitude"}</th>
+              <th>{"Longitude"}</th>
+              <th style={{ width: "5%" }}></th>
+            </tr>
+          </thead>
+          <tbody>{tableEntries}</tbody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function EnterCoordsWindow(props) {
+  const fileForm = useRef(null);
+  const fileInput = useRef(null);
+
+  const tableEntries = props.mapFeatures.map((feature) => {
+    return (
+      <FeatureCard key={feature.id} feature={feature} action={props.action} />
     );
   });
 
@@ -167,92 +187,7 @@ function EnterCoordsWindow(props) {
     }
   };
 
-  const plotDisabled =
-    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
-    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
-    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
-
-  return (
-    <div className="EnterCoordsWindow">
-      <div className="table-container">
-        <Table bordered size="sm">
-          <thead>
-            <tr>
-              <th>{__("Latitude")}</th>
-              <th>{__("Longitude")}</th>
-              <th style={{ width: "5%" }}></th>
-            </tr>
-          </thead>
-          <tbody>{tableEntries}</tbody>
-        </Table>
-
-        <form onSubmit={submitHandler}>
-          <div className="table-button-container">
-            <label>{__("Latitude")}:</label>
-            <input
-              type="number"
-              min="-90"
-              max="90"
-              step="0.0001"
-              value={enteredLat}
-              onChange={latChangeHandler}
-            />
-            <label>{__("Longitude")}:</label>
-            <input
-              type="number"
-              min="-180"
-              max="180"
-              step="0.0001"
-              value={enteredLon}
-              onChange={lonChangeHandler}
-            />
-            <button type="submit">{__("Add")}</button>
-            <button type="button" onClick={handleClear}>
-              {__("Clear")}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="plot-button-container">
-        <div className="toggle-button-container">
-          {radios.map((radio, idx) => (
-            <ToggleButton
-              className="plot-toggle"
-              key={idx}
-              id={`radio-${idx}`}
-              type="radio"
-              name="radio"
-              value={radio.value}
-              checked={props.vectorType === radio.value}
-              onChange={handleRadio}
-            >
-              {radio.name}
-            </ToggleButton>
-          ))}
-        </div>
-        <Button className="plot-button" onClick={handleUpload}>
-          {__("Upload CSV")}
-        </Button>
-        <Button
-          className="plot-button"
-          onClick={handlePlot}
-          disabled={plotDisabled}
-        >
-          {__("Plot")}
-        </Button>
-      </div>
-      <form ref={fileForm}>
-        <input
-          type="file"
-          style={{ display: "none" }}
-          onChange={parseCSV}
-          ref={fileInput}
-          accept=".csv,.CSV"
-        />
-      </form>
-    </div>
-  );
+  return <div className="EnterCoordsWindow">{tableEntries}</div>;
 }
 
 export default withTranslation()(EnterCoordsWindow);
