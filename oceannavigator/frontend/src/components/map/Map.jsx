@@ -953,7 +953,7 @@ const Map = forwardRef((props, ref) => {
         }}
         ref={mapRef0}
         id="map0"
-        className="map-container MainMap"
+        className="map-container map"
       />
 
       {props.compareDatasets ? (
@@ -961,7 +961,7 @@ const Map = forwardRef((props, ref) => {
           style={{ height: "100vh", width: "calc(50% - 1px)" }}
           ref={mapRef1}
           id="map1"
-          className="map-container MainMap"
+          className="map-container map"
         />
       ) : null}
     </div>
