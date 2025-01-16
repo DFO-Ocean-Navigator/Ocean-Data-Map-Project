@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import { Button, Form } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
@@ -70,7 +72,29 @@ function EnterCoordsWindow(props) {
     }
   };
 
-  return <div className="EnterCoordsWindow">{tableEntries}</div>;
+  return (
+    <div className="EnterCoordsWindow">
+      <Row>
+        <Col className="feature-col">{tableEntries}</Col>
+        <Col className="button-col">
+          <Button>Add New Feature</Button>
+          <Button>Plot Selected Features</Button>
+          <Button>Combine Point Features</Button>
+          <div className="upload-div">
+            <Button className="upload-button">Upload CSV</Button>
+            <select
+            // value={props.feature.type}
+            // onChange={updateType}
+            >
+              <option value="point">Point</option>
+              <option value="line">Line</option>
+              <option value="area">Area</option>
+            </select>
+          </div>
+        </Col>
+      </Row>
+    </div>
+  );
 }
 
 export default withTranslation()(EnterCoordsWindow);
