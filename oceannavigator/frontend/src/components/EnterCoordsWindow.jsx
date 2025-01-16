@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import Papa from "papaparse";
 
-import { Button } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
@@ -22,6 +22,10 @@ function FeatureCard(props) {
 
   const removeFeature = () => {
     props.action("removeFeature", props.feature.id);
+  };
+
+  const setSelected = () => {
+    props.action("selectFeature", props.feature.id, !props.feature.selected);
   };
 
   const updateLat = (e) => {
@@ -106,6 +110,7 @@ function FeatureCard(props) {
         <Button disabled={props.feature.type === "point"} onClick={addRow}>
           +
         </Button>
+        <Form.Check onChange={setSelected} checked={props.feature.selected} />
         <Button onClick={removeFeature}>
           <X />
         </Button>

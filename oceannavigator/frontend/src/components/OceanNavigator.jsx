@@ -169,6 +169,7 @@ function OceanNavigator(props) {
             let newFeat = {
               id: "id" + Math.random().toString(16).slice(2),
               type: typeRef.current,
+              selected: false,
               coords: arg,
             };
             return [...prevFeatures, newFeat];
@@ -177,6 +178,7 @@ function OceanNavigator(props) {
               {
                 id: prevFeatures[0].id,
                 type: prevFeatures[0].type,
+                selected: false,
                 coords: [...prevFeatures[0].coords, ...arg],
               },
             ];
@@ -228,6 +230,28 @@ function OceanNavigator(props) {
 
         updatedFeatures = [...mapFeatures];
         updatedFeatures.splice(featIdx, 1);
+        setMapFeatures(updatedFeatures);
+        break;
+      case "selectFeature":
+        featIdx = mapFeatures.findIndex((feat) => {
+          return feat.id === arg;
+        });
+
+        updatedFeatures = [...mapFeatures];
+        if (updatedFeatures[featIdx].type === "point") {
+          updatedFeatures.map((feat) => {
+            if (feat.type !== "point") {
+              feat.selected = false;
+            }
+            return feat;
+          });
+        } else {
+          updatedFeatures.map((feat) => {
+            feat.selected = false;
+            return feat;
+          });
+        }
+        updatedFeatures[featIdx].selected = arg2;
         setMapFeatures(updatedFeatures);
         break;
       case "removeFeatureCoord":
