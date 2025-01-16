@@ -213,11 +213,7 @@ function OceanNavigator(props) {
 
         if (nextType === "point" && prevType !== "point") {
           let newFeats = updateFeatType([updatedFeatures[featIdx]], nextType);
-          updatedFeatures = [
-            ...updatedFeatures.slice(0, featIdx),
-            ...newFeats,
-            ...updatedFeatures.slice(-featIdx, updatedFeatures.length),
-          ];
+          updatedFeatures.splice(featIdx, 1, ...newFeats);
         } else {
           updatedFeatures[featIdx].type = arg2;
         }
