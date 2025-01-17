@@ -133,8 +133,10 @@ function OceanNavigator(props) {
         break;
       case "stopDrawing":
         mapRef.current.stopDrawing();
+        setDrawnFeatures([]);
         break;
       case "vectorType":
+        // TODO: rename
         typeRef.current = arg;
         setVectorType(arg);
         setDrawnFeatures((prevFeatures) =>
@@ -153,17 +155,20 @@ function OceanNavigator(props) {
         }
         break;
       case "clearPoints":
+        // TODO: update
         setVectorCoordinates([]);
         setSelectedCoordinates([]);
         setVectorId(null);
         break;
       case "resetMap":
+        // TODO: update
         mapRef.current.resetMap();
         break;
       case "addPoints":
+        // TODO: remove
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
-      case "addNewFeature":
+      case "drawNewFeature":
         setDrawnFeatures((prevFeatures) => {
           if (typeRef.current === "point" || prevFeatures.length === 0) {
             let newFeat = {
@@ -186,7 +191,7 @@ function OceanNavigator(props) {
         });
         break;
       case "saveFeature":
-        setMapFeatures((prevFeatures) => [...prevFeatures, ...drawnFeatures]);
+        setMapFeatures((prevFeatures) => [...prevFeatures, ...arg]);
         setDrawnFeatures([]);
         break;
       case "updateFeatureCoordinate":
@@ -217,6 +222,34 @@ function OceanNavigator(props) {
         } else {
           updatedFeatures[featIdx].type = arg2;
         }
+        setMapFeatures(updatedFeatures);
+        break;
+      case "combinePointFeatures":
+        featIdx = mapFeatures.reduce(
+          (result, feat, idx) => (feat.selected ? result.concat(idx) : result),
+          []
+        );
+
+        let selectedCoords = mapFeatures.reduce((result, feat) => {
+          if (feat.selected) {
+            result.push(feat.coords[0]);
+          }
+          return result;
+        }, []);
+
+        let newFeat = {
+          id: "id" + Math.random().toString(16).slice(2),
+          type: "line",
+          selected: true,
+          coords: selectedCoords,
+        };
+
+        updatedFeatures = [...mapFeatures];
+        updatedFeatures.splice(featIdx[0], 1, newFeat);
+        updatedFeatures = updatedFeatures.filter((feat) => {
+          return !arg.includes(feat.id);
+        });
+
         setMapFeatures(updatedFeatures);
         break;
       case "removeFeature":
@@ -264,6 +297,7 @@ function OceanNavigator(props) {
         setMapFeatures(updatedFeatures);
         break;
       case "selectPoints":
+        // TODO: update
         if (!arg) {
           setSelectedCoordinates(vectorCoordinates);
         } else {
@@ -271,6 +305,7 @@ function OceanNavigator(props) {
         }
         break;
       case "plot":
+        // TODO: update
         if (vectorCoordinates.length > 0 || vectorId) {
           if (!vectorId) {
             setSelectedCoordinates(vectorCoordinates);
@@ -283,6 +318,7 @@ function OceanNavigator(props) {
         }
         break;
       case "show":
+        // TODO: update
         setVectorCoordinates([]);
         setSelectedCoordinates([]);
         closeModal();

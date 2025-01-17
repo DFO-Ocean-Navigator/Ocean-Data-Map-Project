@@ -27,13 +27,12 @@ function DrawingTools(props) {
 
   const handleSave = () => {
     if (checkFeaturePoints()) {
-      props.action("saveFeature");
+      props.action("saveFeature", props.drawnFeatures);
     }
   };
 
   const handleClose = () => {
     if (checkFeaturePoints()) {
-      props.action("saveFeature");
       props.updateUI({ showDrawingTools: false });
       props.action("stopDrawing");
     }

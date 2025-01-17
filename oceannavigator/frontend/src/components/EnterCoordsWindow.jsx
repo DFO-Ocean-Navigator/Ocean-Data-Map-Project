@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Papa from "papaparse";
 
 import Row from "react-bootstrap/Row";
@@ -12,6 +12,40 @@ import { withTranslation } from "react-i18next";
 import FeatureCard from "./FeatureCard.jsx";
 
 function EnterCoordsWindow(props) {
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+
+  useEffect(() => {
+    let selected = props.mapFeatures.filter((feature) => {
+      return feature.selected;
+    });
+    setSelectedFeatures(selected);
+  }, [props.mapFeatures]);
+
+  const addFeature = () => {
+    let newFeature = {
+      id: "id" + Math.random().toString(16).slice(2),
+      type: "point",
+      selected: false,
+      coords: [[0.0, 0.0]],
+    };
+    props.action("saveFeature", [newFeature]);
+  };
+
+  const plotSelected = () => {};
+
+  const combineFeatures = () => {
+    let selectedIds = selectedFeatures.map((feature) => {
+      return feature.id;
+    });
+    props.action("combinePointFeatures", selectedIds);
+  };
+
+  const uploadCSV = () => {};
+
+  const updateVectorType = (e) => {
+    props.action("vectorType", e.target.value);
+  };
+
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
@@ -77,15 +111,21 @@ function EnterCoordsWindow(props) {
       <Row>
         <Col className="feature-col">{tableEntries}</Col>
         <Col className="button-col">
-          <Button>Add New Feature</Button>
-          <Button>Plot Selected Features</Button>
-          <Button>Combine Point Features</Button>
+          <Button onClick={addFeature}>Add New Feature</Button>
+          <Button disabled={selectedFeatures.length < 1} onClick={plotSelected}>
+            Plot Selected Features
+          </Button>
+          <Button
+            disabled={selectedFeatures.length < 2}
+            onClick={combineFeatures}
+          >
+            Combine Selected Point Features
+          </Button>
           <div className="upload-div">
-            <Button className="upload-button">Upload CSV</Button>
-            <select
-            // value={props.feature.type}
-            // onChange={updateType}
-            >
+            <Button className="upload-button" onClick={uploadCSV}>
+              Upload CSV
+            </Button>
+            <select value={props.vectorType} onChange={updateVectorType}>
               <option value="point">Point</option>
               <option value="line">Line</option>
               <option value="area">Area</option>

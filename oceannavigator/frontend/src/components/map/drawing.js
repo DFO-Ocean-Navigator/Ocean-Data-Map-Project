@@ -18,7 +18,7 @@ export const drawAction = (vectorSource, projection, action) => {
     let coords = e.feature.getGeometry().getCoordinates();
     const latlon = transform(coords, projection, "EPSG:4326").reverse();
     // Draw point on map(s)
-    action("addNewFeature", [latlon]);
+    action("drawNewFeature", [latlon]);
   });
   return drawAction;
 };
