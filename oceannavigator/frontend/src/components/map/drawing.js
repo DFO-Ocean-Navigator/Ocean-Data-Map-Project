@@ -43,10 +43,7 @@ export const pointFeature = (features, vectorSource, projection) => {
           geometry: geom,
           name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
           type: "point",
-          id: feature.id,
         });
-        vectorSource.addFeature(feat);
-
         break;
       case "line":
         geom = new LineString(
@@ -54,14 +51,11 @@ export const pointFeature = (features, vectorSource, projection) => {
             return [c[1], c[0]];
           })
         );
-
         geom.transform("EPSG:4326", projection);
         feat = new Feature({
           geometry: geom,
           type: "line",
         });
-
-        vectorSource.addFeature(feat);
         break;
       case "area":
         geom = new Polygon([
@@ -76,9 +70,10 @@ export const pointFeature = (features, vectorSource, projection) => {
           type: "area",
           centroid: centroid,
         });
-        vectorSource.addFeature(feat);
         break;
     }
+    feat.attributes = { id: feature.id, selected: feature.selected };
+    vectorSource.addFeature(feat);
   }
 };
 
