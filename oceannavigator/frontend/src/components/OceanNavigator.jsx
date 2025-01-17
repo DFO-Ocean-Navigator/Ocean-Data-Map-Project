@@ -64,7 +64,7 @@ function OceanNavigator(props) {
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [mapFeatures, setMapFeatures] = useState([]);
-  const [newFeatures, setNewFeatures] = useState([]);
+  const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
@@ -137,13 +137,13 @@ function OceanNavigator(props) {
       case "vectorType":
         typeRef.current = arg;
         setVectorType(arg);
-        setNewFeatures((prevFeatures) =>
+        setDrawnFeatures((prevFeatures) =>
           updateFeatType(prevFeatures, typeRef.current)
         );
         break;
       case "undoMapFeature":
-        if (newFeatures.length > 0) {
-          setNewFeatures((prevFeatures) => {
+        if (drawnFeatures.length > 0) {
+          setDrawnFeatures((prevFeatures) => {
             return prevFeatures.slice(0, prevFeatures.length - 1);
           });
         } else {
@@ -164,7 +164,7 @@ function OceanNavigator(props) {
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
       case "addNewFeature":
-        setNewFeatures((prevFeatures) => {
+        setDrawnFeatures((prevFeatures) => {
           if (typeRef.current === "point" || prevFeatures.length === 0) {
             let newFeat = {
               id: "id" + Math.random().toString(16).slice(2),
@@ -186,8 +186,8 @@ function OceanNavigator(props) {
         });
         break;
       case "saveFeature":
-        setMapFeatures((prevFeatures) => [...prevFeatures, ...newFeatures]);
-        setNewFeatures([]);
+        setMapFeatures((prevFeatures) => [...prevFeatures, ...drawnFeatures]);
+        setDrawnFeatures([]);
         break;
       case "updateFeatureCoordinate":
         featIdx = mapFeatures.findIndex((feat) => {
@@ -642,7 +642,7 @@ function OceanNavigator(props) {
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}
-        features={[...mapFeatures, ...newFeatures]}
+        features={[...mapFeatures, ...drawnFeatures]}
         vectorId={vectorId}
         vectorType={vectorType}
         class4Type={class4Type}
@@ -657,7 +657,7 @@ function OceanNavigator(props) {
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
-        newFeatures={newFeatures}
+        drawnFeatures={drawnFeatures}
         updateMapSettings={updateMapSettings}
         updateDataset0={updateDataset0}
         updateDataset1={updateDataset1}

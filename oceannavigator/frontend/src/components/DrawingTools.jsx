@@ -41,8 +41,8 @@ function DrawingTools(props) {
 
   const checkFeaturePoints = () => {
     let message = ["Insufficient Points"];
-    if (props.newFeatures.length > 0) {
-      let nCoords = props.newFeatures[0].coords.length;
+    if (props.drawnFeatures.length > 0) {
+      let nCoords = props.drawnFeatures[0].coords.length;
       if (props.vectorType === "line" && nCoords < 2) {
         message.push("Line features require a minimum of 2 vertices.");
         props.action("showAlert", message);
