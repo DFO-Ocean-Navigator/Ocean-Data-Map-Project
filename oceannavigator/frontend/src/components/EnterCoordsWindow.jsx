@@ -13,6 +13,8 @@ import FeatureCard from "./FeatureCard.jsx";
 
 function EnterCoordsWindow(props) {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const fileForm = useRef(null);
+  const fileInput = useRef(null);
 
   useEffect(() => {
     let selected = props.mapFeatures.filter((feature) => {
@@ -40,14 +42,13 @@ function EnterCoordsWindow(props) {
     props.action("combinePointFeatures", selectedIds);
   };
 
-  const uploadCSV = () => {};
+  const uploadCSV = () => {
+    fileInput.current.click();
+  };
 
   const updateVectorType = (e) => {
     props.action("vectorType", e.target.value);
   };
-
-  const fileForm = useRef(null);
-  const fileInput = useRef(null);
 
   const tableEntries = props.mapFeatures.map((feature) => {
     return (
@@ -98,7 +99,26 @@ function EnterCoordsWindow(props) {
             return [point[lat], point[lon]];
           });
 
-          props.action("addPoints", points);
+          let newFeatures = [];
+          if (props.vectorType === "point") {
+            newFeatures = points.map((point) => {
+              return {
+                id: "id" + Math.random().toString(16).slice(2),
+                type: props.vectorType,
+                selected: false,
+                coords: [point],
+              };
+            });
+          } else {
+            newFeatures.push({
+              id: "id" + Math.random().toString(16).slice(2),
+              type: props.vectorType,
+              selected: false,
+              coords: points,
+            });
+          }
+
+          props.action("saveFeature", newFeatures);
         },
       });
 
@@ -133,6 +153,15 @@ function EnterCoordsWindow(props) {
           </div>
         </Col>
       </Row>
+      <form ref={fileForm}>
+        <input
+          type="file"
+          style={{ display: "none" }}
+          onChange={parseCSV}
+          ref={fileInput}
+          accept=".csv,.CSV"
+        />
+      </form>
     </div>
   );
 }
