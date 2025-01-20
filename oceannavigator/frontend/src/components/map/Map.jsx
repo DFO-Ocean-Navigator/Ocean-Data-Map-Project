@@ -318,6 +318,25 @@ const Map = forwardRef((props, ref) => {
       if (props.compareDatasets) {
         updateSelectFilter(select1);
       }
+
+      // TODO: clean up this mess
+      let selectedIds = props.features
+        .filter((feat) => {
+          return feat.selected;
+        })
+        .map((feat) => feat.id);
+
+      if (selectedIds.length > 0) {
+        let selectedFeatures = vectorSource.getFeatures().filter((feature) => {
+          return selectedIds.includes(feature.attributes.id);
+        });
+        for (let feat of selectedFeatures) {
+          select0.getFeatures().push(feat);
+          if (props.compareDatasets) {
+            select1.getFeatures().push(feat);
+          }
+        }
+      }
     }
   }, [props.features, layerVector]);
 
@@ -392,53 +411,37 @@ const Map = forwardRef((props, ref) => {
   const createSelect = () => {
     const newSelect = new olinteraction.Select({
       style: function (feat, res) {
-        if (feat.get("type") != "area") {
-          return new Style({
-            stroke: new Stroke({
+        return new Style({
+          stroke: new Stroke({
+            color: "#0099ff",
+            width: 4,
+          }),
+          image: new Circle({
+            radius: 4,
+            fill: new Fill({
               color: "#0099ff",
-              width: 4,
             }),
-            image: new Circle({
-              radius: 4,
-              fill: new Fill({
-                color: "#0099ff",
-              }),
-              stroke: new Stroke({
-                color: "#ffffff",
-                width: 1,
-              }),
+            stroke: new Stroke({
+              color: "#ffffff",
+              width: 1,
             }),
-          });
-        }
+          }),
+        });
       },
     });
 
     newSelect.on("select", function (e) {
       let selectedFeatures = this.getFeatures();
+      if (e.deselected.length > 0){
+        for (let feat of e.deselected){
+          props.action("selectFeature", feat.attributes.id, false);
+        }
+        return
+      }
       if (selectedFeatures.getLength() === 0) {
         return;
       }
-
-      let shiftHeld = e.mapBrowserEvent.originalEvent.shiftKey;
-      if (shiftHeld && e.selected[0].get("type") == "point") {
-        props.updateState(["multiSelect"], true);
-      }
-      if (
-        e.selected.length > 0 &&
-        (e.selected[0].line || e.selected[0].drifter)
-      ) {
-        selectedFeatures.clear();
-        selectedFeatures.push(e.selected[0]);
-      }
-      if (e.selected.length == 0) {
-        props.action("point", props.vectorCoordinates);
-      }
-
       pushSelection(selectedFeatures);
-
-      if (e.selected[0].get("type") == "area") {
-        selectedFeatures.clear();
-      }
     });
 
     return newSelect;
@@ -640,11 +643,7 @@ const Map = forwardRef((props, ref) => {
 
   const drawPoints = (vectorSource) => {
     if (props.features.length > 0) {
-      pointFeature(
-        props.features,
-        vectorSource,
-        props.mapSettings.projection
-      );
+      pointFeature(props.features, vectorSource, props.mapSettings.projection);
     }
   };
 
@@ -734,11 +733,13 @@ const Map = forwardRef((props, ref) => {
       if (feature.get("name")) {
         names.push(feature.get("name").replace(/<span>.*>/, ""));
       }
+      props.action("selectFeature", feature.attributes.id, true);
     });
 
-    props.action(actionType, content);
-    props.updateUI({ modalType: t, showModal: true });
-    props.updateState(["names"], [names]);
+    // TODO: Restore this for obs/class4
+    // props.action(actionType, content);
+    // props.updateUI({ modalType: t, showModal: true });
+    // props.updateState(["names"], [names]);
   };
 
   const updateSelectFilter = (select) => {

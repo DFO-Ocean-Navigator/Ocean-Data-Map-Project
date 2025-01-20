@@ -262,26 +262,27 @@ function OceanNavigator(props) {
         setMapFeatures(updatedFeatures);
         break;
       case "selectFeature":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
-        });
+        setMapFeatures((prevFeatures) => {
+          let featIdx = prevFeatures.findIndex((feat) => {
+            return feat.id === arg;
+          });
 
-        updatedFeatures = [...mapFeatures];
-        if (updatedFeatures[featIdx].type === "point") {
-          updatedFeatures.map((feat) => {
-            if (feat.type !== "point") {
+          if (prevFeatures[featIdx].type === "point") {
+            prevFeatures.map((feat) => {
+              if (feat.type !== "point") {
+                feat.selected = false;
+              }
+              return feat;
+            });
+          } else {
+            prevFeatures.map((feat) => {
               feat.selected = false;
-            }
-            return feat;
-          });
-        } else {
-          updatedFeatures.map((feat) => {
-            feat.selected = false;
-            return feat;
-          });
-        }
-        updatedFeatures[featIdx].selected = arg2;
-        setMapFeatures(updatedFeatures);
+              return feat;
+            });
+          }
+          prevFeatures[featIdx].selected = arg2;
+          return prevFeatures;
+        });
         break;
       case "removeFeatureCoord":
         featIdx = mapFeatures.findIndex((feat) => {
@@ -357,7 +358,7 @@ function OceanNavigator(props) {
         break;
     }
   };
-
+  // TODO replace or remove:
   const updateState = (key, value) => {
     for (let i = 0; i < key.length; ++i) {
       switch (key[i]) {
@@ -369,9 +370,6 @@ function OceanNavigator(props) {
           break;
         case "names":
           setNames(value[i]);
-          break;
-        case "multiSelect":
-          setMultiSelect(value[i]);
           break;
       }
     }
