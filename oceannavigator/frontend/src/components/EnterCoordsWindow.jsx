@@ -3,24 +3,23 @@ import Papa from "papaparse";
 
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Button, Form } from "react-bootstrap";
-import Table from "react-bootstrap/Table";
-import { X } from "react-bootstrap-icons";
+import Button from "react-bootstrap/Button";
 
 import { withTranslation } from "react-i18next";
 
 import FeatureCard from "./FeatureCard.jsx";
 
 function EnterCoordsWindow(props) {
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
   useEffect(() => {
-    let selected = props.mapFeatures.filter((feature) => {
-      return feature.selected;
-    });
-    setSelectedFeatures(selected);
+    let selected = props.mapFeatures.reduce(
+      (result, feat) => (feat.selected ? result.concat(feat.id) : result),
+      []
+    );
+    setSelectedFeatureIds(selected);
   }, [props.mapFeatures]);
 
   const addFeature = () => {
@@ -36,10 +35,30 @@ function EnterCoordsWindow(props) {
   const plotSelected = () => {};
 
   const combineFeatures = () => {
-    let selectedIds = selectedFeatures.map((feature) => {
+    let selectedIds = selectedFeatureIds.map((feature) => {
       return feature.id;
     });
     props.action("combinePointFeatures", selectedIds);
+  };
+
+  const selectFeatures = (featureId, selected) => {
+    let prevSelected = [...selectedFeatureIds];
+    let selectedType = props.mapFeatures.filter((feat) => {
+      return feat.id === featureId;
+    })[0].type;
+    if (selectedType !== "point") {
+      prevSelected = [];
+    }
+    if (selected) {
+      prevSelected.push(featureId);
+      props.action("selectFeatures", prevSelected);
+    } else {
+      prevSelected = prevSelected.filter((id) => {
+        return id != featureId;
+      });
+      props.action("deselectFeatures", [featureId]);
+    }
+    setSelectedFeatureIds(selected);
   };
 
   const uploadCSV = () => {
@@ -52,7 +71,12 @@ function EnterCoordsWindow(props) {
 
   const tableEntries = props.mapFeatures.map((feature) => {
     return (
-      <FeatureCard key={feature.id} feature={feature} action={props.action} />
+      <FeatureCard
+        key={feature.id}
+        feature={feature}
+        action={props.action}
+        setSelected={selectFeatures}
+      />
     );
   });
 
@@ -132,11 +156,14 @@ function EnterCoordsWindow(props) {
         <Col className="feature-col">{tableEntries}</Col>
         <Col className="button-col">
           <Button onClick={addFeature}>Add New Feature</Button>
-          <Button disabled={selectedFeatures.length < 1} onClick={plotSelected}>
+          <Button
+            disabled={selectedFeatureIds.length < 1}
+            onClick={plotSelected}
+          >
             Plot Selected Features
           </Button>
           <Button
-            disabled={selectedFeatures.length < 2}
+            disabled={selectedFeatureIds.length < 2}
             onClick={combineFeatures}
           >
             Combine Selected Point Features

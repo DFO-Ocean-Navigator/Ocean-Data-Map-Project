@@ -24,10 +24,6 @@ function FeatureCard(props) {
     props.action("removeFeature", props.feature.id);
   };
 
-  const setSelected = () => {
-    props.action("selectFeature", props.feature.id, !props.feature.selected);
-  };
-
   const updateLat = (e) => {
     clearTimeout(timer);
     setTimer(
@@ -102,11 +98,13 @@ function FeatureCard(props) {
   return (
     <div className="feature-card">
       <div className="card-header">
-        <Form.Check onChange={setSelected} checked={props.feature.selected} />
-        <select
-          value={props.feature.type}
-          onChange={updateType}
-        >
+        <Form.Check
+          onChange={(e) => {
+            props.setSelected(props.feature.id, e.target.checked);
+          }}
+          checked={props.feature.selected}
+        />
+        <select value={props.feature.type} onChange={updateType}>
           <option value="point">Point</option>
           <option value="line">Line</option>
           <option value="area">Area</option>

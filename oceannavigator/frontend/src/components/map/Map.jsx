@@ -318,6 +318,27 @@ const Map = forwardRef((props, ref) => {
       if (props.compareDatasets) {
         updateSelectFilter(select1);
       }
+
+      // TODO: clean up this mess
+      let selectedIds = props.features
+        .filter((feat) => {
+          return feat.selected;
+        })
+        .map((feat) => feat.id);
+
+      if (selectedIds.length > 0) {
+        // TODO: make sure duplicates are not added
+        let selectedFeatures = vectorSource.getFeatures().filter((feature) => {
+          return selectedIds.includes(feature.attributes.id);
+        });
+        select0.getFeatures().clear()
+        for (let feat of selectedFeatures) {
+          select0.getFeatures().push(feat);
+          if (props.compareDatasets) {
+            select1.getFeatures().push(feat);
+          }
+        }
+      }
     }
   }, [props.features, layerVector]);
 
@@ -392,52 +413,34 @@ const Map = forwardRef((props, ref) => {
   const createSelect = () => {
     const newSelect = new olinteraction.Select({
       style: function (feat, res) {
-        if (feat.get("type") != "area") {
-          return new Style({
-            stroke: new Stroke({
+        return new Style({
+          stroke: new Stroke({
+            color: "#0099ff",
+            width: 4,
+          }),
+          image: new Circle({
+            radius: 4,
+            fill: new Fill({
               color: "#0099ff",
-              width: 4,
             }),
-            image: new Circle({
-              radius: 4,
-              fill: new Fill({
-                color: "#0099ff",
-              }),
-              stroke: new Stroke({
-                color: "#ffffff",
-                width: 1,
-              }),
+            stroke: new Stroke({
+              color: "#ffffff",
+              width: 1,
             }),
-          });
-        }
+          }),
+        });
       },
     });
 
     newSelect.on("select", function (e) {
       let selectedFeatures = this.getFeatures();
-      if (selectedFeatures.getLength() === 0) {
+      if (selectedFeatures.getLength() > 0) {
+        pushSelection(selectedFeatures);
         return;
-      }
-
-      let shiftHeld = e.mapBrowserEvent.originalEvent.shiftKey;
-      if (shiftHeld && e.selected[0].get("type") == "point") {
-        props.updateState(["multiSelect"], true);
-      }
-      if (
-        e.selected.length > 0 &&
-        (e.selected[0].line || e.selected[0].drifter)
-      ) {
-        selectedFeatures.clear();
-        selectedFeatures.push(e.selected[0]);
-      }
-      if (e.selected.length == 0) {
-        props.action("point", props.vectorCoordinates);
-      }
-
-      pushSelection(selectedFeatures);
-
-      if (e.selected[0].get("type") == "area") {
-        selectedFeatures.clear();
+      } else if (e.deselected.length > 0) {
+        for (let feat of e.deselected) {
+          props.action("selectFeatures", feat.attributes.id, false);
+        }
       }
     });
 
@@ -640,11 +643,7 @@ const Map = forwardRef((props, ref) => {
 
   const drawPoints = (vectorSource) => {
     if (props.features.length > 0) {
-      pointFeature(
-        props.features,
-        vectorSource,
-        props.mapSettings.projection
-      );
+      pointFeature(props.features, vectorSource, props.mapSettings.projection);
     }
   };
 
@@ -659,7 +658,8 @@ const Map = forwardRef((props, ref) => {
     var t = undefined;
     var content = [];
     var names = [];
-    let actionType = "selectPoints";
+    var selected = null;
+    let actionType = "selectFeatures";
     selectedFeatures.forEach(function (feature) {
       if (feature.get("class") == "observation") {
         if (feature.getGeometry() instanceof olgeom.LineString) {
@@ -683,25 +683,12 @@ const Map = forwardRef((props, ref) => {
             actionType = "class4Id";
             break;
           case "point":
-            var c = feature
-              .getGeometry()
-              .clone()
-              .transform(props.mapSettings.projection, "EPSG:4326")
-              .getCoordinates();
-            content.push([c[1], c[0], feature.get("observation")]);
+            content.push(feature.attributes.id);
+            selected = true;
             break;
           case "line":
-            content.push(
-              feature
-                .getGeometry()
-                .clone()
-                .transform(props.mapSettings.projection, "EPSG:4326")
-                .getCoordinates()
-                .map(function (o) {
-                  return [o[1], o[0]];
-                })
-            );
-            content = content[0];
+            content.push(feature.attributes.id);
+            selected = true;
             break;
           case "drifter":
             content.push(feature.get("name"));
@@ -710,22 +697,8 @@ const Map = forwardRef((props, ref) => {
             if (feature.get("key")) {
               content.push(feature.get("key"));
             } else {
-              var points = feature
-                .getGeometry()
-                .clone()
-                .transform(props.mapSettings.projection, "EPSG:4326")
-                .getCoordinates()
-                .map(function (o) {
-                  return o.map(function (p) {
-                    return [p[1], p[0]];
-                  });
-                });
-              var area = {
-                polygons: points,
-                innerrings: [],
-                name: "",
-              };
-              content.push(area);
+              content.push(feature.attributes.id);
+              selected = true;
             }
             break;
         }
@@ -736,9 +709,9 @@ const Map = forwardRef((props, ref) => {
       }
     });
 
-    props.action(actionType, content);
-    props.updateUI({ modalType: t, showModal: true });
-    props.updateState(["names"], [names]);
+    props.action(actionType, content, selected);
+    // props.updateUI({ modalType: t, showModal: true });
+    // props.updateState(["names"], [names]);
   };
 
   const updateSelectFilter = (select) => {

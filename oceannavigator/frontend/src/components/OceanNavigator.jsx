@@ -1,4 +1,3 @@
-import { nominalTypeHack } from "prop-types";
 import React, { useState, useRef, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
@@ -44,6 +43,7 @@ function formatLatLon(latitude, longitude) {
 function OceanNavigator(props) {
   const mapRef = useRef();
   const typeRef = useRef("point");
+  const featureRef = useRef([]);
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
   const [compareDatasets, setCompareDatasets] = useState(false);
@@ -149,6 +149,10 @@ function OceanNavigator(props) {
             return prevFeatures.slice(0, prevFeatures.length - 1);
           });
         } else {
+          featureRef.current = featureRef.current.slice(
+            0,
+            featureRef.current.length - 1
+          );
           setMapFeatures((prevFeatures) => {
             return prevFeatures.slice(0, prevFeatures.length - 1);
           });
@@ -191,6 +195,7 @@ function OceanNavigator(props) {
         });
         break;
       case "saveFeature":
+        featureRef.current = [...featureRef.current, ...arg];
         setMapFeatures((prevFeatures) => [...prevFeatures, ...arg]);
         setDrawnFeatures([]);
         break;
@@ -205,6 +210,7 @@ function OceanNavigator(props) {
         } else {
           updatedFeatures[featIdx].coords[arg2[0]][arg2[1]] = arg3;
         }
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
       case "updateFeatureType":
@@ -222,6 +228,7 @@ function OceanNavigator(props) {
         } else {
           updatedFeatures[featIdx].type = arg2;
         }
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
       case "combinePointFeatures":
@@ -249,38 +256,56 @@ function OceanNavigator(props) {
         updatedFeatures = updatedFeatures.filter((feat) => {
           return !arg.includes(feat.id);
         });
-
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
       case "removeFeature":
         featIdx = mapFeatures.findIndex((feat) => {
           return feat.id === arg;
         });
-
         updatedFeatures = [...mapFeatures];
         updatedFeatures.splice(featIdx, 1);
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
-      case "selectFeature":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
+      case "selectFeatures":
+        updatedFeatures = [...featureRef.current];
+        featIdx = updatedFeatures.reduce(
+          (result, feat, idx) =>
+            arg.includes(feat.id) ? result.concat(idx) : result,
+          []
+        );
+
+        updatedFeatures.map((feat) => {
+          feat.selected = false;
+          return feat;
         });
 
-        updatedFeatures = [...mapFeatures];
-        if (updatedFeatures[featIdx].type === "point") {
-          updatedFeatures.map((feat) => {
-            if (feat.type !== "point") {
-              feat.selected = false;
-            }
-            return feat;
-          });
+        if (featIdx.length > 1) {
+          for (let idx of featIdx) {
+            if (updatedFeatures[idx].type === "point")
+              updatedFeatures[idx].selected = true;
+          }
         } else {
-          updatedFeatures.map((feat) => {
-            feat.selected = false;
-            return feat;
-          });
+          updatedFeatures[featIdx[0]].selected = true;
         }
-        updatedFeatures[featIdx].selected = arg2;
+
+        featureRef.current = updatedFeatures;
+        setMapFeatures(updatedFeatures);
+        break;
+      case "deselectFeatures":
+        updatedFeatures = [...featureRef.current];
+        featIdx = updatedFeatures.reduce(
+          (result, feat, idx) =>
+            arg.includes(feat.id) ? result.concat(idx) : result,
+          []
+        );
+
+        for (let idx of featIdx) {
+          updatedFeatures[idx].selected = false;
+        }
+
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
       case "removeFeatureCoord":
@@ -294,6 +319,7 @@ function OceanNavigator(props) {
         } else {
           updatedFeatures[featIdx].coords.splice(arg2, 1);
         }
+        featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
       case "selectPoints":
@@ -459,6 +485,7 @@ function OceanNavigator(props) {
           {
             id: features[0].id,
             type: nextType,
+            selected: features[0].selected,
             coords: nextCoords,
           },
         ];
@@ -471,6 +498,7 @@ function OceanNavigator(props) {
           return {
             id: "id" + Math.random().toString(16).slice(2),
             type: nextType,
+            selected: features[0].selected,
             coords: [coord],
           };
         });

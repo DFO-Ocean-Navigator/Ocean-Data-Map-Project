@@ -72,7 +72,7 @@ export const pointFeature = (features, vectorSource, projection) => {
         });
         break;
     }
-    feat.attributes = { id: feature.id, selected: feature.selected };
+    feat.attributes = { id: feature.id };
     vectorSource.addFeature(feat);
   }
 };
