@@ -707,6 +707,7 @@ const Map = forwardRef((props, ref) => {
       if (feature.get("name")) {
         names.push(feature.get("name").replace(/<span>.*>/, ""));
       }
+      props.action("selectFeature", feature.attributes.id, true);
     });
 
     props.action(actionType, content, selected);

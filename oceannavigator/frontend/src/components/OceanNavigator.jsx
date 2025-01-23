@@ -383,7 +383,7 @@ function OceanNavigator(props) {
         break;
     }
   };
-
+  // TODO replace or remove:
   const updateState = (key, value) => {
     for (let i = 0; i < key.length; ++i) {
       switch (key[i]) {
@@ -395,9 +395,6 @@ function OceanNavigator(props) {
           break;
         case "names":
           setNames(value[i]);
-          break;
-        case "multiSelect":
-          setMultiSelect(value[i]);
           break;
       }
     }
