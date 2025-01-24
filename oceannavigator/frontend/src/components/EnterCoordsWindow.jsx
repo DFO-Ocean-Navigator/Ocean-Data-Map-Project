@@ -32,8 +32,6 @@ function EnterCoordsWindow(props) {
     props.action("saveFeature", [newFeature]);
   };
 
-  const plotSelected = () => {};
-
   const combineFeatures = () => {
     let selectedIds = selectedFeatureIds.map((feature) => {
       return feature.id;
@@ -158,7 +156,7 @@ function EnterCoordsWindow(props) {
           <Button onClick={addFeature}>Add New Feature</Button>
           <Button
             disabled={selectedFeatureIds.length < 1}
-            onClick={plotSelected}
+            onClick={() => props.action("plot")}
           >
             Plot Selected Features
           </Button>

@@ -68,12 +68,10 @@ function OceanNavigator(props) {
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
-  const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
-  const [multiSelect, setMultiSelect] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState([]);
 
@@ -91,7 +89,6 @@ function OceanNavigator(props) {
         setVectorId(query.vectorId);
         setVectorType(query.vectorType);
         setVectorCoordinates(query.vectorCoordinates);
-        setSelectedCoordinates(query.selectedCoordinates);
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -110,18 +107,7 @@ function OceanNavigator(props) {
         console.error(err);
       }
     }
-
-    window.addEventListener("keyup", upHandler);
-    return () => {
-      window.removeEventListener("keyup", upHandler);
-    };
   }, []);
-
-  const upHandler = (e) => {
-    if (e.key === "Shift") {
-      setMultiSelect(false);
-    }
-  };
 
   const action = (name, arg, arg2, arg3) => {
     let featIdx = null;
@@ -161,7 +147,7 @@ function OceanNavigator(props) {
       case "clearPoints":
         // TODO: update
         setVectorCoordinates([]);
-        setSelectedCoordinates([]);
+        // setSelectedCoordinates([]);
         setVectorId(null);
         break;
       case "resetMap":
@@ -322,31 +308,19 @@ function OceanNavigator(props) {
         featureRef.current = updatedFeatures;
         setMapFeatures(updatedFeatures);
         break;
-      case "selectPoints":
-        // TODO: update
-        if (!arg) {
-          setSelectedCoordinates(vectorCoordinates);
-        } else {
-          setSelectedCoordinates(arg);
-        }
-        break;
       case "plot":
-        // TODO: update
-        if (vectorCoordinates.length > 0 || vectorId) {
-          if (!vectorId) {
-            setSelectedCoordinates(vectorCoordinates);
-          }
+        if (mapFeatures.length > 0) {
           setUiSettings({
             ...uiSettings,
             showModal: true,
-            modalType: vectorType,
+            modalType: "plot",
           });
         }
         break;
       case "show":
         // TODO: update
         setVectorCoordinates([]);
-        setSelectedCoordinates([]);
+        // setSelectedCoordinates([]);
         closeModal();
         setClass4Type(arg3);
         mapRef.current.show(arg, arg2);
@@ -518,7 +492,7 @@ function OceanNavigator(props) {
     query.vectorId = vectorId;
     query.vectorType = vectorType;
     query.vectorCoordinates = vectorCoordinates;
-    query.selectedCoordinates = selectedCoordinates;
+    // query.selectedCoordinates = selectedCoordinates;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
@@ -549,74 +523,90 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
-    case "point":
-      modalBodyContent = (
-        <PointWindow
-          dataset_0={dataset0}
-          point={selectedCoordinates}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset={updateDataset0}
-          init={subquery}
-          action={action}
-        />
+    case "plot":
+      let [plotType, coordinates] = mapFeatures.reduce(
+        (result, feat) => {
+          if (feat.selected) {
+            result[0].push(feat.type);
+            result[1].push(...feat.coords);
+          } else {
+            result;
+          }
+          return result
+        },
+        [[], []]
       );
-      modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
-      modalTitle = modalTitle.join(", ");
-      break;
-    case "line":
-      const line_distance = mapRef.current.getLineDistance(selectedCoordinates);
-      modalBodyContent = (
-        <LineWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          line={selectedCoordinates}
-          line_distance={line_distance}
-          mapSettings={mapSettings}
-          names={names}
-          onUpdate={updateDataset0}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset0}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
+      switch (plotType[0]) {
+        case "point":
+          modalBodyContent = (
+            <PointWindow
+              dataset_0={dataset0}
+              point={coordinates}
+              mapSettings={mapSettings}
+              updateDataset={updateDataset0}
+              init={subquery}
+              action={action}
+            />
+          );
+          modalTitle = coordinates.map((p) => formatLatLon(p[0], p[1]));
+          modalTitle = modalTitle.join(", ");
+          break;
+        case "line":
+          const line_distance =
+            mapRef.current.getLineDistance(coordinates);
+          modalBodyContent = (
+            <LineWindow
+              dataset_0={dataset0}
+              dataset_1={dataset1}
+              line={coordinates}
+              line_distance={line_distance}
+              mapSettings={mapSettings}
+              names={names}
+              onUpdate={updateDataset0}
+              updateDataset0={updateDataset0}
+              updateDataset1={updateDataset0}
+              init={subquery}
+              action={action}
+              dataset_compare={compareDatasets}
+              setCompareDatasets={setCompareDatasets}
+            />
+          );
 
-      modalTitle =
-        "(" +
-        selectedCoordinates
-          .map(function (ll) {
-            return formatLatLon(ll[0], ll[1]);
-          })
-          .join("), (") +
-        ")";
-      break;
-    case "area":
-      modalBodyContent = (
-        <AreaWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          area={selectedCoordinates}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset1}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
+          modalTitle =
+            "(" +
+            coordinates
+              .map(function (ll) {
+                return formatLatLon(ll[0], ll[1]);
+              })
+              .join("), (") +
+            ")";
+          break;
+        case "area":
+          modalBodyContent = (
+            <AreaWindow
+              dataset_0={dataset0}
+              dataset_1={dataset1}
+              area={coordinates}
+              mapSettings={mapSettings}
+              names={names}
+              updateDataset0={updateDataset0}
+              updateDataset1={updateDataset1}
+              init={subquery}
+              action={action}
+              dataset_compare={compareDatasets}
+              setCompareDatasets={setCompareDatasets}
+            />
+          );
 
-      modalTitle = "";
+          modalTitle = "";
+          break;
+      }
       break;
     case "track":
       modalBodyContent = (
         <TrackWindow
           dataset={dataset0}
-          track={selectedCoordinates}
+          track={coordinates}
           names={names}
           onUpdate={updateDataset0}
           init={subquery}
@@ -732,26 +722,20 @@ function OceanNavigator(props) {
       <ToggleLanguage />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-      {multiSelect ? null : (
-        <Modal
-          show={uiSettings.showModal}
-          onHide={closeModal}
-          dialogClassName="full-screen-modal"
-          size={modalSize}
-        >
-          <Modal.Header
-            closeButton
-            closeVariant="white"
-            closeLabel={__("Close")}
-          >
-            <Modal.Title>{modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{modalBodyContent}</Modal.Body>
-          <Modal.Footer>
-            <Button onClick={closeModal}>{__("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-      )}
+      <Modal
+        show={uiSettings.showModal}
+        onHide={closeModal}
+        dialogClassName="full-screen-modal"
+        size={modalSize}
+      >
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalBodyContent}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeModal}>{__("Close")}</Button>
+        </Modal.Footer>
+      </Modal>
       <Modal
         show={showPermalink}
         onHide={() => setShowPermalink(false)}
