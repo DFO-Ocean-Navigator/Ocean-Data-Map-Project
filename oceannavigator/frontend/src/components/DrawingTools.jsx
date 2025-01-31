@@ -7,9 +7,9 @@ import { withTranslation } from "react-i18next";
 
 function DrawingTools(props) {
   const radios = [
-    { name: __("Point"), value: "point" },
-    { name: __("Line"), value: "line" },
-    { name: __("Area"), value: "area" },
+    { name: __("Point"), value: "Point" },
+    { name: __("Line"), value: "LineString" },
+    { name: __("Area"), value: "Polygon" },
   ];
 
   const handleRadio = (e) => {
@@ -25,34 +25,9 @@ function DrawingTools(props) {
     props.action("undoMapFeature");
   };
 
-  const handleSave = () => {
-    if (checkFeaturePoints()) {
-      props.action("saveFeature", props.drawnFeatures);
-    }
-  };
-
   const handleClose = () => {
-    if (checkFeaturePoints()) {
-      props.updateUI({ showDrawingTools: false });
-      props.action("stopDrawing");
-    }
-  };
-
-  const checkFeaturePoints = () => {
-    let message = ["Insufficient Points"];
-    if (props.drawnFeatures.length > 0) {
-      let nCoords = props.drawnFeatures[0].coords.length;
-      if (props.vectorType === "line" && nCoords < 2) {
-        message.push("Line features require a minimum of 2 vertices.");
-        props.action("showAlert", message);
-        return false;
-      } else if (props.vectorType === "area" && nCoords < 3) {
-        message.push("Area features require a minimum of 3 vertices.");
-        props.action("showAlert", message);
-        return false;
-      }
-    }
-    return true;
+    props.updateUI({ showDrawingTools: false });
+    props.action("stopDrawing");
   };
 
   return (
@@ -78,9 +53,6 @@ function DrawingTools(props) {
       </Button>
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
-      </Button>
-      <Button className="save-button" onClick={handleSave}>
-        {__("Save")}
       </Button>
       <Button className="close-button" onClick={handleClose}>
         {__("Close")}

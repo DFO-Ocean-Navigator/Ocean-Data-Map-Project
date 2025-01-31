@@ -10,4 +10,13 @@
     align-items: center;
     padding: 0px 16px;
   }
+
+  .card-body {
+    .alert {
+      margin: 1px;
+      max-height: 10px;
+      display: flex;
+      align-items: center;
+    }
+  }
 }

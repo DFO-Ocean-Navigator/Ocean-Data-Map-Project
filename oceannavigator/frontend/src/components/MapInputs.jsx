@@ -19,7 +19,6 @@ function MapInputs(props) {
       updateUI={props.updateUI}
       action={props.action}
       vectorType={props.vectorType}
-      drawnFeatures={props.drawnFeatures}
     />
   ) : null;
 

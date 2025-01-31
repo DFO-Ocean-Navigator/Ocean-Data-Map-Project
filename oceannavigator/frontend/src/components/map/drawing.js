@@ -1,80 +1,20 @@
-import Feature from "ol/Feature.js";
-import { getCenter } from "ol/extent";
 import Draw from "ol/interaction/Draw";
-import { Point, LineString, Polygon } from "ol/geom";
 import { transform } from "ol/proj";
 import { getDistance } from "ol/sphere";
 
-export const drawAction = (vectorSource, projection, action) => {
+export const getDrawAction = (vectorSource, vectorType) => {
   const drawAction = new Draw({
     source: vectorSource,
-    type: "Point",
+    type: vectorType,
     stopClick: true,
     wrapX: true,
   });
 
   drawAction.on("drawend", function (e) {
-    // Disable zooming when drawing
-    let coords = e.feature.getGeometry().getCoordinates();
-    const latlon = transform(coords, projection, "EPSG:4326").reverse();
-    // Draw point on map(s)
-    action("drawNewFeature", [latlon]);
+    e.feature.setId("id" + Math.random().toString(16).slice(2))
+    e.feature.setProperties({type: vectorType})
   });
   return drawAction;
-};
-
-export const pointFeature = (features, vectorSource, projection) => {
-  for (const feature of features) {
-    let vectorType = feature.type;
-
-    if (feature.coords.length < 2) {
-      vectorType = "point";
-    }
-
-    let geom;
-    let feat;
-
-    switch (vectorType) {
-      case "point":
-        let c = feature.coords[0];
-        geom = new Point([c[1], c[0]]);
-        geom = geom.transform("EPSG:4326", projection);
-        feat = new Feature({
-          geometry: geom,
-          name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-          type: "point",
-        });
-        break;
-      case "line":
-        geom = new LineString(
-          feature.coords.map(function (c) {
-            return [c[1], c[0]];
-          })
-        );
-        geom.transform("EPSG:4326", projection);
-        feat = new Feature({
-          geometry: geom,
-          type: "line",
-        });
-        break;
-      case "area":
-        geom = new Polygon([
-          feature.coords.map(function (c) {
-            return [c[1], c[0]];
-          }),
-        ]);
-        const centroid = getCenter(geom.getExtent());
-        geom.transform("EPSG:4326", projection);
-        feat = new Feature({
-          geometry: geom,
-          type: "area",
-          centroid: centroid,
-        });
-        break;
-    }
-    feat.attributes = { id: feature.id };
-    vectorSource.addFeature(feat);
-  }
 };
 
 export const getLineDistance = (line) => {

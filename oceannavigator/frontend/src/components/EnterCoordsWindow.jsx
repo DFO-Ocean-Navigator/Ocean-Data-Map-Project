@@ -10,70 +10,93 @@ import { withTranslation } from "react-i18next";
 import FeatureCard from "./FeatureCard.jsx";
 
 function EnterCoordsWindow(props) {
+  const [mapFeatures, setMapFeatures] = useState([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
+  const [uploadType, setUploadType] = useState("Point");
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
   useEffect(() => {
-    let selected = props.mapFeatures.reduce(
-      (result, feat) => (feat.selected ? result.concat(feat.id) : result),
-      []
-    );
-    setSelectedFeatureIds(selected);
-  }, [props.mapFeatures]);
+    let features = props.mapRef.current.getFeatures();
+    //TODO fix this and other filter/maps
+    let selectedIds = features
+      .filter((feature) => {
+        return feature.selected;
+      })
+      .map((feature) => {
+        return feature.id;
+      });
+    setMapFeatures(features);
+    setSelectedFeatureIds(selectedIds);
+  }, []);
 
   const addFeature = () => {
     let newFeature = {
       id: "id" + Math.random().toString(16).slice(2),
-      type: "point",
+      type: "Point",
       selected: false,
-      coords: [[0.0, 0.0]],
+      coords: [["", ""]],
     };
-    props.action("saveFeature", [newFeature]);
+    setMapFeatures((prevFeatures) => [...prevFeatures, newFeature]);
+    props.mapRef.current.addNewFeature(newFeature.id);
+  };
+
+  const splitFeature = () => {
+    props.mapRef.current.splitPolyFeatures(selectedFeatureIds[0]);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
   const combineFeatures = () => {
-    let selectedIds = selectedFeatureIds.map((feature) => {
-      return feature.id;
-    });
-    props.action("combinePointFeatures", selectedIds);
+    props.mapRef.current.combinePointFeatures(selectedFeatureIds);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
-  const selectFeatures = (featureId, selected) => {
-    let prevSelected = [...selectedFeatureIds];
-    let selectedType = props.mapFeatures.filter((feat) => {
-      return feat.id === featureId;
-    })[0].type;
-    if (selectedType !== "point") {
-      prevSelected = [];
+  const removeFeatures = (ids) => {
+    props.mapRef.current.removeFeatures(ids);
+    setMapFeatures((prevFeatures) =>
+      prevFeatures.filter((feature) => {
+        return !ids.includes(feature.id);
+      })
+    );
+  };
+
+  const selectFeatures = (featureId, featureType, selected) => {
+    let nextSelected = [...selectedFeatureIds];
+    if (featureType !== "Point") {
+      nextSelected = [];
+    } else {
+      nextSelected = mapFeatures
+        .filter((feature) => {
+          return nextSelected.includes(feature.id) && feature.type === "Point";
+        })
+        .map((feature) => {
+          return feature.id;
+        });
     }
     if (selected) {
-      prevSelected.push(featureId);
-      props.action("selectFeatures", prevSelected);
+      nextSelected.push(featureId);
     } else {
-      prevSelected = prevSelected.filter((id) => {
+      nextSelected = nextSelected.filter((id) => {
         return id != featureId;
       });
-      props.action("deselectFeatures", [featureId]);
     }
-    setSelectedFeatureIds(selected);
+    props.mapRef.current.selectFeatures(nextSelected);
+    setSelectedFeatureIds(nextSelected);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
   const uploadCSV = () => {
     fileInput.current.click();
   };
 
-  const updateVectorType = (e) => {
-    props.action("vectorType", e.target.value);
-  };
-
-  const tableEntries = props.mapFeatures.map((feature) => {
+  const tableEntries = mapFeatures.map((feature) => {
     return (
       <FeatureCard
         key={feature.id}
         feature={feature}
-        action={props.action}
         setSelected={selectFeatures}
+        mapRef={props.mapRef}
+        removeFeature={removeFeatures}
       />
     );
   });
@@ -118,35 +141,32 @@ function EnterCoordsWindow(props) {
             point[lat] = point[lat] < -90 ? -90 : point[lat];
             point[lon] = point[lon] > 180 ? point[lon] - 360 : point[lon];
             point[lon] = point[lon] < -180 ? 360 + point[lon] : point[lon];
-            return [point[lat], point[lon]];
+            return [point[lon], point[lat]];
           });
 
-          let newFeatures = [];
-          if (props.vectorType === "point") {
-            newFeatures = points.map((point) => {
-              return {
-                id: "id" + Math.random().toString(16).slice(2),
-                type: props.vectorType,
-                selected: false,
-                coords: [point],
-              };
-            });
+          if (uploadType === "Point") {
+            for (let point of points) {
+              let id = "id" + Math.random().toString(16).slice(2)
+              props.mapRef.current.addNewFeature(id)
+              props.mapRef.current.updateFeatureGeometry(id, uploadType, [point])
+            }
           } else {
-            newFeatures.push({
-              id: "id" + Math.random().toString(16).slice(2),
-              type: props.vectorType,
-              selected: false,
-              coords: points,
-            });
+            let id = "id" + Math.random().toString(16).slice(2)
+            props.mapRef.current.addNewFeature(id)
+            props.mapRef.current.updateFeatureGeometry(id, uploadType, points)
           }
-
-          props.action("saveFeature", newFeatures);
+          setMapFeatures(props.mapRef.current.getFeatures());
         },
       });
-
       fileForm.current.reset();
-    }
+    }  
   };
+
+  let selectedFeatureType = mapFeatures.reduce(
+    (result, feat) =>
+      feat.id === selectedFeatureIds[0] ? (result = feat.type) : "",
+    ""
+  );
 
   return (
     <div className="EnterCoordsWindow">
@@ -161,6 +181,15 @@ function EnterCoordsWindow(props) {
             Plot Selected Features
           </Button>
           <Button
+            disabled={
+              selectedFeatureType !== "LineString" &&
+              selectedFeatureType !== "Polygon"
+            }
+            onClick={splitFeature}
+          >
+            Split Line/Area Feature Into Points
+          </Button>
+          <Button
             disabled={selectedFeatureIds.length < 2}
             onClick={combineFeatures}
           >
@@ -170,10 +199,13 @@ function EnterCoordsWindow(props) {
             <Button className="upload-button" onClick={uploadCSV}>
               Upload CSV
             </Button>
-            <select value={props.vectorType} onChange={updateVectorType}>
-              <option value="point">Point</option>
-              <option value="line">Line</option>
-              <option value="area">Area</option>
+            <select
+              value={uploadType}
+              onChange={(e) => setUploadType(e.target.value)}
+            >
+              <option value="Point">Point</option>
+              <option value="LineString">Line</option>
+              <option value="Polygon">Area</option>
             </select>
           </div>
         </Col>

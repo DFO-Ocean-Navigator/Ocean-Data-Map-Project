@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import Button from "react-bootstrap/Button";
-import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
@@ -42,8 +41,6 @@ function formatLatLon(latitude, longitude) {
 
 function OceanNavigator(props) {
   const mapRef = useRef();
-  const typeRef = useRef("point");
-  const featureRef = useRef([]);
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
   const [compareDatasets, setCompareDatasets] = useState(false);
@@ -63,17 +60,17 @@ function OceanNavigator(props) {
   const [mapState, setMapState] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
-  const [mapFeatures, setMapFeatures] = useState([]);
-  const [drawnFeatures, setDrawnFeatures] = useState([]);
+  // const [mapFeatures, setMapFeatures] = useState([]);
+  // const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [vectorId, setVectorId] = useState(null);
-  const [vectorType, setVectorType] = useState("point");
+  const [vectorType, setVectorType] = useState("Point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState([]);
+  // const [showAlert, setShowAlert] = useState(false);
+  // const [alertMessage, setAlertMessage] = useState([]);
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -119,35 +116,16 @@ function OceanNavigator(props) {
         break;
       case "stopDrawing":
         mapRef.current.stopDrawing();
-        setDrawnFeatures([]);
         break;
       case "vectorType":
         // TODO: rename
-        typeRef.current = arg;
         setVectorType(arg);
-        setDrawnFeatures((prevFeatures) =>
-          updateFeatType(prevFeatures, typeRef.current)
-        );
         break;
       case "undoMapFeature":
-        if (drawnFeatures.length > 0) {
-          setDrawnFeatures((prevFeatures) => {
-            return prevFeatures.slice(0, prevFeatures.length - 1);
-          });
-        } else {
-          featureRef.current = featureRef.current.slice(
-            0,
-            featureRef.current.length - 1
-          );
-          setMapFeatures((prevFeatures) => {
-            return prevFeatures.slice(0, prevFeatures.length - 1);
-          });
-        }
+        mapRef.current.undoFeature();
         break;
       case "clearPoints":
         // TODO: update
-        setVectorCoordinates([]);
-        // setSelectedCoordinates([]);
         setVectorId(null);
         break;
       case "resetMap":
@@ -158,164 +136,7 @@ function OceanNavigator(props) {
         // TODO: remove
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
-      case "drawNewFeature":
-        setDrawnFeatures((prevFeatures) => {
-          if (typeRef.current === "point" || prevFeatures.length === 0) {
-            let newFeat = {
-              id: "id" + Math.random().toString(16).slice(2),
-              type: typeRef.current,
-              selected: false,
-              coords: arg,
-            };
-            return [...prevFeatures, newFeat];
-          } else {
-            return [
-              {
-                id: prevFeatures[0].id,
-                type: prevFeatures[0].type,
-                selected: false,
-                coords: [...prevFeatures[0].coords, ...arg],
-              },
-            ];
-          }
-        });
-        break;
-      case "saveFeature":
-        featureRef.current = [...featureRef.current, ...arg];
-        setMapFeatures((prevFeatures) => [...prevFeatures, ...arg]);
-        setDrawnFeatures([]);
-        break;
-      case "updateFeatureCoordinate":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
-        });
-
-        updatedFeatures = [...mapFeatures];
-        if (arg2[0] >= updatedFeatures[featIdx].coords.length) {
-          updatedFeatures[featIdx].coords.push([0, 0]);
-        } else {
-          updatedFeatures[featIdx].coords[arg2[0]][arg2[1]] = arg3;
-        }
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "updateFeatureType":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
-        });
-
-        updatedFeatures = [...mapFeatures];
-        let prevType = updatedFeatures[featIdx].type;
-        let nextType = arg2;
-
-        if (nextType === "point" && prevType !== "point") {
-          let newFeats = updateFeatType([updatedFeatures[featIdx]], nextType);
-          updatedFeatures.splice(featIdx, 1, ...newFeats);
-        } else {
-          updatedFeatures[featIdx].type = arg2;
-        }
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "combinePointFeatures":
-        featIdx = mapFeatures.reduce(
-          (result, feat, idx) => (feat.selected ? result.concat(idx) : result),
-          []
-        );
-
-        let selectedCoords = mapFeatures.reduce((result, feat) => {
-          if (feat.selected) {
-            result.push(feat.coords[0]);
-          }
-          return result;
-        }, []);
-
-        let newFeat = {
-          id: "id" + Math.random().toString(16).slice(2),
-          type: "line",
-          selected: true,
-          coords: selectedCoords,
-        };
-
-        updatedFeatures = [...mapFeatures];
-        updatedFeatures.splice(featIdx[0], 1, newFeat);
-        updatedFeatures = updatedFeatures.filter((feat) => {
-          return !arg.includes(feat.id);
-        });
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "removeFeature":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
-        });
-        updatedFeatures = [...mapFeatures];
-        updatedFeatures.splice(featIdx, 1);
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "selectFeatures":
-        updatedFeatures = [...featureRef.current];
-        featIdx = updatedFeatures.reduce(
-          (result, feat, idx) =>
-            arg.includes(feat.id) ? result.concat(idx) : result,
-          []
-        );
-
-        updatedFeatures.map((feat) => {
-          feat.selected = false;
-          return feat;
-        });
-
-        if (featIdx.length > 1) {
-          for (let idx of featIdx) {
-            if (updatedFeatures[idx].type === "point")
-              updatedFeatures[idx].selected = true;
-          }
-        } else {
-          updatedFeatures[featIdx[0]].selected = true;
-        }
-
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "deselectFeatures":
-        updatedFeatures = [...featureRef.current];
-        featIdx = updatedFeatures.reduce(
-          (result, feat, idx) =>
-            arg.includes(feat.id) ? result.concat(idx) : result,
-          []
-        );
-
-        for (let idx of featIdx) {
-          updatedFeatures[idx].selected = false;
-        }
-
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
-      case "removeFeatureCoord":
-        featIdx = mapFeatures.findIndex((feat) => {
-          return feat.id === arg;
-        });
-        updatedFeatures = [...mapFeatures];
-
-        if (updatedFeatures[featIdx].coords.length === 1) {
-          updatedFeatures.splice(featIdx, 1);
-        } else {
-          updatedFeatures[featIdx].coords.splice(arg2, 1);
-        }
-        featureRef.current = updatedFeatures;
-        setMapFeatures(updatedFeatures);
-        break;
       case "plot":
-        if (mapFeatures.length > 0) {
-          setUiSettings({
-            ...uiSettings,
-            showModal: true,
-            modalType: "plot",
-          });
-        }
         break;
       case "show":
         // TODO: update
@@ -350,10 +171,6 @@ function OceanNavigator(props) {
       case "permalink":
         setSubquery(null);
         setShowPermalink(true);
-        break;
-      case "showAlert":
-        setShowAlert(true);
-        setAlertMessage(arg);
         break;
     }
   };
@@ -446,8 +263,8 @@ function OceanNavigator(props) {
       let prevType = features[0].type;
 
       if (
-        prevType === "point" &&
-        (nextType === "line" || nextType === "area")
+        prevType === "Point" &&
+        (nextType === "Line" || nextType === "Area")
       ) {
         let nextCoords = features.map((feat) => {
           return feat.coords[0];
@@ -461,8 +278,8 @@ function OceanNavigator(props) {
           },
         ];
       } else if (
-        (prevType === "line" || prevType === "area") &&
-        nextType === "point"
+        (prevType === "Line" || prevType === "Area") &&
+        nextType === "Point"
       ) {
         let nextCoords = features[0].coords;
         updatedFeat = nextCoords.map((coord) => {
@@ -537,7 +354,7 @@ function OceanNavigator(props) {
         [[], []]
       );
       switch (plotType[0]) {
-        case "point":
+        case "Point":
           modalBodyContent = (
             <PointWindow
               dataset_0={dataset0}
@@ -551,7 +368,7 @@ function OceanNavigator(props) {
           modalTitle = coordinates.map((p) => formatLatLon(p[0], p[1]));
           modalTitle = modalTitle.join(", ");
           break;
-        case "line":
+        case "Line":
           const line_distance =
             mapRef.current.getLineDistance(coordinates);
           modalBodyContent = (
@@ -581,7 +398,7 @@ function OceanNavigator(props) {
               .join("), (") +
             ")";
           break;
-        case "area":
+        case "Area":
           modalBodyContent = (
             <AreaWindow
               dataset_0={dataset0}
@@ -626,9 +443,7 @@ function OceanNavigator(props) {
         <EnterCoordsWindow
           action={action}
           updateUI={updateUI}
-          vectorType={vectorType}
-          vectorCoordinates={vectorCoordinates}
-          mapFeatures={mapFeatures}
+          mapRef={mapRef}
         />
       );
       modalTitle = __("Enter Coordinates");
@@ -693,7 +508,6 @@ function OceanNavigator(props) {
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}
-        features={[...mapFeatures, ...drawnFeatures]}
         vectorId={vectorId}
         vectorType={vectorType}
         class4Type={class4Type}
@@ -708,7 +522,6 @@ function OceanNavigator(props) {
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
-        drawnFeatures={drawnFeatures}
         updateMapSettings={updateMapSettings}
         updateDataset0={updateDataset0}
         updateDataset1={updateDataset1}
@@ -756,16 +569,6 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
-      {showAlert ? (
-        <Alert
-          variant="warning"
-          onClose={() => setShowAlert(false)}
-          dismissible
-        >
-          <Alert.Heading>{alertMessage[0]}</Alert.Heading>
-          <p>{alertMessage[1]}</p>
-        </Alert>
-      ) : null}
     </div>
   );
 }
