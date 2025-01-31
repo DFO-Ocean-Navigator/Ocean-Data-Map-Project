@@ -146,25 +146,31 @@ function EnterCoordsWindow(props) {
 
           if (uploadType === "Point") {
             for (let point of points) {
-              let id = "id" + Math.random().toString(16).slice(2)
-              props.mapRef.current.addNewFeature(id)
-              props.mapRef.current.updateFeatureGeometry(id, uploadType, [point])
+              let id = "id" + Math.random().toString(16).slice(2);
+              props.mapRef.current.addNewFeature(id);
+              props.mapRef.current.updateFeatureGeometry(id, uploadType, [
+                point,
+              ]);
             }
           } else {
-            let id = "id" + Math.random().toString(16).slice(2)
-            props.mapRef.current.addNewFeature(id)
-            props.mapRef.current.updateFeatureGeometry(id, uploadType, points)
+            let id = "id" + Math.random().toString(16).slice(2);
+            props.mapRef.current.addNewFeature(id);
+            props.mapRef.current.updateFeatureGeometry(id, uploadType, points);
           }
           setMapFeatures(props.mapRef.current.getFeatures());
         },
       });
       fileForm.current.reset();
-    }  
+    }
   };
 
   let selectedFeatureType = mapFeatures.reduce(
-    (result, feat) =>
-      feat.id === selectedFeatureIds[0] ? (result = feat.type) : "",
+    (result, feat) => {
+      if (feat.id === selectedFeatureIds[0]) {
+        result = feat.type;
+      }
+      return result;
+    },
     ""
   );
 

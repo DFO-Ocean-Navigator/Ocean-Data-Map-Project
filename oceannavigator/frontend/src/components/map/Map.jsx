@@ -20,8 +20,7 @@ import Feature from "ol/Feature.js";
 import Point from "ol/geom/Point.js";
 import LineString from "ol/geom/LineString.js";
 import Polygon from "ol/geom/Polygon.js";
-import * as olinteraction from "ol/interaction";
-import * as olgeom from "ol/geom";
+import Select from "ol/interaction/Select.js";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
@@ -400,7 +399,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createSelect = () => {
-    const newSelect = new olinteraction.Select({
+    const newSelect = new Select({
       style: function (feat, res) {
         return new Style({
           stroke: new Stroke({
@@ -787,7 +786,7 @@ const Map = forwardRef((props, ref) => {
     let actionType = "selectFeatures";
     selectedFeatures.forEach(function (feature) {
       if (feature.get("class") == "observation") {
-        if (feature.getGeometry() instanceof olgeom.LineString) {
+        if (feature.getGeometry() instanceof LineString) {
           t = "track";
           content.push(feature.get("id"));
         } else {
