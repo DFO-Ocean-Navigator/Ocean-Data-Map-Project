@@ -20,7 +20,8 @@ import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
 import MousePosition from "ol/control/MousePosition.js";
 import Graticule from "ol/layer/Graticule.js";
-import * as olinteraction from "ol/interaction";
+import Draw from 'ol/interaction/Draw.js';
+import DragBox from "ol/interaction/DragBox.js";
 import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
@@ -252,7 +253,7 @@ export const createMap = (
         return new Style({ image: image });
       } else {
         switch (feat.get("type")) {
-          case "area":
+          case "Polygon":
             if (feat.get("key")) {
               return [
                 new Style({
@@ -307,7 +308,7 @@ export const createMap = (
                 }),
               ];
             }
-          case "line":
+          case "LineString":
             return [
               new Style({
                 stroke: new Stroke({
@@ -322,7 +323,7 @@ export const createMap = (
                 }),
               }),
             ];
-          case "point":
+          case "Point":
             return new Style({
               image: new Circle({
                 radius: 4,
@@ -613,7 +614,7 @@ export const createMap = (
     mapObject.getViewport().style.cursor = hit ? "pointer" : "";
   });
 
-  const dragBox = new olinteraction.DragBox({
+  const dragBox = new DragBox({
     condition: olcondition.platformModifierKeyOnly,
   });
   mapObject.addInteraction(dragBox);
@@ -672,4 +673,21 @@ export const getQuiverSource = (dataset, mapSettings) => {
   });
 
   return quiverSource;
+};
+
+export const removeMapInteractions = (map, type) => {
+  const interactions = map.getInteractions();
+  const stat = {
+    coll: interactions,
+    ret: false,
+  };
+  interactions.forEach(function (e, i, a) {
+    if (e instanceof Draw) {
+      stat.coll.remove(e);
+      if (e.get("type") === type) {
+        stat.ret = true;
+      }
+    }
+  }, stat);
+  return stat.ret;
 };

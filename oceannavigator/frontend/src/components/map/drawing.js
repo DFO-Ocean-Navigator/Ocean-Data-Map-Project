@@ -1,91 +1,20 @@
-import Feature from "ol/Feature.js";
-import * as olExtent from "ol/extent";
 import Draw from "ol/interaction/Draw";
-import * as olgeom from "ol/geom";
-import * as olProj from "ol/proj";
+import { transform } from "ol/proj";
 import { getDistance } from "ol/sphere";
 
-export const drawAction = (vectorSource, vectorType, projection, action) => {
+export const getDrawAction = (vectorSource, vectorType) => {
   const drawAction = new Draw({
     source: vectorSource,
-    type: "Point",
+    type: vectorType,
     stopClick: true,
     wrapX: true,
   });
 
-  drawAction.set("type", vectorType);
   drawAction.on("drawend", function (e) {
-    // Disable zooming when drawing
-    const latlon = olProj
-      .transform(
-        e.feature.getGeometry().getCoordinates(),
-        projection,
-        "EPSG:4326"
-      )
-      .reverse();
-    // Draw point on map(s)
-    action("addPoints", [latlon]);
+    e.feature.setId("id" + Math.random().toString(16).slice(2))
+    e.feature.setProperties({type: vectorType})
   });
   return drawAction;
-};
-
-export const pointFeature = (
-  vectorType,
-  vectorCoordinates,
-  vectorSource,
-  projection
-) => {
-  if (vectorCoordinates.length < 2) {
-    vectorType = "point";
-  }
-
-  let geom;
-  let feat;
-
-  switch (vectorType) {
-    case "point":
-      for (let c of vectorCoordinates) {
-        geom = new olgeom.Point([c[1], c[0]]);
-        geom = geom.transform("EPSG:4326", projection);
-        feat = new Feature({
-          geometry: geom,
-          name: c[0].toFixed(4) + ", " + c[1].toFixed(4),
-          type: "point",
-        });
-        vectorSource.addFeature(feat);
-      }
-      break;
-    case "line":
-      geom = new olgeom.LineString(
-        vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        })
-      );
-
-      geom.transform("EPSG:4326", projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "line",
-      });
-
-      vectorSource.addFeature(feat);
-      break;
-    case "area":
-      geom = new olgeom.Polygon([
-        vectorCoordinates.map(function (c) {
-          return [c[1], c[0]];
-        }),
-      ]);
-      const centroid = olExtent.getCenter(geom.getExtent());
-      geom.transform("EPSG:4326", projection);
-      feat = new Feature({
-        geometry: geom,
-        type: "area",
-        centroid: centroid,
-      });
-      vectorSource.addFeature(feat);
-      break;
-  }
 };
 
 export const getLineDistance = (line) => {
@@ -108,7 +37,7 @@ export const obsPointDrawAction = (map, obsDrawSource, projection, action) => {
   drawAction.set("type", "Point");
   drawAction.on("drawend", function (e) {
     // Disable zooming when drawing
-    const lonlat = olProj.transform(
+    const lonlat = transform(
       e.feature.getGeometry().getCoordinates(),
       projection,
       "EPSG:4326"
@@ -137,7 +66,7 @@ export const obsAreaDrawAction = (map, obsDrawSource, projection, action) => {
       .getGeometry()
       .getCoordinates()[0]
       .map(function (c) {
-        const lonlat = olProj.transform(c, projection, "EPSG:4326");
+        const lonlat = transform(c, projection, "EPSG:4326");
         return [lonlat[1], lonlat[0]];
       });
     // Send area to Observation Selector

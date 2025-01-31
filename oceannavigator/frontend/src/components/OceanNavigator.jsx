@@ -1,6 +1,5 @@
-import { nominalTypeHack } from "prop-types";
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
@@ -41,7 +40,7 @@ function formatLatLon(latitude, longitude) {
 }
 
 function OceanNavigator(props) {
-  const mapRef = useRef(null);
+  const mapRef = useRef();
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
   const [compareDatasets, setCompareDatasets] = useState(false);
@@ -61,15 +60,17 @@ function OceanNavigator(props) {
   const [mapState, setMapState] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
+  // const [mapFeatures, setMapFeatures] = useState([]);
+  // const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [vectorId, setVectorId] = useState(null);
-  const [vectorType, setVectorType] = useState("point");
+  const [vectorType, setVectorType] = useState("Point");
   const [vectorCoordinates, setVectorCoordinates] = useState([]);
-  const [selectedCoordinates, setSelectedCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
-  const [multiSelect, setMultiSelect] = useState(false);
+  // const [showAlert, setShowAlert] = useState(false);
+  // const [alertMessage, setAlertMessage] = useState([]);
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -85,7 +86,6 @@ function OceanNavigator(props) {
         setVectorId(query.vectorId);
         setVectorType(query.vectorType);
         setVectorCoordinates(query.vectorCoordinates);
-        setSelectedCoordinates(query.selectedCoordinates);
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -104,20 +104,11 @@ function OceanNavigator(props) {
         console.error(err);
       }
     }
-
-    window.addEventListener("keyup", upHandler);
-    return () => {
-      window.removeEventListener("keyup", upHandler);
-    };
   }, []);
 
-  const upHandler = (e) => {
-    if (e.key === "Shift") {
-      setMultiSelect(false);
-    }
-  };
-
   const action = (name, arg, arg2, arg3) => {
+    let featIdx = null;
+    let updatedFeatures = null;
     switch (name) {
       case "startDrawing":
         setVectorId(null);
@@ -127,60 +118,30 @@ function OceanNavigator(props) {
         mapRef.current.stopDrawing();
         break;
       case "vectorType":
+        // TODO: rename
         setVectorType(arg);
         break;
-      case "undoPoints":
-        setVectorCoordinates(
-          vectorCoordinates.slice(0, vectorCoordinates.length - 1)
-        );
+      case "undoMapFeature":
+        mapRef.current.undoFeature();
         break;
       case "clearPoints":
-        setVectorCoordinates([]);
-        setSelectedCoordinates([]);
+        // TODO: update
         setVectorId(null);
         break;
       case "resetMap":
+        // TODO: update
         mapRef.current.resetMap();
         break;
       case "addPoints":
+        // TODO: remove
         setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
         break;
-      case "removePoint":
-        let coords = vectorCoordinates.filter((coord, index) => index !== arg);
-        setVectorCoordinates(coords);
-        break;
-      case "updatePoint":
-        let newCoords = null;
-        if (!isNaN(arg2) && !isNaN(arg3)) {
-          newCoords = [...vectorCoordinates];
-          newCoords[arg][arg2] = arg3;
-        } else {
-          newCoords = arg;
-        }
-        setVectorCoordinates(newCoords);
-        break;
-      case "selectPoints":
-        if (!arg) {
-          setSelectedCoordinates(vectorCoordinates);
-        } else {
-          setSelectedCoordinates(arg);
-        }
-        break;
       case "plot":
-        if (vectorCoordinates.length > 0 || vectorId) {
-          if (!vectorId) {
-            setSelectedCoordinates(vectorCoordinates);
-          }
-          setUiSettings({
-            ...uiSettings,
-            showModal: true,
-            modalType: vectorType,
-          });
-        }
         break;
       case "show":
+        // TODO: update
         setVectorCoordinates([]);
-        setSelectedCoordinates([]);
+        // setSelectedCoordinates([]);
         closeModal();
         setClass4Type(arg3);
         mapRef.current.show(arg, arg2);
@@ -213,7 +174,7 @@ function OceanNavigator(props) {
         break;
     }
   };
-
+  // TODO replace or remove:
   const updateState = (key, value) => {
     for (let i = 0; i < key.length; ++i) {
       switch (key[i]) {
@@ -225,9 +186,6 @@ function OceanNavigator(props) {
           break;
         case "names":
           setNames(value[i]);
-          break;
-        case "multiSelect":
-          setMultiSelect(value[i]);
           break;
       }
     }
@@ -298,6 +256,48 @@ function OceanNavigator(props) {
     });
   };
 
+  const updateFeatType = (features, nextType) => {
+    let updatedFeat = [];
+
+    if (features.length > 0) {
+      let prevType = features[0].type;
+
+      if (
+        prevType === "Point" &&
+        (nextType === "Line" || nextType === "Area")
+      ) {
+        let nextCoords = features.map((feat) => {
+          return feat.coords[0];
+        });
+        updatedFeat = [
+          {
+            id: features[0].id,
+            type: nextType,
+            selected: features[0].selected,
+            coords: nextCoords,
+          },
+        ];
+      } else if (
+        (prevType === "Line" || prevType === "Area") &&
+        nextType === "Point"
+      ) {
+        let nextCoords = features[0].coords;
+        updatedFeat = nextCoords.map((coord) => {
+          return {
+            id: "id" + Math.random().toString(16).slice(2),
+            type: nextType,
+            selected: features[0].selected,
+            coords: [coord],
+          };
+        });
+      } else {
+        updatedFeat = features;
+        updatedFeat[0].type = nextType;
+      }
+    }
+    return updatedFeat;
+  };
+
   const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.
@@ -309,7 +309,7 @@ function OceanNavigator(props) {
     query.vectorId = vectorId;
     query.vectorType = vectorType;
     query.vectorCoordinates = vectorCoordinates;
-    query.selectedCoordinates = selectedCoordinates;
+    // query.selectedCoordinates = selectedCoordinates;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
@@ -340,74 +340,90 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
-    case "point":
-      modalBodyContent = (
-        <PointWindow
-          dataset_0={dataset0}
-          point={selectedCoordinates}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset={updateDataset0}
-          init={subquery}
-          action={action}
-        />
+    case "plot":
+      let [plotType, coordinates] = mapFeatures.reduce(
+        (result, feat) => {
+          if (feat.selected) {
+            result[0].push(feat.type);
+            result[1].push(...feat.coords);
+          } else {
+            result;
+          }
+          return result
+        },
+        [[], []]
       );
-      modalTitle = selectedCoordinates.map((p) => formatLatLon(p[0], p[1]));
-      modalTitle = modalTitle.join(", ");
-      break;
-    case "line":
-      const line_distance = mapRef.current.getLineDistance(selectedCoordinates);
-      modalBodyContent = (
-        <LineWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          line={selectedCoordinates}
-          line_distance={line_distance}
-          mapSettings={mapSettings}
-          names={names}
-          onUpdate={updateDataset0}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset0}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
+      switch (plotType[0]) {
+        case "Point":
+          modalBodyContent = (
+            <PointWindow
+              dataset_0={dataset0}
+              point={coordinates}
+              mapSettings={mapSettings}
+              updateDataset={updateDataset0}
+              init={subquery}
+              action={action}
+            />
+          );
+          modalTitle = coordinates.map((p) => formatLatLon(p[0], p[1]));
+          modalTitle = modalTitle.join(", ");
+          break;
+        case "Line":
+          const line_distance =
+            mapRef.current.getLineDistance(coordinates);
+          modalBodyContent = (
+            <LineWindow
+              dataset_0={dataset0}
+              dataset_1={dataset1}
+              line={coordinates}
+              line_distance={line_distance}
+              mapSettings={mapSettings}
+              names={names}
+              onUpdate={updateDataset0}
+              updateDataset0={updateDataset0}
+              updateDataset1={updateDataset0}
+              init={subquery}
+              action={action}
+              dataset_compare={compareDatasets}
+              setCompareDatasets={setCompareDatasets}
+            />
+          );
 
-      modalTitle =
-        "(" +
-        selectedCoordinates
-          .map(function (ll) {
-            return formatLatLon(ll[0], ll[1]);
-          })
-          .join("), (") +
-        ")";
-      break;
-    case "area":
-      modalBodyContent = (
-        <AreaWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          area={selectedCoordinates}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset1}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
+          modalTitle =
+            "(" +
+            coordinates
+              .map(function (ll) {
+                return formatLatLon(ll[0], ll[1]);
+              })
+              .join("), (") +
+            ")";
+          break;
+        case "Area":
+          modalBodyContent = (
+            <AreaWindow
+              dataset_0={dataset0}
+              dataset_1={dataset1}
+              area={coordinates}
+              mapSettings={mapSettings}
+              names={names}
+              updateDataset0={updateDataset0}
+              updateDataset1={updateDataset1}
+              init={subquery}
+              action={action}
+              dataset_compare={compareDatasets}
+              setCompareDatasets={setCompareDatasets}
+            />
+          );
 
-      modalTitle = "";
+          modalTitle = "";
+          break;
+      }
       break;
     case "track":
       modalBodyContent = (
         <TrackWindow
           dataset={dataset0}
-          track={selectedCoordinates}
+          track={coordinates}
           names={names}
           onUpdate={updateDataset0}
           init={subquery}
@@ -427,8 +443,7 @@ function OceanNavigator(props) {
         <EnterCoordsWindow
           action={action}
           updateUI={updateUI}
-          vectorType={vectorType}
-          vectorCoordinates={vectorCoordinates}
+          mapRef={mapRef}
         />
       );
       modalTitle = __("Enter Coordinates");
@@ -495,7 +510,6 @@ function OceanNavigator(props) {
         dataset1={dataset1}
         vectorId={vectorId}
         vectorType={vectorType}
-        vectorCoordinates={vectorCoordinates}
         class4Type={class4Type}
         updateState={updateState}
         action={action}
@@ -517,31 +531,24 @@ function OceanNavigator(props) {
         action={action}
         showCompare={true}
         vectorType={vectorType}
-        vectorCoordinates={vectorCoordinates}
       />
       <ToggleLanguage />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-      {multiSelect ? null : (
-        <Modal
-          show={uiSettings.showModal}
-          onHide={closeModal}
-          dialogClassName="full-screen-modal"
-          size={modalSize}
-        >
-          <Modal.Header
-            closeButton
-            closeVariant="white"
-            closeLabel={__("Close")}
-          >
-            <Modal.Title>{modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{modalBodyContent}</Modal.Body>
-          <Modal.Footer>
-            <Button onClick={closeModal}>{__("Close")}</Button>
-          </Modal.Footer>
-        </Modal>
-      )}
+      <Modal
+        show={uiSettings.showModal}
+        onHide={closeModal}
+        dialogClassName="full-screen-modal"
+        size={modalSize}
+      >
+        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
+          <Modal.Title>{modalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalBodyContent}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={closeModal}>{__("Close")}</Button>
+        </Modal.Footer>
+      </Modal>
       <Modal
         show={showPermalink}
         onHide={() => setShowPermalink(false)}

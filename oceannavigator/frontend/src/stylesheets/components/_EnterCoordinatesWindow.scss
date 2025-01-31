@@ -1,63 +1,24 @@
-Div.EnterCoordsWindow {
-  .table-container {
+.EnterCoordsWindow {
+  .feature-col {
+    max-height: 75vh;
+    overflow-y: scroll;
+  }
+  .button-col {
+    max-width: 33%;
     display: flex;
-    flex-direction: row;
-    .table-button-container {
-      display: grid;
-      grid-template: repeat(2, auto) / repeat(2, auto);
+    flex-direction: column;
+    align-items: stretch;
+
+    .button {
+      width: 100%;
     }
-  }
-  .plot-button-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
 
-    .toggle-button-container {
-      margin-right: 5%;
+    .upload-div {
+      display: flex;
+
+      .upload-button {
+        width: 100%;
+      }
     }
-  }
-}
-
-.plot-toggle {
-  background-color: #008cba;
-  border-radius: 5px;
-  border-color: #fff;
-}
-
-.plot-button {
-  border-radius: 5px;
-  border-color: #fff;
-}
-
-.cord-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  font-size: 1em;
-}
-
-.remove-button {
-  border: none;
-  background-color: #fff;
-}
-
-Div.plot-button-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-
-  .toggle-button-container {
-    margin-right: 5%;
-  }
-
-  .plot-toggle {
-    background-color: #008cba;
-    border-radius: 5px;
-    border-color: #fff;
-  }
-
-  .plot-button {
-    border-radius: 5px;
-    border-color: #fff;
   }
 }

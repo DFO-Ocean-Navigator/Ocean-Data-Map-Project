@@ -1,118 +1,103 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Papa from "papaparse";
 
-import { Button, ToggleButton } from "react-bootstrap";
-import Table from "react-bootstrap/Table";
-import { X } from "react-bootstrap-icons";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
 
 import { withTranslation } from "react-i18next";
 
+import FeatureCard from "./FeatureCard.jsx";
+
 function EnterCoordsWindow(props) {
-  const [enteredLat, setEnteredLat] = useState("");
-  const [enteredLon, setEnteredLon] = useState("");
-  const [timer, setTimer] = useState(null);
+  const [mapFeatures, setMapFeatures] = useState([]);
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
+  const [uploadType, setUploadType] = useState("Point");
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
-  const radios = [
-    { name: __("Point"), value: "point" },
-    { name: __("Line"), value: "line" },
-    { name: __("Area"), value: "area" },
-  ];
+  useEffect(() => {
+    let features = props.mapRef.current.getFeatures();
+    //TODO fix this and other filter/maps
+    let selectedIds = features
+      .filter((feature) => {
+        return feature.selected;
+      })
+      .map((feature) => {
+        return feature.id;
+      });
+    setMapFeatures(features);
+    setSelectedFeatureIds(selectedIds);
+  }, []);
 
-  const handleRadio = (e) => {
-    let type = e.currentTarget.value;
-    props.action("vectorType", type);
+  const addFeature = () => {
+    let newFeature = {
+      id: "id" + Math.random().toString(16).slice(2),
+      type: "Point",
+      selected: false,
+      coords: [["", ""]],
+    };
+    setMapFeatures((prevFeatures) => [...prevFeatures, newFeature]);
+    props.mapRef.current.addNewFeature(newFeature.id);
   };
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-    if (enteredLat & enteredLon) {
-      props.action("addPoints", [[enteredLat, enteredLon]]);
-      setEnteredLat("");
-      setEnteredLon("");
-    }
+  const splitFeature = () => {
+    props.mapRef.current.splitPolyFeatures(selectedFeatureIds[0]);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
-  const latChangeHandler = (e) => {
-    setEnteredLat(parseFloat(e.target.value));
+  const combineFeatures = () => {
+    props.mapRef.current.combinePointFeatures(selectedFeatureIds);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
-  const lonChangeHandler = (e) => {
-    setEnteredLon(parseFloat(e.target.value));
-  };
-
-  const updateLat = (e) => {
-    clearTimeout(timer);
-    setTimer(
-      setTimeout(
-        updateCoordinate(parseInt(e.target.id), 0, parseFloat(e.target.value)),
-        1000
-      )
+  const removeFeatures = (ids) => {
+    props.mapRef.current.removeFeatures(ids);
+    setMapFeatures((prevFeatures) =>
+      prevFeatures.filter((feature) => {
+        return !ids.includes(feature.id);
+      })
     );
   };
 
-  const updateLon = (e) => {
-    clearTimeout(timer);
-    setTimer(
-      setTimeout(
-        updateCoordinate(parseInt(e.target.id), 1, parseFloat(e.target.value)),
-        1000
-      )
-    );
-  };
-
-  const updateCoordinate = (row, col, value) => {
-    if (!isNaN(value)) {
-      props.action("updatePoint", row, col, value)
+  const selectFeatures = (featureId, featureType, selected) => {
+    let nextSelected = [...selectedFeatureIds];
+    if (featureType !== "Point") {
+      nextSelected = [];
+    } else {
+      nextSelected = mapFeatures
+        .filter((feature) => {
+          return nextSelected.includes(feature.id) && feature.type === "Point";
+        })
+        .map((feature) => {
+          return feature.id;
+        });
     }
-  }
-
-  const handleClear = () => {
-    props.action("clearPoints");
+    if (selected) {
+      nextSelected.push(featureId);
+    } else {
+      nextSelected = nextSelected.filter((id) => {
+        return id != featureId;
+      });
+    }
+    props.mapRef.current.selectFeatures(nextSelected);
+    setSelectedFeatureIds(nextSelected);
+    setMapFeatures(props.mapRef.current.getFeatures());
   };
 
-  const handleUpload = () => {
+  const uploadCSV = () => {
     fileInput.current.click();
   };
 
-  const handlePlot = () => {
-    props.action("selectPoints");
-    props.updateUI({ modalType: props.vectorType, showModal: true });
-  };
-
-  const tableEntries = props.vectorCoordinates.map((coord, index) => {
+  const tableEntries = mapFeatures.map((feature) => {
     return (
-      <tr key={`row_${index}`}>
-        <td>
-          <input
-            type="number"
-            id={index}
-            key={`row_${index}_lat`}
-            className="cord-input"
-            value={coord[0]}
-            onChange={updateLat}
-          />
-        </td>
-        <td>
-          <input
-            type="number"
-            id={index}
-            key={`row_${index}_lon`}
-            className="cord-input"
-            value={coord[1]}
-            onChange={updateLon}
-          />
-        </td>
-        <td>
-          <button
-            className="remove-button"
-            onClick={() => props.action("removePoint", index)}
-          >
-            <X />
-          </button>
-        </td>
-      </tr>
+      <FeatureCard
+        key={feature.id}
+        feature={feature}
+        setSelected={selectFeatures}
+        mapRef={props.mapRef}
+        removeFeature={removeFeatures}
+      />
     );
   });
 
@@ -156,92 +141,81 @@ function EnterCoordsWindow(props) {
             point[lat] = point[lat] < -90 ? -90 : point[lat];
             point[lon] = point[lon] > 180 ? point[lon] - 360 : point[lon];
             point[lon] = point[lon] < -180 ? 360 + point[lon] : point[lon];
-            return [point[lat], point[lon]];
+            return [point[lon], point[lat]];
           });
 
-          props.action("addPoints", points);
+          if (uploadType === "Point") {
+            for (let point of points) {
+              let id = "id" + Math.random().toString(16).slice(2);
+              props.mapRef.current.addNewFeature(id);
+              props.mapRef.current.updateFeatureGeometry(id, uploadType, [
+                point,
+              ]);
+            }
+          } else {
+            let id = "id" + Math.random().toString(16).slice(2);
+            props.mapRef.current.addNewFeature(id);
+            props.mapRef.current.updateFeatureGeometry(id, uploadType, points);
+          }
+          setMapFeatures(props.mapRef.current.getFeatures());
         },
       });
-
       fileForm.current.reset();
     }
   };
 
-  const plotDisabled =
-    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
-    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
-    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
+  let selectedFeatureType = mapFeatures.reduce(
+    (result, feat) => {
+      if (feat.id === selectedFeatureIds[0]) {
+        result = feat.type;
+      }
+      return result;
+    },
+    ""
+  );
 
   return (
     <div className="EnterCoordsWindow">
-      <div className="table-container">
-        <Table bordered size="sm">
-          <thead>
-            <tr>
-              <th>{__("Latitude")}</th>
-              <th>{__("Longitude")}</th>
-              <th style={{ width: "5%" }}></th>
-            </tr>
-          </thead>
-          <tbody>{tableEntries}</tbody>
-        </Table>
-
-        <form onSubmit={submitHandler}>
-          <div className="table-button-container">
-            <label>{__("Latitude")}:</label>
-            <input
-              type="number"
-              min="-90"
-              max="90"
-              step="0.0001"
-              value={enteredLat}
-              onChange={latChangeHandler}
-            />
-            <label>{__("Longitude")}:</label>
-            <input
-              type="number"
-              min="-180"
-              max="180"
-              step="0.0001"
-              value={enteredLon}
-              onChange={lonChangeHandler}
-            />
-            <button type="submit">{__("Add")}</button>
-            <button type="button" onClick={handleClear}>
-              {__("Clear")}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="plot-button-container">
-        <div className="toggle-button-container">
-          {radios.map((radio, idx) => (
-            <ToggleButton
-              className="plot-toggle"
-              key={idx}
-              id={`radio-${idx}`}
-              type="radio"
-              name="radio"
-              value={radio.value}
-              checked={props.vectorType === radio.value}
-              onChange={handleRadio}
+      <Row>
+        <Col className="feature-col">{tableEntries}</Col>
+        <Col className="button-col">
+          <Button onClick={addFeature}>Add New Feature</Button>
+          <Button
+            disabled={selectedFeatureIds.length < 1}
+            onClick={() => props.action("plot")}
+          >
+            Plot Selected Features
+          </Button>
+          <Button
+            disabled={
+              selectedFeatureType !== "LineString" &&
+              selectedFeatureType !== "Polygon"
+            }
+            onClick={splitFeature}
+          >
+            Split Line/Area Feature Into Points
+          </Button>
+          <Button
+            disabled={selectedFeatureIds.length < 2}
+            onClick={combineFeatures}
+          >
+            Combine Selected Point Features
+          </Button>
+          <div className="upload-div">
+            <Button className="upload-button" onClick={uploadCSV}>
+              Upload CSV
+            </Button>
+            <select
+              value={uploadType}
+              onChange={(e) => setUploadType(e.target.value)}
             >
-              {radio.name}
-            </ToggleButton>
-          ))}
-        </div>
-        <Button className="plot-button" onClick={handleUpload}>
-          {__("Upload CSV")}
-        </Button>
-        <Button
-          className="plot-button"
-          onClick={handlePlot}
-          disabled={plotDisabled}
-        >
-          {__("Plot")}
-        </Button>
-      </div>
+              <option value="Point">Point</option>
+              <option value="LineString">Line</option>
+              <option value="Polygon">Area</option>
+            </select>
+          </div>
+        </Col>
+      </Row>
       <form ref={fileForm}>
         <input
           type="file"
