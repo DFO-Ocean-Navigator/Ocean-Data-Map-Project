@@ -18,7 +18,7 @@ function DrawingTools(props) {
   };
 
   const handleClear = () => {
-    props.action("clearPoints");
+    props.action("clearFeatures");
   };
 
   const handleUndo = () => {

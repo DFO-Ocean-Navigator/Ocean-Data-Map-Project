@@ -529,9 +529,14 @@ const Map = forwardRef((props, ref) => {
   };
 
   const removeFeatures = (featureIds) => {
-    let toRemove = featureIds.map((id) => {
-      return vectorSource.getFeatureById(id);
-    });
+    let toRemove;
+    if (featureIds === "all") {
+      toRemove = vectorSource.getFeatures();
+    } else {
+      toRemove = featureIds.map((id) => {
+        return vectorSource.getFeatureById(id);
+      });
+    }
     vectorSource.removeFeatures(toRemove);
   };
 
@@ -698,9 +703,6 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       removeMapInteractions(map1, "all");
     }
-    // TODO: refactor 
-    props.updateState(["vectorType", "vectorId", "names"], ["point", null, []]);
-    props.action("clearPoints");
 
     let newVectorSource = new VectorSource({
       features: [],

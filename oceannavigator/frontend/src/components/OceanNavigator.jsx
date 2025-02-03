@@ -124,13 +124,15 @@ function OceanNavigator(props) {
       case "undoMapFeature":
         mapRef.current.undoFeature();
         break;
-      case "clearPoints":
-        // TODO: update
-        setVectorId(null);
+      case "clearFeatures":
+        mapRef.current.removeFeatures("all")
         break;
       case "resetMap":
         // TODO: update
         mapRef.current.resetMap();
+        if (uiSettings.showDrawingTools) {
+          mapRef.current.startDrawing();
+        }
         break;
       case "addPoints":
         // TODO: remove
