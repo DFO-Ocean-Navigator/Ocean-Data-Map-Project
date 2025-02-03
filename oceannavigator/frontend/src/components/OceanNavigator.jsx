@@ -256,48 +256,6 @@ function OceanNavigator(props) {
     });
   };
 
-  const updateFeatType = (features, nextType) => {
-    let updatedFeat = [];
-
-    if (features.length > 0) {
-      let prevType = features[0].type;
-
-      if (
-        prevType === "Point" &&
-        (nextType === "Line" || nextType === "Area")
-      ) {
-        let nextCoords = features.map((feat) => {
-          return feat.coords[0];
-        });
-        updatedFeat = [
-          {
-            id: features[0].id,
-            type: nextType,
-            selected: features[0].selected,
-            coords: nextCoords,
-          },
-        ];
-      } else if (
-        (prevType === "Line" || prevType === "Area") &&
-        nextType === "Point"
-      ) {
-        let nextCoords = features[0].coords;
-        updatedFeat = nextCoords.map((coord) => {
-          return {
-            id: "id" + Math.random().toString(16).slice(2),
-            type: nextType,
-            selected: features[0].selected,
-            coords: [coord],
-          };
-        });
-      } else {
-        updatedFeat = features;
-        updatedFeat[0].type = nextType;
-      }
-    }
-    return updatedFeat;
-  };
-
   const generatePermLink = (permalinkSettings) => {
     let query = {};
     // We have a request from Point/Line/AreaWindow component.

@@ -554,13 +554,13 @@ const Map = forwardRef((props, ref) => {
 
     vectorSource.clear();
     vectorSource.addFeatures(features);
-    select0.getFeatures().clear()
-    for (let feature of newFeatures){
-    select0.getFeatures().push(feature);
-    if (props.compareDatasets) {
-      select1.getFeatures().push(feature);
+    select0.getFeatures().clear();
+    for (let feature of newFeatures) {
+      select0.getFeatures().push(feature);
+      if (props.compareDatasets) {
+        select1.getFeatures().push(feature);
+      }
     }
-  }
   };
 
   const combinePointFeatures = (featureIds) => {
@@ -698,6 +698,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       removeMapInteractions(map1, "all");
     }
+    // TODO: refactor 
     props.updateState(["vectorType", "vectorId", "names"], ["point", null, []]);
     props.action("clearPoints");
 
