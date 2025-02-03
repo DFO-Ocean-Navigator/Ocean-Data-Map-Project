@@ -7,11 +7,11 @@ import { X } from "react-bootstrap-icons";
 
 import { withTranslation } from "react-i18next";
 
-
 function FeatureCard(props) {
   const [timer, setTimer] = useState(null);
   const [coordinates, setCoordinates] = useState(props.feature.coords);
   const [featureType, setFeatureType] = useState(props.feature.type);
+  const [featureName, setFeatureName] = useState(props.feature.name);
   const [coordinateAlerts, setCoordinateAlerts] = useState([]);
 
   const updateCoordinate = (row, col, value) => {
@@ -52,11 +52,7 @@ function FeatureCard(props) {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        updateCoordinate(
-          parseInt(e.target.id),
-          1,
-          e.target.value
-        ),
+        updateCoordinate(parseInt(e.target.id), 1, e.target.value),
         1000
       )
     );
@@ -66,14 +62,15 @@ function FeatureCard(props) {
     clearTimeout(timer);
     setTimer(
       setTimeout(
-        updateCoordinate(
-          parseInt(e.target.id),
-          0,
-          e.target.value
-        ),
+        updateCoordinate(parseInt(e.target.id), 0, e.target.value),
         1000
       )
     );
+  };
+
+  const updateFeatureName = (e) => {
+    setFeatureName(e.target.value);
+    props.mapRef.current.updateFeatureName(props.feature.id, e.target.value);
   };
 
   const addRow = () => {
@@ -191,12 +188,18 @@ function FeatureCard(props) {
           }}
           checked={props.feature.selected}
         />
-        <select value={featureType} onChange={updateType}>
-          <option value="Point">Point</option>
-          <option value="LineString">Line</option>
-          <option value="Polygon">Area</option>
-        </select>
+        <Form.Control
+          className="name-input"
+          type="text"
+          value={featureName}
+          onChange={updateFeatureName}
+        />
         <div className="header-buttons">
+          <select value={featureType} onChange={updateType}>
+            <option value="Point">Point</option>
+            <option value="LineString">Line</option>
+            <option value="Polygon">Area</option>
+          </select>
           <Button
             disabled={featureType === "Point" && coordinates.length > 0}
             onClick={addRow}

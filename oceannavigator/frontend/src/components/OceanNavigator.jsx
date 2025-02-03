@@ -64,7 +64,7 @@ function OceanNavigator(props) {
   // const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [vectorId, setVectorId] = useState(null);
   const [vectorType, setVectorType] = useState("Point");
-  const [vectorCoordinates, setVectorCoordinates] = useState([]);
+  // const [vectorCoordinates, setVectorCoordinates] = useState([]);
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
@@ -134,19 +134,12 @@ function OceanNavigator(props) {
           mapRef.current.startDrawing();
         }
         break;
-      case "addPoints":
-        // TODO: remove
-        setVectorCoordinates((prevCoordinates) => [...prevCoordinates, ...arg]);
-        break;
       case "plot":
         break;
       case "show":
-        // TODO: update
-        setVectorCoordinates([]);
-        // setSelectedCoordinates([]);
+        // TODO: rename
         closeModal();
-        setClass4Type(arg3);
-        mapRef.current.show(arg, arg2);
+        mapRef.current.loadFeatures(arg, arg2)
         break;
       case "drawObsPoint":
         // Enable point selection in both maps
