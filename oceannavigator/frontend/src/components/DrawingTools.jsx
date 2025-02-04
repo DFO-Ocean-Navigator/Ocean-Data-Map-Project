@@ -14,7 +14,7 @@ function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    props.action("vectorType", type);
+    props.action("featureType", type);
   };
 
   const handleClear = () => {
@@ -41,7 +41,7 @@ function DrawingTools(props) {
             type="radio"
             name="radio"
             value={radio.value}
-            checked={props.vectorType === radio.value}
+            checked={props.featureType === radio.value}
             onChange={handleRadio}
           >
             {radio.name}

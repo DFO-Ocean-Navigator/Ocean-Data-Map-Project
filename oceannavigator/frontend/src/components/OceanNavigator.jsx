@@ -58,6 +58,7 @@ function OceanNavigator(props) {
     showObservationTools: false,
   });
   const [mapState, setMapState] = useState({});
+  const [plotData, setPlotData] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
@@ -114,7 +115,7 @@ function OceanNavigator(props) {
         mapRef.current.undoFeature();
         break;
       case "clearFeatures":
-        mapRef.current.removeFeatures("all")
+        mapRef.current.removeFeatures("all");
         break;
       case "resetMap":
         mapRef.current.resetMap();
@@ -123,10 +124,15 @@ function OceanNavigator(props) {
         }
         break;
       case "plot":
+        let [type, coordinates] = mapRef.current.getPlotData();
+        setPlotData({ coordinates: coordinates });
+        if (type) {
+          updateUI({ modalType: type, showModal: true });
+        }
         break;
       case "loadFeatures":
         closeModal();
-        mapRef.current.loadFeatures(arg, arg2)
+        mapRef.current.loadFeatures(arg, arg2);
         break;
       case "drawObsPoint":
         // Enable point selection in both maps
@@ -231,7 +237,6 @@ function OceanNavigator(props) {
     query.names = names;
     query.featureType = featureType;
     query.vectorCoordinates = vectorCoordinates;
-    // query.selectedCoordinates = selectedCoordinates;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
@@ -262,84 +267,69 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
-    case "plot":
-      let [plotType, coordinates] = mapFeatures.reduce(
-        (result, feat) => {
-          if (feat.selected) {
-            result[0].push(feat.type);
-            result[1].push(...feat.coords);
-          } else {
-            result;
-          }
-          return result
-        },
-        [[], []]
+    case "Point":
+      modalBodyContent = (
+        <PointWindow
+          dataset_0={dataset0}
+          plotData={plotData}
+          mapSettings={mapSettings}
+          updateDataset={updateDataset0}
+          init={subquery}
+          action={action}
+        />
       );
-      switch (plotType[0]) {
-        case "Point":
-          modalBodyContent = (
-            <PointWindow
-              dataset_0={dataset0}
-              point={coordinates}
-              mapSettings={mapSettings}
-              updateDataset={updateDataset0}
-              init={subquery}
-              action={action}
-            />
-          );
-          modalTitle = coordinates.map((p) => formatLatLon(p[0], p[1]));
-          modalTitle = modalTitle.join(", ");
-          break;
-        case "Line":
-          const line_distance =
-            mapRef.current.getLineDistance(coordinates);
-          modalBodyContent = (
-            <LineWindow
-              dataset_0={dataset0}
-              dataset_1={dataset1}
-              line={coordinates}
-              line_distance={line_distance}
-              mapSettings={mapSettings}
-              names={names}
-              onUpdate={updateDataset0}
-              updateDataset0={updateDataset0}
-              updateDataset1={updateDataset0}
-              init={subquery}
-              action={action}
-              dataset_compare={compareDatasets}
-              setCompareDatasets={setCompareDatasets}
-            />
-          );
+      modalTitle = plotData.coordinates.map((p) => formatLatLon(p[0], p[1]));
+      modalTitle = modalTitle.join(", ");
+      break;
+    case "LineString":
+      const line_distance = mapRef.current.getLineDistance(
+        plotData.coordinates
+      );
+      modalBodyContent = (
+        <LineWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          plotData={plotData}
+          line_distance={line_distance}
+          mapSettings={mapSettings}
+          names={names}
+          onUpdate={updateDataset0}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset0}
+          init={subquery}
+          action={action}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
+        />
+      );
 
-          modalTitle =
-            "(" +
-            coordinates
-              .map(function (ll) {
-                return formatLatLon(ll[0], ll[1]);
-              })
-              .join("), (") +
-            ")";
-          break;
-        case "Area":
-          modalBodyContent = (
-            <AreaWindow
-              dataset_0={dataset0}
-              dataset_1={dataset1}
-              area={coordinates}
-              mapSettings={mapSettings}
-              names={names}
-              updateDataset0={updateDataset0}
-              updateDataset1={updateDataset1}
-              init={subquery}
-              action={action}
-              dataset_compare={compareDatasets}
-              setCompareDatasets={setCompareDatasets}
-            />
-          );
+      modalTitle =
+        "(" +
+        plotData.coordinates
+          .map(function (ll) {
+            return formatLatLon(ll[0], ll[1]);
+          })
+          .join("), (") +
+        ")";
+      break;
+    case "Polygon":
+      modalBodyContent = (
+        <AreaWindow
+          dataset_0={dataset0}
+          dataset_1={dataset1}
+          plotData={plotData}
+          mapSettings={mapSettings}
+          names={names}
+          updateDataset0={updateDataset0}
+          updateDataset1={updateDataset1}
+          init={subquery}
+          action={action}
+          dataset_compare={compareDatasets}
+          setCompareDatasets={setCompareDatasets}
+        />
+      );
 
-          modalTitle = "";
-          break;
-      }
+      modalTitle = "";
       break;
     case "track":
       modalBodyContent = (

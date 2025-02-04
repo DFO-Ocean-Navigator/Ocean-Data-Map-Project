@@ -70,9 +70,10 @@ class PointWindow extends React.Component {
   componentDidMount() {
     this._mounted = true;
 
+    //TODO: Update check for obs
     // If an observation point has been picked, default to the
     // Observation tab.
-    if (this.props.point[0][2] !== undefined) {
+      if (this.props.plotData.coordinates[0][2] !== undefined) {
       this.setState({
         selected: TabEnum.OBSERVATION,
       });
@@ -223,13 +224,13 @@ class PointWindow extends React.Component {
 
           <div
             style={{
-              display: this.props.point.length == 1 ? "block" : "none",
+              display: this.props.plotData.coordinates.length == 1 ? "block" : "none",
             }}
           >
             <LocationInput
               key="points"
               id="points"
-              state={this.props.point}
+              state={this.props.plotData.coordinates}
               title={"Location"}
               onUpdate={this.onLocalUpdate}
             />
@@ -281,21 +282,21 @@ class PointWindow extends React.Component {
 
     let observation_data = [];
     let observation_variable = <div></div>;
-    if (this.props.point[0][2] !== undefined) {
-      if (typeof this.props.point[0][2] == "number") {
+      if (this.props.plotData.coordinates[0][2] !== undefined) {
+        if (typeof this.props.plotData.coordinates[0][2] == "number") {
         observation_variable = (
           <ComboBox
             key="observation_variable"
             id="observation_variable"
             state={this.state.observation_variable}
-            url={`/api/v2.0/observation/variables/station=${this.props.point[0][2]}.json`}
+            url={`/api/v2.0/observation/variables/station=${this.props.plotData.coordinates[0][2]}.json`}
             title={"Observation Variable"}
             multiple
             onUpdate={this.onLocalUpdate}
           />
         );
       } else {
-        observation_data = this.props.point[0][2].datatypes.map(function (
+          observation_data = this.props.plotData.coordinates[0][2].datatypes.map(function (
           o,
           i
         ) {
@@ -334,7 +335,7 @@ class PointWindow extends React.Component {
     // Start constructing query for image
     const plot_query = {
       dataset: this.state.dataset_0.id,
-      point: this.props.point,
+      point: this.props.plotData.coordinates,
       showmap: this.state.showmap,
       names: this.props.names,
       size: this.state.size,
@@ -385,7 +386,7 @@ class PointWindow extends React.Component {
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
-        plot_query.observation = this.props.point.map(function (o) {
+          plot_query.observation = this.props.plotData.coordinates.map(function (o) {
           return o[2];
         });
 
@@ -474,7 +475,7 @@ class PointWindow extends React.Component {
           <Nav.Item>
             <Nav.Link
               eventKey={TabEnum.OBSERVATION}
-              disabled={this.props.point[0][2] === undefined}
+              disabled={this.props.plotData.coordinates[0][2] === undefined}
             >
               {"Observation"}
             </Nav.Link>
@@ -503,7 +504,7 @@ class PointWindow extends React.Component {
 //***********************************************************************
 PointWindow.propTypes = {
   generatePermLink: PropTypes.func,
-  point: PropTypes.array,
+  plotData: PropTypes.object,
   dpi: PropTypes.number,
   names: PropTypes.array,
   onUpdate: PropTypes.func,

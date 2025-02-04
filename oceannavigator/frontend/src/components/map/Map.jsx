@@ -123,6 +123,7 @@ const Map = forwardRef((props, ref) => {
     startDrawing: startDrawing,
     stopDrawing: stopDrawing,
     getFeatures: getFeatures,
+    getPlotData: getPlotData,
     selectFeatures: selectFeatures,
     undoFeature: undoFeature,
     updateFeatureGeometry: updateFeatureGeometry,
@@ -323,7 +324,7 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     if (drawAction) {
       let source = map0.getLayers().getArray()[5].getSource();
-      let newDrawAction = getDrawAction(source, props.vectorType);
+      let newDrawAction = getDrawAction(source, props.featureType);
 
       removeMapInteractions(map0, "all");
       map0.addInteraction(newDrawAction);
@@ -333,7 +334,7 @@ const Map = forwardRef((props, ref) => {
       }
       setDrawAction(newDrawAction);
     }
-  }, [props.vectorType]);
+  }, [props.featureType]);
 
   useEffect(() => {
     if (map0) {
@@ -477,6 +478,32 @@ const Map = forwardRef((props, ref) => {
     });
 
     return features;
+  };
+
+  const getPlotData = () => {
+    let selected = select0.getFeatures().getArray();
+    let type, coordinates;
+    if (selected.length > 0) {
+      type = selected[0].get("type");
+      coordinates = selected.map((feature) =>
+        feature.getGeometry().getCoordinates()
+      );
+      if (type === "LineString") {
+        coordinates = coordinates[0];
+      } else if (type === "Polygon") {
+        coordinates = coordinates[0][0];
+      }
+      coordinates = coordinates.map((coordinate) => {
+        coordinate = olProj.transform(
+          coordinate,
+          props.mapSettings.projection,
+          "EPSG:4326"
+        );
+        // switch to lat lon order
+        return [coordinate[1], coordinate[0]]; 
+      });
+    }
+    return [type, coordinates];
   };
 
   const selectFeatures = (selectedIds) => {
@@ -647,7 +674,7 @@ const Map = forwardRef((props, ref) => {
         break;
       default:
         url =
-          `/api/v2.0/${props.vectorType}` +
+          `/api/v2.0/${props.featureType}` +
           `/${props.mapSettings.projection}` +
           `/${Math.round(resolution)}` +
           `/${extent.map(function (i) {
@@ -762,7 +789,7 @@ const Map = forwardRef((props, ref) => {
 
   const startDrawing = () => {
     let source = map0.getLayers().getArray()[5].getSource();
-    let newDrawAction = getDrawAction(source, props.vectorType);
+    let newDrawAction = getDrawAction(source, props.featureType);
 
     map0.addInteraction(newDrawAction);
     if (props.compareDatasets) {

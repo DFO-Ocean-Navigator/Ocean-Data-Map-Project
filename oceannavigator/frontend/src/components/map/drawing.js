@@ -2,17 +2,17 @@ import Draw from "ol/interaction/Draw";
 import { transform } from "ol/proj";
 import { getDistance } from "ol/sphere";
 
-export const getDrawAction = (vectorSource, vectorType) => {
+export const getDrawAction = (vectorSource, featureType) => {
   const drawAction = new Draw({
     source: vectorSource,
-    type: vectorType,
+    type: featureType,
     stopClick: true,
     wrapX: true,
   });
 
   drawAction.on("drawend", function (e) {
     e.feature.setId("id" + Math.random().toString(16).slice(2))
-    e.feature.setProperties({type: vectorType})
+    e.feature.setProperties({type: featureType})
   });
   return drawAction;
 };
