@@ -1,3 +1,4 @@
+import React from "react";
 import { renderToString } from "react-dom/server";
 import axios from "axios";
 import Map from "ol/Map.js";
@@ -401,7 +402,6 @@ export const createMap = (
 
             return styles;
           }
-
           case "class4": {
             const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
             const green = Math.min(

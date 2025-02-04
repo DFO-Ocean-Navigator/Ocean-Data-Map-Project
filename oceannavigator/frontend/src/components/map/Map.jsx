@@ -441,6 +441,9 @@ const Map = forwardRef((props, ref) => {
       });
 
     let features = vectorSource.getFeatures();
+    features = features.filter(
+      (feature) => !feature.get("class") === "observation"
+    );
     features = features.map((feature) => {
       let id = feature.getId();
       let name = feature.get("name");
