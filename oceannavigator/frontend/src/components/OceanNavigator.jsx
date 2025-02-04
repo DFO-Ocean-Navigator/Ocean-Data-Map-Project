@@ -60,17 +60,11 @@ function OceanNavigator(props) {
   const [mapState, setMapState] = useState({});
   const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
-  // const [mapFeatures, setMapFeatures] = useState([]);
-  // const [drawnFeatures, setDrawnFeatures] = useState([]);
-  const [vectorId, setVectorId] = useState(null);
-  const [vectorType, setVectorType] = useState("Point");
-  // const [vectorCoordinates, setVectorCoordinates] = useState([]);
+  const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState([]);
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
-  // const [showAlert, setShowAlert] = useState(false);
-  // const [alertMessage, setAlertMessage] = useState([]);
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -83,8 +77,7 @@ function OceanNavigator(props) {
         updateUI({ modalType: query.modalType, showModal: query.showModal });
         setSubquery(query.subquery);
         setNames(query.names);
-        setVectorId(query.vectorId);
-        setVectorType(query.vectorType);
+        setFeatureType(query.featureType);
         setVectorCoordinates(query.vectorCoordinates);
         for (let key in query) {
           switch (key) {
@@ -107,19 +100,15 @@ function OceanNavigator(props) {
   }, []);
 
   const action = (name, arg, arg2, arg3) => {
-    let featIdx = null;
-    let updatedFeatures = null;
     switch (name) {
       case "startDrawing":
-        setVectorId(null);
         mapRef.current.startDrawing();
         break;
       case "stopDrawing":
         mapRef.current.stopDrawing();
         break;
-      case "vectorType":
-        // TODO: rename
-        setVectorType(arg);
+      case "featureType":
+        setFeatureType(arg);
         break;
       case "undoMapFeature":
         mapRef.current.undoFeature();
@@ -128,7 +117,6 @@ function OceanNavigator(props) {
         mapRef.current.removeFeatures("all")
         break;
       case "resetMap":
-        // TODO: update
         mapRef.current.resetMap();
         if (uiSettings.showDrawingTools) {
           mapRef.current.startDrawing();
@@ -136,8 +124,7 @@ function OceanNavigator(props) {
         break;
       case "plot":
         break;
-      case "show":
-        // TODO: rename
+      case "loadFeatures":
         closeModal();
         mapRef.current.loadFeatures(arg, arg2)
         break;
@@ -145,7 +132,6 @@ function OceanNavigator(props) {
         // Enable point selection in both maps
         mapRef.current.drawObsPoint();
         break;
-
       case "drawObsArea":
         mapRef.current.drawObsArea();
         break;
@@ -167,22 +153,6 @@ function OceanNavigator(props) {
         setSubquery(null);
         setShowPermalink(true);
         break;
-    }
-  };
-  // TODO replace or remove:
-  const updateState = (key, value) => {
-    for (let i = 0; i < key.length; ++i) {
-      switch (key[i]) {
-        case "vectorId":
-          setVectorId(value[i]);
-          break;
-        case "vectorType":
-          setVectorType(value[i]);
-          break;
-        case "names":
-          setNames(value[i]);
-          break;
-      }
     }
   };
 
@@ -259,8 +229,7 @@ function OceanNavigator(props) {
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.names = names;
-    query.vectorId = vectorId;
-    query.vectorType = vectorType;
+    query.featureType = featureType;
     query.vectorCoordinates = vectorCoordinates;
     // query.selectedCoordinates = selectedCoordinates;
 
@@ -381,7 +350,6 @@ function OceanNavigator(props) {
           onUpdate={updateDataset0}
           init={subquery}
           action={action}
-          obs_query={vectorId}
         />
       );
 
@@ -461,10 +429,8 @@ function OceanNavigator(props) {
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}
-        vectorId={vectorId}
-        vectorType={vectorType}
+        featureType={featureType}
         class4Type={class4Type}
-        updateState={updateState}
         action={action}
         updateMapSettings={updateMapSettings}
         updateUI={updateUI}
@@ -483,7 +449,7 @@ function OceanNavigator(props) {
         compareDatasets={compareDatasets}
         action={action}
         showCompare={true}
-        vectorType={vectorType}
+        featureType={featureType}
       />
       <ToggleLanguage />
       <LinkButton action={action} />

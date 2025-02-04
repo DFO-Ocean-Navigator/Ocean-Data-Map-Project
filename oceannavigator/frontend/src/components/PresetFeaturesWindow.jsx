@@ -92,7 +92,7 @@ function PresetFeaturesWindow(props) {
   }, []);
 
   const handleClick = (e, type) => {
-    props.action("show", type, e.target.id);
+    props.action("loadFeatures", type, e.target.id);
   };
 
   return (

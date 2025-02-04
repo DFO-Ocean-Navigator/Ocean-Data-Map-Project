@@ -36,9 +36,9 @@ function Class4Selector(props) {
   const handleCalendarInteraction = (selected) => {
     let dateString = selected.toISOString()
     if (class4Type === "ocean_predict") {
-      props.action("show", "class4", class4OPFiles[dateString], class4Type);
+      props.action("loadFeatures", "class4", class4OPFiles[dateString], class4Type);
     } else if (class4Type === "riops_obs"){
-      props.action("show", "class4", class4RAOFiles[dateString], class4Type);
+      props.action("loadFeatures", "class4", class4RAOFiles[dateString], class4Type);
     }
   };
 
