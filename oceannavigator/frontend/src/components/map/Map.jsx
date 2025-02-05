@@ -445,6 +445,7 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
+    features.sort((a, b) => a.ol_uid.localeCompare(b.ol_uid));
     features = features.map((feature) => {
       let id = feature.getId();
       let name = feature.get("name");
@@ -536,6 +537,9 @@ const Map = forwardRef((props, ref) => {
 
   const undoFeature = () => {
     let features = vectorSource.getFeatures();
+    features = features.filter(
+      (feature) => feature.get("class") !== "observation"
+    );
     if (features.length > 0) {
       vectorSource.removeFeatures([features[features.length - 1]]);
     }
