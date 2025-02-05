@@ -486,13 +486,14 @@ const Map = forwardRef((props, ref) => {
     if (selected.length > 0) {
       if (selected[0].get("class") === "observation") {
         type = selected[0].getGeometry().constructor.name;
+        type = type === "LineString" ? "track" : type;
         id = selected[0].get("id");
         observation = true;
       } else {
         type = selected[0].get("type");
       }
       if (type === "class4") {
-        id = selected[0].get("id").replace("/", "_");;
+        id = selected[0].get("id").replace("/", "_");
       }
       coordinates = selected.map((feature) =>
         feature.getGeometry().getCoordinates()
