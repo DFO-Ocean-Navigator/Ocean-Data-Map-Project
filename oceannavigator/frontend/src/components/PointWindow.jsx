@@ -70,10 +70,9 @@ class PointWindow extends React.Component {
   componentDidMount() {
     this._mounted = true;
 
-    //TODO: Update check for obs
     // If an observation point has been picked, default to the
     // Observation tab.
-      if (this.props.plotData.coordinates[0][2] !== undefined) {
+    if (this.props.plotData.observation) {
       this.setState({
         selected: TabEnum.OBSERVATION,
       });
@@ -224,7 +223,8 @@ class PointWindow extends React.Component {
 
           <div
             style={{
-              display: this.props.plotData.coordinates.length == 1 ? "block" : "none",
+              display:
+                this.props.plotData.coordinates.length == 1 ? "block" : "none",
             }}
           >
             <LocationInput
@@ -282,8 +282,8 @@ class PointWindow extends React.Component {
 
     let observation_data = [];
     let observation_variable = <div></div>;
-      if (this.props.plotData.coordinates[0][2] !== undefined) {
-        if (typeof this.props.plotData.coordinates[0][2] == "number") {
+    if (this.props.plotData.observation) {
+      if (typeof this.props.plotData.id == "number") {
         observation_variable = (
           <ComboBox
             key="observation_variable"
@@ -296,12 +296,11 @@ class PointWindow extends React.Component {
           />
         );
       } else {
-          observation_data = this.props.plotData.coordinates[0][2].datatypes.map(function (
-          o,
-          i
-        ) {
-          return { id: i, value: o.replace(/ \[.*\]/, "") };
-        });
+        observation_data = this.props.plotData.coordinates[0][2].datatypes.map(
+          function (o, i) {
+            return { id: i, value: o.replace(/ \[.*\]/, "") };
+          }
+        );
         observation_variable = (
           <ComboBox
             key="observation_variable"
@@ -386,9 +385,7 @@ class PointWindow extends React.Component {
         break;
       case TabEnum.OBSERVATION:
         plot_query.type = "observation";
-          plot_query.observation = this.props.plotData.coordinates.map(function (o) {
-          return o[2];
-        });
+        plot_query.observation = [this.props.plotData.id];
 
         plot_query.observation_variable = this.state.observation_variable;
         plot_query.variable = this.state.dataset_0.variable;

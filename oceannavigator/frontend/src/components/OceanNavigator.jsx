@@ -124,10 +124,10 @@ function OceanNavigator(props) {
         }
         break;
       case "plot":
-        let [type, coordinates] = mapRef.current.getPlotData();
-        setPlotData({ coordinates: coordinates });
-        if (type) {
-          updateUI({ modalType: type, showModal: true });
+        let newPlotData = mapRef.current.getPlotData();
+        if (newPlotData.type) {
+          setPlotData(newPlotData);
+          updateUI({ modalType: newPlotData.type, showModal: true });
         }
         break;
       case "loadFeatures":
@@ -146,6 +146,9 @@ function OceanNavigator(props) {
           setObservationArea(arg);
           updateUI({ modalType: "observationSelect", showModal: true });
         }
+        break;
+      case "class4Type":
+        setClass4Type(arg);
         break;
       case "class4Id":
         setClass4Id(arg);
@@ -366,7 +369,13 @@ function OceanNavigator(props) {
       modalTitle = "Select Observations";
       break;
     case "class4Selector":
-      modalBodyContent = <Class4Selector action={action} updateUI={updateUI} />;
+      modalBodyContent = (
+        <Class4Selector
+          class4Type={class4Type}
+          action={action}
+          updateUI={updateUI}
+        />
+      );
       modalTitle = "Select Class4";
       modalSize = "sm";
       break;
@@ -374,7 +383,7 @@ function OceanNavigator(props) {
       modalBodyContent = (
         <Class4Window
           dataset={dataset0.id}
-          class4id={class4Id}
+          plotData={plotData}
           class4type={class4Type}
           init={subquery}
           action={action}
