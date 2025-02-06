@@ -191,7 +191,7 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("extent", extent);
     });
 
-    addDblClickPlot(newMap, newSelect)
+    addDblClickPlot(newMap, newSelect);
 
     let mapLayers = newMap.getLayers().getArray();
 
@@ -231,7 +231,7 @@ const Map = forwardRef((props, ref) => {
       let newSelect = createSelect();
       newMap.addInteraction(newSelect);
 
-      addDblClickPlot(newMap, newSelect)
+      addDblClickPlot(newMap, newSelect);
 
       setSelect1(newSelect);
     }
@@ -432,6 +432,8 @@ const Map = forwardRef((props, ref) => {
           this.getFeatures().push(feature);
         }
       }
+      let ids = this.getFeatures().map((feature) => feature.id);
+      props.action("selectedFeatureIds", ids);
     });
 
     return newSelect;
@@ -537,6 +539,7 @@ const Map = forwardRef((props, ref) => {
         select1.getFeatures().push(feature);
       }
     }
+    props.action("selectedFeatureIds", selectedIds);
   };
 
   const undoFeature = () => {
@@ -620,6 +623,8 @@ const Map = forwardRef((props, ref) => {
         select1.getFeatures().push(feature);
       }
     }
+    let ids = newFeatures.map((feature) => feature.getId());
+    props.action("selectedFeatureIds", ids);
   };
 
   const combinePointFeatures = (featureIds) => {
@@ -651,6 +656,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       select1.getFeatures().push(newFeature);
     }
+    props.action("selectedFeatureIds", [newFeature.getId()]);
   };
 
   const loadFeatures = (featureType, featureId) => {
@@ -936,7 +942,7 @@ const Map = forwardRef((props, ref) => {
         props.action("plot");
       }
     });
-  }
+  };
 
   const updateBasemap = (map) => {
     let mapLayers = map.getLayers().getArray();

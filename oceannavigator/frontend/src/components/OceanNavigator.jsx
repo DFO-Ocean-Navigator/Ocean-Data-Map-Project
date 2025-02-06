@@ -43,6 +43,7 @@ function OceanNavigator(props) {
   const mapRef = useRef();
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const [compareDatasets, setCompareDatasets] = useState(false);
   const [mapSettings, setMapSettings] = useState({
     projection: "EPSG:3857", // Map projection
@@ -59,7 +60,6 @@ function OceanNavigator(props) {
   });
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
-  const [class4Id, setClass4Id] = useState();
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState([]);
@@ -130,6 +130,9 @@ function OceanNavigator(props) {
           updateUI({ modalType: newPlotData.type, showModal: true });
         }
         break;
+      case "selectedFeatureIds":
+        setSelectedFeatureIds(arg);
+        break;
       case "loadFeatures":
         closeModal();
         mapRef.current.loadFeatures(arg, arg2);
@@ -149,9 +152,6 @@ function OceanNavigator(props) {
         break;
       case "class4Type":
         setClass4Type(arg);
-        break;
-      case "class4Id":
-        setClass4Id(arg);
         break;
       case "toggleCompare":
         setCompareDatasets((prevCompare) => {
@@ -355,6 +355,7 @@ function OceanNavigator(props) {
     case "editFeatures":
       modalBodyContent = (
         <ModifyFeaturesWindow
+          selectedFeatureIds={selectedFeatureIds}
           action={action}
           updateUI={updateUI}
           mapRef={mapRef}

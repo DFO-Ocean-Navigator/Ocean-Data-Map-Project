@@ -11,24 +11,14 @@ import FeatureCard from "./FeatureCard.jsx";
 
 function ModifyFeaturesWindow(props) {
   const [mapFeatures, setMapFeatures] = useState([]);
-  const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const [uploadType, setUploadType] = useState("Point");
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
   useEffect(() => {
     let features = props.mapRef.current.getFeatures();
-    //TODO fix this and other filter/maps
-    let selectedIds = features
-      .filter((feature) => {
-        return feature.selected;
-      })
-      .map((feature) => {
-        return feature.id;
-      });
     setMapFeatures(features);
-    setSelectedFeatureIds(selectedIds);
-  }, []);
+  }, [props.selectedFeatureIds]);
 
   const addFeature = () => {
     let newFeature = {
@@ -42,12 +32,12 @@ function ModifyFeaturesWindow(props) {
   };
 
   const splitFeature = () => {
-    props.mapRef.current.splitPolyFeatures(selectedFeatureIds[0]);
+    props.mapRef.current.splitPolyFeatures(props.selectedFeatureIds[0]);
     setMapFeatures(props.mapRef.current.getFeatures());
   };
 
   const combineFeatures = () => {
-    props.mapRef.current.combinePointFeatures(selectedFeatureIds);
+    props.mapRef.current.combinePointFeatures(props.selectedFeatureIds);
     setMapFeatures(props.mapRef.current.getFeatures());
   };
 
@@ -61,7 +51,7 @@ function ModifyFeaturesWindow(props) {
   };
 
   const selectFeatures = (featureId, featureType, selected) => {
-    let nextSelected = [...selectedFeatureIds];
+    let nextSelected = props.selectedFeatureIds;
     if (featureType !== "Point") {
       nextSelected = [];
     } else {
@@ -81,7 +71,6 @@ function ModifyFeaturesWindow(props) {
       });
     }
     props.mapRef.current.selectFeatures(nextSelected);
-    setSelectedFeatureIds(nextSelected);
     setMapFeatures(props.mapRef.current.getFeatures());
   };
 
@@ -166,7 +155,7 @@ function ModifyFeaturesWindow(props) {
 
   let selectedFeatureType = mapFeatures.reduce(
     (result, feat) => {
-      if (feat.id === selectedFeatureIds[0]) {
+      if (feat.id === props.selectedFeatureIds[0]) {
         result = feat.type;
       }
       return result;
@@ -181,7 +170,7 @@ function ModifyFeaturesWindow(props) {
         <Col className="button-col">
           <Button onClick={addFeature}>Add New Feature</Button>
           <Button
-            disabled={selectedFeatureIds.length < 1}
+            disabled={props.selectedFeatureIds.length < 1}
             onClick={() => props.action("plot")}
           >
             Plot Selected Features
@@ -196,7 +185,7 @@ function ModifyFeaturesWindow(props) {
             Split Line/Area Feature Into Points
           </Button>
           <Button
-            disabled={selectedFeatureIds.length < 2}
+            disabled={props.selectedFeatureIds.length < 2}
             onClick={combineFeatures}
           >
             Combine Selected Point Features
