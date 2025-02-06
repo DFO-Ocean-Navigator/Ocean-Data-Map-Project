@@ -19,6 +19,7 @@ import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
+import DoubleClickZoom from 'ol/interaction/DoubleClickZoom.js';
 import MousePosition from "ol/control/MousePosition.js";
 import Graticule from "ol/layer/Graticule.js";
 import Draw from 'ol/interaction/Draw.js';
@@ -487,6 +488,12 @@ export const createMap = (
 
   let mapObject = new Map(options);
   mapObject.setTarget(mapRef.current);
+
+  mapObject.getInteractions().forEach(interaction => {
+    if (interaction instanceof DoubleClickZoom) {
+      interaction.setActive(false)
+    }
+  });
 
   let selected = null;
   mapObject.on("pointermove", function (e) {

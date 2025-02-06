@@ -191,6 +191,8 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("extent", extent);
     });
 
+    addDblClickPlot(newMap, newSelect)
+
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
@@ -228,6 +230,8 @@ const Map = forwardRef((props, ref) => {
 
       let newSelect = createSelect();
       newMap.addInteraction(newSelect);
+
+      addDblClickPlot(newMap, newSelect)
 
       setSelect1(newSelect);
     }
@@ -918,6 +922,21 @@ const Map = forwardRef((props, ref) => {
       mapLayers[7].setSource(getQuiverSource(dataset));
     }
   };
+
+  const addDblClickPlot = (map, select) => {
+    map.on("dblclick", (e) => {
+      const feature = map.forEachFeatureAtPixel(
+        map.getEventPixel(e.originalEvent),
+        function (feature, layer) {
+          return feature;
+        }
+      );
+      let selected = select.getFeatures().getArray();
+      if (selected.includes(feature)) {
+        props.action("plot");
+      }
+    });
+  }
 
   const updateBasemap = (map) => {
     let mapLayers = map.getLayers().getArray();
