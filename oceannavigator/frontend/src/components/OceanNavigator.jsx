@@ -361,7 +361,7 @@ function OceanNavigator(props) {
           mapRef={mapRef}
         />
       );
-      modalTitle = __("Enter Coordinates");
+      modalTitle = __("Edit Map Features");
       break;
     case "observationSelect":
       modalBodyContent = (
