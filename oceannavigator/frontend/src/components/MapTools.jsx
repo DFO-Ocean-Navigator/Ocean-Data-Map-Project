@@ -46,7 +46,7 @@ function MapTools(props) {
       <OverlayTrigger
         key="draw-overlay"
         placement="left"
-        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Point Coordinates")}</Tooltip>}
+        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>}
       >
         <Button
           key="draw-button"
@@ -61,13 +61,13 @@ function MapTools(props) {
         key="enter-overlay"
         placement="left"
         overlay={
-          <Tooltip id={"enter-tooltip"}>{__("Enter Point Coordinates")}</Tooltip>
+          <Tooltip id={"enter-tooltip"}>{__("Edit Map Features")}</Tooltip>
         }
       >
         <Button
           key="enter-button"
           className="tool-button"
-          onClick={() => handleShowModal("enterCoords")}
+          onClick={() => handleShowModal("editFeatures")}
         >
           <FontAwesomeIcon icon={faKeyboard} />
         </Button>

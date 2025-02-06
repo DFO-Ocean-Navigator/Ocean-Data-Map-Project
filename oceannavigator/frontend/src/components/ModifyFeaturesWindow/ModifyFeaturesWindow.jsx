@@ -9,7 +9,7 @@ import { withTranslation } from "react-i18next";
 
 import FeatureCard from "./FeatureCard.jsx";
 
-function EnterCoordsWindow(props) {
+function ModifyFeaturesWindow(props) {
   const [mapFeatures, setMapFeatures] = useState([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const [uploadType, setUploadType] = useState("Point");
@@ -175,7 +175,7 @@ function EnterCoordsWindow(props) {
   );
 
   return (
-    <div className="EnterCoordsWindow">
+    <div className="ModifyFeaturesWindow">
       <Row>
         <Col className="feature-col">{tableEntries}</Col>
         <Col className="button-col">
@@ -229,4 +229,4 @@ function EnterCoordsWindow(props) {
   );
 }
 
-export default withTranslation()(EnterCoordsWindow);
+export default withTranslation()(ModifyFeaturesWindow);

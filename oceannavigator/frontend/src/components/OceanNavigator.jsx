@@ -4,12 +4,12 @@ import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-import Map from "./map/Map.jsx";
+import Map from "./Map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
 import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
-import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
+import ModifyFeaturesWindow from "./ModifyFeaturesWindow/ModifyFeaturesWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
@@ -352,9 +352,9 @@ function OceanNavigator(props) {
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
       break;
-    case "enterCoords":
+    case "editFeatures":
       modalBodyContent = (
-        <EnterCoordsWindow
+        <ModifyFeaturesWindow
           action={action}
           updateUI={updateUI}
           mapRef={mapRef}
