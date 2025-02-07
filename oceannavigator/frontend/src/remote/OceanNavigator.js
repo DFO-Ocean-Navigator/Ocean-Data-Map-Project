@@ -33,6 +33,7 @@ export function GetDepthsPromise(dataset, variable) {
   });
 }
 
+//TODO: Combine these into one KML promise
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
 }

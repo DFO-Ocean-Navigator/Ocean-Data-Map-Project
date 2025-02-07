@@ -9,7 +9,7 @@ import Map from "./map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
-import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
+import PresetFeaturesWindow from "./PresetFeaturesWindow/PresetFeaturesWindow.jsx";
 import EnterCoordsWindow from "./EnterCoordsWindow.jsx";
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";

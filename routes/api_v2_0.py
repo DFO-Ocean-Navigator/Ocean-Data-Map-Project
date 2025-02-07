@@ -669,13 +669,17 @@ async def plot(
     return response
 
 
-@router.get("/kml/point")
-def kml_points():
+@router.get("/kml/{type}")
+def kml_features(type: str = Path(examples=["point"])):
     """
     Returns the KML groups containing points of interest from hard-coded KML files
     """
+    with open("kml_features.json") as f:
+        kml_features = json.load(f)
+
+    features = dict(sorted(kml_features[type].items()))
     return JSONResponse(
-        utils.misc.list_kml_files("point"),
+        features,
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
@@ -704,17 +708,6 @@ def kml_point(
     )
 
 
-@router.get("/kml/line")
-def kml_lines():
-    """
-    Returns the KML groups containing lines of interest from hard-coded KML files
-    """
-    return JSONResponse(
-        utils.misc.list_kml_files("line"),
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
-
-
 @router.get("/kml/line/{id}")
 def kml_line(
     id: str = Path(examples=["NL-AZMP_Stations"]),
@@ -734,17 +727,6 @@ def kml_line(
     """
     return JSONResponse(
         utils.misc.lines(id, projection, view_bounds),
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
-
-
-@router.get("/kml/area")
-def kml_areas():
-    """
-    Returns the KML groups containing areas of interest from hard-coded KML files
-    """
-    return JSONResponse(
-        utils.misc.list_kml_files("area"),
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
