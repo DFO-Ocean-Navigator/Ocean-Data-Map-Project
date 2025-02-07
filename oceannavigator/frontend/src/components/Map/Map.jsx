@@ -421,18 +421,17 @@ const Map = forwardRef((props, ref) => {
 
     newSelect.on("select", function (e) {
       let selectedFeatures = this.getFeatures();
-
       if (selectedFeatures.getLength() > 1) {
         let newSelectedFeatures = [...selectedFeatures.getArray()];
         newSelectedFeatures = newSelectedFeatures.filter((feature) => {
           return feature.get("type") === "Point";
         });
-        this.getFeatures().clear();
+        selectedFeatures.clear();
         for (let feature of newSelectedFeatures) {
-          this.getFeatures().push(feature);
+          selectedFeatures.push(feature);
         }
       }
-      let ids = this.getFeatures().map((feature) => feature.id);
+      let ids = selectedFeatures.getArray().map((feature) => feature.getId());
       props.action("selectedFeatureIds", ids);
     });
 

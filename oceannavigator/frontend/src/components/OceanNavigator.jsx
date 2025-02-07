@@ -75,11 +75,7 @@ function OceanNavigator(props) {
         const query = JSON.parse(
           decodeURIComponent(window.location.search.replace("?query=", ""))
         );
-        updateUI({ modalType: query.modalType, showModal: query.showModal });
-        setSubquery(query.subquery);
-        setNames(query.names);
-        setFeatureType(query.featureType);
-        setVectorCoordinates(query.vectorCoordinates);
+
         for (let key in query) {
           switch (key) {
             case "dataset0":
@@ -94,6 +90,28 @@ function OceanNavigator(props) {
               break;
           }
         }
+
+        setTimeout(() => {
+          let selectedIds = []
+          for (let feature of query.features) {
+            mapRef.current.addNewFeature(feature.id);
+            mapRef.current.updateFeatureGeometry(
+              feature.id,
+              feature.type,
+              feature.coords
+            );
+            if (feature.selected) {
+              selectedIds.push(feature.id)
+            }
+          }
+          mapRef.current.selectFeatures(selectedIds);
+          if (query.showModal) {
+            let plotData = mapRef.current.getPlotData()
+            setPlotData(plotData)
+          }
+          updateUI({ modalType: query.modalType, showModal: query.showModal });
+          setSubquery(query.subquery);
+        }, 1000);
       } catch (err) {
         console.error(err);
       }
@@ -237,9 +255,7 @@ function OceanNavigator(props) {
     query.subquery = subquery;
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
-    query.names = names;
-    query.featureType = featureType;
-    query.vectorCoordinates = vectorCoordinates;
+    query.features = mapRef.current.getFeatures();
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
