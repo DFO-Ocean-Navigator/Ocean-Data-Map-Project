@@ -14,7 +14,7 @@ class Permalink extends React.Component {
       dataset0: true,
       dataset1: this.props.compareDatasets,
       mapSettings: true,
-      vectortype: true,
+      featureType: true,
       vectorid: true,
       time: true,
     };

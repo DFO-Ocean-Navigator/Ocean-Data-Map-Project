@@ -9,15 +9,15 @@
 @import "DailyCalendar";
 @import "DatasetDropdown";
 @import "DatasetSelector";
-@import "TransectLimiter";
 @import "DrawingTools";
-@import "EnterCoordinatesWindow";
-@import "MainMap";
+@import "ModifyFeaturesWindow";
+@import "FeatureCard";
 @import "ImageSize";
 @import "InfoHelpWindow";
 @import "LineWindow";
 @import "LinkButton";
 @import "LocationInput";
+@import "Map";
 @import "MapInputs";
 @import "MapTools";
 @import "MonthlyCalendar";
@@ -35,3 +35,4 @@
 @import "TimePicker";
 @import "TimeSlider";
 @import "ToggleLanguage";
+@import "TransectLimiter";

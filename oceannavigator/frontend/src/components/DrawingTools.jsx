@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,42 +6,29 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withTranslation } from "react-i18next";
 
 function DrawingTools(props) {
-  const [vectorType, setVectorType] = useState(props.vectorType);
-
   const radios = [
-    { name: __("Point"), value: "point" },
-    { name: __("Line"), value: "line" },
-    { name: __("Area"), value: "area" },
+    { name: __("Point"), value: "Point" },
+    { name: __("Line"), value: "LineString" },
+    { name: __("Area"), value: "Polygon" },
   ];
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    setVectorType(type);
-    props.action("vectorType", type);
+    props.action("featureType", type);
   };
 
   const handleClear = () => {
-    props.action("clearPoints");
+    props.action("clearFeatures");
   };
 
   const handleUndo = () => {
-    props.action("undoPoints");
+    props.action("undoMapFeature");
   };
 
   const handleClose = () => {
     props.updateUI({ showDrawingTools: false });
     props.action("stopDrawing");
   };
-
-  const handlePlot = () => {
-    props.action("selectPoints");
-    props.updateUI({ modalType: vectorType, showModal: true });
-  };
-
-  const plotDisabled =
-    (props.vectorType === "point" && props.vectorCoordinates.length < 1) ||
-    (props.vectorType === "line" && props.vectorCoordinates.length < 2) ||
-    (props.vectorType === "area" && props.vectorCoordinates.length < 3);
 
   return (
     <div className={"drawing-tools"}>
@@ -54,25 +41,16 @@ function DrawingTools(props) {
             type="radio"
             name="radio"
             value={radio.value}
-            checked={props.vectorType === radio.value}
+            checked={props.featureType === radio.value}
             onChange={handleRadio}
           >
             {radio.name}
           </ToggleButton>
         ))}
       </div>
-
-      <Button
-        className="plot-button"
-        onClick={handlePlot}
-        disabled={plotDisabled}
-      >
-        {__("Plot")}
-      </Button>
       <Button className="plot-button" onClick={handleClear}>
-      {__("Clear")}
+        {__("Clear")}
       </Button>
-
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
       </Button>

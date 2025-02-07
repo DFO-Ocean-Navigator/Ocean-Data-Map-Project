@@ -13,9 +13,9 @@ function ObservationTools(props) {
       })
       .join(";");
     if (type == "track") {
-      props.action("show", "observation_tracks", result);
+      props.action("loadFeatures", "observation_tracks", result);
     } else {
-      props.action("show", "observation_points", result);
+      props.action("loadFeatures", "observation_points", result);
     }
   };
 

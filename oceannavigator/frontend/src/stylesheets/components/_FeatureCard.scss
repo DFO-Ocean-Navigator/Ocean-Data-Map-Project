@@ -1,0 +1,29 @@
+.feature-card {
+  border: 2px solid #008cba;
+  margin: 16px 0px;
+
+  .card-header {
+    background-color: #008cba;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 16px;
+
+    .name-input{
+      max-width: 200px;
+      background-color: #008cba;
+      color: white;
+      padding: 0px 4px;
+    }
+  }
+
+  .card-body {
+    .alert {
+      margin: 1px;
+      max-height: 10px;
+      display: flex;
+      align-items: center;
+    }
+  }
+}

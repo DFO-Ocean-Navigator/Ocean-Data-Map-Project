@@ -1,0 +1,24 @@
+.ModifyFeaturesWindow {
+  .feature-col {
+    max-height: 75vh;
+    overflow-y: scroll;
+  }
+  .button-col {
+    max-width: 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .button {
+      width: 100%;
+    }
+
+    .upload-div {
+      display: flex;
+
+      .upload-button {
+        width: 100%;
+      }
+    }
+  }
+}

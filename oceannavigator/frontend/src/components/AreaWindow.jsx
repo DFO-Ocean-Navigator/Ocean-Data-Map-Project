@@ -298,7 +298,7 @@ class AreaWindow extends React.Component {
         id="SubsetPanel"
         key="SubsetPanel"
         dataset={this.props.dataset_0}
-        area={this.props.area}
+        area={this.props.plotData.coordinates}
       />
     );
 
@@ -382,12 +382,12 @@ class AreaWindow extends React.Component {
     };
 
     let area = [];
-    if (typeof this.props.area[0] === "string") {
-      area = [this.props.area[0]];
+    if (typeof this.props.plotData.coordinates[0] === "string") {
+      area = [this.props.plotData.coordinates[0]];
     } else {
       area = [
         {
-          polygons: [this.props.area],
+          polygons: [this.props.plotData.coordinates],
           innerrings: [],
           name: "",
         },
@@ -469,7 +469,7 @@ class AreaWindow extends React.Component {
 
 //***********************************************************************
 AreaWindow.propTypes = {
-  area: PropTypes.array.isRequired,
+  plotData: PropTypes.object.isRequired,
   eneratePermLink: PropTypes.func,
   dataset_1: PropTypes.object.isRequired,
   dataset_compare: PropTypes.bool,

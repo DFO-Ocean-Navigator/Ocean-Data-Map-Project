@@ -1,3 +1,4 @@
+import React from "react";
 import { renderToString } from "react-dom/server";
 import axios from "axios";
 import Map from "ol/Map.js";
@@ -18,9 +19,11 @@ import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
+import DoubleClickZoom from 'ol/interaction/DoubleClickZoom.js';
 import MousePosition from "ol/control/MousePosition.js";
 import Graticule from "ol/layer/Graticule.js";
-import * as olinteraction from "ol/interaction";
+import Draw from 'ol/interaction/Draw.js';
+import DragBox from "ol/interaction/DragBox.js";
 import * as olcondition from "ol/events/condition";
 import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
@@ -252,7 +255,7 @@ export const createMap = (
         return new Style({ image: image });
       } else {
         switch (feat.get("type")) {
-          case "area":
+          case "Polygon":
             if (feat.get("key")) {
               return [
                 new Style({
@@ -307,7 +310,7 @@ export const createMap = (
                 }),
               ];
             }
-          case "line":
+          case "LineString":
             return [
               new Style({
                 stroke: new Stroke({
@@ -322,7 +325,7 @@ export const createMap = (
                 }),
               }),
             ];
-          case "point":
+          case "Point":
             return new Style({
               image: new Circle({
                 radius: 4,
@@ -400,7 +403,6 @@ export const createMap = (
 
             return styles;
           }
-
           case "class4": {
             const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
             const green = Math.min(
@@ -486,6 +488,12 @@ export const createMap = (
 
   let mapObject = new Map(options);
   mapObject.setTarget(mapRef.current);
+
+  mapObject.getInteractions().forEach(interaction => {
+    if (interaction instanceof DoubleClickZoom) {
+      interaction.setActive(false)
+    }
+  });
 
   let selected = null;
   mapObject.on("pointermove", function (e) {
@@ -613,7 +621,7 @@ export const createMap = (
     mapObject.getViewport().style.cursor = hit ? "pointer" : "";
   });
 
-  const dragBox = new olinteraction.DragBox({
+  const dragBox = new DragBox({
     condition: olcondition.platformModifierKeyOnly,
   });
   mapObject.addInteraction(dragBox);
@@ -672,4 +680,21 @@ export const getQuiverSource = (dataset, mapSettings) => {
   });
 
   return quiverSource;
+};
+
+export const removeMapInteractions = (map, type) => {
+  const interactions = map.getInteractions();
+  const stat = {
+    coll: interactions,
+    ret: false,
+  };
+  interactions.forEach(function (e, i, a) {
+    if (e instanceof Draw) {
+      stat.coll.remove(e);
+      if (e.get("type") === type) {
+        stat.ret = true;
+      }
+    }
+  }, stat);
+  return stat.ret;
 };

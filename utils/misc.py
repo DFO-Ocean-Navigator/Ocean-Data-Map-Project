@@ -100,7 +100,7 @@ def points(file_id: str, projection: str, extent: str) -> dict:
                         },
                         "properties": {
                             "name": name,
-                            "type": "point",
+                            "type": "Point",
                             "resolution": 0,
                         },
                     }
@@ -144,7 +144,7 @@ def lines(file_id, projection, extent) -> dict:
                         },
                         "properties": {
                             "name": name,
-                            "type": "line",
+                            "type": "LineString",
                             "resolution": 0,
                         },
                     }
@@ -273,7 +273,7 @@ def areas(area_id, projection, resolution, extent):
                     },
                     "properties": {
                         "name": pname,
-                        "type": "area",
+                        "type": "Polygon",
                         "resolution": resolution,
                         "key": "%s/%s" % (area_id, pname),
                         "centroid": proj(mp.centroid.y, mp.centroid.x, inverse=True),

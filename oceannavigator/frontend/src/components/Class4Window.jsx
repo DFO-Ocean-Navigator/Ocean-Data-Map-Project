@@ -61,7 +61,7 @@ class Class4Window extends React.Component {
       class4type: this.props.class4type,
       dataset: this.props.dataset,
       forecast: this.state.forecast,
-      class4id: this.props.class4id,
+      class4id: this.props.plotData.id,
       showmap: this.state.showmap,
       climatology: this.state.climatology,
       error: this.state.error,
@@ -117,7 +117,7 @@ class Class4Window extends React.Component {
                     "/api/v2.0/class4/forecasts/" +
                     this.props.class4type +
                     "?id=" +
-                    this.props.class4id
+                    this.props.plotData.id
                   }
                   title={_("Forecast")}
                   onUpdate={this.onLocalUpdate}
@@ -150,7 +150,7 @@ class Class4Window extends React.Component {
                     "/api/v2.0/class4/models/" +
                     this.props.class4type +
                     "?id=" +
-                    this.props.class4id
+                    this.props.plotData.id
                   }
                   title={_("Additional Models")}
                 />
@@ -188,8 +188,8 @@ class Class4Window extends React.Component {
 Class4Window.propTypes = {
   generatePermLink: PropTypes.func,
   dataset: PropTypes.string,
-  class4id: PropTypes.array,
   class4type: PropTypes.string,
+  plotData: PropTypes.object,
   init: PropTypes.object,
   action: PropTypes.func,
 };
