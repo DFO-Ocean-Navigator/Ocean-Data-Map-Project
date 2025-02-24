@@ -5,13 +5,24 @@ import Tooltip from "react-bootstrap/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
+import AnnotationTools from "./AnnotationTools.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import DrawingTools from "./DrawingTools.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 
 import { withTranslation } from "react-i18next";
 
+
 function MapInputs(props) {
+
+  const annotationTools = props.uiSettings.showAnnotationTools ? (
+    <AnnotationTools
+      uiSettings={props.uiSettings}
+      updateUI={props.updateUI}
+      action={props.action}
+      featureType={props.featureType}
+    />
+  ) : null;
 
   const drawingTools = props.uiSettings.showDrawingTools ? (
     <DrawingTools
@@ -48,6 +59,7 @@ function MapInputs(props) {
 
   return (
     <div className="map-inputs-container">
+      {annotationTools}
       {drawingTools}
       {observationTools}
       <div className="dataset-selector-container">

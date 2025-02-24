@@ -24,6 +24,7 @@ import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
+import AnnotationButton from "./AnnotationButton.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -92,7 +93,7 @@ function OceanNavigator(props) {
         }
 
         setTimeout(() => {
-          let selectedIds = []
+          let selectedIds = [];
           for (let feature of query.features) {
             mapRef.current.addNewFeature(feature.id);
             mapRef.current.updateFeatureGeometry(
@@ -101,13 +102,13 @@ function OceanNavigator(props) {
               feature.coords
             );
             if (feature.selected) {
-              selectedIds.push(feature.id)
+              selectedIds.push(feature.id);
             }
           }
           mapRef.current.selectFeatures(selectedIds);
           if (query.showModal) {
-            let plotData = mapRef.current.getPlotData()
-            setPlotData(plotData)
+            let plotData = mapRef.current.getPlotData();
+            setPlotData(plotData);
           }
           updateUI({ modalType: query.modalType, showModal: query.showModal });
           setSubquery(query.subquery);
@@ -118,13 +119,19 @@ function OceanNavigator(props) {
     }
   }, []);
 
-  const action = (name, arg, arg2, arg3) => {
+  const action = (name, arg, arg2) => {
     switch (name) {
-      case "startDrawing":
-        mapRef.current.startDrawing();
+      case "startFeatureDraw":
+        mapRef.current.startFeatureDraw();
         break;
-      case "stopDrawing":
-        mapRef.current.stopDrawing();
+      case "stopFeatureDraw":
+        mapRef.current.stopFeatureDraw();
+        break;
+      case "startAnnotationDraw":
+        mapRef.current.startAnnotationDraw();
+        break;
+      case "stopAnnotationDraw":
+        mapRef.current.stopAnnotationDraw();
         break;
       case "featureType":
         setFeatureType(arg);
@@ -138,7 +145,7 @@ function OceanNavigator(props) {
       case "resetMap":
         mapRef.current.resetMap();
         if (uiSettings.showDrawingTools) {
-          mapRef.current.startDrawing();
+          mapRef.current.startFeatureDraw();
         }
         break;
       case "plot":
@@ -468,6 +475,7 @@ function OceanNavigator(props) {
         featureType={featureType}
       />
       <ToggleLanguage />
+      <AnnotationButton uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <Modal

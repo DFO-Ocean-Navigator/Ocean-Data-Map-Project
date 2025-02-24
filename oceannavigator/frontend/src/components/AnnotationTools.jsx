@@ -5,9 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { withTranslation } from "react-i18next";
 
-function DrawingTools(props) {
+function AnnotationTools(props) {
   const radios = [
-    { name: __("Point"), value: "Point" },
     { name: __("Line"), value: "LineString" },
     { name: __("Area"), value: "Polygon" },
   ];
@@ -26,8 +25,8 @@ function DrawingTools(props) {
   };
 
   const handleClose = () => {
-    props.updateUI({ showDrawingTools: false });
-    props.action("stopFeatureDraw");
+    props.updateUI({ showAnnotationTools: false });
+    props.action("stopAnnotationDraw");
   };
 
   return (
@@ -48,6 +47,9 @@ function DrawingTools(props) {
           </ToggleButton>
         ))}
       </div>
+      <Button className="text-button" onClick={handleClear}>
+        {__("Clear")}
+      </Button>      
       <Button className="plot-button" onClick={handleClear}>
         {__("Clear")}
       </Button>
@@ -61,4 +63,4 @@ function DrawingTools(props) {
   );
 }
 
-export default withTranslation()(DrawingTools);
+export default withTranslation()(AnnotationTools);

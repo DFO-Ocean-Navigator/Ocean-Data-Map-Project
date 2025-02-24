@@ -120,8 +120,10 @@ const Map = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    startDrawing: startDrawing,
-    stopDrawing: stopDrawing,
+    startFeatureDraw: startFeatureDraw,
+    stopFeatureDraw: stopFeatureDraw,
+    startAnnotationDraw: startAnnotationDraw,
+    stopAnnotationDraw: stopAnnotationDraw,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -815,7 +817,7 @@ const Map = forwardRef((props, ref) => {
     map0.addInteraction(newDrawAction);
   };
 
-  const startDrawing = () => {
+  const startFeatureDraw = () => {
     let source = map0.getLayers().getArray()[5].getSource();
     let newDrawAction = getDrawAction(source, props.featureType);
 
@@ -826,12 +828,30 @@ const Map = forwardRef((props, ref) => {
     setDrawAction(newDrawAction);
   };
 
-  const stopDrawing = () => {
+  const stopFeatureDraw = () => {
     removeMapInteractions(map0);
     if (props.compareDatasets) {
       removeMapInteractions(map1);
     }
   };
+
+  const startAnnotationDraw = () => {
+    let source = map0.getLayers().getArray()[5].getSource();
+    let newDrawAction = getDrawAction(source, props.featureType);
+
+    map0.addInteraction(newDrawAction);
+    if (props.compareDatasets) {
+      map1.addInteraction(newDrawAction);
+    }
+    setDrawAction(newDrawAction);
+  };
+
+  const stopAnnotationDraw = () => {
+    removeMapInteractions(map0);
+    if (props.compareDatasets) {
+      removeMapInteractions(map1);
+    }
+  };  
 
   const updateProjection = (map, dataset) => {
     resetMap();
