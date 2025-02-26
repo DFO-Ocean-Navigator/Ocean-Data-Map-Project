@@ -89,6 +89,18 @@ proj3031.setExtent([
   3087442.345821846,
 ]);
 
+/*******************
+Map layers:
+newLayerBasemap: 0
+newLayerData: 1
+newLayerLandShapes: 2
+newLayerBath: 3
+newLayerBathShapes: 4
+newLayerVector: 5
+newLayerObsDraw: 6
+newLayerQuiver: 7
+*****************/
+
 const Map = forwardRef((props, ref) => {
   //TODO clean up state (do  we need to save layers?)
   const [map0, setMap0] = useState();
@@ -158,9 +170,7 @@ const Map = forwardRef((props, ref) => {
       format: new GeoJSON(),
     });
 
-    const newObsDrawSource = new VectorSource({
-      features: [],
-    });
+    const newObsDrawSource = new VectorSource({ features: [] });
 
     const newMap = createMap(
       props.mapSettings,
@@ -851,7 +861,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       removeMapInteractions(map1);
     }
-  };  
+  };
 
   const updateProjection = (map, dataset) => {
     resetMap();

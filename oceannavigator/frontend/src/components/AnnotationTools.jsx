@@ -24,6 +24,10 @@ function AnnotationTools(props) {
     props.action("undoMapFeature");
   };
 
+  const handleText = () => {
+    props.updateUI({ modalType: "annotationLabel", showModal: true });
+  }
+
   const handleClose = () => {
     props.updateUI({ showAnnotationTools: false });
     props.action("stopAnnotationDraw");
@@ -47,8 +51,8 @@ function AnnotationTools(props) {
           </ToggleButton>
         ))}
       </div>
-      <Button className="text-button" onClick={handleClear}>
-        {__("Clear")}
+      <Button className="text-button" onClick={handleText}>
+        {__("Text")}
       </Button>      
       <Button className="plot-button" onClick={handleClear}>
         {__("Clear")}
