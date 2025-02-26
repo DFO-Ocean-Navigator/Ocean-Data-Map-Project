@@ -255,6 +255,11 @@ const DATASET_LINKS = [
     link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#ciops-historical-salish-sea-surface---latlon",
   },
   {
+    id: "Port Ocean Prediction Systems (POPS)",
+    link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#port-ocean-prediction-systems-pops",
+    sub_header: true,
+  },
+  {
     id: "Global Deterministic Wave Prediction System (GDWPS)",
     link: "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/#global-deterministic-wave-prediction-system-gdwps",
     sub_header: true,
@@ -459,7 +464,6 @@ function InfoHelpWindow(props) {
         break;
       case 1:
         url = "https://dfo-ocean-navigator.github.io/Dataset-Descriptions/";
-        break;
         break;
       case 2:
         url = "./data-help/derived_variables.html";
