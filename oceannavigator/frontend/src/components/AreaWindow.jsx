@@ -401,7 +401,7 @@ class AreaWindow extends React.Component {
         plot_query.colormap = this.state.leftColormap;
         plot_query.time = this.props.dataset_0.time;
         plot_query.area = area;
-        plot_query.depth = this.state.dataset_0.depth;
+        plot_query.depth = this.props.dataset_0.depth;
         plot_query.bathymetry = this.state.bathymetry;
         plot_query.quiver = this.state.quiver;
         plot_query.contour = this.state.contour;
