@@ -3,19 +3,26 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
-function EnterTextWindow(props) {
+function AnnotationTextWindow(props) {
   const [inputText, setInputText] = useState("");
 
   const onSubmit = () => {
     props.mapRef.current.addAnnotationLabel(inputText)
     props.updateUI({ modalType: "", showModal: false });
-    console.log(inputText)
   };
+
+  const onUndo = () =>{
+    props.mapRef.current.undoAnnotationLabel()
+  }
+
+  const onClear = () => {
+    props.mapRef.current.clearAnnotationLabels()
+  }
 
   return (
     <Form>
-      <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-        <Form.Label>Add Annotation Label</Form.Label>
+      <Form.Group>
+        <Form.Label>Annotation Text</Form.Label>
         <Form.Control
           type="text"
           onChange={(e) => setInputText(e.target.value)}
@@ -23,9 +30,15 @@ function EnterTextWindow(props) {
         <Button onClick={onSubmit}>
           Submit
         </Button>
+        <Button onClick={onUndo}>
+          Undo Last
+        </Button>
+        <Button onClick={onClear}>
+          Clear All
+        </Button>                
       </Form.Group>
     </Form>
   );
 }
 
-export default EnterTextWindow;
+export default AnnotationTextWindow;

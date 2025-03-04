@@ -13,7 +13,7 @@ import ModifyFeaturesWindow from "./ModifyFeaturesWindow/ModifyFeaturesWindow.js
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
-import EnterTextWindow from "./EnterTextWindow.jsx";
+import AnnotationTextWindow from "./AnnotationTextWindow.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
@@ -383,8 +383,9 @@ function OceanNavigator(props) {
       break;
     case "annotation":
       modalBodyContent = (
-        <EnterTextWindow mapRef={mapRef} updateUI={updateUI} />
+        <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
       );
+      modalTitle = __("Add Annotation Label");
       modalSize = "md";
       break;
     case "observationSelect":

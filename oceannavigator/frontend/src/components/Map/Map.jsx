@@ -140,6 +140,8 @@ const Map = forwardRef((props, ref) => {
     startFeatureDraw: startFeatureDraw,
     stopFeatureDraw: stopFeatureDraw,
     addAnnotationLabel: addAnnotationLabel,
+    undoAnnotationLabel: undoAnnotationLabel,
+    clearAnnotationLabels: clearAnnotationLabels,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -881,6 +883,17 @@ const Map = forwardRef((props, ref) => {
       annotation: true,
     });
     annotationVectorSource.addFeature(feature);
+  };
+
+  const undoAnnotationLabel = () => {
+    let features = annotationVectorSource.getFeatures();
+    if (features.length > 0) {
+      annotationVectorSource.removeFeatures([features[features.length - 1]]);
+    }
+  };
+
+  const clearAnnotationLabels = () => {
+    annotationVectorSource.clear();
   };
 
   const updateProjection = (map, dataset) => {
