@@ -875,11 +875,11 @@ const Map = forwardRef((props, ref) => {
   };
 
   const addAnnotationLabel = (text) => {
-    let center = mapView.getCenter()
-    let feature = new Feature();
-    let geom = new Point(center);
-    feature.setGeometry(geom)
-    feature.set('name', text)
+    let feature = new Feature({
+      geometry: new Point(mapView.getCenter()),
+      name: text,
+      annotation: true,
+    });
     annotationVectorSource.addFeature(feature);
   };
 

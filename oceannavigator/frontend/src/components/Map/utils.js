@@ -268,7 +268,7 @@ export const createMap = (
         return feature;
       }
     );
-    if (feature && feature.get("name")) {
+    if (feature && feature.get("name") && !feature.get("annotation")) {
       overlay.setPosition(e.coordinate);
       if (feature.get("data")) {
         let bearing = feature.get("bearing");
