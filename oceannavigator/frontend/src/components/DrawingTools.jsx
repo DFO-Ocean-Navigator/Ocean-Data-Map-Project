@@ -27,7 +27,7 @@ function DrawingTools(props) {
 
   const handleClose = () => {
     props.updateUI({ showDrawingTools: false });
-    props.action("stopDrawing");
+    props.action("stopFeatureDraw");
   };
 
   return (
