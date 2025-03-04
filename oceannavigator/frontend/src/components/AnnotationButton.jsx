@@ -8,21 +8,7 @@ import { withTranslation } from "react-i18next";
 
 function AnnotationButton(props) {
   const handleAnnotation = () => {
-    if (!props.uiSettings.showAnnotationTools) {
-      props.updateUI({
-        showAnnotationTools: true,
-        showDrawingTools: false,
-        showObservationTools: false,
-      });
-      props.action("startAnnotationDraw");
-    } else {
-      props.updateUI({
-        showAnnotationTools: false,
-        showDrawingTools: false,
-        showObservationTools: false,
-      });
-      props.action("stopAnnotationDraw");
-    }
+    props.updateUI({ modalType: "annotation", showModal: true });
   };
 
   return (
@@ -33,10 +19,7 @@ function AnnotationButton(props) {
         <Tooltip id={"annotation-tooltip"}>{__("Add Map Annotation")}</Tooltip>
       }
     >
-      <Button
-        onClick={handleAnnotation}
-        className="annotation-button"
-      >
+      <Button onClick={handleAnnotation} className="annotation-button">
         <FontAwesomeIcon icon={faPencil} />
       </Button>
     </OverlayTrigger>

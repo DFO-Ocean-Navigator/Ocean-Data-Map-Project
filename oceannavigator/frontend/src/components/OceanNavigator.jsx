@@ -13,6 +13,7 @@ import ModifyFeaturesWindow from "./ModifyFeaturesWindow/ModifyFeaturesWindow.js
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";
+import EnterTextWindow from "./EnterTextWindow.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
@@ -126,12 +127,6 @@ function OceanNavigator(props) {
         break;
       case "stopFeatureDraw":
         mapRef.current.stopFeatureDraw();
-        break;
-      case "startAnnotationDraw":
-        mapRef.current.startAnnotationDraw();
-        break;
-      case "stopAnnotationDraw":
-        mapRef.current.stopAnnotationDraw();
         break;
       case "featureType":
         setFeatureType(arg);
@@ -386,6 +381,12 @@ function OceanNavigator(props) {
       );
       modalTitle = __("Edit Map Features");
       break;
+    case "annotation":
+      modalBodyContent = (
+        <EnterTextWindow mapRef={mapRef} updateUI={updateUI} />
+      );
+      modalSize = "md";
+      break;
     case "observationSelect":
       modalBodyContent = (
         <ObservationSelector area={observationArea} action={action} />
@@ -475,7 +476,11 @@ function OceanNavigator(props) {
         featureType={featureType}
       />
       <ToggleLanguage />
-      <AnnotationButton uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <AnnotationButton
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+      />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <Modal
