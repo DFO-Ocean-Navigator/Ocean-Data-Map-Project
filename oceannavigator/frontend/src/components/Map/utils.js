@@ -435,15 +435,14 @@ export const createAnnotationVectorLayer = (source) => {
         text: new Text({
           font: "20px sans-serif",
           text: feature.get("name"),
-          backgroundFill: new Fill({ color: "#ffffff80" }),
+          backgroundFill: new Fill({ color: "rgba(255, 255, 255, 0.6)" }),
           backgroundStroke: new Stroke({
-            color: "#ffffff80",
-            width: 10,
-            lineCap: "square",
-            lineJoin: "square",
+            color: "rgb(0, 0, 0)",
+            width: 1,
           }),
           placement: "Point",
           overflow: "wrap",
+          padding: [2, 2, 2, 2],
         }),
       });
     },
