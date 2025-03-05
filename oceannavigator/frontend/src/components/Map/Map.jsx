@@ -93,15 +93,15 @@ proj3031.setExtent([
 
 /*******************
 Map layers:
-newLayerBasemap: 0
-newLayerData: 1
-newLayerLandShapes: 2
-newLayerBath: 3
-newLayerBathShapes: 4
-newLayerAnnotationVector: 5
-layerFeatureVector: 6
-newLayerObsDraw: 7
-newLayerQuiver: 8
+basemap: 0
+data tiles: 1
+land shapes (mbt tiles): 2
+bathy lines: 3
+bathy shapes: 4
+annotations: 5
+vector features: 6
+observation drawing: 7
+quivers: 8
 *****************/
 
 const Map = forwardRef((props, ref) => {
