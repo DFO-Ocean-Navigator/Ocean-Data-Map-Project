@@ -292,8 +292,8 @@ const Map = forwardRef((props, ref) => {
         newCenter,
         "EPSG:3857",
         newZoom,
-        MIN_ZOOM[projection],
-        MAX_ZOOM[projection]
+        MIN_ZOOM[props.mapSettings.projection],
+        MAX_ZOOM[props.mapSettings.projection]
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -314,8 +314,8 @@ const Map = forwardRef((props, ref) => {
         newCenter,
         "EPSG:3857",
         newZoom,
-        MIN_ZOOM[projection],
-        MAX_ZOOM[projection]
+        MIN_ZOOM[props.mapSettings.projection],
+        MAX_ZOOM[props.mapSettings.projection]
       );
       map0.setView(newMapView);
       map1.setView(newMapView);
