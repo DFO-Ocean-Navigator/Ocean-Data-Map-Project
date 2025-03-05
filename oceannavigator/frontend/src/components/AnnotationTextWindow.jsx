@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 
+import { withTranslation } from "react-i18next";
+
 function AnnotationTextWindow(props) {
   const [inputText, setInputText] = useState("");
 
@@ -29,12 +31,12 @@ function AnnotationTextWindow(props) {
       />
 
       <div className="controls">
-        <Button onClick={onSubmit}>Add</Button>
-        <Button onClick={onUndo}>Undo</Button>
-        <Button onClick={onClear}>Clear</Button>
+        <Button onClick={onSubmit}>{__("Add")}</Button>
+        <Button onClick={onUndo}>{__("Undo")}</Button>
+        <Button onClick={onClear}>{__("Clear")}</Button>
       </div>
     </div>
   );
 }
 
-export default AnnotationTextWindow;
+export default withTranslation()(AnnotationTextWindow);
