@@ -28,13 +28,13 @@ function AnnotationTextWindow(props) {
           onChange={(e) => setInputText(e.target.value)}
         />
         <Button onClick={onSubmit}>
-          Submit
+          Add
         </Button>
         <Button onClick={onUndo}>
-          Undo Last
+          Undo
         </Button>
         <Button onClick={onClear}>
-          Clear All
+          Clear
         </Button>                
       </Form.Group>
     </Form>
