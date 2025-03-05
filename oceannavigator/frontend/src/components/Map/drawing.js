@@ -11,8 +11,8 @@ export const getDrawAction = (vectorSource, featureType) => {
   });
 
   drawAction.on("drawend", function (e) {
-    e.feature.setId("id" + Math.random().toString(16).slice(2))
-    e.feature.setProperties({type: featureType})
+    e.feature.setId("id" + Math.random().toString(16).slice(2));
+    e.feature.setProperties({ type: featureType });
   });
   return drawAction;
 };

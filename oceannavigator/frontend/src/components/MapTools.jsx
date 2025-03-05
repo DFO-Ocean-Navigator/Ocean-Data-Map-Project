@@ -21,19 +21,19 @@ import { withTranslation } from "react-i18next";
 function MapTools(props) {
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
-      props.updateUI({ showDrawingTools: true, showObservationTools: false });
-      props.action("startDrawing");
+      props.updateUI({showAnnotationTools: false, showDrawingTools: true, showObservationTools: false });
+      props.action("startFeatureDraw");
     } else {
-      props.updateUI({ showDrawingTools: false, showObservationTools: false });
-      props.action("stopDrawing");
+      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.action("stopFeatureDraw");
     }
   };
 
   const handleObservations = () => {
     if (!props.uiSettings.showObservationTools) {
-      props.updateUI({ showDrawingTools: false, showObservationTools: true });
+      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: true });
     } else {
-      props.updateUI({ showDrawingTools: false, showObservationTools: false });
+      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
     }
   };
 

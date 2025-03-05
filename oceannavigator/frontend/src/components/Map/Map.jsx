@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import axios from "axios";
 import proj4 from "proj4";
-import View from "ol/View.js";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
 import { Style, Circle, Stroke, Fill } from "ol/style";
@@ -27,7 +26,10 @@ import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
 
 import {
+  createMapView,
   createMap,
+  createAnnotationVectorLayer,
+  createFeatureVectorLayer,
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
@@ -89,6 +91,19 @@ proj3031.setExtent([
   3087442.345821846,
 ]);
 
+/*******************
+Map layers:
+basemap: 0
+data tiles: 1
+land shapes (mbt tiles): 2
+bathy lines: 3
+bathy shapes: 4
+annotations: 5
+vector features: 6
+observation drawing: 7
+quivers: 8
+*****************/
+
 const Map = forwardRef((props, ref) => {
   //TODO clean up state (do  we need to save layers?)
   const [map0, setMap0] = useState();
@@ -108,8 +123,10 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-  const [layerVector, setLayerVector] = useState();
-  const [vectorSource, setVectorSource] = useState();
+  const [layerAnnotationVector, setLayerAnnotationVector] = useState();
+  const [annotationVectorSource, setAnnotationVectorSource] = useState();
+  const [layerFeatureVector, setLayerFeatureVector] = useState();
+  const [featureVectorSource, setFeatureVectorSource] = useState();
   const [layerObsDraw, setLayerObsDraw] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [layerQuiver, setLayerQuiver] = useState();
@@ -120,8 +137,11 @@ const Map = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
 
   useImperativeHandle(ref, () => ({
-    startDrawing: startDrawing,
-    stopDrawing: stopDrawing,
+    startFeatureDraw: startFeatureDraw,
+    stopFeatureDraw: stopFeatureDraw,
+    addAnnotationLabel: addAnnotationLabel,
+    undoAnnotationLabel: undoAnnotationLabel,
+    clearAnnotationLabels: clearAnnotationLabels,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -148,17 +168,35 @@ const Map = forwardRef((props, ref) => {
     });
 
     let projection = props.mapSettings.projection;
-    const newMapView = createMapView(DEF_CENTER[projection], projection, 4);
+    const newMapView = createMapView(
+      DEF_CENTER[projection],
+      projection,
+      4,
+      MIN_ZOOM[projection],
+      MAX_ZOOM[projection]
+    );
 
-    let newVectorSource = new VectorSource({
+    let newAnnotationVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
 
-    const newObsDrawSource = new VectorSource({
+    let newLayerAnnotationVector = createAnnotationVectorLayer(
+      newAnnotationVectorSource
+    );
+
+    let newFeatureVectorSource = new VectorSource({
       features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
     });
+
+    let newLayerFeatureVector = createFeatureVectorLayer(
+      newFeatureVectorSource
+    );
+
+    const newObsDrawSource = new VectorSource({ features: [] });
 
     const newMap = createMap(
       props.mapSettings,
@@ -166,7 +204,8 @@ const Map = forwardRef((props, ref) => {
       popupElement0,
       newMapView,
       layerData0,
-      newVectorSource,
+      newLayerAnnotationVector,
+      newLayerFeatureVector,
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
       mapRef0
@@ -199,11 +238,13 @@ const Map = forwardRef((props, ref) => {
     setMapView(newMapView);
     setSelect0(newSelect);
     setLayerBasemap(mapLayers[0]);
-    setLayerVector(mapLayers[5]);
-    setVectorSource(newVectorSource);
-    setLayerObsDraw(mapLayers[6]);
+    setLayerAnnotationVector(mapLayers[5]);
+    setAnnotationVectorSource(newAnnotationVectorSource);
+    setLayerFeatureVector(mapLayers[6]);
+    setFeatureVectorSource(newFeatureVectorSource);
+    setLayerObsDraw(mapLayers[7]);
     setObsDrawSource(newObsDrawSource);
-    setLayerQuiver(mapLayers[7]);
+    setLayerQuiver(mapLayers[8]);
   }, []);
 
   useEffect(() => {
@@ -216,13 +257,15 @@ const Map = forwardRef((props, ref) => {
         positioning: "bottom-center",
       });
 
+      let newLayerFeatureVector = createFeatureVectorLayer(featureVectorSource);
+
       newMap = createMap(
         props.mapSettings,
         overlay,
         popupElement1,
         mapView,
         layerData1,
-        vectorSource,
+        newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
         mapRef1
@@ -245,7 +288,13 @@ const Map = forwardRef((props, ref) => {
         props.dataset0.default_location[1],
       ];
       const newZoom = props.dataset0.default_location[2];
-      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
+      const newMapView = createMapView(
+        newCenter,
+        "EPSG:3857",
+        newZoom,
+        MIN_ZOOM[props.mapSettings.projection],
+        MAX_ZOOM[props.mapSettings.projection]
+      );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
       if (props.compareDatasets) {
@@ -261,7 +310,13 @@ const Map = forwardRef((props, ref) => {
         props.dataset1.default_location[1],
       ];
       const newZoom = props.dataset1.default_location[2];
-      const newMapView = createMapView(newCenter, "EPSG:3857", newZoom);
+      const newMapView = createMapView(
+        newCenter,
+        "EPSG:3857",
+        newZoom,
+        MIN_ZOOM[props.mapSettings.projection],
+        MAX_ZOOM[props.mapSettings.projection]
+      );
       map0.setView(newMapView);
       map1.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -327,7 +382,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (drawAction) {
-      let source = map0.getLayers().getArray()[5].getSource();
+      let source = map0.getLayers().getArray()[6].getSource();
       let newDrawAction = getDrawAction(source, props.featureType);
 
       removeMapInteractions(map0, "all");
@@ -385,18 +440,6 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.topoShadedRelief,
   ]);
 
-  const createMapView = (center, projection, zoom) => {
-    const newMapView = new View({
-      center: olProj.transform(center, "EPSG:4326", projection),
-      projection: projection,
-      zoom: zoom,
-      maxZoom: MAX_ZOOM[projection],
-      minZoom: MIN_ZOOM[projection],
-    });
-
-    return newMapView;
-  };
-
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
@@ -446,7 +489,7 @@ const Map = forwardRef((props, ref) => {
         return feature.getId();
       });
 
-    let features = vectorSource.getFeatures();
+    let features = featureVectorSource.getFeatures();
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
@@ -530,7 +573,7 @@ const Map = forwardRef((props, ref) => {
   const selectFeatures = (selectedIds) => {
     select0.getFeatures().clear();
     let features = selectedIds.map((id) => {
-      return vectorSource.getFeatureById(id);
+      return featureVectorSource.getFeatureById(id);
     });
     for (let feature of features) {
       select0.getFeatures().push(feature);
@@ -542,17 +585,17 @@ const Map = forwardRef((props, ref) => {
   };
 
   const undoFeature = () => {
-    let features = vectorSource.getFeatures();
+    let features = featureVectorSource.getFeatures();
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
     if (features.length > 0) {
-      vectorSource.removeFeatures([features[features.length - 1]]);
+      featureVectorSource.removeFeatures([features[features.length - 1]]);
     }
   };
 
   const updateFeatureGeometry = (id, type, coordinates) => {
-    let feature = vectorSource.getFeatureById(id);
+    let feature = featureVectorSource.getFeatureById(id);
     coordinates = coordinates.map((coord) => {
       return olProj.transform(coord, "EPSG:4326", props.mapSettings.projection);
     });
@@ -574,31 +617,31 @@ const Map = forwardRef((props, ref) => {
   };
 
   const updateFeatureName = (id, name) => {
-    let feature = vectorSource.getFeatureById(id);
+    let feature = featureVectorSource.getFeatureById(id);
     feature.setProperties({ name: name });
   };
 
   const addNewFeature = (id) => {
     let feature = new Feature();
     feature.setId(id);
-    vectorSource.addFeature(feature);
+    featureVectorSource.addFeature(feature);
   };
 
   const removeFeatures = (featureIds) => {
     let toRemove;
     if (featureIds === "all") {
-      toRemove = vectorSource.getFeatures();
+      toRemove = featureVectorSource.getFeatures();
     } else {
       toRemove = featureIds.map((id) => {
-        return vectorSource.getFeatureById(id);
+        return featureVectorSource.getFeatureById(id);
       });
     }
-    vectorSource.removeFeatures(toRemove);
+    featureVectorSource.removeFeatures(toRemove);
   };
 
   const splitPolyFeatures = (featureId) => {
-    let features = vectorSource.getFeatures();
-    let toSplit = vectorSource.getFeatureById(featureId);
+    let features = featureVectorSource.getFeatures();
+    let toSplit = featureVectorSource.getFeatureById(featureId);
     let idx = features.indexOf(toSplit);
     let coordinates = toSplit.getGeometry().getCoordinates();
     if (toSplit.get("type") === "Polygon") {
@@ -613,8 +656,8 @@ const Map = forwardRef((props, ref) => {
     });
     features.splice(idx, 1, ...newFeatures);
 
-    vectorSource.clear();
-    vectorSource.addFeatures(features);
+    featureVectorSource.clear();
+    featureVectorSource.addFeatures(features);
     select0.getFeatures().clear();
     for (let feature of newFeatures) {
       select0.getFeatures().push(feature);
@@ -627,9 +670,9 @@ const Map = forwardRef((props, ref) => {
   };
 
   const combinePointFeatures = (featureIds) => {
-    let features = vectorSource.getFeatures();
+    let features = featureVectorSource.getFeatures();
     let toCombine = featureIds.map((id) => {
-      return vectorSource.getFeatureById(id);
+      return featureVectorSource.getFeatureById(id);
     });
     let coordinates = toCombine.map((feature) =>
       feature.getGeometry().getCoordinates()
@@ -649,8 +692,8 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) => !featureIds.includes(feature.getId())
     );
-    vectorSource.clear();
-    vectorSource.addFeatures(features);
+    featureVectorSource.clear();
+    featureVectorSource.addFeatures(features);
     select0.getFeatures().push(newFeature);
     if (props.compareDatasets) {
       select1.getFeatures().push(newFeature);
@@ -735,7 +778,7 @@ const Map = forwardRef((props, ref) => {
               );
             }
             if (id) {
-              var oldfeat = vectorSource.getFeatureById(id);
+              var oldfeat = featureVectorSource.getFeatureById(id);
               if (
                 oldfeat != null &&
                 oldfeat.get("resolution") > feat.get("resolution")
@@ -750,7 +793,7 @@ const Map = forwardRef((props, ref) => {
             }
           }
         }
-        vectorSource.addFeatures(featToAdd);
+        featureVectorSource.addFeatures(featToAdd);
       })
       .catch((error) => {
         console.error(error);
@@ -763,13 +806,13 @@ const Map = forwardRef((props, ref) => {
       removeMapInteractions(map1, "all");
     }
 
-    let newVectorSource = new VectorSource({
+    let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    layerVector.setSource(newVectorSource);
-    setVectorSource(newVectorSource);
+    layerFeatureVector.setSource(newFeatureVectorSource);
+    setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
@@ -779,8 +822,8 @@ const Map = forwardRef((props, ref) => {
 
     if (props.compareDatasets) {
       let map1layers = map1.getLayers().getArray();
-      map1layers[5].setSource(newVectorSource);
-      map1layers[6].setSource(newObsDrawSource);
+      map1layers[6].setSource(newFeatureVectorSource);
+      map1layers[7].setSource(newObsDrawSource);
     }
   };
 
@@ -815,8 +858,8 @@ const Map = forwardRef((props, ref) => {
     map0.addInteraction(newDrawAction);
   };
 
-  const startDrawing = () => {
-    let source = map0.getLayers().getArray()[5].getSource();
+  const startFeatureDraw = () => {
+    let source = map0.getLayers().getArray()[6].getSource();
     let newDrawAction = getDrawAction(source, props.featureType);
 
     map0.addInteraction(newDrawAction);
@@ -826,11 +869,31 @@ const Map = forwardRef((props, ref) => {
     setDrawAction(newDrawAction);
   };
 
-  const stopDrawing = () => {
+  const stopFeatureDraw = () => {
     removeMapInteractions(map0);
     if (props.compareDatasets) {
       removeMapInteractions(map1);
     }
+  };
+
+  const addAnnotationLabel = (text) => {
+    let feature = new Feature({
+      geometry: new Point(mapView.getCenter()),
+      name: text,
+      annotation: true,
+    });
+    annotationVectorSource.addFeature(feature);
+  };
+
+  const undoAnnotationLabel = () => {
+    let features = annotationVectorSource.getFeatures();
+    if (features.length > 0) {
+      annotationVectorSource.removeFeatures([features[features.length - 1]]);
+    }
+  };
+
+  const clearAnnotationLabels = () => {
+    annotationVectorSource.clear();
   };
 
   const updateProjection = (map, dataset) => {
@@ -921,7 +984,7 @@ const Map = forwardRef((props, ref) => {
 
     mapLayers[3].setSource(bathySource);
 
-    vectorSource.refresh();
+    featureVectorSource.refresh();
 
     if (mapLayers[7].getSource()) {
       mapLayers[7].setSource(getQuiverSource(dataset));

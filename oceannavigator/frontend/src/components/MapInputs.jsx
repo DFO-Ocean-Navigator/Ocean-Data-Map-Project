@@ -12,7 +12,6 @@ import ObservationTools from "./ObservationTools.jsx";
 import { withTranslation } from "react-i18next";
 
 function MapInputs(props) {
-
   const drawingTools = props.uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={props.uiSettings}
@@ -36,9 +35,14 @@ function MapInputs(props) {
       overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
     >
       <Button
-        className={`hide-data-button ${props.compareDatasets ? "hide-data-button-compare" : ""}`}
+        className={`hide-data-button ${
+          props.compareDatasets ? "hide-data-button-compare" : ""
+        }`}
         onClick={() => {
-          props.updateMapSettings("hideDataLayer", !props.mapSettings.hideDataLayer)
+          props.updateMapSettings(
+            "hideDataLayer",
+            !props.mapSettings.hideDataLayer
+          );
         }}
       >
         <FontAwesomeIcon icon={faEyeSlash} size="2xs" />
@@ -67,9 +71,7 @@ function MapInputs(props) {
           {props.showCompare ? hideDataSwitch : null}
         </div>
         {props.compareDatasets ? (
-          <div
-            className={"map-inputs"}
-          >
+          <div className={"map-inputs"}>
             <DatasetSelector
               key="map_inputs_dataset_1"
               id="dataset_1"
