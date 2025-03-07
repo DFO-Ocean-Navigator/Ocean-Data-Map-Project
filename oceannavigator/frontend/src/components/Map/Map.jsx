@@ -806,18 +806,28 @@ const Map = forwardRef((props, ref) => {
       removeMapInteractions(map1, "all");
     }
 
+    let map0Layers = map0.getLayers().getArray();
+
+    let newAnnotationVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+    });
+    map0Layers[5].setSource(newAnnotationVectorSource);
+    setAnnotationVectorSource(newAnnotationVectorSource);
+
     let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    layerFeatureVector.setSource(newFeatureVectorSource);
+    map0Layers[6].setSource(newFeatureVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-    layerObsDraw.setSource(newObsDrawSource);
+    map0Layers[7].setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
 
     if (props.compareDatasets) {
