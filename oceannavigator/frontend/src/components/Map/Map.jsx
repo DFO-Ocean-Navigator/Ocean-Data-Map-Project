@@ -106,7 +106,6 @@ quivers: 8
 *****************/
 
 const Map = forwardRef((props, ref) => {
-  //TODO clean up state (do  we need to save layers?)
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
