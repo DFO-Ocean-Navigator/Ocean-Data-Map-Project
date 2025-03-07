@@ -75,7 +75,7 @@ export const createMapView = (center, projection, zoom, minZoom, maxZoom) => {
   return newMapView;
 };
 
-const getBasemap = (source, projection, attribution, topoShadedRelief) => {
+export const getBasemap = (source, projection, attribution, topoShadedRelief) => {
   switch (source) {
     case "topo":
       const shadedRelief = topoShadedRelief ? "true" : "false";

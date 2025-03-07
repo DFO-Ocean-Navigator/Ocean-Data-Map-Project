@@ -30,6 +30,7 @@ import {
   createMap,
   createAnnotationVectorLayer,
   createFeatureVectorLayer,
+  getBasemap,
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
@@ -105,7 +106,6 @@ quivers: 8
 *****************/
 
 const Map = forwardRef((props, ref) => {
-  //TODO clean up state (do  we need to save layers?)
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
@@ -123,13 +123,9 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-  const [layerAnnotationVector, setLayerAnnotationVector] = useState();
   const [annotationVectorSource, setAnnotationVectorSource] = useState();
-  const [layerFeatureVector, setLayerFeatureVector] = useState();
   const [featureVectorSource, setFeatureVectorSource] = useState();
-  const [layerObsDraw, setLayerObsDraw] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
-  const [layerQuiver, setLayerQuiver] = useState();
   const [drawAction, setDrawAction] = useState();
   const mapRef0 = useRef();
   const mapRef1 = useRef();
@@ -238,13 +234,9 @@ const Map = forwardRef((props, ref) => {
     setMapView(newMapView);
     setSelect0(newSelect);
     setLayerBasemap(mapLayers[0]);
-    setLayerAnnotationVector(mapLayers[5]);
     setAnnotationVectorSource(newAnnotationVectorSource);
-    setLayerFeatureVector(mapLayers[6]);
     setFeatureVectorSource(newFeatureVectorSource);
-    setLayerObsDraw(mapLayers[7]);
     setObsDrawSource(newObsDrawSource);
-    setLayerQuiver(mapLayers[8]);
   }, []);
 
   useEffect(() => {
@@ -257,6 +249,9 @@ const Map = forwardRef((props, ref) => {
         positioning: "bottom-center",
       });
 
+      let newLayerAnnotationVector = createAnnotationVectorLayer(
+        annotationVectorSource
+      );
       let newLayerFeatureVector = createFeatureVectorLayer(featureVectorSource);
 
       newMap = createMap(
@@ -265,6 +260,7 @@ const Map = forwardRef((props, ref) => {
         popupElement1,
         mapView,
         layerData1,
+        newLayerAnnotationVector,
         newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
@@ -352,12 +348,13 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (layerQuiver) {
+    if (map0) {
+      let quiverLayer = map0.getLayers().getArray()[8];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
       }
-      layerQuiver.setSource(source);
+      quiverLayer.setSource(source);
     }
   }, [
     props.dataset0.id,
@@ -367,7 +364,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1) {
-      let quiverLayer = map1.getLayers().getArray()[7];
+      let quiverLayer = map1.getLayers().getArray()[8];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
@@ -806,18 +803,28 @@ const Map = forwardRef((props, ref) => {
       removeMapInteractions(map1, "all");
     }
 
+    let map0Layers = map0.getLayers().getArray();
+
+    let newAnnotationVectorSource = new VectorSource({
+      features: [],
+      strategy: olLoadingstrategy.bbox,
+      format: new GeoJSON(),
+    });
+    map0Layers[5].setSource(newAnnotationVectorSource);
+    setAnnotationVectorSource(newAnnotationVectorSource);
+
     let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    layerFeatureVector.setSource(newFeatureVectorSource);
+    map0Layers[6].setSource(newFeatureVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-    layerObsDraw.setSource(newObsDrawSource);
+    map0Layers[7].setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
 
     if (props.compareDatasets) {
@@ -917,7 +924,8 @@ const Map = forwardRef((props, ref) => {
     const newLayerBasemap = getBasemap(
       props.mapSettings.basemap,
       props.mapSettings.projection,
-      props.mapSettings.basemap_attribution
+      props.mapSettings.basemap_attribution,
+      props.mapSettings.topoShadedRelief
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -929,17 +937,13 @@ const Map = forwardRef((props, ref) => {
       center = props.dataset0.default_location;
     }
 
-    const newMapView = new View({
-      projection: props.mapSettings.projection,
-      center: olProj.transform(
-        center,
-        "EPSG:4326",
-        props.mapSettings.projection
-      ),
-      zoom: DEF_ZOOM[props.mapSettings.projection],
-      minZoom: MIN_ZOOM[props.mapSettings.projection],
-      maxZoom: MAX_ZOOM[props.mapSettings.projection],
-    });
+    const newMapView = createMapView(
+      center,
+      props.mapSettings.projection,
+      DEF_ZOOM[props.mapSettings.projection],
+      MIN_ZOOM[props.mapSettings.projection],
+      MAX_ZOOM[props.mapSettings.projection]
+    );
 
     map.setView(newMapView);
     if (map === map0) {
@@ -986,8 +990,8 @@ const Map = forwardRef((props, ref) => {
 
     featureVectorSource.refresh();
 
-    if (mapLayers[7].getSource()) {
-      mapLayers[7].setSource(getQuiverSource(dataset));
+    if (mapLayers[8].getSource()) {
+      mapLayers[8].setSource(getQuiverSource(dataset, props.mapSettings));
     }
   };
 
@@ -1012,7 +1016,8 @@ const Map = forwardRef((props, ref) => {
     const newLayerBasemap = getBasemap(
       props.mapSettings.basemap,
       props.mapSettings.projection,
-      props.mapSettings.basemap_attribution
+      props.mapSettings.basemap_attribution,
+      props.mapSettings.topoShadedRelief
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -1073,7 +1078,8 @@ const Map = forwardRef((props, ref) => {
     const newLayerBasemap = getBasemap(
       props.mapSettings.basemap,
       props.mapSettings.projection,
-      props.mapSettings.basemap_attribution
+      props.mapSettings.basemap_attribution,
+      props.mapSettings.topoShadedRelief
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
