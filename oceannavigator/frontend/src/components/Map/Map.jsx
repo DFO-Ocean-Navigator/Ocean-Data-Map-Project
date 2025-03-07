@@ -124,13 +124,9 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-  const [layerAnnotationVector, setLayerAnnotationVector] = useState();
   const [annotationVectorSource, setAnnotationVectorSource] = useState();
-  const [layerFeatureVector, setLayerFeatureVector] = useState();
   const [featureVectorSource, setFeatureVectorSource] = useState();
-  const [layerObsDraw, setLayerObsDraw] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
-  const [layerQuiver, setLayerQuiver] = useState();
   const [drawAction, setDrawAction] = useState();
   const mapRef0 = useRef();
   const mapRef1 = useRef();
@@ -239,13 +235,9 @@ const Map = forwardRef((props, ref) => {
     setMapView(newMapView);
     setSelect0(newSelect);
     setLayerBasemap(mapLayers[0]);
-    setLayerAnnotationVector(mapLayers[5]);
     setAnnotationVectorSource(newAnnotationVectorSource);
-    setLayerFeatureVector(mapLayers[6]);
     setFeatureVectorSource(newFeatureVectorSource);
-    setLayerObsDraw(mapLayers[7]);
     setObsDrawSource(newObsDrawSource);
-    setLayerQuiver(mapLayers[8]);
   }, []);
 
   useEffect(() => {
@@ -357,12 +349,13 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (layerQuiver) {
+    if (map0) {
+      let quiverLayer = map0.getLayers().getArray()[8];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
       }
-      layerQuiver.setSource(source);
+      quiverLayer.setSource(source);
     }
   }, [
     props.dataset0.id,
@@ -372,7 +365,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1) {
-      let quiverLayer = map1.getLayers().getArray()[7];
+      let quiverLayer = map1.getLayers().getArray()[8];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
