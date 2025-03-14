@@ -284,7 +284,7 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     # Mask out any topography if we're below the vector-tile threshold
     if z < 8:
         with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-            bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+            bathymetry = dataset["water"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
         bathymetry = gaussian_filter(bathymetry, 0.5)
 
@@ -392,17 +392,19 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     xpx = x * 256
     ypx = y * 256
 
-    scale = [-4000, 1000]
-    cmap = "BrBG_r"
+    scales = [[0, 5000], [-4000, 0], [0, 1000]]
+    colors = [
+        plt.cm.BrBG_r(np.linspace(0.65, 0.8, 128)),
+        colormap.colormaps["bathymetry"](np.linspace(0.2, 0.35, 196)),
+        plt.cm.Purples(np.linspace(0.2, 0.5, 128)),
+    ]
 
-    land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
-    colors = np.vstack((water_colors, land_colors))
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
-
-    data = None
     with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+        datas = [
+            dataset["land"][ypx : (ypx + 256), xpx : (xpx + 256)],
+            dataset["water"][ypx : (ypx + 256), xpx : (xpx + 256)],
+            dataset["ice"][ypx : (ypx + 256), xpx : (xpx + 256)],
+        ]
 
     shade = 0
     if shaded_relief:
@@ -419,16 +421,17 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
         shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
         shade[:, :, 3] = 0
 
-    sm = matplotlib.cm.ScalarMappable(
-        matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
-        cmap=cmap,
-    )
-    img = sm.to_rgba(np.squeeze(data))
+    img_array = np.zeros((256, 256, 4))
 
-    img += shade
-    img = np.clip(img, 0, 1)
+    for data, scale, color in zip(datas, scales, colors):
+        sm = matplotlib.cm.ScalarMappable(
+            matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
+            cmap=matplotlib.colors.LinearSegmentedColormap.from_list("topo", color),
+        )
+        img = sm.to_rgba(np.squeeze(data))
+        img_array += np.clip(img, 0, 1)
 
-    im = Image.fromarray((img * 255.0).astype(np.uint8))
+    im = Image.fromarray((img_array * 255.0).astype(np.uint8))
 
     buf = BytesIO()
     im.save(buf, format="PNG", optimize=True)
@@ -448,7 +451,7 @@ async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
     ypx = y * 256
 
     with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
+        data = dataset["water"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
         data = data[::-1, :]
 
     LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
