@@ -323,28 +323,34 @@ class NetCDFData(Data):
                 self.get_dataset_variable(lon_var),
             )
             y1_index, x1_index, _ = find_nearest_grid_point(
-                            top_right[0],
-                            top_right[1],
-                            self.get_dataset_variable(lat_var),
-                            self.get_dataset_variable(lon_var),
-                        )
+                top_right[0],
+                top_right[1],
+                self.get_dataset_variable(lat_var),
+                self.get_dataset_variable(lon_var),
+            )
             y2_index, x2_index, _ = find_nearest_grid_point(
-                            bottom_left[0],
-                            top_right[1],
-                            self.get_dataset_variable(lat_var),
-                            self.get_dataset_variable(lon_var),
-                        )
+                bottom_left[0],
+                top_right[1],
+                self.get_dataset_variable(lat_var),
+                self.get_dataset_variable(lon_var),
+            )
             y3_index, x3_index, _ = find_nearest_grid_point(
-                            top_right[0],
-                            bottom_left[1],
-                            self.get_dataset_variable(lat_var),
-                            self.get_dataset_variable(lon_var),
-                        )
+                top_right[0],
+                bottom_left[1],
+                self.get_dataset_variable(lat_var),
+                self.get_dataset_variable(lon_var),
+            )
 
             # Compute min/max for each slice in case the values are flipped
             # the netCDF4 module does not support unordered slices
-            y_slice = slice(min(y0_index, y1_index, y2_index, y3_index), max(y0_index, y1_index, y2_index, y3_index))
-            x_slice = slice(min(x0_index, x1_index, x2_index, x3_index), max(x0_index, x1_index, x2_index, x3_index))
+            y_slice = slice(
+                min(y0_index, y1_index, y2_index, y3_index),
+                max(y0_index, y1_index, y2_index, y3_index),
+            )
+            x_slice = slice(
+                min(x0_index, x1_index, x2_index, x3_index),
+                max(x0_index, x1_index, x2_index, x3_index),
+            )
 
             # Get nicely formatted bearings
             p0 = geopy.Point(bottom_left)
@@ -632,6 +638,12 @@ class NetCDFData(Data):
 
             ds.close()
             subset.close()
+        elif output_format == "NETCDF3_CLASSIC":
+            subset = subset.fillna(9999)
+            encoding = {var: {"_FillValue": 9999} for var in subset.variables}
+            subset.to_netcdf(
+                working_dir + filename + ".nc", format=output_format, encoding=encoding
+            )
         else:
             # Save subset normally
             subset.to_netcdf(working_dir + filename + ".nc", format=output_format)
