@@ -65,7 +65,7 @@
         "enabled": true,
         "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSgSurfaceTracerFields1hV19-05",
         "geo_ref": {
-            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV17-02",
+            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV21-08",
             "drop_variables": ["bathymetry"]
         },
         "name": "SalishSeaCast Sea Surface Height",
@@ -86,11 +86,11 @@
         "name": "SalishSeaCast 3D Currents",
         "type": "historical",
         "url": [
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV19-05",
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV19-05"
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV21-11",
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV21-11"
         ],
         "geo_ref": {
-            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV17-02",
+            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV21-08",
             "drop_variables": ["bathymetry"]
         },
         "quantum": "hour",

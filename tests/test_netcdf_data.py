@@ -119,8 +119,8 @@ class TestNetCDFData(unittest.TestCase):
         patch_get_dataset_config.return_value = self.patch_dataset_config_ret_val
 
         urls = [
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV19-05",
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV19-05",
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV21-11",
+            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV21-11",
         ]
         kwargs = {"dataset_key": "salishseacast_currents"}
         with NetCDFData(urls, **kwargs) as nc_data:
