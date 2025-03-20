@@ -691,8 +691,10 @@ const Map = forwardRef((props, ref) => {
     );
     featureVectorSource.clear();
     featureVectorSource.addFeatures(features);
+    select0.getFeatures().clear()
     select0.getFeatures().push(newFeature);
     if (props.compareDatasets) {
+      select1.getFeatures().clear()
       select1.getFeatures().push(newFeature);
     }
     props.action("selectedFeatureIds", [newFeature.getId()]);
