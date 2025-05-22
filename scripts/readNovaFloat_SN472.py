@@ -58,24 +58,24 @@ def makeMapnewArctic(lonStart,lonEnd,latStart,latEnd,lat1,lon1,foutPath,ax):
 #    lons = etopo1.variables["x"][:]
 #    lats = etopo1.variables["y"][:]
 
-    print "lons:", max(lons),min(lons)
-    print lons
+    print("lons:", max(lons),min(lons))
+    print(lons)
 
-    print "lats:", max(lats),min(lats)
-    print lats
+    print("lats:", max(lats),min(lats))
+    print(lats)
 
 
-    print "lon,lat,start, end:",lonStart,lonEnd,latStart,latEnd
-    print " lat lon start end:", latStart-2,latEnd+5,lonStart-5,lonEnd+5
+    print("lon,lat,start, end:",lonStart,lonEnd,latStart,latEnd)
+    print(" lat lon start end:", latStart-2,latEnd+5,lonStart-5,lonEnd+5)
 
     res = findSubsetIndices(latStart-1,latEnd+1,lonStart-1,lonEnd+1,lats,lons)
 
-    print "res:::",res
+    print("res:::",res)
 
     lon,lat=np.meshgrid(lons[res[0]:res[1]],lats[res[2]:res[3]])
 
-    print "shape of lon:",np.shape(lon)
-    print "shape of lat:",np.shape(lat)
+    print("shape of lon:",np.shape(lon))
+    print("shape of lat:",np.shape(lat))
 #    exit(1)
 
 #    print "Extracted data for area %s : (%s,%s) to (%s,%s)"%(name,lon.min(),lat.min(),lon.max(),lat.max())
@@ -101,7 +101,7 @@ def makeMapnewArctic(lonStart,lonEnd,latStart,latEnd,lat1,lon1,foutPath,ax):
     else:
         lon_0=(abs(lonEnd)+abs(lonStart))/2.0
 
-    print 'Center longitude ',lon_0
+    print('Center longitude ',lon_0)
 
     map = Basemap(llcrnrlat=latStart,urcrnrlat=latEnd,\
             llcrnrlon=lonStart,urcrnrlon=lonEnd,\
@@ -157,7 +157,7 @@ def makeMapnewArctic(lonStart,lonEnd,latStart,latEnd,lat1,lon1,foutPath,ax):
     cb.set_label('Depth (m)',fontsize=10)
 
 #    map.plot(lon1,lat1,'r*', markersize=6,latlon='true')
-    print type(lon1),type(lat1),np.shape(lon1)
+    print(type(lon1), type(lat1), np.shape(lon1))
     
 #    for lon2,lat2 in zip(lon1,lat1):
 #        print lon2,lat2 
@@ -282,7 +282,7 @@ def makeMapnewArctic(lonStart,lonEnd,latStart,latEnd,lat1,lon1,foutPath,ax):
     return map
     
 def readDay(fctd,fHK):
-    print fctd, fHK
+    print(fctd, fHK)
     
 #    with open(fctd,'rb') as ctdCsvfile:
     cFlag = True
@@ -292,14 +292,14 @@ def readDay(fctd,fHK):
 #        print totalLine 
         ctdCsvfile.seek(0)
         if totalLine < 3:
-            print "there is no data in file:", fctd
+            print("there is no data in file:", fctd)
             novaFloat=defaultdict()
             
             cFlag = False 
         else:
-            print ctdCsvfile
+            print(ctdCsvfile)
             reader =csv.reader(ctdCsvfile)
-            print reader
+            print(reader)
             row0 = reader.next()
             
             fieldName=[]
@@ -314,14 +314,14 @@ def readDay(fctd,fHK):
             fields.append(row0[2])
             
             headerInfo = zip(fieldName,fields)
-            print headerInfo
+            print(headerInfo)
             
             novaFloat = dict(headerInfo)
             novaFloat = defaultdict(list,novaFloat)
             
             row1 = reader.next()
             row2 = reader.next()
-            print row1,row2
+            print(row1, row2)
             
             varName=[]
             for itemi,fitemi in zip(row1,row2):
@@ -367,14 +367,14 @@ def novafloatReader(fdataPath,dayi,novaFloatSN):
     folderName = str(yeari)+'-'+str(monthi).rjust(2,'0')+'-'+str(dayi).rjust(2,'0')
     
     
-    print "folderName:",folderName
+    print(f"folderName: {folderName}")
     fpathc = fdataPath+'/'+folderName+'/'
     
     novaFloatDeployment=[]
     for dirname,dirnames,filenames  in os.walk(fpathc):
 #        print len(filenames)
         if len(filenames) > 0:
-            print filenames
+            print(filenames)
             
 #            exit(1)
             ctdFilename = []
@@ -397,7 +397,7 @@ def novafloatReader(fdataPath,dayi,novaFloatSN):
                 
             if len(ctdFilename)> 1:
 #                pass
-                print ctdFilename
+                print(ctdFilename)
                 for filei in ctdFilename:
                     if folderName in filei:
 #                        currentDay = filei
@@ -415,9 +415,9 @@ def novafloatReader(fdataPath,dayi,novaFloatSN):
                         substr= "ASCENT_"
                         lenSubStr = len(substr)
                         indx = filei.find(substr)
-                        print filei
-                        print indx, filei[indx:indx+lenSubStr]
-                        print filei[indx+lenSubStr:indx+lenSubStr+10]
+                        print(filei)
+                        print(indx, filei[indx:indx+lenSubStr])
+                        print(filei[indx+lenSubStr:indx+lenSubStr+10])
                         
 
                         if "PARTIAL" in filei:
@@ -477,10 +477,10 @@ if __name__=="__main__":
 
     
     year1,month1,day1 = startDate.split('-')
-    print year1,month1,day1
+    print(year1, month1, day1)
     
     year2,month2,day2 = endDate.split('-')
-    print year2,month2,day2    
+    print(year2, month2, day2)
 
 #    MJD0 = jdcal.jcal2jd(year1,refMonth,refDay)[1]
     
@@ -516,7 +516,7 @@ if __name__=="__main__":
         
 #        if len(novaFloatDeployment) > 1:
         for floati in novaFloatDeployment:
-            print floati 
+            print(floati)
             datenum.append(floati["time"])
 
             latTmp = float(floati["GPSLAT"])
@@ -530,7 +530,7 @@ if __name__=="__main__":
             if latTmp > 180 or lonTmp > 180:
                 latTmp = float(floati["IRIDLAT"])
                 lonTmp = float(floati["IRIDLON"])
-                print latTmp,lonTmp, type(latTmp),type(lonTmp)
+                print(latTmp,lonTmp, type(latTmp),type(lonTmp))
                 
                 
 #            if False:
@@ -587,8 +587,8 @@ if __name__=="__main__":
          pickle.dump((salinity,temperature,pressure,lat,lon,datenum),f)
     
 #    exit(1)
-    print type(lat)
-    print len(salt),len(temp),len(pres)
+    print(type(lat))
+    print(len(salt), len(temp), len(pres))
     
 #    import matplotlib.pyplot as plt
     
