@@ -8,11 +8,8 @@ and
 @author: xuj
 """
 
-import errno
-
 #dt0= datetime.strptime(timeStr, "%Y-%m-%d %H:%M")
 import os
-import sys
 from datetime import datetime
 
 import cPickle as pickle
@@ -21,7 +18,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from netCDF4 import Dataset
 from novaFloatGiopsIce import novafloatIce
-from scipy import interpolate
 
 global novaId 
 
@@ -35,7 +31,7 @@ def readfromCls4file(fname,dayStr):
     foutPath = getOutPath()
     
     DEVELOPING=False 
-    print fname 
+    print(fname)
     figName = (fname.split('/')[-1])[:-3]
 
 #    print figName 
@@ -115,7 +111,7 @@ def readfromCls4file(fname,dayStr):
             try:
                 persistence = np.squeeze(cfile.variables["persistence"][novaIdx,:,:,:])
             except KeyError:
-                print "There is no persistence variable in this file:", fname
+                print(f"There is no persistence variable in this file: {fname}")
                 persistence=np.empty_like(forecast)*np.NaN
     
             cfile.close()
@@ -177,7 +173,7 @@ def readfromCls4file(fname,dayStr):
         #        plt.show()
                 
                 figName = foutPath+figName+'.png'
-                print figName 
+                print(figName)
                 plt.savefig(figName)
                 plt.close()            
 
@@ -212,7 +208,7 @@ def getFname(fCls4path,dayStr,modelStr):
         else :
             fileExist =False 
             
-            print "file missing on this day:" ,modelStr,dayStr
+            print("file missing on this day:" ,modelStr,dayStr)
     
         
     elif "FOAM" in modelStr:
@@ -222,7 +218,7 @@ def getFname(fCls4path,dayStr,modelStr):
             fname = fCls4path+foamFileName
             
         else:
-            print "file missing on this day:" ,modelStr, dayStr
+            print("file missing on this day:" ,modelStr, dayStr)
             fileExist =False 
                     
         
@@ -231,7 +227,7 @@ def getFname(fCls4path,dayStr,modelStr):
         if os.path.isfile(fCls4path+psy4Filename):
             fname = fCls4path+psy4Filename    
         else:
-            print "file missing on this day:", modelStr, dayStr
+            print("file missing on this day:", modelStr, dayStr)
             fileExist =False 
                         
     elif "HYCOM" in modelStr:        
@@ -239,16 +235,16 @@ def getFname(fCls4path,dayStr,modelStr):
         if os.path.isfile(fCls4path+psy4Filename):
             fname = fCls4path+psy4Filename    
         else:
-            print "file missing on this day:", modelStr, dayStr
+            print("file missing on this day:", modelStr, dayStr)
             fileExist =False 
 
 
     elif "NERSC" in modelStr:        
-        psy4Filename = "class4_"+dayStr+"_NERSC_ARCMFC_v3_profile.nc" 
+        psy4Filename = f"class4_{dayStr}_NERSC_ARCMFC_v3_profile.nc" 
         if os.path.isfile(fCls4path+psy4Filename):
             fname = fCls4path+psy4Filename    
         else:
-            print "file missing on this day:", modelStr, dayStr
+            print("file missing on this day:", modelStr, dayStr)
             fileExist =False 
 
     elif "BLK" in modelStr:        
@@ -256,7 +252,7 @@ def getFname(fCls4path,dayStr,modelStr):
         if os.path.isfile(fCls4path+psy4Filename):
             fname = fCls4path+psy4Filename    
         else:
-            print "file missing on this day:", modelStr, dayStr
+            print("file missing on this day:", modelStr, dayStr)
             fileExist =False 
 
         
@@ -266,7 +262,7 @@ def getFname(fCls4path,dayStr,modelStr):
 def readGiopsIce(lat,lon,datenum):
     di = 0            
     for datei in datenum:
-        print datei 
+        print(datei)
         dt0= datetime.strptime(datei, "%Y-%m-%d %H:%M:%S")
         dt1 = mdates.date2num(dt0)
 #        dt2 = mdates.num2date(dt1)
@@ -287,7 +283,7 @@ def readGiopsIce(lat,lon,datenum):
         
     
 
-    return giopsIce
+    return aice # was giopsIce but its not defined 
 
     
 if __name__=="__main__":
@@ -317,8 +313,8 @@ if __name__=="__main__":
         with open(floatIceData,'w') as f: 
             pickle.dump((aice,datenumAice),f)
 
-    print np.shape(aice)
-    print np.shape(datenumAice)
+    print(np.shape(aice))
+    print(np.shape(datenumAice))
     
     aice = np.squeeze(np.array(aice))
     TEMPERATURE =[]
@@ -377,7 +373,7 @@ if __name__=="__main__":
 
         di = 0            
         for datei in datenum:
-            print datei 
+            print(datei)
             dt0= datetime.strptime(datei, "%Y-%m-%d %H:%M:%S")
             dt1 = mdates.date2num(dt0)
             dt2 = mdates.num2date(dt1)
@@ -386,7 +382,7 @@ if __name__=="__main__":
             taxis.append(dt1)        
             
             dayStr = str(dt0.year)+str(dt0.month).rjust(2,'0')+str(dt0.day).rjust(2,'0')
-            print dayStr
+            print(dayStr)
             
     
             
@@ -395,10 +391,10 @@ if __name__=="__main__":
             if fileExist:
                 novaIn,climatology,persistence,forecast,bestEstimate,dayObs,depth = readfromCls4file(fname,dayStr)
                 
-                print type(dayObs),np.shape(dayObs)
-                print np.shape(depth)
-                print np.shape(forecast)
-                print np.shape(bestEstimate)
+                print(type(dayObs), np.shape(dayObs))
+                print(np.shape(depth))
+                print(np.shape(forecast))
+                print(np.shape(bestEstimate))
                 
                 
 #                unmaskedDayObs = np.ma.masked_equal(dayObs,True)
@@ -412,9 +408,9 @@ if __name__=="__main__":
                 
 #                exit(1)
                 if novaIn:
-                    print np.shape(climatology)
-                    print np.shape(depth)
-                    print np.shape(persistence)
+                    print(np.shape(climatology))
+                    print(np.shape(depth))
+                    print(np.shape(persistence))
     
                     errorClimate = climatology - dayObs
     
@@ -430,12 +426,12 @@ if __name__=="__main__":
                     
                     errorBest    = bestEstimate - dayObs
                     
-                    print np.shape(errorClimate),np.shape(errorPersist)
-                    print np.shape(errorForcast),np.shape(errorBest)
+                    print(np.shape(errorClimate), np.shape(errorPersist))
+                    print(np.shape(errorForcast), np.shape(errorBest))
                     
                     rmsClimat = np.sqrt(np.mean(errorClimate**2,axis=1))
                     biasClimat = np.mean(errorClimate,axis=1)
-                    print np.shape(rmsClimat)
+                    print(np.shape(rmsClimat))
                     
                     rmsPersist = np.sqrt(np.mean(errorPersist**2,axis=2))
                     rmsCast    = np.sqrt(np.mean(errorForcast**2,axis=2))
@@ -478,8 +474,8 @@ if __name__=="__main__":
                         DEPTH.extend(depth[dataIdx])                        
                         
                     else:
-                        print "now", di
-                        print tempSize, saliSize
+                        print("now", di)
+                        print(tempSize, saliSize)
 #                        print dayObs
 #                        exit(1)                        
                     
@@ -507,9 +503,9 @@ if __name__=="__main__":
                             
                             CLIMATOLOGY = np.hstack((CLIMATOLOGY,climatology[:,dataIdx]))
                             temp =forecast[:,:,dataIdx]
-                            print np.shape(temp),np.shape(FORECAST)
+                            print(np.shape(temp),np.shape(FORECAST))
                             FORECAST= np.dstack((FORECAST,forecast[:,:,dataIdx]))
-                            print np.shape(temp),np.shape(FORECAST)
+                            print(np.shape(temp),np.shape(FORECAST))
                         
                         
 #                        np.append(BESTESTIMATION,bestEstimate[1,dataIdx],1)
@@ -564,7 +560,7 @@ if __name__=="__main__":
                         plt.close()
     #                plt.subplot(122)
                     
-                    print np.shape(rmsClimat),rmsClimat
+                    print(np.shape(rmsClimat),rmsClimat)
                     
     #                if hasattrdayObs, 'mask'):
     #                    dayObs.mask[np.where(qc==badDataFlag)]=True
@@ -576,12 +572,12 @@ if __name__=="__main__":
     #                exit(1)
                     
                 else:
-                    print "There is no Nova float data for this Day:", dayStr
+                    print(f"There is no Nova float data for this Day:{dayStr}")
             
     
                 
-            print np.shape(dateNum)           
-            print np.shape(rmsError120Z)
+            print(np.shape(dateNum))      
+            print(np.shape(rmsError120Z))
         
         with open(modelFile,'w') as f:        
             pickle.dump((rmsError120Z,rmsBest,rmsClimatology,biasError120Z,biasBest,biasClimatology,dateNum),f)
@@ -649,8 +645,8 @@ if __name__=="__main__":
     
     
     
-    print np.shape(taxis)
-    print np.shape(salt)
-    print np.shape(temp)
-    print np.shape(pres)
+    print(np.shape(taxis))
+    print(np.shape(salt))
+    print(np.shape(temp))
+    print(np.shape(pres))
     

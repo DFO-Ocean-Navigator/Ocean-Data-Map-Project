@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 # from flask_babel import gettext
 from matplotlib.dates import date2num
 

@@ -23,11 +23,14 @@ class LinePlotter(Plotter):
         if name is None or name == "":
             p0 = geopy.Point(points[0])
             p1 = geopy.Point(points[-1])
-            name = "(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)" % ( # gettext("(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)") % (
-                p0.latitude,
-                p0.longitude,
-                p1.latitude,
-                p1.longitude,
+            name = (
+                "(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)"
+                % (  # gettext("(%0.4f N, %0.4f W) to (%0.4f N, %0.4f W)") % (
+                    p0.latitude,
+                    p0.longitude,
+                    p1.latitude,
+                    p1.longitude,
+                )
             )
 
         self.name = name

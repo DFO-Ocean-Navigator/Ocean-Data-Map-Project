@@ -246,9 +246,9 @@ class Mercator(Model):
                     np.zeros(d.shape[1:]), mask=True, dtype=self.depths.dtype
                 )
 
-                depth_values[
-                    np.unravel_index(indices, depth_values.shape)
-                ] = self.depths[depths]
+                depth_values[np.unravel_index(indices, depth_values.shape)] = (
+                    self.depths[depths]
+                )
 
         else:
             if len(var.shape) == 4:

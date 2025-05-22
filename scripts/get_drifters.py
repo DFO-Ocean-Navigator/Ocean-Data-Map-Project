@@ -16,7 +16,7 @@ import requests
 
 def download_file_from_google_drive(id, destination):
     def get_confirm_token(response):
-        print "confirming token"
+        print("confirming token")
         for key, value in response.cookies.items():
             if key.startswith('download_warning'):
                 return value
@@ -24,7 +24,7 @@ def download_file_from_google_drive(id, destination):
         return None
 
     def save_response_content(response, destination):
-        print "saving chunck"
+        print("saving chunck")
         CHUNK_SIZE = 32768
 
         with open(destination, "wb") as f:
@@ -49,7 +49,7 @@ def download_file_from_google_drive(id, destination):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) is not 3:
-        print "Usage: python google_drive.py drive_file_id destination_file_path"
+        print("Usage: python google_drive.py drive_file_id destination_file_path")
     else:
         # TAKE ID FROM SHAREABLE LINK
         file_id = sys.argv[1]

@@ -9,7 +9,7 @@ import numpy as np
 from netCDF4 import Dataset
 
 if len(sys.argv) < 4:
-    print "Usage: " + sys.argv[0] + " inputfile maskedfile outputfile"
+    print("Usage: " + sys.argv[0] + " inputfile maskedfile outputfile")
     exit(1)
 
 infile = sys.argv[1]
@@ -27,7 +27,7 @@ with Dataset(infile, 'r') as src, \
         )
 
     for name, variable in src.variables.items():
-        print name
+        print(name)
         dst.createVariable(name, variable.datatype, variable.dimensions)
         addMask = False
         for attrname in variable.ncattrs():
@@ -47,7 +47,7 @@ with Dataset(infile, 'r') as src, \
             addMask = True
 
         if addMask:
-            print "Adding mask to %s" % name
+            print("Adding mask to %s" % name)
             result = np.ma.masked_array(variable[:])
             result.mask = masked.variables[name][0, :].mask
             dst.variables[name][:] = result

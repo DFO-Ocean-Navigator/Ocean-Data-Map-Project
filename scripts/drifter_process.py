@@ -175,7 +175,7 @@ for buoy_id, files in buoy_files.items():
 
         if len(si) > 0:
             dataframe.drop(points.index[si[0]], inplace=True)
-            print "\tDropping point with speed=%0.1f knots" % speed[si[0]]
+            print("\tDropping point with speed=%0.1f knots" % speed[si[0]])
         else:
             changed = False
 
@@ -212,8 +212,8 @@ for buoy_id, files in buoy_files.items():
     )
 
     if (vt.size<= 2 or vx.size <=2 or vy.size <=2 ):
-	    print "vt,vx,or vy are to small to use, must nbe greater than 1 (the drifter should have more than 1 point)"
-	    continue
+        print("vt,vx,or vy are to small to use, must nbe greater than 1 (the drifter should have more than 1 point)")
+        continue
     fx = interpolate.interp1d(vt, vx, bounds_error=False, kind='linear')
     fy = interpolate.interp1d(vt, vy, bounds_error=False, kind='linear')
 
