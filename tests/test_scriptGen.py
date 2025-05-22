@@ -68,9 +68,9 @@ class TestScriptGenerator:
 
         plotQuery = (
             '{"area":[{"innerrings":[],"name":"","polygons":[[[57.45537472457255,'
-            '-53.32611083984376],[54.96545403664038,-35.91699909988563],['
-            '37.492919230762624,-40.57520222488561],[39.21584183791197,'
-            '-60.08692097488562],[57.45537472457255,-53.32611083984376]]]}],'
+            "-53.32611083984376],[54.96545403664038,-35.91699909988563],["
+            "37.492919230762624,-40.57520222488561],[39.21584183791197,"
+            "-60.08692097488562],[57.45537472457255,-53.32611083984376]]]}],"
             '"bathymetry":true,"colormap":"default","contour":{"colormap":"default"'
             ',"hatch":false,"legend":true,"levels":"auto","variable":"none"},'
             '"dataset":"giops_day","depth":0,"interp":"gaussian","neighbours":10,'
@@ -96,16 +96,16 @@ class TestScriptGenerator:
 
         plotQuery = (
             '{"area":[{"innerrings":[],"name":"","polygons":[[[57.45537472457255,'
-            '-53.32611083984376],[54.96545403664038,-35.91699909988563],['
-            '37.492919230762624,-40.57520222488561],[39.21584183791197,'
-            '-60.08692097488562],[57.45537472457255,-53.32611083984376]]]}],'
+            "-53.32611083984376],[54.96545403664038,-35.91699909988563],["
+            "37.492919230762624,-40.57520222488561],[39.21584183791197,"
+            "-60.08692097488562],[57.45537472457255,-53.32611083984376]]]}],"
             '"bathymetry":true,"colormap":"default","contour":{"colormap":"default"'
             ',"hatch":false,"legend":true,"levels":"auto","variable":"none"},'
             '"dataset":"giops_day","depth":0,"interp":"gaussian","neighbours":10,'
             '"projection":"EPSG:3857","quiver":{"colormap":"default","magnitude":'
             '"length","variable":"none"},"radius":25,"scale":"-5,30,auto",'
             '"showarea":true,"time":862,"type":"map","variable":"votemper"}&save'
-            '&format=csv&size=10x7&dpi=144'
+            "&format=csv&size=10x7&dpi=144"
         )
         data = generateR(plotQuery)
         newData = data.read()
@@ -128,7 +128,7 @@ class TestScriptGenerator:
             '-60.08692097488562","output_format":"NETCDF4","should_zip":0,"time":'
             '"857,862","user_grid":0,"variables":"vice,votemper,vozocrtx,vomecrty"}'
         )
-        data = generateR(plotQuery, None, 'subset')
+        data = generateR(plotQuery, None, "subset")
         newData = data.read()
         m = hashlib.md5()
         m.update(newData)

@@ -127,8 +127,12 @@ class TemperatureSalinityPlotter(PointPlotter):
         for idx, _ in enumerate(self.temperature):
             plt.plot(self.salinity[idx], self.temperature[idx], "-")
 
-        plt.xlabel("Salinity (PSU)", fontsize=14) # plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
-        plt.ylabel("Temperature (Celsius)", fontsize=14) # plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
+        plt.xlabel(
+            "Salinity (PSU)", fontsize=14
+        )  # plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
+        plt.ylabel(
+            "Temperature (Celsius)", fontsize=14
+        )  # plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
 
         if len(self.points) == 1:
             labels = []
@@ -153,7 +157,7 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         if not self.plotTitle:
             plt.title(
-                "T/S Diagram for (%s)\n%s" # gettext("T/S Diagram for (%s)\n%s")
+                "T/S Diagram for (%s)\n%s"  # gettext("T/S Diagram for (%s)\n%s")
                 % (", ".join(self.names), self.date_formatter(self.iso_timestamp)),
                 fontsize=15,
             )

@@ -1,5 +1,5 @@
-"""Unit tests for data.class4 module.
-"""
+"""Unit tests for data.class4 module."""
+
 import shutil
 from pathlib import Path
 

@@ -46,9 +46,9 @@ class Stats:
                     self.inner_area.area_query[idx]["polygons"][0][idx2][
                         1
                     ] = divide_lon_line
-                    self.outter_area.area_query[idx]["polygons"][0][idx2][
-                        1
-                    ] = convert_to_bounded_lon(lon)
+                    self.outter_area.area_query[idx]["polygons"][0][idx2][1] = (
+                        convert_to_bounded_lon(lon)
+                    )
                 elif abs(lon) < abs(divide_lon_line):
                     self.outter_area.area_query[idx]["polygons"][0][idx2][
                         1

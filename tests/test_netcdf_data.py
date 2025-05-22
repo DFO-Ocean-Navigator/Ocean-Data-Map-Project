@@ -1,5 +1,5 @@
-"""Unit tests for data.netcdf_data.
-"""
+"""Unit tests for data.netcdf_data."""
+
 import datetime
 import json
 import os

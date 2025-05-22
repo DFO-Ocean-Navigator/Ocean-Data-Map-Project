@@ -80,7 +80,7 @@ def configure_pyinstrument(app: FastAPI, output_dir: str) -> None:
                 + f"{int(time.time())}"
                 + ".json"
             )
-            with open(fname, 'w') as f:
+            with open(fname, "w") as f:
                 f.write(profiler.output(renderer=SpeedscopeRenderer()))
             return response
         else:

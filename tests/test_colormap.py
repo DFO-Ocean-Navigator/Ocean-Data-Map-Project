@@ -1,5 +1,5 @@
-"""Unit tests for plotting.colormap module.
-"""
+"""Unit tests for plotting.colormap module."""
+
 import unittest
 
 import plotting.colormap
