@@ -136,11 +136,12 @@ class MapPlotter(Plotter):
         width_scale = 1.25
         height_scale = 1.25
 
-        if self.projection == "EPSG:32661": # north pole projection
+        if self.projection == "EPSG:32661" or self.projection == "EPSG:3031":
             near_pole, covers_pole = self.pole_proximity(self.points[0])
-            if (
-                self.centroid[0] > 80 or near_pole or covers_pole
-            ):  
+
+        if self.projection == "EPSG:32661" and (
+            self.centroid[0] > 80 or near_pole or covers_pole
+        ):  # north pole projection
 
                 blat = min(self.bounds[0], self.bounds[2])
                 blat = 5 * np.floor(blat / 5)
@@ -164,11 +165,13 @@ class MapPlotter(Plotter):
                     ]
                 )
 
-        elif self.projection == "EPSG:3031": # south pole projection
-            near_pole, covers_pole = self.pole_proximity(self.points[0])
-            if ((self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80)
+        elif self.projection == "EPSG:3031" and (
+            (
+                (self.centroid[0] < -80 or self.bounds[1] < -80 or self.bounds[3] < -80)
                 or covers_pole
-            )  or near_pole:  
+            )
+            or near_pole
+        ):  # south pole projection
                 blat = max(self.bounds[0], self.bounds[2])
                 blat = 5 * np.ceil(blat / 5)
                 # is centerered close to the south pole
