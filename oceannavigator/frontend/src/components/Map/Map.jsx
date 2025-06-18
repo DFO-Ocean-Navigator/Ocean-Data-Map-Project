@@ -539,6 +539,16 @@ const Map = forwardRef((props, ref) => {
         type = type === "LineString" ? "track" : type;
         id = selected[0].get("id");
         observation = true;
+      } else if (selected[0].get("class") === "predefined") {
+        id = selected[0].get("key");
+        type = selected[0].get("type");
+        coordinates = [id];
+        return {
+          type: type,
+          coordinates: coordinates,
+          id: id,
+          observation: observation,
+        };
       } else {
         type = selected[0].get("type");
       }
