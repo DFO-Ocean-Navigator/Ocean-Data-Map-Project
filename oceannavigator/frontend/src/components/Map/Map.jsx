@@ -189,7 +189,8 @@ const Map = forwardRef((props, ref) => {
     });
 
     let newLayerFeatureVector = createFeatureVectorLayer(
-      newFeatureVectorSource
+      newFeatureVectorSource,
+      props.mapSettings
     );
 
     const newObsDrawSource = new VectorSource({ features: [] });
@@ -252,7 +253,10 @@ const Map = forwardRef((props, ref) => {
       let newLayerAnnotationVector = createAnnotationVectorLayer(
         annotationVectorSource
       );
-      let newLayerFeatureVector = createFeatureVectorLayer(featureVectorSource);
+      let newLayerFeatureVector = createFeatureVectorLayer(
+        featureVectorSource,
+        props.mapSettings
+      );
 
       newMap = createMap(
         props.mapSettings,
@@ -691,10 +695,10 @@ const Map = forwardRef((props, ref) => {
     );
     featureVectorSource.clear();
     featureVectorSource.addFeatures(features);
-    select0.getFeatures().clear()
+    select0.getFeatures().clear();
     select0.getFeatures().push(newFeature);
     if (props.compareDatasets) {
-      select1.getFeatures().clear()
+      select1.getFeatures().clear();
       select1.getFeatures().push(newFeature);
     }
     props.action("selectedFeatureIds", [newFeature.getId()]);
