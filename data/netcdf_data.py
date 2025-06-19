@@ -25,6 +25,10 @@ from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
 
+import xarray as xr
+import numpy as np
+
+
 
 class NetCDFData(Data):
     """Handles reading of netcdf files.
@@ -309,6 +313,9 @@ class NetCDFData(Data):
         lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
+
+        self.dataset = self.dataset.assign_coords({lon_var: (((self.dataset.longitude + 180) % 360) - 180)})
+        self.dataset= self.dataset.sortby(lon_var)
 
         # self.get_dataset_variable should be used below instead of
         # self.dataset.variables[...] because self.dataset.variables[...]
