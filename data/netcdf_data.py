@@ -317,7 +317,7 @@ class NetCDFData(Data):
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
         #re-indexing longitude from -180 to 180
         self.dataset = self.dataset.assign_coords(
-            {lon_var: (((self.dataset.longitude + 180) % 360) - 180)}
+            {lon_var: (((self.dataset[lon_var] + 180) % 360) - 180)}
         )
         self.dataset = self.dataset.sortby(lon_var)
 
