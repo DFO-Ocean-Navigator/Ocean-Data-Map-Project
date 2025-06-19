@@ -29,7 +29,6 @@ import xarray as xr
 import numpy as np
 
 
-
 class NetCDFData(Data):
     """Handles reading of netcdf files.
 
@@ -233,8 +232,6 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
 
-   
-
     def subset(self, query):
         """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
@@ -315,8 +312,10 @@ class NetCDFData(Data):
         lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
-        self.dataset = self.dataset.assign_coords({lon_var: (((self.dataset.longitude + 180) % 360) - 180)})
-        self.dataset= self.dataset.sortby(lon_var)
+        self.dataset = self.dataset.assign_coords(
+            {lon_var: (((self.dataset.longitude + 180) % 360) - 180)}
+        )
+        self.dataset = self.dataset.sortby(lon_var)
 
         # self.get_dataset_variable should be used below instead of
         # self.dataset.variables[...] because self.dataset.variables[...]
@@ -349,7 +348,6 @@ class NetCDFData(Data):
                 self.get_dataset_variable(lon_var),
             )
 
-         
         #     y_slice = slice(
         #         min(y0_index, y1_index, y2_index, y3_index),
         #         max(y0_index, y1_index, y2_index, y3_index),
@@ -375,7 +373,6 @@ class NetCDFData(Data):
         #             max(x0_index, x1_index, x2_index, x3_index),
         #         )
 
-            
         #     p0 = geopy.Point(bottom_left)
         #     p1 = geopy.Point(top_right)
         # else:
@@ -401,35 +398,27 @@ class NetCDFData(Data):
         x_min_idx, x_max_idx = min(x_indices), max(x_indices)
         x_slice = slice(x_min_idx, x_max_idx + 1)
 
-
-        
         def crosses_antimeridian(lon_min, lon_max):
             lon_min = ((lon_min + 180) % 360) - 180
             lon_max = ((lon_max + 180) % 360) - 180
             return lon_max < lon_min
 
-        
         if crosses_antimeridian(lon0, lon1):
-            part1 = self.dataset.isel({ y_coord: y_slice,
-                                        x_coord: slice(x_min_idx, None) })
-            part2 = self.dataset.isel({ y_coord: y_slice,
-                                        x_coord: slice(0, x_max_idx + 1) })
-            ds_region = xarray.merge([part1, part2], dim=x_coord)
+            part1 = self.dataset.isel({y_coord: y_slice, x_coord: slice(0, x_min_idx)})
+            part2 = self.dataset.isel(
+                {
+                    y_coord: y_slice,
+                    x_coord: slice(x_max_idx, self.dataset[x_coord].size),
+                }
+            )
+            self.dataset = xarray.concat([part2, part1], dim=x_coord)
         else:
-            ds_region = self.dataset.isel({ y_coord: y_slice,
-                                            x_coord: slice(x_min_idx, x_max_idx + 1) })
+            self.dataset = self.dataset.isel(
+                {y_coord: y_slice, x_coord: slice(x_min_idx, x_max_idx + 1)}
+            )
 
-    
         p0 = geopy.Point(bottom_left)
         p1 = geopy.Point(top_right)
-
-       
-     
-
-
-            
-
-
 
         # Get timestamp
         time_var = find_variable("time", list(self.dataset.variables.keys()))
@@ -455,7 +444,6 @@ class NetCDFData(Data):
         dataset_name = query.get("dataset")
         y_coord, x_coord = self.yx_dimensions
 
-    
         # Select requested time (time range if applicable)
         if apply_time_range:
             # slice doesn't include the last element
@@ -465,7 +453,7 @@ class NetCDFData(Data):
 
         # subset = ds_region.isel(**{time_var: time_slice})
         time_dim = self.time_variable.name
-        subset = ds_region.isel(**{time_dim: time_slice})
+        subset = self.dataset.isel(**{time_dim: time_slice})
         # Filter out unwanted variables
         output_vars = query.get("variables").split(",")
         # Keep the coordinate variables
@@ -474,7 +462,7 @@ class NetCDFData(Data):
             if variable not in output_vars:
                 subset = subset.drop_vars([variable])
 
-        time_dim = self.time_variable.name    
+        time_dim = self.time_variable.name
         y_dim, x_dim = y_coord, x_coord
         for variable in output_vars:
             # if variable is a computed variable, overwrite it
@@ -490,17 +478,17 @@ class NetCDFData(Data):
             #     )
 
             if isinstance(subset[variable], data.calculated.CalculatedArray):
-               subset = subset.assign(
-                   **{
+                subset = subset.assign(
+                    **{
                         variable: subset[variable].isel(
-                        **{time_dim: time_slice, y_dim: y_slice, x_dim: x_slice}
-                    )
-                }
-            )
+                            **{time_dim: time_slice, y_dim: y_slice, x_dim: x_slice}
+                        )
+                    }
+                )
                 # Cast each attribute to str (allows exporting to all NC formats)
             subset[variable].attrs = {
-                    key: str(value) for key, value in subset[variable].attrs.items()
-                }
+                key: str(value) for key, value in subset[variable].attrs.items()
+            }
 
         output_format = query.get("output_format")
         filename = (
