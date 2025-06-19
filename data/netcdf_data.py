@@ -233,6 +233,8 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
 
+   
+
     def subset(self, query):
         """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
@@ -313,7 +315,6 @@ class NetCDFData(Data):
         lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
-
         self.dataset = self.dataset.assign_coords({lon_var: (((self.dataset.longitude + 180) % 360) - 180)})
         self.dataset= self.dataset.sortby(lon_var)
 
@@ -348,26 +349,87 @@ class NetCDFData(Data):
                 self.get_dataset_variable(lon_var),
             )
 
-            # Compute min/max for each slice in case the values are flipped
-            # the netCDF4 module does not support unordered slices
-            y_slice = slice(
-                min(y0_index, y1_index, y2_index, y3_index),
-                max(y0_index, y1_index, y2_index, y3_index),
-            )
-            x_slice = slice(
-                min(x0_index, x1_index, x2_index, x3_index),
-                max(x0_index, x1_index, x2_index, x3_index),
-            )
+         
+        #     y_slice = slice(
+        #         min(y0_index, y1_index, y2_index, y3_index),
+        #         max(y0_index, y1_index, y2_index, y3_index),
+        #     )
 
-            # Get nicely formatted bearings
-            p0 = geopy.Point(bottom_left)
-            p1 = geopy.Point(top_right)
+        #     #  if region crosses antimeridian
+        #     def crosses_antimeridian(lon_min, lon_max):
+        #         lon_min = ((lon_min + 180) % 360) - 180
+        #         lon_max = ((lon_max + 180) % 360) - 180
+        #         return lon_max < lon_min
+
+        #     if crosses_antimeridian(bottom_left[1], top_right[1]):
+        #         # Region crosses 180/-180 → grab both sides of the cut
+        #         left = self.dataset.sel({lon_var: slice(bottom_left[1], 180)})
+        #         right = self.dataset.sel({lon_var: slice(-180, top_right[1])})
+        #         self.dataset = xarray.concat([left, right], dim=lon_var)
+
+        #         x_slice = slice(self.get_dataset_variable(lon_var).size)
+        #     else:
+
+        #         x_slice = slice(
+        #             min(x0_index, x1_index, x2_index, x3_index),
+        #             max(x0_index, x1_index, x2_index, x3_index),
+        #         )
+
+            
+        #     p0 = geopy.Point(bottom_left)
+        #     p1 = geopy.Point(top_right)
+        # else:
+        #     y_slice = slice(self.get_dataset_variable(lat_var).size)
+        #     x_slice = slice(self.get_dataset_variable(lon_var).size)
+
+        #     p0 = geopy.Point([-85.0, -180.0])
+        #     p1 = geopy.Point([85.0, 180.0])
+        # ——————————————
+        # pull out your y/x dimension names
+        y_coord, x_coord = self.yx_dimensions
+        lat0, lon0 = bottom_left
+        lat1, lon1 = top_right
+
+        # 1) compute y_slice exactly as before
+        y_slice = slice(
+            min(y0_index, y1_index, y2_index, y3_index),
+            max(y0_index, y1_index, y2_index, y3_index),
+        )
+
+        # 2) gather all x‐indices and find min/max
+        x_indices = [x0_index, x1_index, x2_index, x3_index]
+        x_min_idx, x_max_idx = min(x_indices), max(x_indices)
+        x_slice = slice(x_min_idx, x_max_idx + 1)
+
+
+        
+        def crosses_antimeridian(lon_min, lon_max):
+            lon_min = ((lon_min + 180) % 360) - 180
+            lon_max = ((lon_max + 180) % 360) - 180
+            return lon_max < lon_min
+
+        
+        if crosses_antimeridian(lon0, lon1):
+            part1 = self.dataset.isel({ y_coord: y_slice,
+                                        x_coord: slice(x_min_idx, None) })
+            part2 = self.dataset.isel({ y_coord: y_slice,
+                                        x_coord: slice(0, x_max_idx + 1) })
+            ds_region = xarray.merge([part1, part2], dim=x_coord)
         else:
-            y_slice = slice(self.get_dataset_variable(lat_var).size)
-            x_slice = slice(self.get_dataset_variable(lon_var).size)
+            ds_region = self.dataset.isel({ y_coord: y_slice,
+                                            x_coord: slice(x_min_idx, x_max_idx + 1) })
 
-            p0 = geopy.Point([-85.0, -180.0])
-            p1 = geopy.Point([85.0, 180.0])
+    
+        p0 = geopy.Point(bottom_left)
+        p1 = geopy.Point(top_right)
+
+       
+     
+
+
+            
+
+
 
         # Get timestamp
         time_var = find_variable("time", list(self.dataset.variables.keys()))
@@ -393,9 +455,7 @@ class NetCDFData(Data):
         dataset_name = query.get("dataset")
         y_coord, x_coord = self.yx_dimensions
 
-        # Do subset along coordinates
-        subset = self.dataset.isel(**{y_coord: y_slice, x_coord: x_slice})
-
+    
         # Select requested time (time range if applicable)
         if apply_time_range:
             # slice doesn't include the last element
@@ -403,8 +463,9 @@ class NetCDFData(Data):
         else:
             time_slice = slice(int(time_range[0]), int(time_range[0]) + 1)
 
-        subset = subset.isel(**{time_var: time_slice})
-
+        # subset = ds_region.isel(**{time_var: time_slice})
+        time_dim = self.time_variable.name
+        subset = ds_region.isel(**{time_dim: time_slice})
         # Filter out unwanted variables
         output_vars = query.get("variables").split(",")
         # Keep the coordinate variables
@@ -413,20 +474,31 @@ class NetCDFData(Data):
             if variable not in output_vars:
                 subset = subset.drop_vars([variable])
 
+        time_dim = self.time_variable.name    
+        y_dim, x_dim = y_coord, x_coord
         for variable in output_vars:
             # if variable is a computed variable, overwrite it
-            if isinstance(
-                self.get_dataset_variable(variable), data.calculated.CalculatedArray
-            ):
-                subset = subset.assign(
-                    **{
-                        variable: self.get_dataset_variable(variable).isel(
-                            **{time_var: time_slice, y_coord: y_slice, x_coord: x_slice}
-                        )
-                    }
-                )
+            # if isinstance(
+            # #     self.get_dataset_variable(variable), data.calculated.CalculatedArray
+            # # ):
+            #     subset = subset.assign(
+            #         **{
+            #             variable: self.get_dataset_variable(variable).isel(
+            #                 **{time_var: time_slice, y_coord: y_slice, x_coord: x_slice}
+            #             )
+            #         }
+            #     )
+
+            if isinstance(subset[variable], data.calculated.CalculatedArray):
+               subset = subset.assign(
+                   **{
+                        variable: subset[variable].isel(
+                        **{time_dim: time_slice, y_dim: y_slice, x_dim: x_slice}
+                    )
+                }
+            )
                 # Cast each attribute to str (allows exporting to all NC formats)
-                subset[variable].attrs = {
+            subset[variable].attrs = {
                     key: str(value) for key, value in subset[variable].attrs.items()
                 }
 
