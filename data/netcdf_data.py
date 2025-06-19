@@ -29,6 +29,7 @@ import xarray as xr
 import numpy as np
 
 
+
 class NetCDFData(Data):
     """Handles reading of netcdf files.
 
@@ -232,6 +233,8 @@ class NetCDFData(Data):
                 i += 1
             return date_formatted
 
+   
+
     def subset(self, query):
         """Subsets a netcdf file with all depths"""
         # Ensure we have an output folder that will be cleaned by tmpreaper
@@ -312,6 +315,7 @@ class NetCDFData(Data):
         lon_var = find_variable("lon", list(self.dataset.variables.keys()))
 
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
+        #re-indexing longitude from -180 to 180
         self.dataset = self.dataset.assign_coords(
             {lon_var: (((self.dataset.longitude + 180) % 360) - 180)}
         )
@@ -348,62 +352,25 @@ class NetCDFData(Data):
                 self.get_dataset_variable(lon_var),
             )
 
-        #     y_slice = slice(
-        #         min(y0_index, y1_index, y2_index, y3_index),
-        #         max(y0_index, y1_index, y2_index, y3_index),
-        #     )
-
-        #     #  if region crosses antimeridian
-        #     def crosses_antimeridian(lon_min, lon_max):
-        #         lon_min = ((lon_min + 180) % 360) - 180
-        #         lon_max = ((lon_max + 180) % 360) - 180
-        #         return lon_max < lon_min
-
-        #     if crosses_antimeridian(bottom_left[1], top_right[1]):
-        #         # Region crosses 180/-180 → grab both sides of the cut
-        #         left = self.dataset.sel({lon_var: slice(bottom_left[1], 180)})
-        #         right = self.dataset.sel({lon_var: slice(-180, top_right[1])})
-        #         self.dataset = xarray.concat([left, right], dim=lon_var)
-
-        #         x_slice = slice(self.get_dataset_variable(lon_var).size)
-        #     else:
-
-        #         x_slice = slice(
-        #             min(x0_index, x1_index, x2_index, x3_index),
-        #             max(x0_index, x1_index, x2_index, x3_index),
-        #         )
-
-        #     p0 = geopy.Point(bottom_left)
-        #     p1 = geopy.Point(top_right)
-        # else:
-        #     y_slice = slice(self.get_dataset_variable(lat_var).size)
-        #     x_slice = slice(self.get_dataset_variable(lon_var).size)
-
-        #     p0 = geopy.Point([-85.0, -180.0])
-        #     p1 = geopy.Point([85.0, 180.0])
-        # ——————————————
-        # pull out your y/x dimension names
         y_coord, x_coord = self.yx_dimensions
-        lat0, lon0 = bottom_left
-        lat1, lon1 = top_right
-
-        # 1) compute y_slice exactly as before
+        #computing  y_slice for only selected subset
         y_slice = slice(
             min(y0_index, y1_index, y2_index, y3_index),
             max(y0_index, y1_index, y2_index, y3_index),
         )
 
-        # 2) gather all x‐indices and find min/max
+        #getting min and max longitude value before computing x_slice
         x_indices = [x0_index, x1_index, x2_index, x3_index]
         x_min_idx, x_max_idx = min(x_indices), max(x_indices)
         x_slice = slice(x_min_idx, x_max_idx + 1)
 
+        #function to check if the subset cross the boundary/meridian line of the map
         def crosses_antimeridian(lon_min, lon_max):
             lon_min = ((lon_min + 180) % 360) - 180
             lon_max = ((lon_max + 180) % 360) - 180
             return lon_max < lon_min
-
-        if crosses_antimeridian(lon0, lon1):
+        
+        if crosses_antimeridian(bottom_left[1], top_right[1]):
             part1 = self.dataset.isel({y_coord: y_slice, x_coord: slice(0, x_min_idx)})
             part2 = self.dataset.isel(
                 {
