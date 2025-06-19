@@ -277,6 +277,7 @@ def areas(area_id, projection, resolution, extent):
                         "resolution": resolution,
                         "key": "%s/%s" % (area_id, pname),
                         "centroid": proj(mp.centroid.y, mp.centroid.x, inverse=True),
+                        "class": "predefined"
                     },
                 }
             )

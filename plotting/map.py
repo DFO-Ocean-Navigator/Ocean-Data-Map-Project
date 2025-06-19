@@ -136,33 +136,34 @@ class MapPlotter(Plotter):
         width_scale = 1.25
         height_scale = 1.25
 
-        near_pole, covers_pole = self.pole_proximity(self.points[0])
+        if self.projection == "EPSG:32661" or self.projection == "EPSG:3031":
+            near_pole, covers_pole = self.pole_proximity(self.points[0])
 
         if self.projection == "EPSG:32661" and (
             self.centroid[0] > 80 or near_pole or covers_pole
         ):  # north pole projection
 
-            blat = min(self.bounds[0], self.bounds[2])
-            blat = 5 * np.floor(blat / 5)
+                blat = min(self.bounds[0], self.bounds[2])
+                blat = 5 * np.floor(blat / 5)
 
-            self.plot_projection = ccrs.Stereographic(
-                central_latitude=90,
-                central_longitude=0,
-            )
-            width_scale = 1.5
+                self.plot_projection = ccrs.Stereographic(
+                    central_latitude=90,
+                    central_longitude=0,
+                )
+                width_scale = 1.5
 
-            proj_pts = self.plot_projection.transform_points(
-                self.pc_projection,
-                self.points[0][:, 1],
-                self.points[0][:, 0],
-            )
+                proj_pts = self.plot_projection.transform_points(
+                    self.pc_projection,
+                    self.points[0][:, 1],
+                    self.points[0][:, 0],
+                )
 
-            proj_bounds = np.array(
-                [
-                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
-                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
-                ]
-            )
+                proj_bounds = np.array(
+                    [
+                        [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                        [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                    ]
+                )
 
         elif self.projection == "EPSG:3031" and (
             (
@@ -171,28 +172,28 @@ class MapPlotter(Plotter):
             )
             or near_pole
         ):  # south pole projection
-            blat = max(self.bounds[0], self.bounds[2])
-            blat = 5 * np.ceil(blat / 5)
-            # is centerered close to the south pole
+                blat = max(self.bounds[0], self.bounds[2])
+                blat = 5 * np.ceil(blat / 5)
+                # is centerered close to the south pole
 
-            self.plot_projection = ccrs.Stereographic(
-                central_latitude=-90,
-                central_longitude=0,
-            )
-            width_scale = 1.5
+                self.plot_projection = ccrs.Stereographic(
+                    central_latitude=-90,
+                    central_longitude=0,
+                )
+                width_scale = 1.5
 
-            proj_pts = self.plot_projection.transform_points(
-                self.pc_projection,
-                self.points[0][:, 1],
-                self.points[0][:, 0],
-            )
+                proj_pts = self.plot_projection.transform_points(
+                    self.pc_projection,
+                    self.points[0][:, 1],
+                    self.points[0][:, 0],
+                )
 
-            proj_bounds = np.array(
-                [
-                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
-                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
-                ]
-            )
+                proj_bounds = np.array(
+                    [
+                        [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                        [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                    ]
+                )
 
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 

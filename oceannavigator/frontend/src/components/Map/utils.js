@@ -75,7 +75,12 @@ export const createMapView = (center, projection, zoom, minZoom, maxZoom) => {
   return newMapView;
 };
 
-export const getBasemap = (source, projection, attribution, topoShadedRelief) => {
+export const getBasemap = (
+  source,
+  projection,
+  attribution,
+  topoShadedRelief
+) => {
   switch (source) {
     case "topo":
       const shadedRelief = topoShadedRelief ? "true" : "false";
@@ -449,7 +454,7 @@ export const createAnnotationVectorLayer = (source) => {
   });
 };
 
-export const createFeatureVectorLayer = (source) => {
+export const createFeatureVectorLayer = (source, mapSettings) => {
   return new VectorLayer({
     source: source,
     style: function (feat, res) {
