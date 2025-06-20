@@ -444,7 +444,7 @@ class NetCDFData(Data):
             }
         # converting longitude values to -180 to 180
         subset = subset.assign_coords({lon_var: (((subset[lon_var] + 180) % 360) - 180)})
-        subset = subset.sortby(lon_var)
+        subset = subset.sortby(x_coord)
 
         output_format = query.get("output_format")
         filename = (
