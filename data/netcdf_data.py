@@ -426,8 +426,6 @@ class NetCDFData(Data):
                 subset = subset.assign(
                     **{
                         variable: self.get_dataset_variable(variable).isel(
-                    **{
-                        variable: self.get_dataset_variable(variable).isel(
                             **{
                                 y_coord: slice(0, subset[y_coord].size),
                                 x_coord: slice(0, subset[x_coord].size),
