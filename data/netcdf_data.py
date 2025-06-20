@@ -367,7 +367,6 @@ class NetCDFData(Data):
                     )
                 ]
 
-            # self.dataset = [self.dataset.isel({y_coord: y_slice, x_coord: x_slice}) for x_slice in x_slices]
             subset_list = [
                 self.dataset.isel({y_coord: y_slice, x_coord: x_slice})
                 for x_slice in x_slices
