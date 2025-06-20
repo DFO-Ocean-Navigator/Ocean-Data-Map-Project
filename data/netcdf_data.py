@@ -403,7 +403,6 @@ class NetCDFData(Data):
             )
 
         dataset_name = query.get("dataset")
-        y_coord, x_coord = self.yx_dimensions
         subset = self.dataset
         # Select requested time (time range if applicable)
         if apply_time_range:
