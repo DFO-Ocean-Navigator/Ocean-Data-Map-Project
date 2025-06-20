@@ -25,9 +25,6 @@ from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
 
-import xarray as xr
-import numpy as np
-
 
 class NetCDFData(Data):
     """Handles reading of netcdf files.
