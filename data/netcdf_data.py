@@ -347,8 +347,8 @@ class NetCDFData(Data):
                 min(y0_index, y1_index, y2_index, y3_index),
                 max(y0_index, y1_index, y2_index, y3_index),
             )
+            # check that selected area is not wrapped around edges of NetCDF data
             if x0_index > x1_index:
-
                 x_slices = [
                     slice(
                         max(x0_index, x1_index, x2_index, x3_index),
