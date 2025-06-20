@@ -437,7 +437,7 @@ class NetCDFData(Data):
             subset[variable].attrs = {
                 key: str(value) for key, value in subset[variable].attrs.items()
             }
-        #convering lat values to -180 to 180
+        # converting longitude values to -180 to 180
         subset = subset.assign_coords({lon_var: (((subset[lon_var] + 180) % 360) - 180)})
         subset = subset.sortby(lon_var)
 
