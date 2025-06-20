@@ -341,27 +341,43 @@ class NetCDFData(Data):
                 self.get_dataset_variable(lon_var),
             )
 
-            # Compute min/max for each slice in case the values are flipped
-            # the netCDF4 module does not support unordered slices
+            y_coord, x_coord = self.yx_dimensions
+            # computing  y_slice for only selected subset
             y_slice = slice(
                 min(y0_index, y1_index, y2_index, y3_index),
                 max(y0_index, y1_index, y2_index, y3_index),
             )
-            x_slice = slice(
-                min(x0_index, x1_index, x2_index, x3_index),
-                max(x0_index, x1_index, x2_index, x3_index),
-            )
+            # check that selected area is not wrapped around edges of NetCDF data
+            if x0_index > x1_index:
+                x_slices = [
+                    slice(
+                        max(x0_index, x1_index, x2_index, x3_index),
+                        self.dataset[x_coord].size,
+                    ),
+                    slice(0, min(x0_index, x1_index, x2_index, x3_index)),
+                ]
+            else:
+                x_slices = [
+                    slice(
+                        min(x0_index, x1_index, x2_index, x3_index),
+                        max(x0_index, x1_index, x2_index, x3_index),
+                    )
+                ]
 
-            # Get nicely formatted bearings
+            subset_list = [
+                self.dataset.isel({y_coord: y_slice, x_coord: x_slice})
+                for x_slice in x_slices
+            ]
+            self.dataset = xarray.concat(subset_list, dim=x_coord)
             p0 = geopy.Point(bottom_left)
             p1 = geopy.Point(top_right)
+
         else:
             y_slice = slice(self.get_dataset_variable(lat_var).size)
             x_slice = slice(self.get_dataset_variable(lon_var).size)
 
             p0 = geopy.Point([-85.0, -180.0])
             p1 = geopy.Point([85.0, 180.0])
-
         # Get timestamp
         time_var = find_variable("time", list(self.dataset.variables.keys()))
         timestamp = str(
@@ -384,11 +400,7 @@ class NetCDFData(Data):
             )
 
         dataset_name = query.get("dataset")
-        y_coord, x_coord = self.yx_dimensions
-
-        # Do subset along coordinates
-        subset = self.dataset.isel(**{y_coord: y_slice, x_coord: x_slice})
-
+        subset = self.dataset
         # Select requested time (time range if applicable)
         if apply_time_range:
             # slice doesn't include the last element
@@ -414,14 +426,20 @@ class NetCDFData(Data):
                 subset = subset.assign(
                     **{
                         variable: self.get_dataset_variable(variable).isel(
-                            **{time_var: time_slice, y_coord: y_slice, x_coord: x_slice}
+                            **{
+                                y_coord: slice(0, subset[y_coord].size),
+                                x_coord: slice(0, subset[x_coord].size),
+                            }
                         )
                     }
                 )
-                # Cast each attribute to str (allows exporting to all NC formats)
-                subset[variable].attrs = {
-                    key: str(value) for key, value in subset[variable].attrs.items()
-                }
+            # Cast each attribute to str (allows exporting to all NC formats)
+            subset[variable].attrs = {
+                key: str(value) for key, value in subset[variable].attrs.items()
+            }
+        # converting longitude values to -180 to 180
+        subset = subset.assign_coords({lon_var: (((subset[lon_var] + 180) % 360) - 180)})
+        subset = subset.sortby(x_coord)
 
         output_format = query.get("output_format")
         filename = (
