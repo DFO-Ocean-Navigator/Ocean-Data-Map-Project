@@ -429,7 +429,15 @@ class NetCDFData(Data):
                             **{
                                 y_coord: slice(0, subset[y_coord].size),
                                 x_coord: slice(0, subset[x_coord].size),
-                                })})
+                    **{
+                        variable: self.get_dataset_variable(variable).isel(
+                            **{
+                                y_coord: slice(0, subset[y_coord].size),
+                                x_coord: slice(0, subset[x_coord].size),
+                            }
+                        )
+                    }
+                )
             # Cast each attribute to str (allows exporting to all NC formats)
             subset[variable].attrs = {
                 key: str(value) for key, value in subset[variable].attrs.items()
