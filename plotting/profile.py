@@ -68,11 +68,28 @@ class ProfilePlotter(PointPlotter):
             ["Timestamp", self.iso_timestamp.isoformat()],
         ]
 
-        columns = [
-            "Latitude",
-            "Longitude",
-            "Depth",
-        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
+        columns = ["Latitude", "Longitude", "Depth"]
+        variable_order = []
+
+
+        priority_vars = {
+            "Potential Temperature": "Potential Temperature (Celsius)",
+            "Salinity": "Salinity (PSU)",
+            "Speed of Sound": "Speed of Sound (m/s)",
+        }
+
+        #Arranging column labels and order in which variables are to be displayed
+        for var in ["Potential Temperature", "Salinity", "Speed of Sound"]:
+            if var in self.variable_names:
+                columns.append(priority_vars[var])
+                variable_order.append(var)
+
+        for name, unit in zip(self.variable_names, self.variable_units):
+            if name not in priority_vars:
+                columns.append(f"{name} ({unit})")
+                variable_order.append(name)
+
+
         data = []
 
         # For each point
@@ -81,13 +98,21 @@ class ProfilePlotter(PointPlotter):
             for d in range(0, self.data.shape[2]):
                 if self.data[p, :, d].mask.all():
                     continue
+
+                # if variable_order:
                 entry = [
                     "%0.4f" % self.points[p][0],
                     "%0.4f" % self.points[p][1],
                     "%0.1f" % self.depths[p, 0, d],
-                ] + ["%0.1f" % x for x in self.data[p, :, d]]
-                data.append(entry)
+                ]
 
+                ## Append values for each variable in order, formatted to one decimal place
+                for var_name in variable_order:
+                    i = self.variable_names.index(var_name)
+                    value = self.data[p, i, d]
+                    entry.append("%0.1f" % value)
+                data.append(entry)
+               
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def stats_csv(self):
