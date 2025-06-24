@@ -11,6 +11,11 @@ import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
 import { withTranslation } from "react-i18next";
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
+import SelectBox from "./lib/SelectBox.jsx";
+import { GetDepthsPromise } from "../remote/OceanNavigator.js";
+
+
+
 
 function SubsetPanel(props) {
   const [loading, setLoading] = useState(false);
@@ -24,6 +29,13 @@ function SubsetPanel(props) {
   const [zip, setZip] = useState(false);
   const [subset_variables, setSubset_variables] = useState([]);
 
+  //codes i added 
+  const [outputDepth, setOutputDepth] = useState(props.dataset.depth);
+  const [availableDepths, setAvailableDepths] = useState([]);
+  const [showDepthSelector, setShowDepthSelector] = useState(false);
+
+
+
   useEffect(() => {
     getSubsetVariables();
   }, [props.dataset.id]);
@@ -36,6 +48,23 @@ function SubsetPanel(props) {
       setOutputEndtime(newEndtime);
     }
   }, [outputStarttime, outputEndtime, outputTimerange]);
+
+  useEffect(() => {
+  if (outputVariables.length > 0 && subset_variables.length > 0) {
+    const selectedVariableObjects = subset_variables.filter((v) =>
+      outputVariables.includes(v.id)
+    );
+
+    const anyHasDepth = selectedVariableObjects.some(
+      (v) => v.two_dimensional === false
+    );
+
+    setShowDepthSelector(anyHasDepth);
+  } else {
+    setShowDepthSelector(false);
+  }
+}, [outputVariables, subset_variables]);
+
 
   // Find max extents of drawn area
   const calculateAreaBoundingBox = (area) => {
@@ -69,6 +98,7 @@ function SubsetPanel(props) {
     const starttime = outputTimerange
       ? outputStarttime
       : outputEndtime;
+    console.log("Selected depth to send:", outputDepth);
     window.location.href =
       `/api/v2.0/subset/${props.dataset.id}/${outputVariables.join()}?` +
       "&output_format=" +
@@ -77,7 +107,8 @@ function SubsetPanel(props) {
       "&time=" +
       [starttime, outputEndtime].join() +
       "&should_zip=" +
-      (zip ? 1 : 0);
+      (zip ? 1 : 0)+
+      (showDepthSelector ? `&depth=${outputDepth}` : "");
   };
 
   const saveScript = (key) => {
@@ -106,15 +137,38 @@ function SubsetPanel(props) {
       "&script_type=subset";
   };
 
+  // const getSubsetVariables = () => {
+  //   setLoading(true);
+  //   GetVariablesPromise(props.dataset.id).then((variableResult) => {
+  //     setLoading(false);
+  //     setSubset_variables(variableResult.data);
+  //   });
+  //   setOutputStarttime(props.dataset.starttime);
+  //   setOutputEndtime(props.dataset.time);
+  // };
+
   const getSubsetVariables = () => {
-    setLoading(true);
-    GetVariablesPromise(props.dataset.id).then((variableResult) => {
-      setLoading(false);
+  setLoading(true);
+
+  Promise.all([
+    GetVariablesPromise(props.dataset.id),
+    GetDepthsPromise(props.dataset.id, props.dataset.variable)
+  ])
+    .then(([variableResult, depthResult]) => {
       setSubset_variables(variableResult.data);
+      setAvailableDepths(depthResult.data);
+      setOutputStarttime(props.dataset.starttime);
+      setOutputEndtime(props.dataset.time);
+      setOutputDepth(props.dataset.depth); // default selected depth
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error fetching variables or depths:", error);
+      setLoading(false);
     });
-    setOutputStarttime(props.dataset.starttime);
-    setOutputEndtime(props.dataset.time);
-  };
+};
+
+console.log("Available depths:", availableDepths);
 
   return (
     <div>
@@ -135,6 +189,23 @@ function SubsetPanel(props) {
                 data={subset_variables}
                 title={"Variables"}
               />
+           
+              {showDepthSelector && availableDepths.length > 0 && (
+              <SelectBox
+                id="subset-depth-selector"
+                name="depth"
+                label={__("Depth")}
+                placeholder={__("Depth")}
+                options={availableDepths}
+                onChange={(_, value) => {
+                  console.log("Depth selected from dropdown:",value);
+                  setOutputDepth(value)}}
+                selected={outputDepth}
+                loading={loading}
+              />
+            )}
+
+
               <CheckBox
                 id="time_range"
                 key="time_range"

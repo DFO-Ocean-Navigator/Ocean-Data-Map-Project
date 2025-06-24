@@ -409,6 +409,44 @@ class NetCDFData(Data):
             time_slice = slice(int(time_range[0]), int(time_range[0]) + 1)
 
         subset = subset.isel(**{time_var: time_slice})
+        
+        # Applied depth slicing only to variables with the depth dimension.
+        def apply_depth_slice(dataset, depth_var, depth_index):
+
+            new_data = {}
+            for var in dataset.data_vars:
+                if depth_var in dataset[var].dims:
+                    new_data[var] = dataset[var].isel({depth_var: slice(0, depth_index + 1)})
+                else:
+                    new_data[var] = dataset[var]
+
+            # Also slice coords
+            new_coords = {}
+            for coord in dataset.coords:
+                if depth_var in dataset[coord].dims:
+                    new_coords[coord] = dataset[coord].isel({depth_var: slice(0, depth_index + 1)})
+                else:
+                    new_coords[coord] = dataset[coord]
+
+            return xarray.Dataset(data_vars=new_data, coords=new_coords, attrs=dataset.attrs)
+
+        depth = query.get("depth")
+        if depth_var and 'depth' in query:
+            try:
+                if depth == "bottom":
+                    depth_index = -1
+                    for var in subset.data_vars:
+                        if depth_var in subset[var].dims:
+                            subset[var] = subset[var].isel({depth_var: depth_index})
+                    if depth_var in subset.coords:
+                        subset[depth_var] = subset[depth_var].isel({depth_var: depth_index})
+                    print(f"Applied bottom depth slice for {depth_var}")
+                else:
+                    depth_index = int(depth)
+                    subset = apply_depth_slice(subset, depth_var, depth_index)
+                    print(f"Applied depth slice from 0 to {depth_index} (inclusive) for variables with dimension {depth_var}")
+            except Exception as e:
+                print(f"Could not apply depth slice: {e}")
 
         # Filter out unwanted variables
         output_vars = query.get("variables").split(",")

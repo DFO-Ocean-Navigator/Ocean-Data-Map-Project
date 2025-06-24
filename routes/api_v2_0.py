@@ -487,11 +487,13 @@ def subset_query(
     ),
     time: str = Query(description="", examples=["2283984000,2283984000"]),
     should_zip: str = Query("1", description="", examples=["1"]),
+    depth: str = Query(None, description="Optional depth index (e.g. 0 or 'bottom')"),
 ):
     working_dir = None
     subset_filename = None
 
     args = {**request.path_params, **request.query_params}
+    print("📥 Received depth value from frontend:", depth)
 
     if "area" in args.keys():
         # Predefined area selected
@@ -513,6 +515,9 @@ def subset_query(
         timestamp=int(time_range[0]),
         endtime=int(time_range[1]),
     ) as dataset:
+        
+        if depth is not None:
+            args['depth']=depth
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(
