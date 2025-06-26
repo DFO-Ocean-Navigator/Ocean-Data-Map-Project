@@ -49,24 +49,6 @@ function SubsetPanel(props) {
     }
   }, [outputStarttime, outputEndtime, outputTimerange]);
 
-  useEffect(() => {
-  if (outputVariables.length > 0 && subset_variables.length > 0) {
-    const selectedVariableObjects = subset_variables.filter((v) =>
-      outputVariables.includes(v.id)
-    );
-
-    const anyHasDepth = selectedVariableObjects.some(
-      (v) => v.two_dimensional === false
-    );
-
-    setShowDepthSelector(anyHasDepth);
-  } else {
-    setShowDepthSelector(false);
-  }
-}, [outputVariables, subset_variables]);
-
-
-  // Find max extents of drawn area
   const calculateAreaBoundingBox = (area) => {
     let lat_min = area[0][0];
     let long_min = area[0][1];
@@ -83,6 +65,33 @@ function SubsetPanel(props) {
 
     return [lat_min, lat_max, long_min, long_max];
   };
+  const handleVariableSelection = (selectedVariableIds) => {
+    setOutputVariables(selectedVariableIds);
+
+  const selectedVariableObjects = subset_variables.filter((v) =>
+    selectedVariableIds.includes(v.id)
+  );
+
+  const anyHasDepth = selectedVariableObjects.some((v) => v.two_dimensional === false);
+  setShowDepthSelector(anyHasDepth);
+
+  if (anyHasDepth) {
+    // Use first 3D variable to fetch depths
+    const first3DVariable = selectedVariableObjects.find(v => v.two_dimensional === false);
+    if (first3DVariable) {
+      GetDepthsPromise(props.dataset.id, first3DVariable.id)
+        .then((result) => {
+          setAvailableDepths(result.data);
+          setOutputDepth(result.data[0].id);
+        })
+        .catch((err) => console.error("Failed to fetch depths:", err));
+    }
+  } else {
+    setAvailableDepths([]);
+    setOutputDepth(null);
+  }
+};
+
 
   const subsetArea = () => {
     var queryString = [];
@@ -137,35 +146,21 @@ function SubsetPanel(props) {
       "&script_type=subset";
   };
 
-  // const getSubsetVariables = () => {
-  //   setLoading(true);
-  //   GetVariablesPromise(props.dataset.id).then((variableResult) => {
-  //     setLoading(false);
-  //     setSubset_variables(variableResult.data);
-  //   });
-  //   setOutputStarttime(props.dataset.starttime);
-  //   setOutputEndtime(props.dataset.time);
-  // };
-
   const getSubsetVariables = () => {
   setLoading(true);
 
-  Promise.all([
-    GetVariablesPromise(props.dataset.id),
-    GetDepthsPromise(props.dataset.id, props.dataset.variable)
-  ])
-    .then(([variableResult, depthResult]) => {
+  GetVariablesPromise(props.dataset.id)
+    .then((variableResult) => {
       setSubset_variables(variableResult.data);
-      setAvailableDepths(depthResult.data);
-      setOutputStarttime(props.dataset.starttime);
-      setOutputEndtime(props.dataset.time);
-      setOutputDepth(props.dataset.depth); // default selected depth
       setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error fetching variables or depths:", error);
-      setLoading(false);
-    });
+  })
+
+  .catch((error) => {
+    console.error("Error fetching variables:", error);
+    setLoading(false);
+
+  });
+
 };
 
 console.log("Available depths:", availableDepths);
@@ -177,18 +172,17 @@ console.log("Available depths:", availableDepths);
         <Card.Body>
           {loading ? null : (
             <>
-              <ComboBox
-                id="variable"
-                key="variable"
-                multiple={true}
-                state={outputVariables}
-                def={"defaults.dataset"}
-                onUpdate={(keys, values) => {
-                  setOutputVariables(values[0]);
-                }}
-                data={subset_variables}
-                title={"Variables"}
-              />
+            <ComboBox
+              id="variable"
+              key="variable"
+              multiple={true}
+              state={outputVariables}
+              def={"defaults.dataset"}
+              onUpdate={(keys, values) => handleVariableSelection(values[0])}
+              data={subset_variables}
+              title={"Variables"}
+            />
+
            
               {showDepthSelector && availableDepths.length > 0 && (
               <SelectBox

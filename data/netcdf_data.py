@@ -411,42 +411,62 @@ class NetCDFData(Data):
         subset = subset.isel(**{time_var: time_slice})
         
         # Applied depth slicing only to variables with the depth dimension.
-        def apply_depth_slice(dataset, depth_var, depth_index):
+        # def apply_depth_slice(dataset, depth_var, depth_index):
 
-            new_data = {}
-            for var in dataset.data_vars:
-                if depth_var in dataset[var].dims:
-                    new_data[var] = dataset[var].isel({depth_var: slice(0, depth_index + 1)})
-                else:
-                    new_data[var] = dataset[var]
+        #     new_data = {}
+        #     for var in dataset.data_vars:
+        #         if depth_var in dataset[var].dims:
+        #             new_data[var] = dataset[var].isel({depth_var: slice(0, depth_index + 1)})
+        #         else:
+        #             new_data[var] = dataset[var]
 
-            # Also slice coords
-            new_coords = {}
-            for coord in dataset.coords:
-                if depth_var in dataset[coord].dims:
-                    new_coords[coord] = dataset[coord].isel({depth_var: slice(0, depth_index + 1)})
-                else:
-                    new_coords[coord] = dataset[coord]
+        #     # Also slice coords
+        #     new_coords = {}
+        #     for coord in dataset.coords:
+        #         if depth_var in dataset[coord].dims:
+        #             new_coords[coord] = dataset[coord].isel({depth_var: slice(0, depth_index + 1)})
+        #         else:
+        #             new_coords[coord] = dataset[coord]
 
-            return xarray.Dataset(data_vars=new_data, coords=new_coords, attrs=dataset.attrs)
+        #     return xarray.Dataset(data_vars=new_data, coords=new_coords, attrs=dataset.attrs)
 
         depth = query.get("depth")
-        if depth_var and 'depth' in query:
-            try:
-                if depth == "bottom":
-                    depth_index = -1
-                    for var in subset.data_vars:
-                        if depth_var in subset[var].dims:
-                            subset[var] = subset[var].isel({depth_var: depth_index})
-                    if depth_var in subset.coords:
-                        subset[depth_var] = subset[depth_var].isel({depth_var: depth_index})
-                    print(f"Applied bottom depth slice for {depth_var}")
-                else:
-                    depth_index = int(depth)
-                    subset = apply_depth_slice(subset, depth_var, depth_index)
-                    print(f"Applied depth slice from 0 to {depth_index} (inclusive) for variables with dimension {depth_var}")
-            except Exception as e:
-                print(f"Could not apply depth slice: {e}")
+        # if depth_var and 'depth' in query:
+        #     try:
+        #         if depth == "bottom":
+        #             depth_index = -1
+        #             for var in subset.data_vars:
+        #                 if depth_var in subset[var].dims:
+        #                     subset[var] = subset[var].isel({depth_var: depth_index})
+        #             if depth_var in subset.coords:
+        #                 subset[depth_var] = subset[depth_var].isel({depth_var: depth_index})
+        #             print(f"Applied bottom depth slice for {depth_var}")
+        #         else:
+        #             depth_index = int(depth)
+        #             # subset = apply_depth_slice(subset, depth_var, depth_index)
+        #             print(f"Applied depth slice from 0 to {depth_index} (inclusive) for variables with dimension {depth_var}")
+        #     except Exception as e:
+        #         print(f"Could not apply depth slice: {e}")
+
+        # if depth_var and 'depth' in query:
+        #     try:
+        #         if depth == "bottom":
+        #             depth_index = -1
+        #         else:
+        #             depth_index = int(depth)
+
+        #         for var in subset.data_vars:
+        #             if depth_var in subset[var].dims:
+        #                 subset[var] = subset[var].isel({depth_var: depth_index})
+
+        #         if depth_var in subset.coords:
+        #             subset[depth_var] = subset[depth_var].isel({depth_var: depth_index})
+
+        #         print(f"Applied depth slice at index {depth_index} for variables with dimension {depth_var}")
+        #     except Exception as e:
+        #         print(f"Could not apply depth slice: {e}")
+
+
 
         # Filter out unwanted variables
         output_vars = query.get("variables").split(",")
@@ -471,10 +491,55 @@ class NetCDFData(Data):
                         )
                     }
                 )
-            # Cast each attribute to str (allows exporting to all NC formats)
-            subset[variable].attrs = {
-                key: str(value) for key, value in subset[variable].attrs.items()
-            }
+        if depth == "bottom":
+            #if the variable is 3D
+            for var in list(subset.data_vars):
+                if depth_var not in subset[var].dims:
+                    continue
+
+                var_data = subset[var].values 
+                #moved depth to last axis
+                var_data = np.rollaxis(var_data, 1, 4) 
+                # (time, lat*lon, depth) + masked empty values with NaN
+                reshaped = np.ma.masked_invalid(var_data.reshape(var_data.shape[0], -1, var_data.shape[3]))  
+                #getting the last non Nan value
+                edges = np.ma.notmasked_edges(reshaped, axis=2)
+                if edges is None or len(edges[1][0]) == 0:
+                    continue
+                
+                #getting each dimension of last valid bottom data
+                time_idx = edges[1][0]
+                flat_idx = edges[1][1]
+                depth_idx = edges[1][2]
+                #putting lat and lon values back
+                lat_idx, lon_idx = np.unravel_index(flat_idx, subset[var].shape[2:])
+                #array to store actual bottom values
+                bottom_data = np.ma.masked_all(subset[var].shape[:1] + subset[var].shape[2:])
+                bottom_depths = np.ma.masked_all(subset[var].shape[2:])  
+                #filling in the bottom values
+                for t, y, x, d in zip(time_idx, lat_idx, lon_idx, depth_idx):
+                    bottom_data[t, y, x] = subset[var].isel({depth_var: d}).values[t, y, x]
+                    bottom_depths[y, x] = subset[depth_var].values[d]
+
+                #showing temperaute with latitude and longitude
+                subset[var] = (("time", "latitude", "longitude"), bottom_data)
+                #new variable just to show bottom depths if user needs it
+                subset[f"{var}_bottom_depth"] = (("latitude", "longitude"), bottom_depths)
+
+            # Removing the depth coordinate
+            if depth_var in subset.coords:
+                subset = subset.drop_vars(depth_var)
+             
+        elif depth and depth != "all":
+            subset = subset.isel({"depth": [int(depth)]})
+
+        # Cast each attribute to str (allows exporting to all NC formats)
+        subset[variable].attrs = {
+            key: str(value) for key, value in subset[variable].attrs.items()
+        }
+
+
+
         # converting longitude values to -180 to 180
         subset = subset.assign_coords({lon_var: (((subset[lon_var] + 180) % 360) - 180)})
         subset = subset.sortby(x_coord)
