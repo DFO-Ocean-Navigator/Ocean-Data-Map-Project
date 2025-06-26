@@ -493,8 +493,7 @@ def subset_query(
     subset_filename = None
 
     args = {**request.path_params, **request.query_params}
-    print("📥 Received depth value from frontend:", depth)
-
+   
     if "area" in args.keys():
         # Predefined area selected
         area = args.get("area")
