@@ -486,8 +486,8 @@ def subset_query(
         examples=["45.994500000000016,-56.9418"],
     ),
     time: str = Query(description="", examples=["2283984000,2283984000"]),
-    should_zip: str = Query("1", description="", examples=["1"]),
     depth: str = Query(None, description="Optional depth index (e.g. 0 or 'bottom')"),
+    should_zip: str = Query("1", description="", examples=["1"]),
 ):
     working_dir = None
     subset_filename = None
