@@ -82,7 +82,7 @@ function SubsetPanel(props) {
       GetDepthsPromise(props.dataset.id, first3DVariable.id)
         .then((result) => {
           setAvailableDepths(result.data);
-          setOutputDepth(result.data[0].id);
+          setOutputDepth(result.data[1].id);
         })
         .catch((err) => console.error("Failed to fetch depths:", err));
     }
@@ -107,7 +107,6 @@ function SubsetPanel(props) {
     const starttime = outputTimerange
       ? outputStarttime
       : outputEndtime;
-    console.log("Selected depth to send:", outputDepth);
     window.location.href =
       `/api/v2.0/subset/${props.dataset.id}/${outputVariables.join()}?` +
       "&output_format=" +
@@ -163,8 +162,6 @@ function SubsetPanel(props) {
 
 };
 
-console.log("Available depths:", availableDepths);
-
   return (
     <div>
       <Card key="subset" variant="primary">
@@ -192,7 +189,6 @@ console.log("Available depths:", availableDepths);
                 placeholder={__("Depth")}
                 options={availableDepths}
                 onChange={(_, value) => {
-                  console.log("Depth selected from dropdown:",value);
                   setOutputDepth(value)}}
                 selected={outputDepth}
                 loading={loading}

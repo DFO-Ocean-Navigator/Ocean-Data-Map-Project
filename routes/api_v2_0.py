@@ -515,8 +515,6 @@ def subset_query(
         endtime=int(time_range[1]),
     ) as dataset:
         
-        if depth is not None:
-            args['depth']=depth
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(
