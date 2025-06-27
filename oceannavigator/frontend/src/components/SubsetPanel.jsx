@@ -37,7 +37,13 @@ function SubsetPanel(props) {
 
 
   useEffect(() => {
+    setOutputVariables([]);
+    setShowDepthSelector(false);
+    setAvailableDepths([]);
+    setOutputDepth(props.dataset.depth);
     getSubsetVariables();
+    setOutputStarttime(props.dataset.starttime);
+    setOutputEndtime(props.dataset.time);
   }, [props.dataset.id]);
 
   useEffect(() => {
@@ -65,8 +71,59 @@ function SubsetPanel(props) {
 
     return [lat_min, lat_max, long_min, long_max];
   };
-  const handleVariableSelection = (selectedVariableIds) => {
-    setOutputVariables(selectedVariableIds);
+//   const handleVariableSelection = (selectedVariableIds) => {
+//     setOutputVariables(selectedVariableIds);
+
+
+
+//   // const selectedVariableObjects = subset_variables.filter((v) =>
+//   //   selectedVariableIds.includes(v.id)
+//   // );
+//   // if (!Array.isArray(selectedVariableIds)) {
+//   //   console.warn('selectedVariableIds is not an array:', selectedVariableIds);
+//   //   setShowDepthSelector(false);
+// //     return; // or set to empty array: selectedVariableIds = [];
+// // }
+
+// // Now safe to proceed
+// const selectedVariableObjects = subset_variables.filter((v) =>
+//     selectedVariableIds.includes(v.id)
+// );
+
+//   const anyHasDepth = selectedVariableObjects.some((v) => v.two_dimensional === false);
+//   setShowDepthSelector(anyHasDepth);
+
+//   if (anyHasDepth) {
+//     // Use first 3D variable to fetch depths
+//     const first3DVariable = selectedVariableObjects.find(v => v.two_dimensional === false);
+//     if (first3DVariable) {
+//       const currentDatasetId = props.dataset.id;
+//       GetDepthsPromise(props.dataset.id, first3DVariable.id)
+//         .then((result) => {
+//            if (currentDatasetId === props.dataset.id) {
+//           setAvailableDepths(result.data);
+//           setOutputDepth(result.data[1].id);}
+//         })
+//         .catch((err) => console.error("Failed to fetch depths:", err));
+//     }
+//   } else {
+//     setAvailableDepths([]);
+//     setOutputDepth(null);
+//   }
+// };
+
+const handleVariableSelection = (selectedVariableIds) => {
+  // Handle the -5 case (and any other non-array values)
+  if (!Array.isArray(selectedVariableIds)) {
+    console.log('selectedVariableIds is not an array:', selectedVariableIds, typeof selectedVariableIds);
+    setOutputVariables([]);
+    setShowDepthSelector(false);
+    setAvailableDepths([]);
+    setOutputDepth(props.dataset.depth);
+    return;
+  }
+
+  setOutputVariables(selectedVariableIds);
 
   const selectedVariableObjects = subset_variables.filter((v) =>
     selectedVariableIds.includes(v.id)
@@ -76,19 +133,21 @@ function SubsetPanel(props) {
   setShowDepthSelector(anyHasDepth);
 
   if (anyHasDepth) {
-    // Use first 3D variable to fetch depths
     const first3DVariable = selectedVariableObjects.find(v => v.two_dimensional === false);
     if (first3DVariable) {
+      const currentDatasetId = props.dataset.id;
       GetDepthsPromise(props.dataset.id, first3DVariable.id)
         .then((result) => {
-          setAvailableDepths(result.data);
-          setOutputDepth(result.data[1].id);
+          if (currentDatasetId === props.dataset.id) {
+            setAvailableDepths(result.data);
+            setOutputDepth(result.data[1].id);
+          }
         })
         .catch((err) => console.error("Failed to fetch depths:", err));
     }
   } else {
     setAvailableDepths([]);
-    setOutputDepth(null);
+    setOutputDepth(props.dataset.depth);
   }
 };
 
@@ -171,7 +230,7 @@ function SubsetPanel(props) {
             <>
             <ComboBox
               id="variable"
-              key="variable"
+              key={`variable-${props.dataset.id}`}
               multiple={true}
               state={outputVariables}
               def={"defaults.dataset"}
