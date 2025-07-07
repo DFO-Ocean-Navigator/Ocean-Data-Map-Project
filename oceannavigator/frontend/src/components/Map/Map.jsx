@@ -967,7 +967,7 @@ const Map = forwardRef((props, ref) => {
     }
 
     const vectorTileGrid = new olTilegrid.createXYZ({
-      tileSize: 512,
+      tileSize: 256,
       maxZoom: MAX_ZOOM[props.mapSettings.projection],
     });
 
@@ -1045,7 +1045,7 @@ const Map = forwardRef((props, ref) => {
       mapLayers[4].setSource(null);
     } else {
       const vectorTileGrid = new olTilegrid.createXYZ({
-        tileSize: 512,
+        tileSize: 256,
         maxZoom: MAX_ZOOM[props.mapSettings.projection],
       });
 
@@ -1063,7 +1063,6 @@ const Map = forwardRef((props, ref) => {
         new VectorTile({
           format: new MVT(),
           tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
           url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
           projection: props.mapSettings.projection,
         })
