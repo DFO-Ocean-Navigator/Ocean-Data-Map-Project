@@ -86,9 +86,10 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
+        maxZoom:7-1e-10,       
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-          projection: projection,
+          projection: projection,           
         }),
       });
     case "ocean":
@@ -140,7 +141,7 @@ export const createMap = (
   );
 
   const vectorTileGrid = new olTilegrid.createXYZ({
-    tileSize: 512,
+    tileSize: 256,
     maxZoom: maxZoom,
   });
 
@@ -170,7 +171,7 @@ export const createMap = (
     }),
     opacity: mapSettings.mapBathymetryOpacity,
     visible: mapSettings.bathymetry,
-    preload: 1,
+     preload: 1,
   });
 
   const newLayerBathShapes = new VectorTileLayer({
