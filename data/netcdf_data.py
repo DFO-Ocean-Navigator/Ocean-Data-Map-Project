@@ -438,67 +438,7 @@ class NetCDFData(Data):
                     }
                 )
         if depth == "bottom":
-            #if the variable is 3D
-            # for var in list(subset.data_vars):
-            #     if depth_var not in subset[var].dims:
-            #         continue
-
-            #     var_data = subset[var].values 
-                
-            #     #moved depth to last axis
-            #     var_data = np.rollaxis(var_data, 1, 4)
-
-            #     # (time, lat*lon, depth) + masked empty values with NaN
-            #     reshaped = np.ma.masked_invalid(var_data.reshape(var_data.shape[0], -1, var_data.shape[3])) 
-
-            #     #getting the last non Nan value
-            #     edges = np.ma.notmasked_edges(reshaped, axis=2)
-            #     if edges is None or len(edges[1][0]) == 0:
-            #         continue
-                
-            #     #getting each dimension of last valid bottom data
-            #     time_idx = edges[1][0]
-            #     flat_idx = edges[1][1]
-            #     depth_idx = edges[1][2]
-
-            #     #putting lat and lon values back
-            #     lat_idx, lon_idx = np.unravel_index(flat_idx, subset[var].shape[2:])
-
-            #     #array to store actual bottom values
-            #     bottom_data = np.ma.masked_all(subset[var].shape[:1] + subset[var].shape[2:])
-            #     bottom_depths = np.ma.masked_all(subset[var].shape[2:])  
-
-            #     #filling in the bottom values
-            #     # Vectorized assignment - much faster!
-            #     bottom_data[time_idx, lat_idx, lon_idx] = var_data[time_idx, lat_idx, lon_idx, depth_idx]
-            #     bottom_depths[lat_idx, lon_idx] = subset[depth_var].values[depth_idx]
-
-            #     #showing temperaute with latitude and longitude
-            #     subset[var] = (("time", lat_var, lon_var), bottom_data)
-
-            #     #new variable just to show bottom depths if user needs it
-            #     subset.coords[depth_var] = ((lat_var, lon_var), bottom_depths)
-
-            # for var in list(subset.data_vars):
-            #     if depth_var not in subset[var].dims:
-            #         continue
-                
-            #     da = subset[var]
-                
-            #     # Find the last valid (non-NaN) depth index for each point
-            #     valid_mask = da.notnull()
-                
-            #     # Get cumulative count and find last valid index
-            #     last_valid_idx = valid_mask.cumsum(depth_var).argmax(depth_var).compute()
-                
-            #     # Extract bottom values using the indices
-            #     bottom_data = da.isel({depth_var: last_valid_idx})
-            #     bottom_depths = subset[depth_var].isel({depth_var: last_valid_idx})
-                
-            #     subset[var] = bottom_data
-
-            # # Add bottom depths as coordinate  
-            # subset.coords[depth_var] = bottom_depths
+            
             bottom_idx = np.array([])
             for var in list(subset.data_vars):
                 if depth_var not in subset[var].dims:

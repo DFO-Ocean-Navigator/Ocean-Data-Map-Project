@@ -14,10 +14,6 @@ import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 import SelectBox from "./lib/SelectBox.jsx";
 import { GetDepthsPromise } from "../remote/OceanNavigator.js";
 
-
-
-
-
 function SubsetPanel(props) {
   const [loading, setLoading] = useState(false);
   const [outputTimerange, setOutputTimerange] = useState(false);
@@ -30,22 +26,20 @@ function SubsetPanel(props) {
   const [zip, setZip] = useState(false);
   const [subset_variables, setSubset_variables] = useState([]);
 
-  //codes i added 
+  //codes i added
   const [outputDepth, setOutputDepth] = useState(props.dataset.depth);
   const [availableDepths, setAvailableDepths] = useState([]);
   const [showDepthSelector, setShowDepthSelector] = useState(false);
 
-
-useEffect(() => {
-  setOutputVariables([]);
-  setShowDepthSelector(false);
-  setAvailableDepths([]);
-  setOutputDepth(props.dataset.depth);
-  getSubsetVariables();
-  setOutputStarttime(props.dataset.starttime);
-  setOutputEndtime(props.dataset.time);
-}, [props.dataset.id]);
-
+  useEffect(() => {
+    setOutputVariables([]);
+    setShowDepthSelector(false);
+    setAvailableDepths([]);
+    setOutputDepth(props.dataset.depth);
+    getSubsetVariables();
+    setOutputStarttime(props.dataset.starttime);
+    setOutputEndtime(props.dataset.time);
+  }, [props.dataset.id]);
 
   useEffect(() => {
     if (outputTimerange && outputStarttime > outputEndtime) {
@@ -74,28 +68,25 @@ useEffect(() => {
   };
 
   const handleVariableSelection = (selectedVariableIds) => {
+    setOutputVariables(selectedVariableIds);
 
-  setOutputVariables(selectedVariableIds);
+    const variablesWithDepth = subset_variables.filter(
+      (v) => selectedVariableIds.includes(v.id) && v.two_dimensional === false
+    );
 
-  const variablesWithDepth = subset_variables.filter(
-    v => selectedVariableIds.includes(v.id) && v.two_dimensional === false
-  );
+    if (variablesWithDepth.length > 0) {
+      setShowDepthSelector(variablesWithDepth.length);
 
-
-  if (variablesWithDepth.length>0) {
-    setShowDepthSelector(variablesWithDepth.length);
-  
-    const varId = variablesWithDepth[0].id;
-    GetDepthsPromise(props.dataset.id, varId).then(result => {
-+       setAvailableDepths(result.data);
-+       setOutputDepth(result.data[1].id);
-    })
-  } else {
-    setAvailableDepths([]);
-    setOutputDepth(props.dataset.depth);
-  }
-};
-
+      const varId = variablesWithDepth[0].id;
+      GetDepthsPromise(props.dataset.id, varId).then((result) => {
+        +setAvailableDepths(result.data);
+        +setOutputDepth(result.data[1].id);
+      });
+    } else {
+      setAvailableDepths([]);
+      setOutputDepth(props.dataset.depth);
+    }
+  };
 
   const subsetArea = () => {
     var queryString = [];
@@ -108,9 +99,7 @@ useEffect(() => {
       const max_range = [AABB[1], AABB[3]].join();
       queryString = "&min_range=" + min_range + "&max_range=" + max_range;
     }
-    const starttime = outputTimerange
-      ? outputStarttime
-      : outputEndtime;
+    const starttime = outputTimerange ? outputStarttime : outputEndtime;
     window.location.href =
       `/api/v2.0/subset/${props.dataset.id}/${outputVariables.join()}?` +
       "&output_format=" +
@@ -119,7 +108,7 @@ useEffect(() => {
       "&time=" +
       [starttime, outputEndtime].join() +
       "&should_zip=" +
-      (zip ? 1 : 0)+
+      (zip ? 1 : 0) +
       (showDepthSelector ? `&depth=${outputDepth}` : "");
   };
 
@@ -150,14 +139,13 @@ useEffect(() => {
   };
 
   const getSubsetVariables = () => {
-  setLoading(true);
+    setLoading(true);
 
-  GetVariablesPromise(props.dataset.id)
-    .then((variableResult) => {
+    GetVariablesPromise(props.dataset.id).then((variableResult) => {
       setSubset_variables(variableResult.data);
       setLoading(false);
-  })
-};
+    });
+  };
 
   return (
     <div>
@@ -166,37 +154,35 @@ useEffect(() => {
         <Card.Body>
           {loading ? null : (
             <>
-            <ComboBox
-              id="variable"
-              key={`variable-${props.dataset.id}`}
-              multiple={true}
-              state={outputVariables}
-              def={"defaults.dataset"}
-                  onUpdate={(keys, values) =>  
-                  handleVariableSelection(  
-                    keys[0] == "variable" ? values[0] : []  
-                  )  
-                } 
-              
-              data={subset_variables}
-              title={"Variables"}
-            />
-
-           
-              {showDepthSelector && availableDepths.length > 0 && (
-              <SelectBox
-                id="subset-depth-selector"
-                name="depth"
-                label={__("Depth")}
-                placeholder={__("Depth")}
-                options={availableDepths}
-                onChange={(_, value) => {
-                  setOutputDepth(value)}}
-                selected={outputDepth}
-                loading={loading}
+              <ComboBox
+                id="variable"
+                key={`variable-${props.dataset.id}`}
+                multiple={true}
+                state={outputVariables}
+                def={"defaults.dataset"}
+                onUpdate={(keys, values) =>
+                  handleVariableSelection(
+                    keys[0] == "variable" ? values[0] : []
+                  )
+                }
+                data={subset_variables}
+                title={"Variables"}
               />
-            )}
 
+              {showDepthSelector && availableDepths.length > 0 && (
+                <SelectBox
+                  id="subset-depth-selector"
+                  name="depth"
+                  label={__("Depth")}
+                  placeholder={__("Depth")}
+                  options={availableDepths}
+                  onChange={(_, value) => {
+                    setOutputDepth(value);
+                  }}
+                  selected={outputDepth}
+                  loading={loading}
+                />
+              )}
 
               <CheckBox
                 id="time_range"
