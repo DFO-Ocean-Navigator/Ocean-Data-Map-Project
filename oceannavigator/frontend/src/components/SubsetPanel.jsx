@@ -17,6 +17,7 @@ import { GetDepthsPromise } from "../remote/OceanNavigator.js";
 
 
 
+
 function SubsetPanel(props) {
   const [loading, setLoading] = useState(false);
   const [outputTimerange, setOutputTimerange] = useState(false);
@@ -35,16 +36,16 @@ function SubsetPanel(props) {
   const [showDepthSelector, setShowDepthSelector] = useState(false);
 
 
+useEffect(() => {
+  setOutputVariables([]);
+  setShowDepthSelector(false);
+  setAvailableDepths([]);
+  setOutputDepth(props.dataset.depth);
+  getSubsetVariables();
+  setOutputStarttime(props.dataset.starttime);
+  setOutputEndtime(props.dataset.time);
+}, [props.dataset.id]);
 
-  useEffect(() => {
-    setOutputVariables([]);
-    setShowDepthSelector(false);
-    setAvailableDepths([]);
-    setOutputDepth(props.dataset.depth);
-    getSubsetVariables();
-    setOutputStarttime(props.dataset.starttime);
-    setOutputEndtime(props.dataset.time);
-  }, [props.dataset.id]);
 
   useEffect(() => {
     if (outputTimerange && outputStarttime > outputEndtime) {
@@ -71,80 +72,24 @@ function SubsetPanel(props) {
 
     return [lat_min, lat_max, long_min, long_max];
   };
-//   const handleVariableSelection = (selectedVariableIds) => {
-//     setOutputVariables(selectedVariableIds);
 
-
-
-//   // const selectedVariableObjects = subset_variables.filter((v) =>
-//   //   selectedVariableIds.includes(v.id)
-//   // );
-//   // if (!Array.isArray(selectedVariableIds)) {
-//   //   console.warn('selectedVariableIds is not an array:', selectedVariableIds);
-//   //   setShowDepthSelector(false);
-// //     return; // or set to empty array: selectedVariableIds = [];
-// // }
-
-// // Now safe to proceed
-// const selectedVariableObjects = subset_variables.filter((v) =>
-//     selectedVariableIds.includes(v.id)
-// );
-
-//   const anyHasDepth = selectedVariableObjects.some((v) => v.two_dimensional === false);
-//   setShowDepthSelector(anyHasDepth);
-
-//   if (anyHasDepth) {
-//     // Use first 3D variable to fetch depths
-//     const first3DVariable = selectedVariableObjects.find(v => v.two_dimensional === false);
-//     if (first3DVariable) {
-//       const currentDatasetId = props.dataset.id;
-//       GetDepthsPromise(props.dataset.id, first3DVariable.id)
-//         .then((result) => {
-//            if (currentDatasetId === props.dataset.id) {
-//           setAvailableDepths(result.data);
-//           setOutputDepth(result.data[1].id);}
-//         })
-//         .catch((err) => console.error("Failed to fetch depths:", err));
-//     }
-//   } else {
-//     setAvailableDepths([]);
-//     setOutputDepth(null);
-//   }
-// };
-
-const handleVariableSelection = (selectedVariableIds) => {
-  // Handle the -5 case (and any other non-array values)
-  if (!Array.isArray(selectedVariableIds)) {
-    console.log('selectedVariableIds is not an array:', selectedVariableIds, typeof selectedVariableIds);
-    setOutputVariables([]);
-    setShowDepthSelector(false);
-    setAvailableDepths([]);
-    setOutputDepth(props.dataset.depth);
-    return;
-  }
+  const handleVariableSelection = (selectedVariableIds) => {
 
   setOutputVariables(selectedVariableIds);
 
-  const selectedVariableObjects = subset_variables.filter((v) =>
-    selectedVariableIds.includes(v.id)
+  const variablesWithDepth = subset_variables.filter(
+    v => selectedVariableIds.includes(v.id) && v.two_dimensional === false
   );
 
-  const anyHasDepth = selectedVariableObjects.some((v) => v.two_dimensional === false);
-  setShowDepthSelector(anyHasDepth);
 
-  if (anyHasDepth) {
-    const first3DVariable = selectedVariableObjects.find(v => v.two_dimensional === false);
-    if (first3DVariable) {
-      const currentDatasetId = props.dataset.id;
-      GetDepthsPromise(props.dataset.id, first3DVariable.id)
-        .then((result) => {
-          if (currentDatasetId === props.dataset.id) {
-            setAvailableDepths(result.data);
-            setOutputDepth(result.data[1].id);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch depths:", err));
-    }
+  if (variablesWithDepth.length>0) {
+    setShowDepthSelector(variablesWithDepth.length);
+  
+    const varId = variablesWithDepth[0].id;
+    GetDepthsPromise(props.dataset.id, varId).then(result => {
++       setAvailableDepths(result.data);
++       setOutputDepth(result.data[1].id);
+    })
   } else {
     setAvailableDepths([]);
     setOutputDepth(props.dataset.depth);
@@ -212,13 +157,6 @@ const handleVariableSelection = (selectedVariableIds) => {
       setSubset_variables(variableResult.data);
       setLoading(false);
   })
-
-  .catch((error) => {
-    console.error("Error fetching variables:", error);
-    setLoading(false);
-
-  });
-
 };
 
   return (
@@ -234,7 +172,12 @@ const handleVariableSelection = (selectedVariableIds) => {
               multiple={true}
               state={outputVariables}
               def={"defaults.dataset"}
-              onUpdate={(keys, values) => handleVariableSelection(values[0])}
+                  onUpdate={(keys, values) =>  
+                  handleVariableSelection(  
+                    keys[0] == "variable" ? values[0] : []  
+                  )  
+                } 
+              
               data={subset_variables}
               title={"Variables"}
             />
