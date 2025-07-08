@@ -31,6 +31,8 @@ import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
 import * as olTilegrid from "ol/tilegrid";
 import { isMobile } from "react-device-detect";
+import Select from "ol/interaction/Select";
+import { pointerMove } from "ol/events/condition";
 
 function deg2rad(deg) {
   return (deg * Math.PI) / 180.0;
@@ -86,7 +88,7 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
-        maxZoom: 7-1e-10,
+        maxZoom: 7 - 1e-10,
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
           projection: projection,
@@ -261,6 +263,23 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
+  const hoverStyle = new Style({
+    stroke: new Stroke({
+      color: "#00ffff",
+      width: 4,
+    }),
+    fill: new Fill({
+      color: "rgba(0,255,255,0.1)",
+    }),
+  });
+
+  const hoverSelect = new Select({
+    condition: pointerMove,
+    style: hoverStyle,
+    layers: [layerFeatureVector],
+  });
+
+  mapObject.addInteraction(hoverSelect);
 
   let selected = null;
   mapObject.on("pointermove", function (e) {
