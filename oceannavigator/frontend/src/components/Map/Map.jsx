@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill } from "ol/style";
+import { Style, Circle, Stroke, Fill, Text , Icon } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -24,6 +24,9 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
+import { Vector as VectorLayer } from "ol/layer";
+import Translate from "ol/interaction/Translate";
+import { click } from "ol/events/condition";
 
 import {
   createMapView,
@@ -109,6 +112,8 @@ const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
+  const [annotationMode, setAnnotationMode] = useState(false);
+  const [annotationOverlays, setAnnotationOverlays] = useState([]);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -138,6 +143,8 @@ const Map = forwardRef((props, ref) => {
     addAnnotationLabel: addAnnotationLabel,
     undoAnnotationLabel: undoAnnotationLabel,
     clearAnnotationLabels: clearAnnotationLabels,
+    enableAnnotationMode: enableAnnotationMode,
+    disableAnnotationMode: disableAnnotationMode,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -848,6 +855,10 @@ const Map = forwardRef((props, ref) => {
       map1layers[6].setSource(newFeatureVectorSource);
       map1layers[7].setSource(newObsDrawSource);
     }
+        // at the end of resetMap()
+    annotationOverlays.forEach((o) => map0.removeOverlay(o));
+    setAnnotationOverlays([]);
+
   };
 
   const drawObsPoint = () => {
@@ -899,25 +910,99 @@ const Map = forwardRef((props, ref) => {
     }
   };
 
-  const addAnnotationLabel = (text) => {
-    let feature = new Feature({
-      geometry: new Point(mapView.getCenter()),
-      name: text,
-      annotation: true,
-    });
-    annotationVectorSource.addFeature(feature);
+   const addAnnotationLabel = (text, coord) => {
+     const el = document.createElement("div");
+     el.className = "annotation-box";
+     const closeBtn = document.createElement("span");
+      closeBtn.className = "annotation-close";
+      closeBtn.innerHTML = "×";
+      el.appendChild(closeBtn);
+      const textNode = document.createTextNode(text);
+      el.insertBefore(textNode, closeBtn);
+
+     const overlay = new Overlay({
+       element: el,
+       position: coord,
+       positioning: "bottom-left",
+       offset: [0, -30],
+     });
+     map0.addOverlay(overlay);
+    setAnnotationOverlays((prev) => [...prev, overlay]);
+    let dragging = false;
+let startPixel;
+
+el.addEventListener("mousedown", (evt) => {
+  dragging = true;
+  startPixel = [evt.clientX, evt.clientY];
+  evt.stopPropagation();
+});
+
+window.addEventListener("mousemove", (evt) => {
+  if (!dragging) return;
+  const deltaX = evt.clientX - startPixel[0];
+  const deltaY = evt.clientY - startPixel[1];
+  startPixel = [evt.clientX, evt.clientY];
+
+
+  const currPixel = map0.getPixelFromCoordinate(overlay.getPosition());
+  const newPixel = [currPixel[0] + deltaX, currPixel[1] + deltaY];
+  const newCoord = map0.getCoordinateFromPixel(newPixel);
+  overlay.setPosition(newCoord);
+});
+
+window.addEventListener("mouseup", () => {
+  dragging = false;
+});
+ 
+closeBtn.addEventListener("click", (evt) => {
+  map0.removeOverlay(overlay);
+  setAnnotationOverlays((all) => all.filter((o) => o !== overlay));
+  evt.stopPropagation();
+});
   };
 
   const undoAnnotationLabel = () => {
-    let features = annotationVectorSource.getFeatures();
-    if (features.length > 0) {
-      annotationVectorSource.removeFeatures([features[features.length - 1]]);
-    }
+    setAnnotationOverlays((all) => {
+      const list = [...all];
+      const last = list.pop();
+      if (last) map0.removeOverlay(last);
+      return list;
+    });
   };
 
   const clearAnnotationLabels = () => {
-    annotationVectorSource.clear();
+    annotationOverlays.forEach((o) => map0.removeOverlay(o));
+    setAnnotationOverlays([]);
   };
+
+    const enableAnnotationMode = () => {
+      setAnnotationMode(true);
+      map0.getViewport().style.cursor = "crosshair";
+    };
+    const disableAnnotationMode = () => {
+      setAnnotationMode(false);
+      map0.getViewport().style.cursor = "";
+    };
+
+    useEffect(() => {
+      if (!map0) return;
+      const onMapClick = (e) => {
+        if (!annotationMode) return;
+        const coord = e.coordinate;
+        disableAnnotationMode();
+        props.updateAnnotationCoord(coord);
+        props.updateUI({
+          annotationMode: false,
+          modalType: "annotation",
+          showModal: true,
+        });
+      };
+      map0.on("click", onMapClick);
+      return () => {
+        map0.un("click", onMapClick);
+      };
+    }, [map0, annotationMode]);
+
 
   const updateProjection = (map, dataset) => {
     resetMap();

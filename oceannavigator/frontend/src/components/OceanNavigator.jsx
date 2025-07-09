@@ -59,7 +59,9 @@ function OceanNavigator(props) {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
+    annotationMode: false,
   });
+  const [annotationCoord, setAnnotationCoord] = useState(null);
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
   const [class4Type, setClass4Type] = useState("ocean_predict");
@@ -177,6 +179,13 @@ function OceanNavigator(props) {
         setCompareDatasets((prevCompare) => {
           return !prevCompare;
         });
+        break;
+
+      case "enableAnnotationMode":
+        mapRef.current.enableAnnotationMode();
+        break;
+      case "disableAnnotationMode":
+        mapRef.current.disableAnnotationMode();
         break;
       case "permalink":
         setSubquery(null);
@@ -383,7 +392,11 @@ function OceanNavigator(props) {
       break;
     case "annotation":
       modalBodyContent = (
-        <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
+        <AnnotationTextWindow
+          mapRef={mapRef}
+          updateUI={updateUI}
+          coord={annotationCoord}
+        />
       );
       modalTitle = __("Add Annotation Label");
       modalSize = "md";
@@ -461,6 +474,7 @@ function OceanNavigator(props) {
         updateUI={updateUI}
         updateMapState={updateMapState}
         compareDatasets={compareDatasets}
+        updateAnnotationCoord={setAnnotationCoord}
       />
       <MapInputs
         dataset0={dataset0}
@@ -472,6 +486,7 @@ function OceanNavigator(props) {
         uiSettings={uiSettings}
         updateUI={updateUI}
         compareDatasets={compareDatasets}
+        updateAnnotationCoord={setAnnotationCoord}
         action={action}
         showCompare={true}
         featureType={featureType}

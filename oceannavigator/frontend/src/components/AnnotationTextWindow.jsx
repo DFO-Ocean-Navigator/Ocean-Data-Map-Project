@@ -9,8 +9,8 @@ function AnnotationTextWindow(props) {
   const [inputText, setInputText] = useState("");
 
   const onSubmit = () => {
-    props.mapRef.current.addAnnotationLabel(inputText);
-    props.updateUI({ modalType: "", showModal: false });
+    props.mapRef.current.addAnnotationLabel(inputText, props.coord);
+    props.updateUI({ annotationMode: false, modalType: "", showModal: false });
   };
 
   const onUndo = () => {
