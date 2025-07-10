@@ -88,7 +88,7 @@ class AreaWindow extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.dataset_0.variable !== prevProps.dataset_0.variable) {
-      this.setState({ scale: this.props.dataset_0.variable_scale + ",auto", })
+      this.setState({ scale: this.props.dataset_0.variable_scale + ",auto" });
     }
   }
 
@@ -123,7 +123,7 @@ class AreaWindow extends React.Component {
 
       if (key === "scale") {
         if (value.constructor === Array) {
-          value = value[0] + ',' + value[1]
+          value = value[0] + "," + value[1];
         }
         this.setState({ scale: value });
         return;
@@ -142,9 +142,11 @@ class AreaWindow extends React.Component {
   }
 
   compareChanged(checked) {
-    let newScale = checked ? "-10,10,auto" : this.props.dataset_0.variable_scale + ",auto"
+    let newScale = checked
+      ? "-10,10,auto"
+      : this.props.dataset_0.variable_scale + ",auto";
     this.setState({ scale: newScale });
-    this.props.setCompareDatasets(checked)
+    this.props.setCompareDatasets(checked);
   }
 
   onTabChange(index) {
@@ -215,7 +217,7 @@ class AreaWindow extends React.Component {
             auto
             key="scale"
             id="scale"
-            state={this.state.scale.split(',')}
+            state={this.state.scale.split(",")}
             onUpdate={this.onLocalUpdate}
           />
 
@@ -223,12 +225,11 @@ class AreaWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                  this.state.dataset_0.variable == this.props.dataset_1.variable
+                this.state.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
           >
-
             <ComboBox
               key="colormap_diff"
               id="colormap_diff"
@@ -337,11 +338,7 @@ class AreaWindow extends React.Component {
     const compare_dataset = (
       <div key="compare_dataset">
         <div style={{ display: this.props.dataset_compare ? "block" : "none" }}>
-          <Card
-            key="right_map"
-            id="right_map"
-            variant="primary"
-          >
+          <Card key="right_map" id="right_map" variant="primary">
             <Card.Header>{_("Right Map")}</Card.Header>
             <Card.Body className="global-settings-card">
               <DatasetSelector
@@ -451,7 +448,7 @@ class AreaWindow extends React.Component {
             <Nav.Link eventKey={1}>{_("Map")}</Nav.Link>
           </Nav.Item>
         </Nav>
-        <Row>
+        <Row className="plot-window-container">
           <Col className="settings-col" lg={2}>
             {leftInputs}
           </Col>

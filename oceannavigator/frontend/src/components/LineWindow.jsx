@@ -41,7 +41,7 @@ class LineWindow extends React.Component {
       selectedPlots: [0, 1, 1],
       profile_distance: -1,
       show_profile: false,
-      timer: null
+      timer: null,
     };
 
     if (props.init !== null) {
@@ -126,13 +126,12 @@ class LineWindow extends React.Component {
   }
 
   handleProfileCheck(key, value) {
-    if (value){
+    if (value) {
       this.setState({
         show_profile: true,
         profile_distance: 0,
       });
-    }
-    else{
+    } else {
       this.setState({
         show_profile: false,
         profile_distance: -1,
@@ -155,12 +154,12 @@ class LineWindow extends React.Component {
 
     const line_distance = this.props.line_distance;
     const slider_marks = {
-      0:'0km',
-      25:(line_distance/1000/4).toFixed(1),
-      50:(line_distance/1000/2).toFixed(1),
-      75:(line_distance/1000*(3/4)).toFixed(1),
-      100:(line_distance/1000).toFixed(1)
-    }
+      0: "0km",
+      25: (line_distance / 1000 / 4).toFixed(1),
+      50: (line_distance / 1000 / 2).toFixed(1),
+      75: ((line_distance / 1000) * (3 / 4)).toFixed(1),
+      100: (line_distance / 1000).toFixed(1),
+    };
 
     const plotOptions = (
       <div>
@@ -207,7 +206,7 @@ class LineWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                  this.props.dataset_0.variable == this.props.dataset_1.variable
+                this.props.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
@@ -276,8 +275,6 @@ class LineWindow extends React.Component {
             parameter={_("Depth")}
           />
 
-
-
           <div>
             <CheckBox
               key="show_profile"
@@ -285,8 +282,7 @@ class LineWindow extends React.Component {
               checked={this.state.show_profile}
               onUpdate={this.handleProfileCheck}
               title={_("Extract Profile Plot")}
-            >
-            </CheckBox>
+            ></CheckBox>
 
             {this.state.show_profile && (
               <div className="slider-container">
@@ -294,7 +290,12 @@ class LineWindow extends React.Component {
                   min={0}
                   max={100}
                   marks={slider_marks}
-                  onAfterChange={(x) => this.onLocalUpdate("profile_distance",x/100*this.props.line_distance)}
+                  onChangeComplete={(x) =>
+                    this.onLocalUpdate(
+                      "profile_distance",
+                      (x / 100) * this.props.line_distance
+                    )
+                  }
                 />
               </div>
             )}
@@ -303,7 +304,7 @@ class LineWindow extends React.Component {
             style={{
               display:
                 this.props.dataset_compare &&
-                  this.props.dataset_0.variable == this.props.dataset_1.variable
+                this.props.dataset_0.variable == this.props.dataset_1.variable
                   ? "block"
                   : "none",
             }}
@@ -465,7 +466,7 @@ class LineWindow extends React.Component {
             <Nav.Link eventKey={2}>{_("Hovmöller Diagram")}</Nav.Link>
           </Nav.Item>
         </Nav>
-        <Row>
+        <Row className="plot-window-container">
           <Col className="settings-col" lg={2}>
             {leftInputs}
           </Col>
