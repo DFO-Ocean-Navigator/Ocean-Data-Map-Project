@@ -17,31 +17,45 @@ settings = get_settings()
 
 
 def get_resolution(height: float, width: float) -> str:
-    area = height * width / 1e6
+    area = height * width / 1e8
 
-    if area < 1e5:
+    if area < 2e5:
         return "10m"  # full resolution
-    elif area < 1e12:
+    elif area < 2e6:
         return "50m"  # intermediate resolution
     else:
         return "110m"  # crude resolution
 
-
-def _get_land_geoms(resolution: str, extent: list) -> shpreader.BasicReader:
+def _get_land_geoms(resolution: str, extent: list) -> list:
 
     shp_file = f"/cartopy_resources/ne_{resolution}_diff.shp"
-
     try:
         land_shp = shpreader.BasicReader(settings.shape_file_dir + shp_file)
     except shpreader.shapefile.ShapefileException:
-        print(f"Could not open {shp_file}, using Cartopy feature interface.")
         land_shp = cfeature.NaturalEarthFeature("physical", "land", resolution)
 
-    # crop land geometries to plot extent
-    bbox = sgeom.box(*extent)
-    geoms = [geom.intersection(bbox) for geom in land_shp.geometries()]
+    lon_min, lat_min, lon_max, lat_max = extent
 
-    return geoms
+    cropped = []
+    if lon_min <= lon_max:
+        # simple case
+        bbox = sgeom.box(lon_min, lat_min, lon_max, lat_max)
+        for geom in land_shp.geometries():
+            inter = geom.intersection(bbox)
+            if not inter.is_empty:
+                cropped.append(inter)
+    else:
+        # crosses the line
+        west_box = sgeom.box(lon_min, lat_min,  180, lat_max)
+        east_box = sgeom.box(-180,    lat_min, lon_max, lat_max)
+        for geom in land_shp.geometries():
+            for bb in (west_box, east_box):
+                inter = geom.intersection(bb)
+                if not inter.is_empty:
+                    cropped.append(inter)
+
+    return cropped
+
 
 
 def load_map(
