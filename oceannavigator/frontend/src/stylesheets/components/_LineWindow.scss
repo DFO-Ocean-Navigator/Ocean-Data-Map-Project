@@ -25,6 +25,22 @@
   .slider-container {
     margin-bottom: 10px;
     margin-left: 10px;
-    width:90%;
+    width: 90%;
+  }
+
+  .plot-window-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    .plot-window-container {
+      flex-direction: column;
+    }
+    .plot-window-container .settings-col,
+    .plot-window-container .plot-col {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
   }
 }
