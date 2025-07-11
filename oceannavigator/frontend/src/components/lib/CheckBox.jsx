@@ -1,38 +1,31 @@
 import React from "react";
-// import {Checkbox} from "react-bootstrap";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 
-export default class CheckBox extends React.PureComponent {
-  constructor(props) {
-    super(props);
+const CheckBox = ({ id, title, checked, onUpdate, style }) => {
+  const handleChange = (e) => {
+    onUpdate(id, e.target.checked);
+  };
 
-    // Function bindings
-    this.handleChange = this.handleChange.bind(this);
-  }
+  return (
+    <Form.Check
+      type="checkbox"
+      id={id}
+      checked={checked}
+      onChange={handleChange}
+      label={title}
+      style={style}
+    />
+  );
+};
 
-  handleChange(e) {
-    this.props.onUpdate(this.props.id, e.target.checked);
-  }
-
-  render() {
-    return (
-      <Form.Check
-        type="checkbox"
-        id={this.props.id}
-        onChange={this.handleChange}
-        checked={this.props.checked}
-        label={this.props.title}
-      />
-    );
-  }
-}
-
-//***********************************************************************
 CheckBox.propTypes = {
+  id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   checked: PropTypes.bool,
-  id: PropTypes.string.isRequired,
   onUpdate: PropTypes.func.isRequired,
   style: PropTypes.object,
 };
+
+export default CheckBox;
+

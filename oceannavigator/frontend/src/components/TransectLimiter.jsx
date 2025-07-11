@@ -1,81 +1,72 @@
-import React from "react";
-import NumberBox from "./NumberBox.jsx";
+import React, { useState, useEffect } from "react";
 import { Form } from "react-bootstrap";
+import NumberBox from "./NumberBox.jsx";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
-import { withTranslation } from "react-i18next";
+const TransectLimiter = ({ id, title, parameter, state: propState, onUpdate }) => {
+  const { t: _ } = useTranslation();
 
-class TransectLimiter extends React.Component {
-  constructor(props) {
-    super(props);
+  // Determine initial limit and value from propState
+  const initialLimit = !(isNaN(propState) || propState === false);
+  const initialValue = initialLimit ? parseInt(propState, 10) : 200;
 
-    if (isNaN(this.props.state) || this.props.state == false) {
-      this.state = {
-        limit: false,
-        value: 200,
-      };
+  const [limit, setLimit] = useState(initialLimit);
+  const [value, setValue] = useState(initialValue);
+
+  // Sync local state when propState changes
+  useEffect(() => {
+    if (isNaN(propState) || propState === false) {
+      setLimit(false);
+      setValue(200);
     } else {
-      this.state = {
-        limit: true,
-        value: parseInt(this.props.state),
-      };
+      setLimit(true);
+      setValue(parseInt(propState, 10));
     }
+  }, [propState]);
 
-    // Function bindings
-    this.enableChecked = this.enableChecked.bind(this);
-    this.onUpdate = this.onUpdate.bind(this);
-  }
-
-  enableChecked(e) {
-    this.setState({
-      limit: e.target.checked,
-    });
-    if (e.target.checked) {
-      this.props.onUpdate(this.props.id, this.state.value);
+  const handleChecked = (e) => {
+    const checked = e.target.checked;
+    setLimit(checked);
+    if (checked) {
+      onUpdate(id, value);
     } else {
-      this.props.onUpdate(this.props.id, false);
+      onUpdate(id, false);
     }
-  }
+  };
 
-  onUpdate(key, value) {
-    this.props.onUpdate(this.props.id, value);
-  }
+  const handleValueUpdate = (_key, newValue) => {
+    setValue(newValue);
+    onUpdate(id, newValue);
+  };
 
-  updateParent() {
-    this.props.onUpdate(this.props.id, this.state.value);
-  }
+  return (
+    <div className="TransectLimiter">
+      <Form.Check
+        type="checkbox"
+        checked={limit}
+        onChange={handleChecked}
+        label={title}
+      />
 
-  render() {
-    return (
-      <div className="TransectLimiter">
-        
-
-        <Form.Check
-          type="checkbox"
-          checked={this.state.limit}
-          onChange={this.enableChecked}
-          label={this.props.title}
+      {limit && (
+        <NumberBox
+          id="depth"
+          state={value}
+          onUpdate={handleValueUpdate}
+          title={parameter}
         />
-
-        <div style={{ display: this.state.limit ? "block" : "none" }}>
-          <NumberBox
-            key="depth"
-            id="depth"
-            state={this.state.value}
-            onUpdate={this.onUpdate}
-            title={this.props.parameter}
-          />
-        </div>
-      </div>
-    );
-  }
-}
-
-//***********************************************************************
-TransectLimiter.propTypes = {
-  onUpdate: PropTypes.func,
-  id: PropTypes.string,
-  state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+      )}
+    </div>
+  );
 };
 
-export default withTranslation()(TransectLimiter);
+TransectLimiter.propTypes = {
+  id: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  parameter: PropTypes.string,
+  state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+  onUpdate: PropTypes.func,
+};
+
+export default TransectLimiter;

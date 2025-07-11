@@ -1,148 +1,121 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ComboBox from "./ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
-import { withTranslation } from "react-i18next";
+const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
+  const { t: _ } = useTranslation();
 
-class ContourSelector extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      levels: "-10,0,10",
-    };
+  // Internal levels state
+  const [levels, setLevels] = useState(state.levels || "-10,0,10");
+  const auto = state.levels === "auto";
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
-    // Function bindings
-    this.onUpdate = this.onUpdate.bind(this);
-    this.levelsChanged = this.levelsChanged.bind(this);
-    this.updateLevels = this.updateLevels.bind(this);
-    this.onUpdateAuto = this.onUpdateAuto.bind(this);
-  }
-
-  onUpdate(key, value) {
-    if (!Array.isArray(key)) {
-      key = [key];
-      value = [value];
-    }
-
-    const state = {};
-    for (let i = 0; i < key.length; i++) {
-      if (!this.props.state.hasOwnProperty(key[i])) {
-        continue;
-      }
-      state[key[i]] = value[i];
-    }
-    const newState = {...this.props.state, ...state};
-    this.props.onUpdate(this.props.id, newState);
-  }
-
-  levelsChanged(e) {
-    clearTimeout(this.timeout);
-    this.setState({
-      levels: e.target.value,
+  // Helper to merge state
+  const handleUpdate = useCallback((keys, values) => {
+    const ks = Array.isArray(keys) ? keys : [keys];
+    const vs = Array.isArray(values) ? values : [values];
+    const patch = {};
+    ks.forEach((k, i) => {
+      if (state.hasOwnProperty(k)) patch[k] = vs[i];
     });
-    this.timeout = setTimeout(this.updateLevels, 500);
-  }
+    onUpdate(id, { ...state, ...patch });
+  }, [id, onUpdate, state]);
 
-  updateLevels() {
-    clearTimeout(this.timeout);
-    this.onUpdate("levels", this.state.levels);
-  }
+  // Debounced levels change
+  const levelsChanged = e => {
+    const val = e.target.value;
+    setLevels(val);
+    if (typingTimeout) clearTimeout(typingTimeout);
+    setTypingTimeout(setTimeout(() => {
+      handleUpdate("levels", val);
+    }, 500));
+  };
 
-  onUpdateAuto(key, value) {
-    if (value) {
-      this.onUpdate("levels", "auto");
-    } else {
-      this.updateLevels();
-    }
-  }
+  const updateLevels = () => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+    handleUpdate("levels", levels);
+  };
 
-  render() {
-    const auto = this.props.state.levels === "auto";
-    _("Crosshatch");
-    _("Colourmap");
-    _("Show Legend");
-    _("Auto Levels");
-    return (
-      <div className="ContourSelector input">
-        <ComboBox
-          id="variable"
-          state={this.props.state.variable}
-          def=""
-          onUpdate={this.onUpdate}
-          url={`/api/v2.0/dataset/${this.props.dataset}/variables`} 
-          title={this.props.title}
-        >
-          {this.props.children}
-        </ComboBox>
-        <div
-          className="sub"
-          style={{
-            display:
-              this.props.state.variable == "none" ||
-              this.props.state.variable == ""
-                ? "none"
-                : "block",
-          }}
-        >
-          <CheckBox
-            key="hatch"
-            id="hatch"
-            state={this.props.state.hatch}
-            onUpdate={this.onUpdate}
-            title={_("Crosshatch")}
-          ></CheckBox>
-          <div style={{ display: this.props.state.hatch ? "none" : "block" }}>
-            <ComboBox
-              key="colormap"
-              id="colormap"
-              state={this.props.state.colormap}
-              def=""
-              onUpdate={this.onUpdate}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Colourmap")}
-            >
-              There are several colourmaps available. This tool tries to pick an
-              appropriate default based on the variable type (Default For
-              Variable). If you want to use any of the others, they are all
-              selectable.
-              <img src="/api/v2.0/plot/colormaps.png/" />
-            </ComboBox>
-          </div>
-          <CheckBox
-            key="legend"
-            id="legend"
-            checked={this.props.state.legend}
-            onUpdate={this.onUpdate}
-            title={_("Show Legend")}
-          ></CheckBox>
-          <h1>{_("Levels")}</h1>
-          <CheckBox
-            key="autolevels"
-            id="autolevels"
-            state={auto}
-            onUpdate={this.onUpdateAuto}
-            title={_("Auto Levels")}
-          ></CheckBox>
+  // Auto-levels toggle
+  const onUpdateAuto = (_k, checked) => {
+    if (checked) handleUpdate("levels", "auto");
+    else updateLevels();
+  };
+
+  // Render
+  return (
+    <div className="ContourSelector input">
+      <ComboBox
+        id="variable"
+        state={state.variable}
+        def=""
+        onUpdate={handleUpdate}
+        url={`/api/v2.0/dataset/${dataset}/variables`}
+        title={title}
+      >
+        {children}
+      </ComboBox>
+
+      <div className="sub" style={{ display: !state.variable ? "none" : "block" }}>
+        <CheckBox
+          id="hatch"
+          checked={state.hatch}
+          onUpdate={handleUpdate}
+          title={_("Crosshatch")}
+        />
+
+        {!state.hatch && (
+          <ComboBox
+            id="colormap"
+            state={state.colormap}
+            def=""
+            onUpdate={handleUpdate}
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colourmap")}
+          >
+            {_("There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
+          </ComboBox>
+        )}
+
+        <CheckBox
+          id="legend"
+          checked={state.legend}
+          onUpdate={handleUpdate}
+          title={_("Show Legend")}
+        />
+
+        <h1>{_("Levels")}</h1>
+        <CheckBox
+          id="autolevels"
+          checked={auto}
+          onUpdate={onUpdateAuto}
+          title={_("Auto Levels")}
+        />
+
+        {!auto && (
           <input
             type="text"
-            style={{ display: this.state.autolevels ? "none" : "inline-block" }}
-            value={this.state.levels}
-            onChange={this.levelsChanged}
-            onBlur={this.updateLevels}
+            value={levels}
+            onChange={levelsChanged}
+            onBlur={updateLevels}
           />
-        </div>
+        )}
       </div>
-    );
-  }
-}
-
-//***********************************************************************
-ContourSelector.propTypes = {
-  state: PropTypes.object,
-  legend: PropTypes.bool,
-  onUpdate: PropTypes.func,
-  id: PropTypes.string,
+    </div>
+  );
 };
 
-export default withTranslation()(ContourSelector);
+ContourSelector.propTypes = {
+  state: PropTypes.object.isRequired,
+  dataset: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  children: PropTypes.node,
+  onUpdate: PropTypes.func.isRequired,
+};
+
+export default ContourSelector;
+
