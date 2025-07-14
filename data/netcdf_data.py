@@ -835,7 +835,7 @@ class NetCDFData(Data):
         Possible names of the y dimension in the dataset.
         """
 
-        return {"y", "yc", "latitude", "gridY"}
+        return {"y", "yc", "latitude", "gridY", "rlat"}
 
     @property
     def x_dimensions(self) -> Set[str]:
@@ -843,7 +843,7 @@ class NetCDFData(Data):
         Possible names of the x dimension in the dataset.
         """
 
-        return {"x", "xc", "longitude", "gridX"}
+        return {"x", "xc", "longitude", "gridX", "rlon"}
 
     @property
     def yx_dimensions(self) -> Tuple[str, str]:
