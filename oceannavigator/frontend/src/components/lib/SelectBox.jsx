@@ -1,86 +1,64 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Row, Col } from "react-bootstrap";
 import PropTypes from "prop-types";
-
 import { withTranslation } from "react-i18next";
+import fastEqual from "fast-deep-equal/es6/react";
 
-const fastEqual = require("fast-deep-equal/es6/react");
+function SelectBox({
+  id,
+  name,
+  label,
+  placeholder,
+  options,
+  selected,
+  onChange,
+  loading = false,
+  multiple = false,
+  horizontalLayout = false,
+  helpContent = null,
+}) {
+  const [showHelp, setShowHelp] = useState(false);
+  const toggleShowHelp = () => setShowHelp((h) => !h);
 
-export class SelectBox extends React.Component {
-  constructor(props) {
-    super(props);
+  const opts = Array.isArray(options)
+    ? options.map((opt) => (
+        <option key={`option-${opt.id}`} value={opt.id}>
+          {opt.value}
+        </option>
+      ))
+    : null;
 
-    this.state = {
-      showHelp: false,
-    };
+  const disabled =
+    loading || !Array.isArray(options) || options.length === 0;
 
-    this.toggleShowHelp = this.toggleShowHelp.bind(this);
-  }
+  // choose layout element
+  const FormGroup = horizontalLayout ? Row : Col;
 
-  toggleShowHelp() {
-    this.setState((prevState) => ({
-      showHelp: !prevState.showHelp,
-    }));
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return (
-      !fastEqual(this.props, nextProps) || !fastEqual(this.state, nextState)
-    );
-  }
-
-  render() {
-    let options = null;
-    if (this.props.options) {
-      options = this.props.options.map((option) => {
-        return (
-          <option key={`option-${option.id}`} value={option.id}>
-            {option.value}
-          </option>
-        );
-      });
-    }
-
-    const disabled =
-      this.props.loading ||
-      !Array.isArray(this.props.options) ||
-      !this.props.options.length;
-
-    const formLayout = this.props.horizontalLayout ? Row : Col;
-
-    return (
-      <Form.Group
-        controlid={`formgroup-${this.props.id}-selectbox`}
-        as={formLayout}
+  return (
+    <Form.Group controlId={`formgroup-${id}-selectbox`} as={FormGroup}>
+      <Form.Label column>{label}</Form.Label>
+      <Form.Select
+        name={name}
+        placeholder={disabled ? "Loading..." : placeholder}
+        onChange={(e) =>
+          multiple
+            ? onChange(e.target.name, e.target.selectedOptions)
+            : onChange(e.target.name, e.target.value)
+        }
+        disabled={disabled}
+        value={selected}
+        multiple={multiple}
+        className={
+          horizontalLayout ? "form-select-horizontal" : "form-select"
+        }
       >
-        <Form.Label column>{this.props.label}</Form.Label>
-        <Form.Select
-          name={this.props.name}
-          placeholder={disabled ? "Loading..." : this.props.placeholder}
-          onChange={(e) => {
-            if (this.props.multiple) {
-              this.props.onChange(e.target.name, e.target.selectedOptions);
-            } else {
-              this.props.onChange(e.target.name, e.target.value);
-            }
-          }}
-          disabled={disabled}
-          value={this.props.selected}
-          multiple={this.props.multiple}
-          className={
-            this.props.horizontalLayout
-              ? "form-select-horizontal"
-              : "form-select"
-          }
-        >
-          {options}
-        </Form.Select>
-      </Form.Group>
-    );
-  }
+        {opts}
+      </Form.Select>
+
+    </Form.Group>
+  );
 }
 
-//***********************************************************************
 SelectBox.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
@@ -93,15 +71,12 @@ SelectBox.propTypes = {
     PropTypes.number,
     PropTypes.arrayOf(PropTypes.string),
   ]).isRequired,
+  loading: PropTypes.bool,
   multiple: PropTypes.bool,
-  helpContent: PropTypes.arrayOf(PropTypes.object),
   horizontalLayout: PropTypes.bool,
+  helpContent: PropTypes.arrayOf(PropTypes.object),
 };
 
-SelectBox.defaultProps = {
-  multiple: false,
-  helpContent: null,
-  horizontalLayout: false,
-};
-
-export default withTranslation()(SelectBox);
+export default withTranslation()(
+  React.memo(SelectBox, (prev, next) => fastEqual(prev, next))
+);

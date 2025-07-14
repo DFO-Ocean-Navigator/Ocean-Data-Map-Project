@@ -151,7 +151,7 @@ const PointWindow = ({
   );
 
   const global = (
-    <Card variant="primary">
+    <Card key="globalSettings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
       <Card.Body>
         <DatasetSelector
@@ -195,6 +195,7 @@ const PointWindow = ({
 
   const multiDepthVector = selected === TabEnum.STICK && (
     <>
+    <div key='stickVectorDepth'>
       <ComboBox
         id="variable"
         state={dataset_0.variable}
@@ -213,6 +214,7 @@ const PointWindow = ({
         url={`/api/v2.0/depth/?variable=${dataset_0.variable}&dataset=${dataset_0.id}`}
         title={_("Depth")}
       />
+      </div>
     </>
   );
 
@@ -221,6 +223,7 @@ const PointWindow = ({
     if (typeof plotData.id === "number") {
       observationVariableElem = (
         <ComboBox
+          key="obsVarNumeric"
           id="observation_variable"
           multiple
           state={observation_variable}
@@ -236,6 +239,7 @@ const PointWindow = ({
       }));
       observationVariableElem = (
         <ComboBox
+          key="obsVarNumeric"
           id="observation_variable"
           multiple
           state={observation_variable}

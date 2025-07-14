@@ -1,347 +1,217 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
-import { withTranslation } from "react-i18next";
+function ComboBox({
+  id,
+  title,
+  url,
+  data: incomingData,
+  state: propState,
+  onUpdate,
+  multiple = false,
+  alwaysShow = false,
+  def = "",
+  children,
+}) {
+  const { t: _ } = useTranslation();
+  const isMounted = useRef(false);
+  const [optionsData, setOptionsData] = useState([]);
+  const [showHelp, setShowHelp]     = useState(false);
+  const [lastUrl,   setLastUrl]     = useState(null);
 
-class ComboBox extends React.Component {
-  constructor(props) {
-    super(props);
+  // track mount/unmount
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
-    // Track if mounted to prevent no-op errors with the Ajax callbacks.
-    this._mounted = false;
-
-    this.state = {
-      data: [],
-      url: null,
-    };
-
-    // Function bindings
-    this.handleChange = this.handleChange.bind(this);
-    this.showHelp = this.showHelp.bind(this);
-    this.closeHelp = this.closeHelp.bind(this);
-  }
-
-  componentDidMount() {
-    this._mounted = true; //Component mounted
-    this.populate(this.props);
-  }
-
-  componentWillUnmount() {
-    this._mounted = false; //Component not mounted
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.url !== this.state.url ||
-      nextProps.data !== this.props.data
-    ) {
-      this.populate(nextProps);
+  // re‑populate whenever url or incomingData change
+  useEffect(() => {
+    if (url !== lastUrl || incomingData !== undefined) {
+      setLastUrl(url);
+      populate();
     }
-  }
+  }, [url, incomingData]);
 
-  // Fired when new option is selected
-  handleChange(e) {
-    let value = e.target.value; // Name of new selected option
-
-    if (this.props.multiple) {
-      value = [];
-      const options = e.target.options;
-
-      for (let i = 0; i < options.length; ++i) {
-        if (options[i].selected) {
-          value.push(options[i].value);
-        }
-      }
-    }
-
-    if (typeof this.props.onUpdate === "function") {
-      // State key ID: "variable", "dataset", "projection", etc.
-      const keys = [this.props.id];
-      // And their associative values
-      const values = [value];
-
-      // Get index of selected option
-      if (e.target.selectedIndex != -1) {
-        const dataset = e.target.options[e.target.selectedIndex].dataset;
-        // Construct keys and their associative value to be sent to
-        // OceanNavigator state
-        for (let key in dataset) {
-          // State key name ("variable_scale", "dataset_help", etc)
-          keys.push(this.props.id + "_" + key);
-
-          // State key value ("-5,30", "Sample dataset help...")
-          values.push(dataset[key]);
-        }
-      }
-
-      // Update OceanNavigator state
-      this.props.onUpdate(keys, values);
-    }
-  }
-
-  // Populates Drop down menu
-  populate(props) {
-    this.setState({
-      url: props.url,
-    });
-
-    if ("url" in props && "" !== props.url) {
-      /* Checks if URL exists and is not empty */
-      axios
-        .get(props.url)
-        .then(
-          function (response) {
-            if (this._mounted) {
-              //Combobox is mounted
-              let data = response.data;
-              const ids = data.map(function (d) {
-                return d.id;
-              }); //stores data id
-
-              if (
-                (this.props.state == "" &&
-                  typeof this.props.state == "string") ||
-                this.props.state == "none"
-              ) {
-                if (!ids.includes("none")) {
-                  data.splice(0, 0, { id: "none", value: _("None") });
-                }
-              }
-              this.setState({
-                data: data,
-              });
-
-              const a = data.map(function (x) {
-                return x.id;
-              });
-
-              let value = this.props.state;
-              const floatValue = parseFloat(value);
-
-              let notInList = false;
-              if (value instanceof Array) {
-                notInList = value
-                  .map((el) => !a.includes(el) && !a.includes(parseFloat(el)))
-                  .reduce((prev, cur) => prev || cur, false);
-              } else {
-                notInList =
-                  !a.includes(this.props.state) && !a.includes(floatValue);
-              }
-              if (
-                notInList ||
-                (this.props.state == "" && data.length > 0) ||
-                this.props.state == "all"
-              ) {
-                if (props.multiple) {
-                  if (value == "all") {
-                    value = data.map(function (d) {
-                      return d.id;
-                    });
-                  } else if (!Array.isArray(value)) {
-                    value = [value];
-                  }
-                }
-              } else {
-                if (data.length == 0) {
-                  value = props.def;
-                } else if (data.length == 1) {
-                  value = ids[0];
-                } else if (props.multiple && !Array.isArray(this.props.state)) {
-                  value = [this.props.state];
-                } else {
-                  value = this.props.state;
-                }
-              }
-              if (
-                data.length > 0 &&
-                !props.multiple &&
-                !a.includes(value) &&
-                !a.includes(floatValue)
-              ) {
-                if (a.includes(0)) {
-                  value = 0;
-                } else {
-                  value = data[0].id;
-                }
-              }
-              if (typeof this.props.onUpdate === "function") {
-                props.onUpdate(props.id, value);
-                if (a.indexOf(value) != -1) {
-                  const d = data[a.indexOf(value)];
-                  for (var key in d) {
-                    if (
-                      d.hasOwnProperty(key) &&
-                      key != "id" &&
-                      key != "value" &&
-                      d[key] != null
-                    ) {
-                      this.props.onUpdate(this.props.id + "_" + key, d[key]);
-                    }
-                  }
-                }
-              }
-            }
-          }.bind(this)
-        )
-        .catch(
-          function (error) {
-            console.error(props.url, error);
-          }.bind(this)
-        );
+  function populate() {
+    if (url) {
+      axios.get(url)
+        .then(res => {
+          if (!isMounted.current) return;
+          let list = res.data.slice();
+          const ids = list.map(d => d.id);
+          // insert “none” if appropriate
+          if ((propState === "" && typeof propState === "string") || propState === "none") {
+            if (!ids.includes("none")) list.unshift({ id: "none", value: _("None") });
+          }
+          setOptionsData(list);
+          normalizeAndNotify(list);
+        })
+        .catch(err => console.error(url, err));
+    } else if (Array.isArray(incomingData)) {
+      setOptionsData(incomingData);
+      normalizeAndNotify(incomingData);
     } else {
-      this.setState({
-        data: props.data,
-      });
-      const value = this.props.state;
+      setOptionsData([]);
+    }
+  }
 
-      if (typeof props.onUpdate === "function") {
-        for (let i = 0; i < props.data.length; i++) {
-          const d = props.data[i];
-          if (d.id == value) {
-            for (var key in d) {
-              if (d.hasOwnProperty(key) && key != "id" && key != "value" && d[key] != null) {
-                props.onUpdate(props.id + "_" + key, d[key]);
-              }
-            }
+  function normalizeAndNotify(list) {
+    const a = list.map(d => d.id);
+    let value = propState;
+    const f = parseFloat(value);
+    const notIn =
+      Array.isArray(value)
+        ? value.some(v => !a.includes(v) && !a.includes(parseFloat(v)))
+        : !a.includes(value) && !a.includes(f);
+
+    if (notIn || (propState === "" && list.length) || propState === "all") {
+      if (multiple) {
+        value = propState === "all"
+          ? a
+          : Array.isArray(propState)
+            ? propState
+            : [propState];
+      }
+    } else {
+      if (list.length === 0)             value = def;
+      else if (list.length === 1)        value = list[0].id;
+      else if (multiple && !Array.isArray(propState)) value = [propState];
+      else                                value = propState;
+    }
+
+    if (!multiple && !a.includes(value) && !a.includes(f) && list.length) {
+    value = a.includes(0) ? 0 : a[0];
+  }
+    if (typeof onUpdate === "function") {
+      onUpdate(id, value);
+      const idx = a.indexOf(value);
+      if (idx !== -1) {
+        const d = list[idx];
+        for (let k in d) {
+          if (k !== "id" && k !== "value" && d[k] != null) {
+            onUpdate(id + "_" + k, d[k]);
           }
         }
       }
     }
   }
 
-  //Small help icon - OPENS
-  showHelp() {
-    this.setState({
-      showHelp: true,
-    });
-  }
-
-  //Small help icon - CLOSES
-  closeHelp() {
-    this.setState({
-      showHelp: false,
-    });
-  }
-
-  render() {
-    //Creates one drop down function for each option sent back
-    const options = this.state.data.map(function (o) {
-      var opts = {
-        key: o.id,
-        value: o.id,
-      };
-
-      //Checks if each value in data has id or value
-      for (let key in o) {
-        if (key == "id" || key == "value") {
-          continue;
-        }
-        if (o.hasOwnProperty(key)) {
-          opts["data-" + key] = o[key];
+  function handleChange(e) {
+    let value = e.target.value;
+    if (multiple) {
+      value = [];
+      for (let opt of e.target.options) {
+        if (opt.selected) value.push(opt.value);
+      }
+    }
+    if (typeof onUpdate === "function") {
+      const keys = [id], vals = [value];
+      if (e.target.selectedIndex !== -1) {
+        const ds = e.target.options[e.target.selectedIndex].dataset;
+        for (let k in ds) {
+          keys.push(id + "_" + k);
+          vals.push(ds[k]);
         }
       }
-      return React.createElement("option", opts, o.value); //Creates Option that was found
-    });
-
-    if (this.state.data.length > 1 || this.props.alwaysShow) {
-      var value = this.props.state;
-      if (this.props.multiple && value == "all") {
-        value = this.state.data.map(function (d) {
-          return d.id;
-        });
-      }
-      if (this.props.multiple && !Array.isArray(value)) {
-        value = [value];
-      }
-      if (!this.props.multiple && Array.isArray(value)) {
-        value = value[0];
-      }
-
-      const hasHelp =
-        (this.props.children != null && this.props.children.length > 0) ||
-        (this.state.data.length > 1 &&
-          this.state.data.slice(-1)[0].hasOwnProperty("help"));
-
-      var helpOptions = [];
-      if (
-        this.state.data.length > 1 &&
-        this.state.data.slice(-1)[0].hasOwnProperty("help")
-      ) {
-        helpOptions = this.state.data.map(function (d) {
-          return (
-            <p key={d.id}>
-              <em>{d.value}</em>:
-              <span dangerouslySetInnerHTML={{ __html: d.help }} />
-            </p>
-          );
-        });
-      }
-
-      return (
-        <div key={this.props.url} className="ComboBox input">
-          <h1 className="combobox-title">
-            {this.props.title}
-          </h1>
-
-          <Modal
-            show={this.state.showHelp}
-            onHide={this.closeHelp}
-            variant="large"
-            dialogClassName="helpdialog"
-            backdrop={true}
-          >
-            <Modal.Header closeButton closeLabel={_("Close")}>
-              <Modal.Title>
-                {_("titlehelp", { title: this.props.title })}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              {this.props.children}
-              {helpOptions}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button onClick={this.closeHelp}>
-                <Icon icon="close" /> {_("Close")}
-              </Button>
-            </Modal.Footer>
-          </Modal>
-
-          <Form.Select
-            size={Math.min(
-              10,
-              this.props.multiple ? this.state.data.length : 1
-            )}
-            value={value}
-            onChange={this.handleChange}
-            multiple={this.props.multiple}
-          >
-            {options}
-          </Form.Select>
-        </div>
-      );
-    } else {
-      return null;
+      onUpdate(keys, vals);
     }
   }
+
+  const openHelp  = () => setShowHelp(true);
+  const closeHelp = () => setShowHelp(false);
+
+  const opts = optionsData.map(o => {
+    const attrs = { key: o.id, value: o.id };
+    for (let k in o) {
+      if (k !== "id" && k !== "value" && o[k] != null) {
+        attrs["data-" + k] = o[k];
+      }
+    }
+    return <option {...attrs}>{o.value}</option>;
+  });
+
+  // only render if >1 entry or alwaysShow
+  if (optionsData.length > 1 || alwaysShow) {
+    let value = propState;
+    if (multiple && value === "all")      value = optionsData.map(d => d.id);
+    if (multiple && !Array.isArray(value)) value = [value];
+    if (!multiple && Array.isArray(value)) value = value[0];
+
+    const hasHelp =
+      React.Children.count(children) > 0 ||
+      (optionsData.length > 1 && optionsData[optionsData.length - 1].help);
+
+    const helpBlocks =
+      optionsData.length > 1 && optionsData[optionsData.length - 1].help
+        ? optionsData.map(d => (
+            <p key={d.id}>
+              <em>{d.value}</em>:{" "}
+              <span dangerouslySetInnerHTML={{ __html: d.help }} />
+            </p>
+          ))
+        : null;
+
+    return (
+      <div className="ComboBox input">
+        <h1 className="combobox-title">{title}</h1>
+
+        <Modal
+          show={showHelp}
+          onHide={closeHelp}
+          dialogClassName="helpdialog"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {children}
+            {helpBlocks}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={closeHelp}>
+              <Icon icon="close" /> {_(`Close`)}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Form.Select
+          size={Math.min(10, multiple ? optionsData.length : 1)}
+          value={value}
+          onChange={handleChange}
+          multiple={multiple}
+        >
+          {opts}
+        </Form.Select>
+
+        {hasHelp && (
+          <Button variant="link" onClick={openHelp}>
+            {_(`Help`)}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
-//***********************************************************************
 ComboBox.propTypes = {
-  multiple: PropTypes.bool,
-  alwaysShow: PropTypes.bool,
-  title: PropTypes.string,
-  data: PropTypes.array,
-  state: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.array,
-  ]),
-  onUpdate: PropTypes.func,
-  id: PropTypes.string,
-  url: PropTypes.string,
+  id:          PropTypes.string,
+  title:       PropTypes.string,
+  url:         PropTypes.string,
+  data:        PropTypes.array,
+  state:       PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
+  onUpdate:    PropTypes.func,
+  multiple:    PropTypes.bool,
+  alwaysShow:  PropTypes.bool,
+  def:         PropTypes.string,
+  children:    PropTypes.node,
 };
 
-export default withTranslation()(ComboBox);
+export default ComboBox;
+
