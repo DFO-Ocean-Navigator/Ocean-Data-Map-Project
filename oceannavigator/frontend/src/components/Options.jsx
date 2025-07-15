@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Row, FormControl, ControlLabel, Col, Card, Button } from "react-bootstrap";
+import {
+  Row,
+  FormControl,
+  ControlLabel,
+  Col,
+  Card,
+  Button,
+} from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
@@ -11,11 +18,17 @@ const Options = ({ options, updateOptions }) => {
   // Local state mirrors props.options
   const [interpType, setInterpType] = useState(options.interpType);
   const [interpRadius, setInterpRadius] = useState(options.interpRadius);
-  const [interpNeighbours, setInterpNeighbours] = useState(options.interpNeighbours);
+  const [interpNeighbours, setInterpNeighbours] = useState(
+    options.interpNeighbours
+  );
   const [bathymetry, setBathymetry] = useState(options.bathymetry);
   const [bathyContour, setBathyContour] = useState(options.bathyContour);
-  const [mapBathymetryOpacity, setMapBathymetryOpacity] = useState(options.mapBathymetryOpacity);
-  const [topoShadedRelief, setTopoShadedRelief] = useState(options.topoShadedRelief);
+  const [mapBathymetryOpacity, setMapBathymetryOpacity] = useState(
+    options.mapBathymetryOpacity
+  );
+  const [topoShadedRelief, setTopoShadedRelief] = useState(
+    options.topoShadedRelief
+  );
 
   const handleApply = () => {
     updateOptions({
@@ -42,9 +55,11 @@ const Options = ({ options, updateOptions }) => {
               <FormControl
                 componentClass="select"
                 value={interpType}
-                onChange={e => setInterpType(e.target.value)}
+                onChange={(e) => setInterpType(e.target.value)}
               >
-                <option value="gaussian">{_("Gaussian Weighting (Default)")}</option>
+                <option value="gaussian">
+                  {_("Gaussian Weighting (Default)")}
+                </option>
                 <option value="bilinear">{_("Bilinear")}</option>
                 <option value="inverse">{_("Inverse Square")}</option>
                 <option value="nearest">{_("Nearest Neighbour")}</option>
@@ -61,7 +76,7 @@ const Options = ({ options, updateOptions }) => {
                 min={5}
                 max={100}
                 value={interpRadius}
-                onChange={e => setInterpRadius(Number(e.target.value))}
+                onChange={(e) => setInterpRadius(Number(e.target.value))}
               />
             </Col>
           </Row>
@@ -75,13 +90,17 @@ const Options = ({ options, updateOptions }) => {
                 min={1}
                 max={50}
                 value={interpNeighbours}
-                onChange={e => setInterpNeighbours(Number(e.target.value))}
+                onChange={(e) => setInterpNeighbours(Number(e.target.value))}
               />
             </Col>
           </Row>
           <Row>
             <br />
-            <Button bsStyle="primary" className="center-block" onClick={handleApply}>
+            <Button
+              bsStyle="primary"
+              className="center-block"
+              onClick={handleApply}
+            >
               <Icon icon="check" /> {_("Apply")}
             </Button>
           </Row>
@@ -112,7 +131,9 @@ const Options = ({ options, updateOptions }) => {
                 max={1.0}
                 step={0.05}
                 value={mapBathymetryOpacity}
-                onChange={e => setMapBathymetryOpacity(Number(e.target.value))}
+                onChange={(e) =>
+                  setMapBathymetryOpacity(Number(e.target.value))
+                }
               />
             </Col>
           </Row>
@@ -124,7 +145,7 @@ const Options = ({ options, updateOptions }) => {
               <FormControl
                 componentClass="select"
                 value={bathyContour}
-                onChange={e => setBathyContour(e.target.value)}
+                onChange={(e) => setBathyContour(e.target.value)}
               >
                 <option value="etopo1">{_("ETOPO1")}</option>
               </FormControl>
@@ -142,7 +163,11 @@ const Options = ({ options, updateOptions }) => {
           </Row>
           <Row>
             <br />
-            <Button bsStyle="primary" className="center-block" onClick={handleApply}>
+            <Button
+              bsStyle="primary"
+              className="center-block"
+              onClick={handleApply}
+            >
               <Icon icon="check" /> {_("Apply")}
             </Button>
           </Row>
@@ -152,6 +177,7 @@ const Options = ({ options, updateOptions }) => {
   );
 };
 
+//***********************************************************************
 Options.propTypes = {
   options: PropTypes.shape({
     interpType: PropTypes.string,

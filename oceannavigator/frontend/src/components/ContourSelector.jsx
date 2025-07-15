@@ -13,24 +13,29 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
   const [typingTimeout, setTypingTimeout] = useState(null);
 
   // Helper to merge state
-  const handleUpdate = useCallback((keys, values) => {
-    const ks = Array.isArray(keys) ? keys : [keys];
-    const vs = Array.isArray(values) ? values : [values];
-    const patch = {};
-    ks.forEach((k, i) => {
-      if (state.hasOwnProperty(k)) patch[k] = vs[i];
-    });
-    onUpdate(id, { ...state, ...patch });
-  }, [id, onUpdate, state]);
+  const handleUpdate = useCallback(
+    (keys, values) => {
+      const ks = Array.isArray(keys) ? keys : [keys];
+      const vs = Array.isArray(values) ? values : [values];
+      const patch = {};
+      ks.forEach((k, i) => {
+        if (state.hasOwnProperty(k)) patch[k] = vs[i];
+      });
+      onUpdate(id, { ...state, ...patch });
+    },
+    [id, onUpdate, state]
+  );
 
   // Debounced levels change
-  const levelsChanged = e => {
+  const levelsChanged = (e) => {
     const val = e.target.value;
     setLevels(val);
     if (typingTimeout) clearTimeout(typingTimeout);
-    setTypingTimeout(setTimeout(() => {
-      handleUpdate("levels", val);
-    }, 500));
+    setTypingTimeout(
+      setTimeout(() => {
+        handleUpdate("levels", val);
+      }, 500)
+    );
   };
 
   const updateLevels = () => {
@@ -58,7 +63,10 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
         {children}
       </ComboBox>
 
-      <div className="sub" style={{ display: !state.variable ? "none" : "block" }}>
+      <div
+        className="sub"
+        style={{ display: !state.variable ? "none" : "block" }}
+      >
         <CheckBox
           id="hatch"
           checked={state.hatch}
@@ -75,7 +83,9 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
             url="/api/v2.0/plot/colormaps"
             title={_("Colourmap")}
           >
-            {_("There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.")}
+            {_(
+              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable."
+            )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
           </ComboBox>
         )}
@@ -107,7 +117,7 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
     </div>
   );
 };
-
+//***********************************************************************
 ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
   dataset: PropTypes.string.isRequired,
@@ -118,4 +128,3 @@ ContourSelector.propTypes = {
 };
 
 export default ContourSelector;
-

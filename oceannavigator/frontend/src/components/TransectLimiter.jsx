@@ -4,7 +4,13 @@ import NumberBox from "./NumberBox.jsx";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
-const TransectLimiter = ({ id, title, parameter, state: propState, onUpdate }) => {
+const TransectLimiter = ({
+  id,
+  title,
+  parameter,
+  state: propState,
+  onUpdate,
+}) => {
   const { t: _ } = useTranslation();
 
   // Determine initial limit and value from propState

@@ -20,13 +20,15 @@ function ComboBox({
   const { t: _ } = useTranslation();
   const isMounted = useRef(false);
   const [optionsData, setOptionsData] = useState([]);
-  const [showHelp, setShowHelp]     = useState(false);
-  const [lastUrl,   setLastUrl]     = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [lastUrl, setLastUrl] = useState(null);
 
   // track mount/unmount
   useEffect(() => {
     isMounted.current = true;
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   // re‑populate whenever url or incomingData change
@@ -39,19 +41,24 @@ function ComboBox({
 
   function populate() {
     if (url) {
-      axios.get(url)
-        .then(res => {
+      axios
+        .get(url)
+        .then((res) => {
           if (!isMounted.current) return;
           let list = res.data.slice();
-          const ids = list.map(d => d.id);
+          const ids = list.map((d) => d.id);
           // insert “none” if appropriate
-          if ((propState === "" && typeof propState === "string") || propState === "none") {
-            if (!ids.includes("none")) list.unshift({ id: "none", value: _("None") });
+          if (
+            (propState === "" && typeof propState === "string") ||
+            propState === "none"
+          ) {
+            if (!ids.includes("none"))
+              list.unshift({ id: "none", value: _("None") });
           }
           setOptionsData(list);
           normalizeAndNotify(list);
         })
-        .catch(err => console.error(url, err));
+        .catch((err) => console.error(url, err));
     } else if (Array.isArray(incomingData)) {
       setOptionsData(incomingData);
       normalizeAndNotify(incomingData);
@@ -61,32 +68,32 @@ function ComboBox({
   }
 
   function normalizeAndNotify(list) {
-    const a = list.map(d => d.id);
+    const a = list.map((d) => d.id);
     let value = propState;
     const f = parseFloat(value);
-    const notIn =
-      Array.isArray(value)
-        ? value.some(v => !a.includes(v) && !a.includes(parseFloat(v)))
-        : !a.includes(value) && !a.includes(f);
+    const notIn = Array.isArray(value)
+      ? value.some((v) => !a.includes(v) && !a.includes(parseFloat(v)))
+      : !a.includes(value) && !a.includes(f);
 
     if (notIn || (propState === "" && list.length) || propState === "all") {
       if (multiple) {
-        value = propState === "all"
-          ? a
-          : Array.isArray(propState)
+        value =
+          propState === "all"
+            ? a
+            : Array.isArray(propState)
             ? propState
             : [propState];
       }
     } else {
-      if (list.length === 0)             value = def;
-      else if (list.length === 1)        value = list[0].id;
+      if (list.length === 0) value = def;
+      else if (list.length === 1) value = list[0].id;
       else if (multiple && !Array.isArray(propState)) value = [propState];
-      else                                value = propState;
+      else value = propState;
     }
 
     if (!multiple && !a.includes(value) && !a.includes(f) && list.length) {
-    value = a.includes(0) ? 0 : a[0];
-  }
+      value = a.includes(0) ? 0 : a[0];
+    }
     if (typeof onUpdate === "function") {
       onUpdate(id, value);
       const idx = a.indexOf(value);
@@ -110,7 +117,8 @@ function ComboBox({
       }
     }
     if (typeof onUpdate === "function") {
-      const keys = [id], vals = [value];
+      const keys = [id],
+        vals = [value];
       if (e.target.selectedIndex !== -1) {
         const ds = e.target.options[e.target.selectedIndex].dataset;
         for (let k in ds) {
@@ -122,10 +130,10 @@ function ComboBox({
     }
   }
 
-  const openHelp  = () => setShowHelp(true);
+  const openHelp = () => setShowHelp(true);
   const closeHelp = () => setShowHelp(false);
 
-  const opts = optionsData.map(o => {
+  const opts = optionsData.map((o) => {
     const attrs = { key: o.id, value: o.id };
     for (let k in o) {
       if (k !== "id" && k !== "value" && o[k] != null) {
@@ -138,7 +146,7 @@ function ComboBox({
   // only render if >1 entry or alwaysShow
   if (optionsData.length > 1 || alwaysShow) {
     let value = propState;
-    if (multiple && value === "all")      value = optionsData.map(d => d.id);
+    if (multiple && value === "all") value = optionsData.map((d) => d.id);
     if (multiple && !Array.isArray(value)) value = [value];
     if (!multiple && Array.isArray(value)) value = value[0];
 
@@ -148,7 +156,7 @@ function ComboBox({
 
     const helpBlocks =
       optionsData.length > 1 && optionsData[optionsData.length - 1].help
-        ? optionsData.map(d => (
+        ? optionsData.map((d) => (
             <p key={d.id}>
               <em>{d.value}</em>:{" "}
               <span dangerouslySetInnerHTML={{ __html: d.help }} />
@@ -160,11 +168,7 @@ function ComboBox({
       <div className="ComboBox input">
         <h1 className="combobox-title">{title}</h1>
 
-        <Modal
-          show={showHelp}
-          onHide={closeHelp}
-          dialogClassName="helpdialog"
-        >
+        <Modal show={showHelp} onHide={closeHelp} dialogClassName="helpdialog">
           <Modal.Header closeButton>
             <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
           </Modal.Header>
@@ -201,17 +205,20 @@ function ComboBox({
 }
 
 ComboBox.propTypes = {
-  id:          PropTypes.string,
-  title:       PropTypes.string,
-  url:         PropTypes.string,
-  data:        PropTypes.array,
-  state:       PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
-  onUpdate:    PropTypes.func,
-  multiple:    PropTypes.bool,
-  alwaysShow:  PropTypes.bool,
-  def:         PropTypes.string,
-  children:    PropTypes.node,
+  id: PropTypes.string,
+  title: PropTypes.string,
+  url: PropTypes.string,
+  data: PropTypes.array,
+  state: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.array,
+  ]),
+  onUpdate: PropTypes.func,
+  multiple: PropTypes.bool,
+  alwaysShow: PropTypes.bool,
+  def: PropTypes.string,
+  children: PropTypes.node,
 };
 
 export default ComboBox;
-

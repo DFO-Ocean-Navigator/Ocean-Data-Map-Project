@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 
 const LineWindow = (props) => {
   const { t: _ } = useTranslation();
+  // Track if mounted to prevent no-op errors with the Ajax callbacks.
   const mountedRef = useRef(false);
 
   const [state, setState] = useState(() => ({
@@ -23,8 +24,8 @@ const LineWindow = (props) => {
     scale_1: props.dataset_1.variable_scale + ",auto",
     scale_diff: "-10,10,auto",
     colormap: "default",
-    colormap_right: "default",
-    colormap_diff: "default",
+    colormap_right: "default", // Colourmap for second (right) plot
+    colormap_diff: "default", // Colourmap for difference plot
     showmap: true,
     surfacevariable: "none",
     linearthresh: 0,
@@ -363,6 +364,7 @@ const LineWindow = (props) => {
   );
 };
 
+//***********************************************************************
 LineWindow.propTypes = {
   dataset_compare: PropTypes.bool,
   dataset_0: PropTypes.object.isRequired,

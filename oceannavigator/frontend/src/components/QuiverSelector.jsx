@@ -50,45 +50,27 @@ const QuiverSelector = ({ state, dataset, id, title, children, onUpdate }) => {
               : "block",
         }}
       >
-        {/* Uncomment and adapt these ComboBoxes exactly as you had them */}
-        {/*
-        <ComboBox
-          id="magnitude"
-          state={state.magnitude}
-          onUpdate={handleUpdate}
-          def="length"
-          title={_("Show Magnitude")}
-          data={[
-            { id: "none",   value: _("No") },
-            { id: "length", value: _("Length") },
-            { id: "color",  value: _("Colour") },
-          ]}
-        />
-        */}
         <div
           style={{
             display: state.magnitude === "color" ? "block" : "none",
           }}
-        >
-          {/* your nested colormap ComboBox, if you need it */}
-        </div>
+        ></div>
       </div>
     </div>
   );
 };
-
+//***********************************************************************
 QuiverSelector.propTypes = {
-  id:       PropTypes.string.isRequired,
-  dataset:  PropTypes.string.isRequired,
-  title:    PropTypes.string,
-  state:    PropTypes.shape({
-    variable:  PropTypes.string,
+  id: PropTypes.string.isRequired,
+  dataset: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  state: PropTypes.shape({
+    variable: PropTypes.string,
     magnitude: PropTypes.string,
-    colormap:  PropTypes.string,
+    colormap: PropTypes.string,
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
   children: PropTypes.node,
 };
 
 export default QuiverSelector;
-

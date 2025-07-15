@@ -18,9 +18,9 @@ const Permalink = ({ generatePermLink, compareDatasets }) => {
     time: true,
   });
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, checked } = e.target;
-    setOptions(opts => ({ ...opts, [name]: checked }));
+    setOptions((opts) => ({ ...opts, [name]: checked }));
   };
 
   const copyPermalink = () => {
@@ -46,8 +46,12 @@ const Permalink = ({ generatePermLink, compareDatasets }) => {
           />
         </Row>
         <Row>
-          <Button variant="primary" className="pull-right" onClick={copyPermalink}>
-            <Icon icon="copy" /> {_('Copy')}
+          <Button
+            variant="primary"
+            className="pull-right"
+            onClick={copyPermalink}
+          >
+            <Icon icon="copy" /> {_("Copy")}
           </Button>
         </Row>
         <br />

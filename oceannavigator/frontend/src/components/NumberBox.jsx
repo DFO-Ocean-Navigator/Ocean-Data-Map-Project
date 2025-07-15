@@ -49,7 +49,11 @@ const NumberBox = ({ id, title, state: propState, onUpdate, children }) => {
         )}
       </h1>
 
-      <Modal show={showHelp} onHide={() => setShowHelp(false)} dialogClassName="helpdialog">
+      <Modal
+        show={showHelp}
+        onHide={() => setShowHelp(false)}
+        dialogClassName="helpdialog"
+      >
         <Modal.Header closeButton>
           <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
         </Modal.Header>
@@ -79,7 +83,7 @@ const NumberBox = ({ id, title, state: propState, onUpdate, children }) => {
     </div>
   );
 };
-
+//***********************************************************************
 NumberBox.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,

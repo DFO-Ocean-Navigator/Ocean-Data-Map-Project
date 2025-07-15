@@ -28,63 +28,62 @@ const ImageSize = ({ id, title, onUpdate }) => {
   return (
     <div className="image-size">
       <h1 className="image-title">{title}</h1>
-        <table className="image-table">
-          <tbody>
-            <tr>
-              <td>
-                <label htmlFor={`${id}_width`}>{_("Width:")}</label>
-              </td>
-              <td>
-                <input
-                  className="size-input"
-                  id={`${id}_width`}
-                  type="number"
-                  value={width}
-                  onChange={e => changed("width", e.target.value)}
-                  step={0.25}
-                  min={0}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor={`${id}_height`}>{_("Height:")}</label>
-              </td>
-              <td>
-                <input
-                  className="size-input"
-                  id={`${id}_height`}
-                  type="number"
-                  value={height}
-                  onChange={e => changed("height", e.target.value)}
-                  step={0.25}
-                  min={0}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label htmlFor={`${id}_dpi`}>{_("DPI:")}</label>
-              </td>
-              <td>
-                <input
-                  className="size-input"
-                  id={`${id}_dpi`}
-                  type="number"
-                  value={dpi}
-                  onChange={e => changed("dpi", e.target.value)}
-                  step={1}
-                  min={1}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      
+      <table className="image-table">
+        <tbody>
+          <tr>
+            <td>
+              <label htmlFor={`${id}_width`}>{_("Width:")}</label>
+            </td>
+            <td>
+              <input
+                className="size-input"
+                id={`${id}_width`}
+                type="number"
+                value={width}
+                onChange={(e) => changed("width", e.target.value)}
+                step={0.25}
+                min={0}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor={`${id}_height`}>{_("Height:")}</label>
+            </td>
+            <td>
+              <input
+                className="size-input"
+                id={`${id}_height`}
+                type="number"
+                value={height}
+                onChange={(e) => changed("height", e.target.value)}
+                step={0.25}
+                min={0}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label htmlFor={`${id}_dpi`}>{_("DPI:")}</label>
+            </td>
+            <td>
+              <input
+                className="size-input"
+                id={`${id}_dpi`}
+                type="number"
+                value={dpi}
+                onChange={(e) => changed("dpi", e.target.value)}
+                step={1}
+                min={1}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };
-
+//***********************************************************************
 ImageSize.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,

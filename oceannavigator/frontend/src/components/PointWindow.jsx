@@ -104,9 +104,12 @@ const PointWindow = ({
     });
   };
 
+  // Handles when a tab is selected
   const onSelect = (k) => {
     setState((s) => ({ ...s, selected: parseInt(k) }));
   };
+
+  //Updates Plot with User Specified Title
   const updatePlotTitle = (title) => {
     setState((s) => {
       const arr = [...s.plotTitles];
@@ -150,6 +153,7 @@ const PointWindow = ({
     </>
   );
 
+  // Rendered across all tabs
   const global = (
     <Card key="globalSettings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
@@ -193,27 +197,28 @@ const PointWindow = ({
     </Card>
   );
 
+  // Show multidepth selector on for Stick tab
   const multiDepthVector = selected === TabEnum.STICK && (
     <>
-    <div key='stickVectorDepth'>
-      <ComboBox
-        id="variable"
-        state={dataset_0.variable}
-        onUpdate={onLocalUpdate}
-        url={`/api/v2.0/dataset/${dataset_0.id}/variables?vectors_only=True`}
-        title={_("Variable")}
-        multiple
-      >
-        <h1>{_("Variable")}</h1>
-      </ComboBox>
-      <ComboBox
-        id="depth"
-        multiple
-        state={dataset_0.depth}
-        onUpdate={onLocalUpdate}
-        url={`/api/v2.0/depth/?variable=${dataset_0.variable}&dataset=${dataset_0.id}`}
-        title={_("Depth")}
-      />
+      <div key="stickVectorDepth">
+        <ComboBox
+          id="variable"
+          state={dataset_0.variable}
+          onUpdate={onLocalUpdate}
+          url={`/api/v2.0/dataset/${dataset_0.id}/variables?vectors_only=True`}
+          title={_("Variable")}
+          multiple
+        >
+          <h1>{_("Variable")}</h1>
+        </ComboBox>
+        <ComboBox
+          id="depth"
+          multiple
+          state={dataset_0.depth}
+          onUpdate={onLocalUpdate}
+          url={`/api/v2.0/depth/?variable=${dataset_0.variable}&dataset=${dataset_0.id}`}
+          title={_("Depth")}
+        />
       </div>
     </>
   );
@@ -252,11 +257,13 @@ const PointWindow = ({
   }
 
   // temp/salinity check
+  // Checks if the current dataset's variables contain Temperature
+  // and Salinity. This is used to enable/disable some tabs.
   const hasTemp = datasetVariables.some((v) => /temp/i.test(v));
   const hasSal = datasetVariables.some((v) => /salin/i.test(v));
   const hasTempSal = hasTemp && hasSal;
 
-  // build base query
+  // Start constructing query for image
   const plot_query = {
     dataset: dataset_0.id,
     point: plotData.coordinates,
@@ -282,6 +289,8 @@ const PointWindow = ({
     case TabEnum.CTD:
       plot_query.type = "profile";
       plot_query.time = dataset_0.time;
+      // TODO: find index of matching variable in regex
+      // since not all datasets call temp votemper
       plot_query.variable = `${hasTemp ? "votemper," : ""}${
         hasSal ? "vosaline" : ""
       }`;
@@ -316,6 +325,7 @@ const PointWindow = ({
       });
       inputs = [global];
       if (dataset_0.depth === "all")
+        // Add Colormap selector
         inputs.push(
           <ComboBox
             key="colormap"
@@ -392,6 +402,7 @@ const PointWindow = ({
   );
 };
 
+//***********************************************************************
 PointWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
   mapSettings: PropTypes.object,

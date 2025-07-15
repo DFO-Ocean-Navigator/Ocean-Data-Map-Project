@@ -7,14 +7,9 @@ import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
-const Class4Window = ({
-  dataset,
-  class4type,
-  plotData,
-  init = {},
-  action,
-}) => {
+const Class4Window = ({ dataset, class4type, plotData, init = {}, action }) => {
   const { t: _ } = useTranslation();
+  // Track if mounted to prevent no-op errors with the Ajax callbacks.
   const isMountedRef = useRef(false);
 
   const [forecast, setForecast] = useState(init.forecast || "best");
@@ -25,24 +20,37 @@ const Class4Window = ({
   const [dpi, setDpi] = useState(init.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
-  useEffect(() => { isMountedRef.current = true; return () => { isMountedRef.current = false; }; }, []);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const onLocalUpdate = (key, value) => {
     if (!isMountedRef.current) return;
     switch (key) {
-      case 'forecast': return setForecast(value);
-      case 'showmap': return setShowmap(value);
-      case 'climatology': return setClimatology(value);
-      case 'error': return setError(value);
-      case 'size': return setSize(value);
-      case 'dpi': return setDpi(value);
-      case 'models': return setModels(value);
-      default: return;
+      case "forecast":
+        return setForecast(value);
+      case "showmap":
+        return setShowmap(value);
+      case "climatology":
+        return setClimatology(value);
+      case "error":
+        return setError(value);
+      case "size":
+        return setSize(value);
+      case "dpi":
+        return setDpi(value);
+      case "models":
+        return setModels(value);
+      default:
+        return;
     }
   };
 
   const plot_query = {
-    type: 'class4',
+    type: "class4",
     class4type,
     dataset,
     forecast,
@@ -56,9 +64,9 @@ const Class4Window = ({
   };
 
   const error_options = [
-    { id: 'none', value: _('None') },
-    { id: 'observation', value: _('Value - Observation') },
-    { id: 'climatology', value: _('Value - Climatology') },
+    { id: "none", value: _("None") },
+    { id: "observation", value: _("Value - Observation") },
+    { id: "climatology", value: _("Value - Climatology") },
   ];
 
   return (
@@ -66,50 +74,54 @@ const Class4Window = ({
       <Row>
         <Col lg={2}>
           <Card>
-            <Card.Header>{_('Class 4 Settings')}</Card.Header>
+            <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
                 id="forecast"
                 state={forecast}
                 url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
-                title={_('Forecast')}
+                title={_("Forecast")}
                 onUpdate={onLocalUpdate}
               />
               <CheckBox
                 id="showmap"
                 checked={showmap}
                 onUpdate={onLocalUpdate}
-                title={_('Show Location')}
-              >{_('showmap_help')}</CheckBox>
+                title={_("Show Location")}
+              >
+                {_("showmap_help")}
+              </CheckBox>
               <CheckBox
                 id="climatology"
                 checked={climatology}
                 onUpdate={onLocalUpdate}
-                title={_('Show Climatology')}
-              >{_('climatology_help')}</CheckBox>
+                title={_("Show Climatology")}
+              >
+                {_("climatology_help")}
+              </CheckBox>
               <ComboBox
                 id="models"
                 state={models}
                 multiple
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
-                title={_('Additional Models')}
+                title={_("Additional Models")}
                 onUpdate={onLocalUpdate}
               />
               <ComboBox
                 id="error"
                 state={error}
                 data={error_options}
-                title={_('Show Error')}
+                title={_("Show Error")}
                 onUpdate={onLocalUpdate}
               />
               <Accordion>
-                <Accordion.Header>{_('Plot Options')}</Accordion.Header>
+                <Accordion.Header>{_("Plot Options")}</Accordion.Header>
                 <Accordion.Body>
                   <ImageSize
                     id="size"
                     state={size}
                     onUpdate={onLocalUpdate}
-                    title={_('Saved Image Size')}
+                    title={_("Saved Image Size")}
                   />
                 </Accordion.Body>
               </Accordion>
@@ -117,13 +129,25 @@ const Class4Window = ({
           </Card>
         </Col>
         <Col lg={10} className="plot-col">
-          <PlotImage query={plot_query} permlink_subquery={{ forecast, showmap, climatology, error, size, dpi, models }} action={action} />
+          <PlotImage
+            query={plot_query} // For image saving link.
+            permlink_subquery={{
+              forecast,
+              showmap,
+              climatology,
+              error,
+              size,
+              dpi,
+              models,
+            }}
+            action={action}
+          />
         </Col>
       </Row>
     </div>
   );
 };
-
+//***********************************************************************
 Class4Window.propTypes = {
   dataset: PropTypes.string.isRequired,
   class4type: PropTypes.string.isRequired,
@@ -133,4 +157,3 @@ Class4Window.propTypes = {
 };
 
 export default Class4Window;
-

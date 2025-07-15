@@ -30,10 +30,12 @@ const AreaWindow = (props) => {
     colormap_diff: "default",
     dataset_0: { ...props.dataset_0 },
     dataset_1: { ...props.dataset_1 },
+    // Should dataset/variable changes in this window
+    // propagate to the entire site?
     syncLocalToGlobalState: false,
     showarea: true,
     surfacevariable: "none",
-    bathymetry: true,
+    bathymetry: true, // Show bathymetry on map
     plotTitle: undefined,
     quiver: { variable: "", magnitude: "length", colormap: "default" },
     contour: {
@@ -43,8 +45,8 @@ const AreaWindow = (props) => {
       legend: true,
       hatch: false,
     },
-    size: "10x7",
-    dpi: 144,
+    size: "10x7", // Plot dimensions
+    dpi: 144, // Plot DPI
     ...props.init,
   }));
 
@@ -148,6 +150,8 @@ const AreaWindow = (props) => {
           onUpdate={(_, checked) => compareChanged(checked)}
           title={t("Compare Datasets")}
         />
+
+        {/* Displays Options for Compare Datasets */}
         <Button
           variant="default"
           style={{ display: props.dataset_compare ? "block" : "none" }}
@@ -174,6 +178,7 @@ const AreaWindow = (props) => {
               <img src="/api/v2.0/plot/colormaps.png/" alt="" />
             </ComboBox>
           )}
+        {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
           checked={state.bathymetry}
@@ -186,6 +191,7 @@ const AreaWindow = (props) => {
           onUpdate={onLocalUpdate}
           title={t("Show Selected Area(s)")}
         />
+        {/* Arrow Selector Drop Down menu */}
         <QuiverSelector
           id="quiver"
           state={state.quiver}
@@ -193,6 +199,7 @@ const AreaWindow = (props) => {
           dataset={state.dataset_0.id}
           title={t("Arrows")}
         />
+        {/* Contour Selector drop down menu */}
         <ContourSelector
           id="contour"
           state={state.contour}
@@ -350,7 +357,7 @@ const AreaWindow = (props) => {
     </div>
   );
 };
-
+//***********************************************************************
 AreaWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
   generatePermLink: PropTypes.func,
