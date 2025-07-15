@@ -4,6 +4,7 @@ import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import { withTranslation } from "react-i18next";
 
 import AxisRange from "./AxisRange.jsx";
 import DatasetDropdown from "./DatasetDropdown.jsx";
@@ -19,496 +20,400 @@ import {
 } from "../remote/OceanNavigator.js";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-
-import { withTranslation } from "react-i18next";
-
 import "rc-slider/assets/index.css";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
-function DatasetSelector(props) {
+function DatasetSelector({
+  id,
+  onUpdate,
+  options: initialOptions,
+  mountedDataset,
+  mapSettings,
+  compareDatasets,
+  action,
+  variables,
+  multipleVariables = false,
+  showQuiverSelector = true,
+  showTimeSlider = false,
+  showCompare = false,
+  showTimeRange = false,
+  showDepthSelector = true,
+  showVariableRange = true,
+  showAxisRange = false,
+  showVariableSelector = true,
+  showDepthsAll = false,
+  horizontalLayout = false,
+  __,
+}) {
   const [loading, setLoading] = useState(true);
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [loadingTitle, setLoadingTitle] = useState("");
   const [datasetVariables, setDatasetVariables] = useState([]);
   const [datasetTimestamps, setDatasetTimestamps] = useState([]);
   const [datasetDepths, setDatasetDepths] = useState([]);
-  const [options, setOptions] = useState(props.options);
-  const [dataset, setDataset] = useState(props.mountedDataset);
+  const [options, setOptions] = useState(initialOptions);
+  const [dataset, setDataset] = useState(mountedDataset);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
 
   useEffect(() => {
-    GetDatasetsPromise().then((result) => {
-      setAvailableDatasets(result.data);
-    });
+    GetDatasetsPromise().then(({ data }) => setAvailableDatasets(data));
   }, []);
 
   useEffect(() => {
-    if (availableDatasets.length > 0) {
-      changeDataset(props.mountedDataset.id, props.mountedDataset.variable, true);
+    if (availableDatasets.length) {
+      changeDataset(mountedDataset.id, mountedDataset.variable, true);
     }
   }, [availableDatasets]);
 
   useEffect(() => {
     if (updateParent) {
-      props.onUpdate("dataset", dataset);
+      onUpdate("dataset", dataset);
       setUpdateParent(false);
     }
-  }, [dataset]);
+  }, [dataset, updateParent, onUpdate]);
 
   const changeDataset = (
     newDataset,
     currentVariable,
     updateParentOnSuccess = false
   ) => {
-    const currentDataset = availableDatasets.filter((d) => {
-      return d.id === newDataset;
-    })[0];
-
+    const current = availableDatasets.find((d) => d.id === newDataset);
     setLoading(true);
     setLoadingPercent(10);
-    setLoadingTitle(currentDataset.value);
-
-    const quantum = currentDataset.quantum;
-    const model_class = currentDataset.model_class;
+    setLoadingTitle(current.value);
+    const { quantum, model_class } = current;
 
     GetVariablesPromise(newDataset).then(
-      (variableResult) => {
-        // Carry the currently selected variable to the new
-        // dataset if said variable exists in the new dataset.
+      ({ data: vars }) => {
         setLoadingPercent(33);
         let newVariable = currentVariable;
-        let newVariableScale = props.mountedDataset.variable_scale;
-        let newQuiver = props.mountedDataset.quiverVariable;
-        let newQuiverDensity = props.mountedDataset.quiverDensity;
-        let variable_range = {};
-        variable_range[newVariable] = null;
-        let interpType = props.mapSettings.interpType;
-        let interpRadius = props.mapSettings.interpRadius;
-        let interpNeighbours = props.mapSettings.interpNeighbours;
-        const variableIds = variableResult.data.map((v) => {
-          return v.id;
-        });
+        let newVariableScale = mountedDataset.variable_scale;
+        let newQuiver = mountedDataset.quiverVariable;
+        let newQuiverDensity = mountedDataset.quiverDensity;
+        let variable_range = { [newVariable]: null };
+        let { interpType, interpRadius, interpNeighbours } = mapSettings;
+        const ids = vars.map((v) => v.id);
 
-        if (!variableIds.includes(currentVariable)) {
-          newVariable = variableResult.data[0].id;
-          newVariableScale = variableResult.data[0].scale;
-          variable_range[newVariable] = null;
-          interpType =
-            variableResult.data[0].interp?.interpType ||
-            MAP_DEFAULTS.interpType;
+        if (!ids.includes(currentVariable)) {
+          const firstVar = vars[0];
+          newVariable = firstVar.id;
+          newVariableScale = firstVar.scale;
+          variable_range = { [newVariable]: null };
+          interpType = firstVar.interp?.interpType || MAP_DEFAULTS.interpType;
           interpRadius =
-            variableResult.data[0].interp?.interpRadius ||
-            MAP_DEFAULTS.interpRadius;
+            firstVar.interp?.interpRadius || MAP_DEFAULTS.interpRadius;
           interpNeighbours =
-            variableResult.data[0].interp?.interpNeighbours ||
-            MAP_DEFAULTS.interpNeighbours;
+            firstVar.interp?.interpNeighbours || MAP_DEFAULTS.interpNeighbours;
         }
 
         GetTimestampsPromise(newDataset, newVariable).then(
-          (timeResult) => {
+          ({ data: times }) => {
             setLoadingPercent(66);
-            const timeData = timeResult.data;
-
-            let newTime = timeData[timeData.length - 1].id;
+            let newTime = times[times.length - 1].id;
             let newStarttime =
-              timeData.length > 20
-                ? timeData[timeData.length - 20].id
-                : timeData[0].id;
+              times.length > 20 ? times[times.length - 20].id : times[0].id;
 
-            if (
-              props.mountedDataset &&
-              props.mountedDataset.id === newDataset
-            ) {
-              newTime =
-                props.mountedDataset.time > 0
-                  ? props.mountedDataset.time
-                  : newTime;
+            if (mountedDataset.id === newDataset) {
+              newTime = mountedDataset.time > 0 ? mountedDataset.time : newTime;
               newStarttime =
-                props.mountedDataset.starttime > 0
-                  ? props.mountedDataset.starttime
+                mountedDataset.starttime > 0
+                  ? mountedDataset.starttime
                   : newStarttime;
             }
 
             GetDepthsPromise(newDataset, newVariable).then(
-              (depthResult) => {
+              ({ data: depths }) => {
                 setLoadingPercent(90);
                 setDataset({
                   id: newDataset,
-                  model_class: model_class,
-                  quantum: quantum,
+                  model_class,
+                  quantum,
                   time: newTime,
                   depth: 0,
                   starttime: newStarttime,
                   variable: newVariable,
                   variable_scale: newVariableScale,
-                  variable_range: variable_range,
+                  variable_range,
                   quiverVariable: newQuiver,
                   quiverDensity: newQuiverDensity,
-                  default_location: currentDataset.default_location
+                  default_location: current.default_location,
                 });
-                setDatasetVariables(variableResult.data);
-                setDatasetTimestamps(timeData);
-                setDatasetDepths(depthResult.data);
-                setOptions({
-                  ...props.options,
-                  interpType: interpType,
-                  interpRadius: interpRadius,
-                  interpNeighbours: interpNeighbours,
-                });
+                setDatasetVariables(vars);
+                setDatasetTimestamps(times);
+                setDatasetDepths(depths);
+                setOptions({ interpType, interpRadius, interpNeighbours });
                 setLoading(false);
                 setLoadingPercent(100);
 
-                if (updateParentOnSuccess) {
-                  setUpdateParent(true);
-                }
+                if (updateParentOnSuccess) setUpdateParent(true);
               },
-              (error) => {
+              (err) => {
+                console.error(err);
                 setLoading(false);
                 setLoadingPercent(0);
-                console.error(error);
               }
             );
           },
-          (error) => {
+          (err) => {
+            console.error(err);
             setLoading(false);
             setLoadingPercent(0);
-            console.error(error);
           }
         );
       },
-      (error) => {
+      (err) => {
+        console.error(err);
         setLoading(false);
         setLoadingPercent(0);
-        console.error(error);
       }
     );
   };
 
   const changeVariable = (newVariable) => {
-    if (datasetDepths.length === 0) {
-      GetDepthsPromise(dataset.id, newVariable).then((depthResult) => {
-        setDatasetDepths(depthResult.data);
-      });
+    if (!datasetDepths.length) {
+      GetDepthsPromise(dataset.id, newVariable).then(({ data }) =>
+        setDatasetDepths(data)
+      );
     }
-
-    let newDataset = {};
-    let newOptions = {};
-
+    let updated = {};
     // Multiple variables were selected
     // so don't update everything else
     if (newVariable instanceof HTMLCollection) {
-      let variables = Array.from(newVariable).map((o) => o.value);
-      let variableRanges = {};
-      variables.forEach((v) => {
-        variableRanges[v] = null;
-      });
-      newDataset = {
-        variable: variables,
-        variable_range: variableRanges,
+      const list = Array.from(newVariable).map((o) => o.value);
+      const ranges = {};
+      list.forEach((v) => (ranges[v] = null));
+      updated = {
+        variable: list,
+        variable_range: ranges,
         variable_two_dimensional: false,
       };
-      if (variables.length === 1) {
-        const variable = datasetVariables.find((v) => v.id === variables[0]);
-        newDataset = { ...newDataset, variable_scale: variable.scale };
+      if (list.length === 1) {
+        const v = datasetVariables.find((d) => d.id === list[0]);
+        updated.variable_scale = v.scale;
       }
     } else {
-      const variable = datasetVariables.find((v) => v.id === newVariable);
-      let newVariableRange = {};
-      newVariableRange[newVariable] = null;
-
-      newDataset = {
+      const v = datasetVariables.find((d) => d.id === newVariable);
+      updated = {
         variable: newVariable,
-        variable_scale: variable.scale,
-        variable_range: newVariableRange,
-        variable_two_dimensional: variable.two_dimensional,
-      };
-      newOptions = {
-        ...props.mapSettings,
-        interpType: variable.interp?.interpType || MAP_DEFAULTS.interpType,
-        interpRadius:
-          variable.interp?.interpRadius || MAP_DEFAULTS.interpRadius,
+        variable_scale: v.scale,
+        variable_range: { [newVariable]: null },
+        variable_two_dimensional: v.two_dimensional,
+        interpType: v.interp?.interpType || MAP_DEFAULTS.interpType,
+        interpRadius: v.interp?.interpRadius || MAP_DEFAULTS.interpRadius,
         interpNeighbours:
-          variable.interp?.interpNeighbours || MAP_DEFAULTS.interpNeighbours,
+          v.interp?.interpNeighbours || MAP_DEFAULTS.interpNeighbours,
       };
     }
-
-    setDataset((prevDataset) => {
-      return { ...prevDataset, ...newDataset };
-    });
-    setOptions((prevOptions) => {
-      return { ...prevOptions, ...newOptions };
-    });
+    setDataset((prev) => ({ ...prev, ...updated }));
+    setOptions((prev) => ({ ...prev, ...updated }));
   };
 
   const changeTime = (newTime) => {
-    let newDataset = {};
+    const updated = { ...dataset, time: newTime };
     if (dataset.starttime > newTime) {
-      const timeIdx = datasetTimestamps.findIndex((timestamp) => {
-        return timestamp.id === newTime;
-      });
-
-      const newStarttime =
-        timeIdx > 20
-          ? datasetTimestamps[timeIdx - 20].id
-          : datasetTimestamps[0].id;
-
-      newDataset = { ...dataset, time: newTime, starttime: newStarttime };
-    } else {
-      newDataset = { ...dataset, time: newTime };
+      const idx = datasetTimestamps.findIndex((t) => t.id === newTime);
+      updated.starttime =
+        idx > 20 ? datasetTimestamps[idx - 20].id : datasetTimestamps[0].id;
     }
-
-    setDataset(newDataset);
-  };
-
-  const nothingChanged = (key, value) => {
-    return dataset[key] === value;
-  };
-
-  const datasetChanged = (key) => {
-    return key === "dataset";
-  };
-
-  const variableChanged = (key) => {
-    return key === "variable";
-  };
-
-  const timeChanged = (key) => {
-    return key === "time";
+    setDataset(updated);
   };
 
   const updateDataset = (key, value) => {
-    if (nothingChanged(key, value)) {
-      return;
-    }
-
-    if (datasetChanged(key)) {
-      changeDataset(value, dataset.variable);
-      return;
-    }
-
-    if (variableChanged(key)) {
-      changeVariable(value);
-      return;
-    }
-
-    if (timeChanged(key)) {
-      changeTime(value);
-      return;
-    }
-
-    let newDataset = { ...dataset, [key]: value };
-    setDataset(newDataset);
+    if (dataset[key] === value) return;
+    if (key === "dataset") return changeDataset(value, dataset.variable);
+    if (key === "variable") return changeVariable(value);
+    if (key === "time") return changeTime(value);
+    setDataset({ ...dataset, [key]: value });
   };
 
-  const handleGoButton = () => {
-    props.onUpdate("dataset", dataset);
-  };
+  const handleGoButton = () => onUpdate("dataset", dataset);
 
-  let datasetSelector = null;
+  const datasetSelector = availableDatasets.length ? (
+    <DatasetDropdown
+      id={`dataset-selector-${id}`}
+      options={availableDatasets}
+      label={__("Dataset")}
+      placeholder={__("Dataset")}
+      onChange={updateDataset}
+      selected={dataset.id}
+      horizontalLayout={horizontalLayout}
+    />
+  ) : null;
 
-  if (availableDatasets && availableDatasets.length > 0) {
-    datasetSelector = (
-      <DatasetDropdown
-        id={`dataset-selector-dataset-selector-${props.id}`}
-        key={`dataset-selector-dataset-selector-${props.id}`}
-        options={availableDatasets}
-        label={__("Dataset")}
-        placeholder={__("Dataset")}
-        onChange={updateDataset}
-        selected={dataset.id}
-        horizontalLayout={props.horizontalLayout}
-      />
-    );
-  }
-
-  let variableSelector = null;
-  if (
-    props.showVariableSelector &&
-    datasetVariables &&
-    datasetVariables.length > 0
-  ) {
-    let options = [];
-    if (props.variables === "3d") {
-      options = datasetVariables.filter((v) => {
-        return v.two_dimensional === false;
-      });
-    } else {
-      options = datasetVariables;
-    }
-
-    // Work-around for when someone selected a plot that requires
-    // 3D variables, but the selected dataset doesn't have any LOL.
-    // This check prevents a white-screen crash.
-    const stillHasVariablesToShow = options.length > 0;
-
-    let selected = dataset.variable;
-    if (props.multipleVariables && !Array.isArray(selected)) {
-      selected = [selected];
-    }
-
-    variableSelector = stillHasVariablesToShow && (
+  const variableSelector =
+    showVariableSelector && datasetVariables.length ? (
       <SelectBox
-        id={`dataset-selector-variable-selector-${props.id}`}
-        name={__("variable")}
+        id={`variable-selector-${id}`}
+        name="variable"
         label={__("Variable")}
         placeholder={__("Variable")}
-        options={options}
+        options={
+          variables === "3d"
+            ? datasetVariables.filter((v) => !v.two_dimensional)
+            : datasetVariables
+        }
+        selected={
+          multipleVariables && !Array.isArray(dataset.variable)
+            ? [dataset.variable]
+            : dataset.variable
+        }
+        multiple={multipleVariables}
         onChange={updateDataset}
-        selected={selected}
-        multiple={props.multipleVariables}
         loading={loading}
-        horizontalLayout={props.horizontalLayout}
+        horizontalLayout={horizontalLayout}
       />
-    );
-  }
+    ) : null;
 
-  let quiverSelector = null;
-  if (props.showQuiverSelector) {
-    let quiverVariables = [];
-    if (
-      datasetVariables &&
-      MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class)
-    ) {
-      quiverVariables = datasetVariables.filter((variable) => {
-        return variable.vector_variable;
-      });
-    }
-    quiverVariables.unshift({ id: "none", value: "None" });
-
-    quiverSelector = (
-      <div className="quiver-options">
-        <SelectBox
-          id={`dataset-selector-quiver-selector-${props.id}`}
-          name="quiverVariable"
-          label={__("Quiver")}
-          placeholder={__("Quiver Variable")}
-          options={quiverVariables}
-          onChange={updateDataset}
-          selected={dataset.quiverVariable}
-          loading={loading}
-          horizontalLayout={props.horizontalLayout}
-        />
-        <Form.Label>Quiver Density</Form.Label>
-        <Slider
-          range
-          allowCross={false}
-          min={-1}
-          max={1}
-          marks={{
-            "-1": "-",
-            "0": "",
-            "1": "+",
-          }}
-          defaultValue={dataset.quiverDensity}
-          onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
-        />
-      </div>
-    );
-  }
-
-  let depthSelector = null;
-  if (
-    props.showDepthSelector &&
-    datasetDepths &&
-    datasetDepths.length > 0 &&
-    !dataset.variable_two_dimensional
-  ) {
-    depthSelector = (
+  const quiverSelectorComponent = showQuiverSelector ? (
+    <div className="quiver-options">
       <SelectBox
-        id={`dataset-selector-depth-selector-${props.id}`}
-        name={"depth"}
+        id={`quiver-selector-${id}`}
+        name="quiverVariable"
+        label={__("Quiver")}
+        placeholder={__("Quiver Variable")}
+        options={[
+          { id: "none", value: "None" },
+          ...datasetVariables.filter(
+            (v) =>
+              MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class) &&
+              v.vector_variable
+          ),
+        ]}
+        selected={dataset.quiverVariable}
+        onChange={updateDataset}
+        loading={loading}
+        horizontalLayout={horizontalLayout}
+      />
+      <Form.Label>Quiver Density</Form.Label>
+      <Slider
+        range
+        allowCross={false}
+        min={-1}
+        max={1}
+        marks={{ "-1": "-", 0: "", 1: "+" }}
+        defaultValue={dataset.quiverDensity}
+        onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
+      />
+    </div>
+  ) : null;
+
+  const depthSelector =
+    showDepthSelector &&
+    datasetDepths.length &&
+    !dataset.variable_two_dimensional ? (
+      <SelectBox
+        id={`depth-selector-${id}`}
+        name="depth"
         label={__("Depth")}
         placeholder={__("Depth")}
         options={
-          props.showDepthsAll
+          showDepthsAll
             ? datasetDepths
             : datasetDepths.filter((d) => d.id !== "all")
         }
         onChange={updateDataset}
         selected={
-          datasetDepths.filter((d) => {
-            let depth = parseInt(dataset.depth);
-            if (isNaN(depth)) {
-              // when depth == "bottom" or "all"
-              depth = dataset.depth;
-            }
-
-            return d.id === depth;
-          })[0].id
+          (
+            datasetDepths.find(
+              (d) => String(d.id) === String(dataset.depth)
+            ) || { id: dataset.depth }
+          ).id
         }
         loading={loading}
-        horizontalLayout={props.horizontalLayout}
+        horizontalLayout={horizontalLayout}
       />
-    );
-  }
+    ) : null;
 
-  let timeSelector = null;
-  if (props.showTimeSlider && !props.compareDatasets) {
-    timeSelector = (
+  const axisRanges =
+    showAxisRange && !loading && datasetVariables.length
+      ? (Array.isArray(dataset.variable)
+          ? dataset.variable
+          : [dataset.variable]
+        ).map((v) => {
+          const varData = datasetVariables.find((d) => d.id === v);
+          return (
+            <AxisRange
+              key={`${v}_axisRange`}
+              id={`${v}_axisRange`}
+              title={`${varData.value} Range`}
+              variable={v}
+              range={varData.scale}
+              onUpdate={(_, val) =>
+                setDataset((prev) => ({
+                  ...prev,
+                  variable_range: { ...prev.variable_range, [v]: val },
+                }))
+              }
+            />
+          );
+        })
+      : null;
+
+  const timeSelector =
+    !compareDatasets && showTimeSlider ? (
       <TimeSlider
-        key="time"
-        id="time"
+        id="time-slider"
         dataset={dataset}
         timestamps={datasetTimestamps}
         selected={dataset.time}
         onChange={updateDataset}
         loading={loading}
       />
-    );
-  } else if (datasetTimestamps && !loading) {
-    if (props.showTimeRange) {
-      timeSelector = (
-        <div>
+    ) : !loading && datasetTimestamps.length ? (
+      showTimeRange ? (
+        <>
           <TimePicker
-            key="starttime"
             id="starttime"
             state={dataset.starttime}
-            title={__("Start Time (UTC)")}
+            title={__("Start Time (UTC")}
             onUpdate={updateDataset}
             max={dataset.time}
             dataset={dataset}
             timestamps={datasetTimestamps}
           />
           <TimePicker
-            key="time"
             id="time"
             state={dataset.time}
-            title={__("End Time (UTC)")}
+            title={__("End Time (UTC")}
             onUpdate={updateDataset}
             min={dataset.starttime}
             dataset={dataset}
             timestamps={datasetTimestamps}
           />
-        </div>
-      );
-    } else {
-      timeSelector = (
+        </>
+      ) : (
         <TimePicker
-          key="time"
           id="time"
           state={dataset.time}
+          title={__("Time (UTC")}
           onUpdate={updateDataset}
-          title={__("Time (UTC)")}
           dataset={dataset}
           timestamps={datasetTimestamps}
-          horizontalLayout={props.horizontalLayout}
+          horizontalLayout={horizontalLayout}
         />
-      );
-    }
-  }
+      )
+    ) : null;
+
+  const compareSwitch = showCompare ? (
+    <Form.Check
+      type="switch"
+      id="compare-switch"
+      label={__("Compare Datasets")}
+      checked={compareDatasets}
+      onChange={() => action("toggleCompare")}
+    />
+  ) : null;
 
   const goButton = (
     <OverlayTrigger
-      key="draw-overlay"
-      placement={props.horizontalLayout ? "top" : "bottom"}
-      overlay={<Tooltip id={"draw-tooltip"}>{__("Apply Changes")}</Tooltip>}
+      placement={horizontalLayout ? "top" : "bottom"}
+      overlay={<Tooltip id="go-tooltip">{__("Apply Changes")}</Tooltip>}
     >
       <Button
         className="go-button"
         variant="primary"
-        type="submit"
         onClick={handleGoButton}
         disabled={loading}
       >
@@ -517,76 +422,25 @@ function DatasetSelector(props) {
     </OverlayTrigger>
   );
 
-  function updateAxisRange(key, value) {
-    let range = dataset.variable_range;
-    range[value[0]] = value[1];
-    setDataset({ ...dataset, variable_range: range });
-  }
-
-  let axisRange = [];
-  if (
-    props.showAxisRange &&
-    datasetVariables &&
-    datasetVariables.length > 0 &&
-    !loading
-  ) {
-    let axisVariables = Array.isArray(dataset.variable)
-      ? dataset.variable
-      : [dataset.variable];
-    let variableData = datasetVariables.filter((v) =>
-      axisVariables.includes(v.id)
-    );
-    let axisVariableRanges = variableData.map((v) => v.scale);
-    let axisVariableNames = variableData.map((v) => v.value);
-    for (let i = 0; i < axisVariables.length; ++i) {
-      let range = (
-        <AxisRange
-          key={axisVariables[i] + "_axis_range"}
-          id={axisVariables[i] + "_axis_range"}
-          title={axisVariableNames[i] + " Range"}
-          variable={axisVariables[i]}
-          range={axisVariableRanges[i]}
-          onUpdate={updateAxisRange}
-        />
-      );
-      axisRange.push(range);
-    }
-  }
-
-  const compareSwitch = props.showCompare ? (
-    <Form.Check
-      type="switch"
-      id="custom-switch"
-      label={__("Compare Datasets")}
-      checked={props.compareDatasets}
-      onChange={() => {
-        props.action("toggleCompare");
-      }}
-    />
-  ) : null;
-
   return (
     <>
       <div
-        id={`dataset-selector-${props.id}`}
+        id={`dataset-selector-${id}`}
         className={
-          props.horizontalLayout
-            ? "DatasetSelector-horizontal"
-            : "DatasetSelector"
+          horizontalLayout ? "DatasetSelector-horizontal" : "DatasetSelector"
         }
       >
         {datasetSelector}
         {variableSelector}
-        {quiverSelector}
+        {quiverSelectorComponent}
         {depthSelector}
-
-        {axisRange}
-        {props.horizontalLayout ? null : timeSelector}
-        {props.horizontalLayout ? goButton : null}
-        {props.showCompare ? compareSwitch : null}
+        {axisRanges}
+        {horizontalLayout ? null : timeSelector}
+        {horizontalLayout ? goButton : null}
+        {compareSwitch}
       </div>
-      {props.horizontalLayout ? timeSelector : null}
-      {props.horizontalLayout ? null : goButton}
+      {horizontalLayout && timeSelector}
+      {!horizontalLayout && goButton}
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
@@ -600,26 +454,38 @@ function DatasetSelector(props) {
   );
 }
 
-//***********************************************************************
 DatasetSelector.propTypes = {
-  onUpdate: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  options: PropTypes.object,
+  mountedDataset: PropTypes.object.isRequired,
+  mapSettings: PropTypes.object.isRequired,
+  compareDatasets: PropTypes.bool,
+  action: PropTypes.func,
   variables: PropTypes.string,
   multipleVariables: PropTypes.bool,
   showQuiverSelector: PropTypes.bool,
+  showTimeSlider: PropTypes.bool,
+  showCompare: PropTypes.bool,
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
   showVariableRange: PropTypes.bool,
   showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
-  mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
+  __: PropTypes.func.isRequired,
 };
 
 DatasetSelector.defaultProps = {
-  showQuiverSelector: true,
+  options: {},
+  compareDatasets: false,
+  action: () => {},
+  variables: null,
   multipleVariables: false,
+  showQuiverSelector: true,
+  showTimeSlider: false,
+  showCompare: false,
   showTimeRange: false,
   showDepthSelector: true,
   showVariableRange: true,
