@@ -10,6 +10,7 @@ import {
   faInfo,
   faRotateLeft,
   faChartLine,
+  faTag,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Button from "react-bootstrap/Button";
@@ -21,19 +22,35 @@ import { withTranslation } from "react-i18next";
 function MapTools(props) {
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
-      props.updateUI({showAnnotationTools: false, showDrawingTools: true, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: true,
+        showObservationTools: false,
+      });
       props.action("startFeatureDraw");
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
       props.action("stopFeatureDraw");
     }
   };
 
   const handleObservations = () => {
     if (!props.uiSettings.showObservationTools) {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: true });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: true,
+      });
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
     }
   };
 
@@ -41,12 +58,35 @@ function MapTools(props) {
     props.updateUI({ modalType: type, showModal: true });
   };
 
+  const handleAddPolygonLabel = () => {
+    const labelText = prompt("Enter label text for polygon center:");
+
+    if (labelText === null) {
+      return;
+    }
+
+    if (labelText.trim() === "") {
+      alert("Label text cannot be empty");
+      return;
+    }
+
+    const success = props.action("addPolygonLabel", labelText);
+
+    if (success === false) {
+      alert(
+        "Failed to add label. Please make sure you have drawn a polygon first."
+      );
+    }
+  };
+
   return (
     <div className="MapTools">
       <OverlayTrigger
         key="draw-overlay"
         placement="left"
-        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>
+        }
       >
         <Button
           key="draw-button"
@@ -56,6 +96,28 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faDrawPolygon} />
         </Button>
       </OverlayTrigger>
+
+      {/* Add Labels Button - only show when drawing polygons */}
+      {props.uiSettings.showDrawingTools && props.featureType === "Polygon" && (
+        <OverlayTrigger
+          key="add-label-overlay"
+          placement="left"
+          overlay={
+            <Tooltip id={"add-label-tooltip"}>
+              {__("Add Label to Polygon Center")}
+            </Tooltip>
+          }
+        >
+          <Button
+            key="add-label-button"
+            className="tool-button"
+            onClick={handleAddPolygonLabel}
+            style={{ marginBottom: "5px" }}
+          >
+            <FontAwesomeIcon icon={faTag} />
+          </Button>
+        </OverlayTrigger>
+      )}
 
       <OverlayTrigger
         key="enter-overlay"
@@ -76,7 +138,9 @@ function MapTools(props) {
       <OverlayTrigger
         key="preset-overlay"
         placement="left"
-        overlay={<Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>
+        }
       >
         <Button
           key="preset-button"

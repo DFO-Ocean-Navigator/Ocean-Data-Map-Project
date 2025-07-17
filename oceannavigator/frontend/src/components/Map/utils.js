@@ -547,16 +547,16 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 new Style({
                   stroke: new Stroke({
                     color: "#ffffff",
-                    width: 2,
+                    width: 5,
                   }),
                   fill: new Fill({
-                    color: "#ffffff00",
+                    color: "transparent",
                   }),
                 }),
                 new Style({
                   stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
+                    color: "#ff0000",
+                    width: 3,
                   }),
                 }),
                 new Style({

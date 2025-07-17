@@ -182,6 +182,9 @@ function OceanNavigator(props) {
         setSubquery(null);
         setShowPermalink(true);
         break;
+
+      case "addPolygonLabel":
+        return mapRef.current.addPolygonLabel(arg);
     }
   };
 
@@ -483,7 +486,12 @@ function OceanNavigator(props) {
         action={action}
       />
       <LinkButton action={action} />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+        featureType={featureType}
+      />
       <Modal
         show={uiSettings.showModal}
         onHide={closeModal}
