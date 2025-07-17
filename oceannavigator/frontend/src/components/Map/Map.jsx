@@ -136,6 +136,7 @@ const Map = forwardRef((props, ref) => {
     startFeatureDraw: startFeatureDraw,
     stopFeatureDraw: stopFeatureDraw,
     addAnnotationLabel: addAnnotationLabel,
+    addPolygonLabel: addPolygonLabel,
     undoAnnotationLabel: undoAnnotationLabel,
     clearAnnotationLabels: clearAnnotationLabels,
     getFeatures: getFeatures,
@@ -154,6 +155,69 @@ const Map = forwardRef((props, ref) => {
     resetMap: resetMap,
     getLineDistance: getLineDistance,
   }));
+
+  const addPolygonLabel = (text) => {
+    if (!text || text.trim() === "") {
+      console.warn("Cannot add label: text is empty");
+      return false;
+    }
+
+    let features = featureVectorSource.getFeatures();
+    let polygonFeatures = features.filter(
+      (feature) =>
+        feature.get("type") === "Polygon" &&
+        feature.get("class") !== "observation" &&
+        feature.get("class") != "predefined" &&
+        feature.getGeometry()
+    );
+
+    if (polygonFeatures.length === 0) {
+      console.warn("No polygon found to add label to");
+      return false;
+    }
+
+    try {
+      let userDrawnPolygons = polygonFeatures.filter((feature) => {
+        const id = feature.getId();
+        return id && id.toString().startsWith("id");
+      });
+
+      let lastPolygon;
+      if (userDrawnPolygons.length > 0) {
+        // If user-drawn polygons, get the last one
+        lastPolygon = userDrawnPolygons[userDrawnPolygons.length - 1];
+      } else {
+        lastPolygon = polygonFeatures[polygonFeatures.length - 1];
+      }
+
+      let geometry = lastPolygon.getGeometry();
+
+      let center;
+      try {
+        center = geometry.getInteriorPoint().getCoordinates();
+      } catch (e) {
+        let extent = geometry.getExtent();
+        center = [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
+      }
+
+      let feature = new Feature({
+        geometry: new Point(center),
+        name: text.trim(),
+        annotation: true,
+        labelType: "polygon",
+        parentPolygonId: lastPolygon.getId(),
+      });
+
+      feature.setId(
+        "label_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)
+      );
+      annotationVectorSource.addFeature(feature);
+      return true;
+    } catch (error) {
+      console.error("Error adding polygon label:", error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -600,11 +664,30 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
+
     if (features.length > 0) {
-      featureVectorSource.removeFeatures([features[features.length - 1]]);
+      const featureToRemove = features[features.length - 1];
+      const featureId = featureToRemove.getId();
+
+      featureVectorSource.removeFeatures([featureToRemove]);
+
+      if (featureToRemove.get("type") === "Polygon") {
+        removeLabelsForPolygon(featureId);
+      }
     }
   };
 
+  // Helper function to remove labels associated with a polygon
+  const removeLabelsForPolygon = (polygonId) => {
+    let annotationFeatures = annotationVectorSource.getFeatures();
+    let labelsToRemove = annotationFeatures.filter(
+      (feature) => feature.get("parentPolygonId") === polygonId
+    );
+
+    if (labelsToRemove.length > 0) {
+      annotationVectorSource.removeFeatures(labelsToRemove);
+    }
+  };
   const updateFeatureGeometry = (id, type, coordinates) => {
     let feature = featureVectorSource.getFeatureById(id);
     coordinates = coordinates.map((coord) => {
