@@ -26,6 +26,10 @@ import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
+// Add these imports after your existing imports
+import { PlotWindowManager, PlotSidebar, usePlotWindowManager } from './PlotWindowManager.jsx';
+import './PlotWindowManager.css';
+
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -119,7 +123,69 @@ function OceanNavigator(props) {
       }
     }
   }, []);
+  // Add this after your existing state declarations
+const {
+  plotWindows,
+  createPlotWindow,
+  updatePlotWindow,
+  closePlotWindow,
+  minimizePlotWindow,
+  restorePlotWindow,
+  bringToFront
+} = usePlotWindowManager();
 
+// Add these helper functions before the action function
+const generatePlotWindowId = (type, coordinates) => {
+  const timestamp = Date.now();
+  const coordStr = coordinates ? coordinates.slice(0, 2).join(',') : '';
+  return `${type}_${coordStr}_${timestamp}`;
+};
+
+const generatePlotWindowTitle = (type, coordinates) => {
+  switch (type) {
+    case "Point":
+      const coordTitle = coordinates.map((p) => formatLatLon(p[0], p[1])).join(", ");
+      return `Point Plot - ${coordTitle}`;
+    case "LineString":
+      return `Line Plot - (${coordinates.map(ll => formatLatLon(ll[0], ll[1])).join("), (")})`;
+    case "Polygon":
+      return `Area Plot - ${coordinates.length} vertices`;
+    case "track":
+      return `Track Plot`;
+    default:
+      return `${type} Plot`;
+  }
+};
+
+const createPlotComponent = (type, plotData) => {
+  const commonProps = {
+    plotData,
+    dataset_0: dataset0,
+    dataset_1: dataset1,
+    mapSettings,
+    names,
+    updateDataset0,
+    updateDataset1,
+    init: subquery,
+    action,
+    dataset_compare: compareDatasets,
+    setCompareDatasets,
+  };
+
+  switch (type) {
+    case "Point":
+      return <PointWindow {...commonProps} />;
+    case "LineString":
+      const line_distance = mapRef.current.getLineDistance(plotData.coordinates);
+      return <LineWindow {...commonProps} line_distance={line_distance} />;
+    case "Polygon":
+      return <AreaWindow {...commonProps} />;
+    case "track":
+      return <TrackWindow {...commonProps} dataset={dataset0} track={plotData.coordinates} />;
+    default:
+      return <div>Unknown plot type: {type}</div>;
+  }
+};
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -146,8 +212,13 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (newPlotData.type) {
+          // Create a new plot window instead of showing a modal
+          const windowId = generatePlotWindowId(newPlotData.type, newPlotData.coordinates);
+          const windowTitle = generatePlotWindowTitle(newPlotData.type, newPlotData.coordinates);
+          const plotComponent = createPlotComponent(newPlotData.type, newPlotData);
+          
+          createPlotWindow(windowId, windowTitle, plotComponent);
           setPlotData(newPlotData);
-          updateUI({ modalType: newPlotData.type, showModal: true });
         }
         break;
       case "selectedFeatureIds":
@@ -518,6 +589,20 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
+      {/* Add these components before the existing Modal components */}
+      <PlotWindowManager
+        plotWindows={plotWindows}
+        updatePlotWindow={updatePlotWindow}
+        closePlotWindow={closePlotWindow}
+        minimizePlotWindow={minimizePlotWindow}
+        restorePlotWindow={restorePlotWindow}
+      />
+
+    <PlotSidebar
+      plotWindows={plotWindows}
+      restorePlotWindow={restorePlotWindow}
+      closePlotWindow={closePlotWindow}
+    />
     </div>
   );
 }
