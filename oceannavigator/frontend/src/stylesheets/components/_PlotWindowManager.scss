@@ -1,0 +1,159 @@
+// Variables
+$primary-blue: #2476AA;
+$primary-blue-hover: #0056b3;
+$border-blue: #007bff;
+$border-gray: #dee2e6;
+$danger-red: #dc3545;
+$text-gray: #495057;
+$bg-light: #e9ecef;
+$white: #fff;
+$success-green: #28a745;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Modal Container
+.plot-modal-container {
+  background-color: $white;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $border-gray;
+  overflow-x: hidden;
+  overflow-y:auto;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 95vh;
+  z-index: 999;
+}
+
+// Top Horizontal Panel for Minimized Plots
+.plot-top-panel {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 80vw;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  z-index: 1001;
+  @include flex-center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+// Minimized Windows Container
+.plot-minimized-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  overflow: hidden;
+}
+
+// Top Panel Items (Minimized Windows)
+.plot-top-item {
+  padding: 6px 12px;
+  background-color: $primary-blue;
+  border: 1px solid $border-gray;
+  cursor: pointer;
+  @include flex-center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: $white;
+  min-width: 200px;
+  max-width: 300px;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: $primary-blue-hover;
+    border-color: $border-blue;
+  }
+
+}
+
+// Plot Item Text
+.plot-item-text {
+  @include text-ellipsis;
+  flex: 1;
+}
+
+// Close Button
+.plot-close-btn {
+  padding: 2px !important;
+  font-size: 20px !important;
+  color: $white !important;
+  line-height: 1 !important;
+  min-width: auto !important;
+  width: 16px !important;
+  height: 18px !important;
+  border: none !important;
+  background-color: $danger-red !important;
+  border: none !important;
+
+}
+
+// Modal-style Plot Windows
+.plot-window-header {
+  background: $primary-blue;
+  border-bottom: 1px solid $border-gray;
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  justify-content: flex-end;
+
+}
+
+.plot-window-title {
+  margin-bottom: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: white;
+position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;      // remove any default margins
+  z-index: 1; 
+}
+.plot-modal-single {
+  left: 50%;
+  width: 85vw;
+}
+
+// Dual window layouts
+.plot-modal-left {
+  left: 25%;
+  width: 45vw;
+}
+
+.plot-modal-right {
+  left: 75%;
+  width: 45vw;
+}
+
+// Window content area
+// Window content area - Updated for better centering
+.plot-window-content {
+  flex: 1;
+  overflow: auto;
+  padding: 0.5rem;  // Reduced padding
+  display: block;
+
+}

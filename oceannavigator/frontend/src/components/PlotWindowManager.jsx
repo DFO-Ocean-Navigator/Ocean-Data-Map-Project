@@ -1,56 +1,62 @@
 // PlotWindowManager.jsx with All Styles in CSS
-import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Button, ButtonGroup } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWindowMinimize, faWindowRestore, faXmark, faWindowMaximize, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useRef, useEffect } from "react";
+import { Modal, Button, ButtonGroup } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faWindowMinimize,
+  faWindowRestore,
+  faXmark,
+  faWindowMaximize,
+  faMinus,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
-const PlotWindowManager = ({ 
-  plotWindows, 
-  updatePlotWindow, 
-  closePlotWindow, 
-  minimizePlotWindow, 
+const PlotWindowManager = ({
+  plotWindows,
+  updatePlotWindow,
+  closePlotWindow,
+  minimizePlotWindow,
   restorePlotWindow,
-  children 
+  children,
 }) => {
-  const activeWindows = plotWindows.filter(w => !w.minimized);
-  
+  const activeWindows = plotWindows.filter((w) => !w.minimized);
+
   const renderModalPlots = () => {
     if (activeWindows.length === 0) return null;
-    
-    // Create backdrop
-    const backdrop = (
-      <div key="backdrop" className="plot-modal-backdrop" />
-    );
 
     // Modal container style
-    const getModalStyle = (index, total) => {
-      const baseWidth = total === 1 ? '90vw' : '45vw';
-      const baseHeight = '85vh';
-      const leftOffset = total === 1 ? '50%' : (index === 0 ? '25%' : '75%');
-      
-      return {
-        position: 'fixed',
-        top: '50%',
-        left: leftOffset,
-        transform: 'translate(-50%, -50%)',
-        width: baseWidth,
-        height: baseHeight,
-        zIndex: 999 + index,
-      };
-    };
+    // const getModalStyle = (index, total) => {
+    //   const baseWidth = total === 1 ? '85vw' : '15vw';
+    //   const baseHeight = '85vh';
+    //   const leftOffset = total === 1 ? '50%' : (index === 0 ? '25%' : '75%');
+
+    //   return {
+    //     position: 'fixed',
+    //     top: '50%',
+    //     left: leftOffset,
+    //     transform: 'translate(-50%, -50%)',
+    //     width: baseWidth,
+    //     height: baseHeight,
+    //     zIndex: 999 + index,
+    //   };
+    // };
 
     const modals = activeWindows.map((window, index) => (
       <div
         key={window.id}
-        className="plot-modal-container"
-        style={getModalStyle(index, activeWindows.length)}
+        className={`plot-modal-container ${
+          activeWindows.length === 1
+            ? "plot-modal-single"
+            : index === 0
+            ? "plot-modal-left"
+            : "plot-modal-right"
+        }`}
+        style={{ zIndex: 999 + index }}
       >
         {/* Window Header */}
         <div className="plot-window-header">
-          <h5 className="plot-window-title">
-            {window.title}
-          </h5>
-          
+          <h5 className="plot-window-title">{window.title}</h5>
+
           <ButtonGroup size="sm">
             <Button
               variant="outline-secondary"
@@ -72,13 +78,11 @@ const PlotWindowManager = ({
         </div>
 
         {/* Window Content */}
-        <div className="plot-window-content">
-          {window.component}
-        </div>
+        <div className="plot-window-content">{window.component}</div>
       </div>
     ));
 
-    return [backdrop, ...modals];
+    return [...modals];
   };
 
   return (
@@ -91,15 +95,13 @@ const PlotWindowManager = ({
 
 // Top Horizontal Panel for Minimized Plots
 const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
-  const minimizedWindows = plotWindows.filter(w => w.minimized);
-  const activeWindows = plotWindows.filter(w => !w.minimized);
-  
+  const minimizedWindows = plotWindows.filter((w) => w.minimized);
+  const activeWindows = plotWindows.filter((w) => !w.minimized);
+
   if (minimizedWindows.length === 0) return null;
 
   return (
     <div className="plot-top-panel">
-      {/* Active plots indicator */}
-
       {/* Minimized Windows List */}
       <div className="plot-minimized-container">
         {minimizedWindows.map((window) => (
@@ -109,9 +111,7 @@ const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
             onClick={() => restorePlotWindow(window.id)}
             title={`Restore: ${window.title}`}
           >
-            <div className="plot-item-text">
-              {window.title.split(' - ')[0]}
-            </div>
+            <div className="plot-item-text">{window.title.split(" - ")[0]}</div>
             <Button
               variant="link"
               size="sm"
@@ -126,7 +126,6 @@ const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
           </div>
         ))}
       </div>
-
     </div>
   );
 };
@@ -138,7 +137,7 @@ const usePlotWindowManager = () => {
 
   const createPlotWindow = (id, title, component, options = {}) => {
     // Check if window with same ID already exists
-    const existingWindow = plotWindows.find(w => w.id === id);
+    const existingWindow = plotWindows.find((w) => w.id === id);
     if (existingWindow) {
       // If exists, just restore it and update component
       updatePlotWindow(id, { component });
@@ -148,7 +147,7 @@ const usePlotWindowManager = () => {
 
     const defaultOptions = {
       minimized: false,
-      zIndex: nextZIndex
+      zIndex: nextZIndex,
     };
 
     const newWindow = {
@@ -156,26 +155,24 @@ const usePlotWindowManager = () => {
       title,
       component,
       ...defaultOptions,
-      ...options
+      ...options,
     };
 
-    setPlotWindows(prev => [...prev, newWindow]);
-    setNextZIndex(prev => prev + 1);
+    setPlotWindows((prev) => [...prev, newWindow]);
+    setNextZIndex((prev) => prev + 1);
     return newWindow;
   };
 
   const updatePlotWindow = (id, updates) => {
-    setPlotWindows(prev => 
-      prev.map(window => 
+    setPlotWindows((prev) =>
+      prev.map((window) =>
         window.id === id ? { ...window, ...updates } : window
       )
     );
   };
 
   const updateAllPlotWindows = (updates) => {
-    setPlotWindows(prev => 
-      prev.map(window => ({ ...window, ...updates }))
-    );
+    setPlotWindows((prev) => prev.map((window) => ({ ...window, ...updates })));
   };
 
   // New function to update plot component when data changes
@@ -184,7 +181,7 @@ const usePlotWindowManager = () => {
   };
 
   const closePlotWindow = (id) => {
-    setPlotWindows(prev => prev.filter(window => window.id !== id));
+    setPlotWindows((prev) => prev.filter((window) => window.id !== id));
   };
 
   const minimizePlotWindow = (id) => {
@@ -192,24 +189,24 @@ const usePlotWindowManager = () => {
   };
 
   const restorePlotWindow = (id) => {
-    const activeWindows = plotWindows.filter(w => !w.minimized);
-    
+    const activeWindows = plotWindows.filter((w) => !w.minimized);
+
     // If we already have 2 active windows, minimize the oldest one
     if (activeWindows.length >= 2) {
       const oldestActive = activeWindows[0];
       updatePlotWindow(oldestActive.id, { minimized: true });
     }
-    
-    updatePlotWindow(id, { 
-      minimized: false, 
-      zIndex: nextZIndex 
+
+    updatePlotWindow(id, {
+      minimized: false,
+      zIndex: nextZIndex,
     });
-    setNextZIndex(prev => prev + 1);
+    setNextZIndex((prev) => prev + 1);
   };
 
   const bringToFront = (id) => {
     updatePlotWindow(id, { zIndex: nextZIndex });
-    setNextZIndex(prev => prev + 1);
+    setNextZIndex((prev) => prev + 1);
   };
 
   return {
@@ -221,7 +218,7 @@ const usePlotWindowManager = () => {
     closePlotWindow,
     minimizePlotWindow,
     restorePlotWindow,
-    bringToFront
+    bringToFront,
   };
 };
 

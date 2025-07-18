@@ -26,9 +26,7 @@ import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
-// Add these imports after your existing imports
 import { PlotWindowManager, PlotSidePanel, usePlotWindowManager } from './PlotWindowManager.jsx';
-import './PlotWindowManager.css';
 
 
 function formatLatLon(latitude, longitude) {
