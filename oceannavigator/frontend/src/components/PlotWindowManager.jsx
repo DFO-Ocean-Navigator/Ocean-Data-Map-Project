@@ -1,4 +1,4 @@
-// Fixed PlotWindowManager.jsx - Modal-style overlays with sidebar
+// PlotWindowManager.jsx with Top Horizontal Panel
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -125,202 +125,161 @@ const PlotWindowManager = ({
   );
 };
 
-// Left Sidebar for Minimized Plots - Always Visible
-const PlotSidebar = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
+// Top Horizontal Panel for Minimized Plots
+const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
   const minimizedWindows = plotWindows.filter(w => w.minimized);
   const activeWindows = plotWindows.filter(w => !w.minimized);
   
-  // Always show sidebar if there are any plot windows
-  if (plotWindows.length === 0) return null;
+  if (minimizedWindows.length === 0) return null;
 
   return (
     <div
-      className="plot-sidebar"
+      className="plot-top-panel"
       style={{
         position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: '60px',
-        backgroundColor: '#343a40',
-        borderRight: '1px solid #dee2e6',
-        zIndex: 1001, // Higher than modal backdrop
+        top: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'auto',
+        maxWidth: '80vw',
+        backgroundColor: 'transparent',
+        padding: '0',
+        borderRadius: '0',
+        border: 'none',
+        boxShadow: 'none',
+        zIndex: 1001,
+        backdropFilter: 'none',
+        backdropFilter: 'blur(10px)',
         display: 'flex',
-        flexDirection: 'column',
-        padding: '10px 0',
-        boxShadow: '2px 0 5px rgba(0,0,0,0.1)'
+        alignItems: 'center',
+        gap: '12px',
+        overflow: 'hidden'
       }}
     >
-      {/* Active Windows Indicators */}
-      {activeWindows.map((window, index) => (
-        <div
-          key={`active-${window.id}`}
-          className="plot-sidebar-item active"
-          style={{
-            margin: '5px 8px',
-            padding: '8px 4px',
-            backgroundColor: '#007bff',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '40px',
-            position: 'relative',
-            border: '2px solid #007bff',
-            transition: 'all 0.2s ease'
-          }}
-          onClick={() => minimizePlotWindow(window.id)}
-          title={`Minimize: ${window.title}`}
-        >
+      {/* Active plots indicator */}
+      {activeWindows.length > 0 && (
+        <>
           <div
             style={{
+              backgroundColor: '#28a745',
               color: 'white',
+              borderRadius: '12px',
+              padding: '4px 8px',
               fontSize: '12px',
               fontWeight: 'bold',
-              textAlign: 'center',
-              wordBreak: 'break-word',
-              lineHeight: '1.2'
+              minWidth: '20px',
+              textAlign: 'center'
             }}
           >
-            {index + 1}
+            {activeWindows.length}
           </div>
-          <Button
-            variant="link"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              closePlotWindow(window.id);
-            }}
-            style={{
-              position: 'absolute',
-              top: '-5px',
-              right: '-5px',
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              backgroundColor: '#dc3545',
-              border: 'none',
-              padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              color: 'white'
-            }}
-          >
-            <FontAwesomeIcon icon={faXmark} />
-          </Button>
-        </div>
-      ))}
-
-      {/* Separator */}
-      {activeWindows.length > 0 && minimizedWindows.length > 0 && (
-        <div
-          style={{
-            height: '1px',
-            backgroundColor: '#6c757d',
-            margin: '10px 8px'
-          }}
-        />
-      )}
-
-      {/* Minimized Windows */}
-      {minimizedWindows.map((window) => (
-        <div
-          key={`minimized-${window.id}`}
-          className="plot-sidebar-item minimized"
-          style={{
-            margin: '5px 8px',
-            padding: '8px 4px',
-            backgroundColor: '#6c757d',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '40px',
-            position: 'relative',
-            border: '2px solid #6c757d',
-            transition: 'all 0.2s ease'
-          }}
-          onClick={() => restorePlotWindow(window.id)}
-          title={`Restore: ${window.title}`}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#5a6268';
-            e.currentTarget.style.borderColor = '#5a6268';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#6c757d';
-            e.currentTarget.style.borderColor = '#6c757d';
-          }}
-        >
           <div
             style={{
-              color: 'white',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              wordBreak: 'break-word',
-              lineHeight: '1.2',
-              maxWidth: '100%'
+              width: '1px',
+              height: '20px',
+              backgroundColor: '#dee2e6',
             }}
-          >
-            {window.title.split(' - ')[0]}
-          </div>
-          <Button
-            variant="link"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              closePlotWindow(window.id);
-            }}
+          />
+        </>
+      )}
+
+      {/* Minimized Windows List */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '8px',
+          alignItems: 'center',
+          overflow: 'hidden'
+        }}
+      >
+        {minimizedWindows.map((window) => (
+          <div
+            key={`minimized-${window.id}`}
+            className="plot-top-item"
             style={{
-              position: 'absolute',
-              top: '-5px',
-              right: '-5px',
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              backgroundColor: '#dc3545',
-              border: 'none',
-              padding: 0,
+              padding: '6px 12px',
+              backgroundColor: '#2476AA',
+              borderRadius: '4px',
+              border: '1px solid #dee2e6',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              color: 'white'
+              gap: '6px',
+              fontSize: '16px',
+              fontWeight: '500',
+              color: 'white',
+              transition: 'all 0.2s ease',
+              minWidth: '200px',
+              maxWidth: '300px',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => restorePlotWindow(window.id)}
+            title={`Restore: ${window.title}`}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#0056b3';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#2476AA';
+              e.currentTarget.style.borderColor = '#dee2e6';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <FontAwesomeIcon icon={faXmark} />
-          </Button>
-        </div>
-      ))}
+            <div style={{ 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap',
+              flex: 1
+            }}>
+              {window.title.split(' - ')[0]}
+            </div>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                closePlotWindow(window.id);
+              }}
+              style={{
+                padding: '2px',
+                fontSize: '10px',
+                color: '#dc3545',
+                lineHeight: 1,
+                minWidth: 'auto',
+                width: '16px',
+                height: '16px'
+              }}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </Button>
+          </div>
+        ))}
+      </div>
 
-      {/* Plot Count Badge */}
-      {plotWindows.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#28a745',
-            color: 'white',
-            borderRadius: '12px',
-            padding: '4px 8px',
-            fontSize: '12px',
-            fontWeight: 'bold'
-          }}
-        >
-          {plotWindows.length}
-        </div>
-      )}
+      {/* Total count badge */}
+      <div
+        style={{
+          backgroundColor: '#007bff',
+          color: 'white',
+          borderRadius: '12px',
+          padding: '4px 8px',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          minWidth: '20px',
+          textAlign: 'center'
+        }}
+      >
+        {plotWindows.length}
+      </div>
     </div>
   );
 };
 
-// Enhanced Hook with New Logic
+// Enhanced Hook with Data Synchronization
 const usePlotWindowManager = () => {
   const [plotWindows, setPlotWindows] = useState([]);
   const [nextZIndex, setNextZIndex] = useState(1000);
@@ -329,7 +288,8 @@ const usePlotWindowManager = () => {
     // Check if window with same ID already exists
     const existingWindow = plotWindows.find(w => w.id === id);
     if (existingWindow) {
-      // If exists, just restore it
+      // If exists, just restore it and update component
+      updatePlotWindow(id, { component });
       restorePlotWindow(id);
       return existingWindow;
     }
@@ -358,6 +318,17 @@ const usePlotWindowManager = () => {
         window.id === id ? { ...window, ...updates } : window
       )
     );
+  };
+
+  const updateAllPlotWindows = (updates) => {
+    setPlotWindows(prev => 
+      prev.map(window => ({ ...window, ...updates }))
+    );
+  };
+
+  // New function to update plot component when data changes
+  const updatePlotComponent = (id, newComponent) => {
+    updatePlotWindow(id, { component: newComponent });
   };
 
   const closePlotWindow = (id) => {
@@ -393,6 +364,8 @@ const usePlotWindowManager = () => {
     plotWindows,
     createPlotWindow,
     updatePlotWindow,
+    updateAllPlotWindows,
+    updatePlotComponent,
     closePlotWindow,
     minimizePlotWindow,
     restorePlotWindow,
@@ -400,4 +373,4 @@ const usePlotWindowManager = () => {
   };
 };
 
-export { PlotWindowManager, PlotSidebar, usePlotWindowManager };
+export { PlotWindowManager, PlotSidePanel, usePlotWindowManager };

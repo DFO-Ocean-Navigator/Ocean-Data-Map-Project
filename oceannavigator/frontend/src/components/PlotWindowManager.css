@@ -1,104 +1,136 @@
-/* Fixed PlotWindowManager.css - Modal-style overlays */
+/* PlotWindowManager.css - Top Horizontal Panel Layout */
 
-/* Ensure main app doesn't get pushed when plots are open */
+/* Remove any sidebar-related spacing from main app */
 .OceanNavigator {
   position: relative;
+  /* No left padding needed since we removed the sidebar */
 }
 
-/* Plot Sidebar - Always visible when plots exist */
-.plot-sidebar {
+/* Top Horizontal Panel for Minimized Plots */
+.plot-top-panel {
   position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 60px;
-  background: linear-gradient(180deg, #343a40 0%, #495057 100%);
-  border-right: 1px solid #dee2e6;
-  z-index: 1001; /* Higher than modal backdrop */
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 80vw;
+  background: rgba(248, 249, 250, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 25px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
   display: flex;
-  flex-direction: column;
-  padding: 10px 0;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #6c757d transparent;
-  animation: slideInLeft 0.3s ease-out;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  animation: slideInFromTop 0.3s ease-out;
 }
 
-.plot-sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.plot-sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.plot-sidebar::-webkit-scrollbar-thumb {
-  background: #6c757d;
-  border-radius: 2px;
-}
-
-.plot-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #5a6268;
-}
-
-@keyframes slideInLeft {
+@keyframes slideInFromTop {
   from {
-    transform: translateX(-100%);
+    transform: translateX(-50%) translateY(-100%);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: translateX(-50%) translateY(0);
     opacity: 1;
   }
 }
 
-/* Sidebar Items */
-.plot-sidebar-item {
-  margin: 5px 8px;
-  padding: 8px 4px;
-  border-radius: 6px;
+/* Top Panel Items */
+.plot-top-item {
+  padding: 6px 12px;
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid #dee2e6;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  position: relative;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
   transition: all 0.2s ease;
-  border: 2px solid transparent;
+  min-width: 120px;
+  max-width: 180px;
+  white-space: nowrap;
 }
 
-.plot-sidebar-item.active {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+.plot-top-item:hover {
+  background-color: #e9ecef;
   border-color: #007bff;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.plot-sidebar-item.minimized {
-  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-  border-color: #6c757d;
+.plot-top-item:active {
+  transform: translateY(-1px);
 }
 
-.plot-sidebar-item.minimized:hover {
-  background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
-  border-color: #5a6268;
-  transform: translateX(2px);
+/* Legacy class for compatibility */
+.plot-side-panel {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 80vw;
+  background: rgba(248, 249, 250, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 25px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  animation: slideInFromTop 0.3s ease-out;
 }
 
-.plot-sidebar-item.active:hover {
-  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-  transform: translateX(2px);
+.plot-side-item {
+  padding: 6px 12px;
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  max-width: 180px;
+  white-space: nowrap;
+}
+
+.plot-side-item:hover {
+  background-color: #e9ecef;
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.plot-side-item:active {
+  transform: translateY(-1px);
 }
 
 /* Modal-style Plot Windows */
-.plot-window-container {
-  /* This class is no longer used for full-screen, but keeping for compatibility */
-}
-
 .plot-window-header {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-bottom: 1px solid #dee2e6;
   flex-shrink: 0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .plot-window-header:hover {
@@ -310,7 +342,6 @@
 }
 
 /* Modal Animation */
-.plot-window-container,
 .plot-window-modal {
   animation: modalSlideIn 0.3s ease-out;
 }
@@ -326,6 +357,29 @@
   }
 }
 
+/* Counter Badges */
+.plot-counter-badge {
+  background-color: #28a745;
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+}
+
+.plot-total-badge {
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
   /* Stack modals vertically on smaller screens */
@@ -336,14 +390,19 @@
 }
 
 @media (max-width: 768px) {
-  .plot-sidebar {
-    width: 50px;
+  .plot-top-panel,
+  .plot-side-panel {
+    max-width: 95vw;
+    padding: 8px 12px;
+    gap: 8px;
   }
   
-  .plot-sidebar-item {
-    margin: 3px 6px;
-    padding: 6px 2px;
-    min-height: 35px;
+  .plot-top-item,
+  .plot-side-item {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 100px;
+    max-width: 140px;
   }
   
   .plot-window-modal {
@@ -364,14 +423,20 @@
 }
 
 @media (max-width: 480px) {
-  .plot-sidebar {
-    width: 40px;
+  .plot-top-panel,
+  .plot-side-panel {
+    max-width: 98vw;
+    padding: 6px 10px;
+    gap: 6px;
+    border-radius: 20px;
   }
   
-  .plot-sidebar-item {
-    margin: 2px 4px;
-    padding: 4px 2px;
-    min-height: 30px;
+  .plot-top-item,
+  .plot-side-item {
+    padding: 3px 6px;
+    font-size: 11px;
+    min-width: 80px;
+    max-width: 120px;
   }
   
   .plot-window-modal {
@@ -404,27 +469,38 @@
   padding: 1rem;
 }
 
-/* Accessibility */
-.plot-sidebar-item:focus {
+/* Scrollbar for top panel when many windows */
+.plot-top-panel::-webkit-scrollbar,
+.plot-side-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.plot-top-panel,
+.plot-side-panel {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Focus states for accessibility */
+.plot-top-item:focus,
+.plot-side-item:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
 
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
-  .plot-sidebar {
-    background: #000;
-    border-right: 2px solid #fff;
+  .plot-top-panel,
+  .plot-side-panel {
+    background: #f0f0f0;
+    border: 2px solid #000;
   }
   
-  .plot-sidebar-item.active {
-    background: #0066cc;
-    border-color: #fff;
-  }
-  
-  .plot-sidebar-item.minimized {
-    background: #666;
-    border-color: #fff;
+  .plot-top-item,
+  .plot-side-item {
+    background: #fff;
+    border: 2px solid #000;
+    color: #000;
   }
   
   .plot-window-header {
@@ -435,9 +511,11 @@
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .plot-sidebar-item,
+  .plot-top-item,
+  .plot-side-item,
   .plot-window-modal,
-  .plot-window-header {
+  .plot-top-panel,
+  .plot-side-panel {
     animation: none;
     transition: none;
   }
@@ -445,7 +523,8 @@
 
 /* Print Styles */
 @media print {
-  .plot-sidebar {
+  .plot-top-panel,
+  .plot-side-panel {
     display: none;
   }
   

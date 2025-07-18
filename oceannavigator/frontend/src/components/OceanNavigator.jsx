@@ -27,7 +27,7 @@ import LinkButton from "./LinkButton.jsx";
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
 // Add these imports after your existing imports
-import { PlotWindowManager, PlotSidebar, usePlotWindowManager } from './PlotWindowManager.jsx';
+import { PlotWindowManager, PlotSidePanel, usePlotWindowManager } from './PlotWindowManager.jsx';
 import './PlotWindowManager.css';
 
 
@@ -123,11 +123,24 @@ function OceanNavigator(props) {
       }
     }
   }, []);
+
+
+  // Effect to update existing plot windows when main data changes
+useEffect(() => {
+  plotWindows.forEach(window => {
+    if (window.plotData && window.plotData.type) {
+      const updatedComponent = createPlotComponent(window.plotData.type, window.plotData);
+      updatePlotComponent(window.id, updatedComponent);
+    }
+  });
+}, [dataset0.id, dataset0.variable, dataset0.time, dataset0.depth, dataset1.id, dataset1.variable, dataset1.time, dataset1.depth, compareDatasets, mapSettings.projection, mapSettings.interpType, mapSettings.interpRadius, mapSettings.interpNeighbours]);
+
   // Add this after your existing state declarations
 const {
   plotWindows,
   createPlotWindow,
   updatePlotWindow,
+  updatePlotComponent,
   closePlotWindow,
   minimizePlotWindow,
   restorePlotWindow,
@@ -158,32 +171,34 @@ const generatePlotWindowTitle = (type, coordinates) => {
 };
 
 const createPlotComponent = (type, plotData) => {
+  // Always use current state, not stored state
   const commonProps = {
     plotData,
-    dataset_0: dataset0,
-    dataset_1: dataset1,
-    mapSettings,
+    dataset_0: dataset0,  // Always current dataset0
+    dataset_1: dataset1,  // Always current dataset1
+    mapSettings,          // Always current mapSettings
     names,
     updateDataset0,
     updateDataset1,
     init: subquery,
     action,
-    dataset_compare: compareDatasets,
+    dataset_compare: compareDatasets,  // Always current compare state
     setCompareDatasets,
+    key: `${type}_${Date.now()}`, // Force re-render with unique key
   };
 
   switch (type) {
     case "Point":
       return <PointWindow {...commonProps} />;
     case "LineString":
-      const line_distance = mapRef.current.getLineDistance(plotData.coordinates);
+      const line_distance = mapRef.current ? mapRef.current.getLineDistance(plotData.coordinates) : 0;
       return <LineWindow {...commonProps} line_distance={line_distance} />;
     case "Polygon":
       return <AreaWindow {...commonProps} />;
     case "track":
       return <TrackWindow {...commonProps} dataset={dataset0} track={plotData.coordinates} />;
     default:
-      return <div>Unknown plot type: {type}</div>;
+      return <div key={Date.now()}>Unknown plot type: {type}</div>;
   }
 };
   const action = (name, arg, arg2) => {
@@ -209,18 +224,19 @@ const createPlotComponent = (type, plotData) => {
           mapRef.current.startFeatureDraw();
         }
         break;
-      case "plot":
-        let newPlotData = mapRef.current.getPlotData();
-        if (newPlotData.type) {
-          // Create a new plot window instead of showing a modal
-          const windowId = generatePlotWindowId(newPlotData.type, newPlotData.coordinates);
-          const windowTitle = generatePlotWindowTitle(newPlotData.type, newPlotData.coordinates);
-          const plotComponent = createPlotComponent(newPlotData.type, newPlotData);
-          
-          createPlotWindow(windowId, windowTitle, plotComponent);
-          setPlotData(newPlotData);
-        }
-        break;
+case "plot":
+  let newPlotData = mapRef.current.getPlotData();
+  if (newPlotData.type) {
+    // Create a new plot window instead of showing a modal
+    const windowId = generatePlotWindowId(newPlotData.type, newPlotData.coordinates);
+    const windowTitle = generatePlotWindowTitle(newPlotData.type, newPlotData.coordinates);
+    const plotComponent = createPlotComponent(newPlotData.type, newPlotData);
+    
+    // Store plotData with the window for future updates
+    createPlotWindow(windowId, windowTitle, plotComponent, { plotData: newPlotData });
+    setPlotData(newPlotData);
+  }
+  break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
         break;
@@ -598,11 +614,11 @@ const createPlotComponent = (type, plotData) => {
         restorePlotWindow={restorePlotWindow}
       />
 
-    <PlotSidebar
-      plotWindows={plotWindows}
-      restorePlotWindow={restorePlotWindow}
-      closePlotWindow={closePlotWindow}
-    />
+  <PlotSidePanel
+    plotWindows={plotWindows}
+    restorePlotWindow={restorePlotWindow}
+    closePlotWindow={closePlotWindow}
+  />
     </div>
   );
 }
