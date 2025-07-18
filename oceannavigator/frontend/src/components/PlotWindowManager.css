@@ -1,9 +1,31 @@
-/* PlotWindowManager.css - Top Horizontal Panel Layout */
+/* PlotWindowManager.css - All Styles Consolidated */
 
 /* Remove any sidebar-related spacing from main app */
 .OceanNavigator {
   position: relative;
-  /* No left padding needed since we removed the sidebar */
+}
+
+/* Modal Backdrop */
+.plot-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+}
+
+/* Modal Container */
+.plot-modal-container {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
 }
 
 /* Top Horizontal Panel for Minimized Plots */
@@ -14,14 +36,13 @@
   transform: translateX(-50%);
   width: auto;
   max-width: 80vw;
-  background: rgba(248, 249, 250, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  border-radius: 25px;
-  border: 1px solid #dee2e6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
   z-index: 1001;
+  backdrop-filter: none;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -29,38 +50,55 @@
   animation: slideInFromTop 0.3s ease-out;
 }
 
-@keyframes slideInFromTop {
-  from {
-    transform: translateX(-50%) translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
+/* Active Plots Badge */
+.plot-active-badge {
+  background-color: #28a745;
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
 }
 
-/* Top Panel Items */
+/* Separator */
+.plot-separator {
+  width: 1px;
+  height: 20px;
+  background-color: #dee2e6;
+}
+
+/* Minimized Windows Container */
+.plot-minimized-container {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Top Panel Items (Minimized Windows) */
 .plot-top-item {
   padding: 6px 12px;
-  background-color: white;
-  border-radius: 16px;
+  background-color: #2476AA;
+  border-radius: 4px;
   border: 1px solid #dee2e6;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
-  color: #495057;
+  color: white;
   transition: all 0.2s ease;
-  min-width: 120px;
-  max-width: 180px;
+  min-width: 200px;
+  max-width: 300px;
   white-space: nowrap;
 }
 
 .plot-top-item:hover {
-  background-color: #e9ecef;
+  background-color: #0056b3;
   border-color: #007bff;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -70,56 +108,43 @@
   transform: translateY(-1px);
 }
 
-/* Legacy class for compatibility */
-.plot-side-panel {
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  max-width: 80vw;
-  background: rgba(248, 249, 250, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  border-radius: 25px;
-  border: 1px solid #dee2e6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* Plot Item Text */
+.plot-item-text {
   overflow: hidden;
-  animation: slideInFromTop 0.3s ease-out;
-}
-
-.plot-side-item {
-  padding: 6px 12px;
-  background-color: white;
-  border-radius: 16px;
-  border: 1px solid #dee2e6;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #495057;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  max-width: 180px;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 
-.plot-side-item:hover {
-  background-color: #e9ecef;
-  border-color: #007bff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+/* Close Button */
+.plot-close-btn {
+  padding: 2px !important;
+  font-size: 10px !important;
+  color: #dc3545 !important;
+  line-height: 1 !important;
+  min-width: auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: none !important;
+  background: none !important;
 }
 
-.plot-side-item:active {
-  transform: translateY(-1px);
+.plot-close-btn:hover {
+  color: #fff !important;
+  background-color: #dc3545 !important;
+  border-radius: 50% !important;
+}
+
+/* Total Count Badge */
+.plot-total-badge {
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
 }
 
 /* Modal-style Plot Windows */
@@ -131,16 +156,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background 0.2s ease-in-out;
 }
 
 .plot-window-header:hover {
   background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
 }
 
+.plot-window-title {
+  margin-bottom: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
 .plot-window-content {
   background: white;
   overflow: auto;
   flex: 1;
+  padding: 0;
 }
 
 /* Plot Content Styling for Modal Layout */
@@ -341,9 +375,16 @@
   box-shadow: none;
 }
 
-/* Modal Animation */
-.plot-window-modal {
-  animation: modalSlideIn 0.3s ease-out;
+/* Animations */
+@keyframes slideInFromTop {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes modalSlideIn {
@@ -357,33 +398,60 @@
   }
 }
 
-/* Counter Badges */
-.plot-counter-badge {
-  background-color: #28a745;
-  color: white;
-  border-radius: 12px;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: bold;
-  min-width: 20px;
-  text-align: center;
+/* Legacy classes for compatibility */
+.plot-side-panel {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 80vw;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  z-index: 1001;
+  backdrop-filter: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  animation: slideInFromTop 0.3s ease-out;
 }
 
-.plot-total-badge {
-  background-color: #007bff;
+.plot-side-item {
+  padding: 6px 12px;
+  background-color: #2476AA;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 500;
   color: white;
-  border-radius: 12px;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: bold;
-  min-width: 20px;
-  text-align: center;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  max-width: 300px;
+  white-space: nowrap;
+}
+
+.plot-side-item:hover {
+  background-color: #0056b3;
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.plot-side-item:active {
+  transform: translateY(-1px);
 }
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  /* Stack modals vertically on smaller screens */
-  .plot-window-modal {
+  .plot-modal-container {
     width: 90vw !important;
     left: 50% !important;
   }
@@ -393,23 +461,20 @@
   .plot-top-panel,
   .plot-side-panel {
     max-width: 95vw;
-    padding: 8px 12px;
     gap: 8px;
   }
   
   .plot-top-item,
   .plot-side-item {
     padding: 4px 8px;
-    font-size: 12px;
-    min-width: 100px;
-    max-width: 140px;
+    font-size: 14px;
+    min-width: 150px;
+    max-width: 200px;
   }
   
-  .plot-window-modal {
+  .plot-modal-container {
     width: 95vw !important;
     height: 90vh !important;
-    top: 50% !important;
-    left: 50% !important;
   }
   
   .plot-window-content .settings-col {
@@ -426,20 +491,18 @@
   .plot-top-panel,
   .plot-side-panel {
     max-width: 98vw;
-    padding: 6px 10px;
     gap: 6px;
-    border-radius: 20px;
   }
   
   .plot-top-item,
   .plot-side-item {
     padding: 3px 6px;
-    font-size: 11px;
-    min-width: 80px;
-    max-width: 120px;
+    font-size: 12px;
+    min-width: 120px;
+    max-width: 160px;
   }
   
-  .plot-window-modal {
+  .plot-modal-container {
     width: 98vw !important;
     height: 95vh !important;
   }
@@ -498,9 +561,9 @@
   
   .plot-top-item,
   .plot-side-item {
-    background: #fff;
+    background: #0066cc;
     border: 2px solid #000;
-    color: #000;
+    color: #fff;
   }
   
   .plot-window-header {
@@ -513,7 +576,7 @@
 @media (prefers-reduced-motion: reduce) {
   .plot-top-item,
   .plot-side-item,
-  .plot-window-modal,
+  .plot-modal-container,
   .plot-top-panel,
   .plot-side-panel {
     animation: none;
@@ -528,7 +591,7 @@
     display: none;
   }
   
-  .plot-window-modal {
+  .plot-modal-container {
     position: static;
     width: 100% !important;
     height: auto !important;
