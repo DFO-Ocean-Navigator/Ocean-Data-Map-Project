@@ -24,23 +24,6 @@ const PlotWindowManager = ({
   const renderModalPlots = () => {
     if (activeWindows.length === 0) return null;
 
-    // Modal container style
-    // const getModalStyle = (index, total) => {
-    //   const baseWidth = total === 1 ? '85vw' : '15vw';
-    //   const baseHeight = '85vh';
-    //   const leftOffset = total === 1 ? '50%' : (index === 0 ? '25%' : '75%');
-
-    //   return {
-    //     position: 'fixed',
-    //     top: '50%',
-    //     left: leftOffset,
-    //     transform: 'translate(-50%, -50%)',
-    //     width: baseWidth,
-    //     height: baseHeight,
-    //     zIndex: 999 + index,
-    //   };
-    // };
-
     const modals = activeWindows.map((window, index) => (
       <div
         key={window.id}
@@ -130,7 +113,7 @@ const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
   );
 };
 
-// Enhanced Hook with Data Synchronization
+
 const usePlotWindowManager = () => {
   const [plotWindows, setPlotWindows] = useState([]);
   const [nextZIndex, setNextZIndex] = useState(1000);

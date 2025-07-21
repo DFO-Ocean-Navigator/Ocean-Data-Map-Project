@@ -1,13 +1,9 @@
 // Variables
 $primary-blue: #2476AA;
-$primary-blue-hover: #0056b3;
-$border-blue: #007bff;
+$primary-blue-hover: #1a5492;
 $border-gray: #dee2e6;
 $danger-red: #dc3545;
-$text-gray: #495057;
-$bg-light: #e9ecef;
 $white: #fff;
-$success-green: #28a745;
 
 // Mixins
 @mixin flex-center {
@@ -21,19 +17,20 @@ $success-green: #28a745;
   white-space: nowrap;
 }
 
-// Modal Container
+// Modal Container 
 .plot-modal-container {
   background-color: $white;
   display: flex;
   flex-direction: column;
   border: 1px solid $border-gray;
-  overflow-x: hidden;
-  overflow-y:auto;
+  overflow: hidden;  
   position: fixed;
   top: 50%;
   transform: translate(-50%, -50%);
-  height: 95vh;
+  height: 90vh;
   z-index: 999;
+  min-width: 300px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
 }
 
 // Top Horizontal Panel for Minimized Plots
@@ -81,9 +78,7 @@ $success-green: #28a745;
 
   &:hover {
     background-color: $primary-blue-hover;
-    border-color: $border-blue;
   }
-
 }
 
 // Plot Item Text
@@ -95,19 +90,17 @@ $success-green: #28a745;
 // Close Button
 .plot-close-btn {
   padding: 2px !important;
-  font-size: 20px !important;
+  font-size: 12px !important;
   color: $white !important;
   line-height: 1 !important;
   min-width: auto !important;
   width: 16px !important;
-  height: 18px !important;
+  height: 14px !important;
   border: none !important;
   background-color: $danger-red !important;
-  border: none !important;
-
 }
 
-// Modal-style Plot Windows
+
 .plot-window-header {
   background: $primary-blue;
   border-bottom: 1px solid $border-gray;
@@ -118,7 +111,6 @@ $success-green: #28a745;
   align-items: center;
   position: relative;
   justify-content: flex-end;
-
 }
 
 .plot-window-title {
@@ -126,34 +118,116 @@ $success-green: #28a745;
   font-size: 2rem;
   font-weight: 600;
   color: white;
-position: absolute;
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  margin: 0;      // remove any default margins
-  z-index: 1; 
+  margin: 0;
+  z-index: 1;
+  @include text-ellipsis;  
+  max-width: 60%;  
 }
+
+
 .plot-modal-single {
   left: 50%;
   width: 85vw;
 }
 
-// Dual window layouts
+
 .plot-modal-left {
-  left: 25%;
-  width: 45vw;
+  left: 25%;  
+  width: 45vw; 
 }
 
 .plot-modal-right {
-  left: 75%;
-  width: 45vw;
+  left: 75%;  
+  width: 45vw; 
 }
 
-// Window content area
-// Window content area - Updated for better centering
+// Window Content
 .plot-window-content {
   flex: 1;
-  overflow: auto;
-  padding: 0.5rem;  // Reduced padding
-  display: block;
+  overflow-y: scroll;  
+  overflow-x: auto;   
+  padding: 0.75rem;
+  display: flex;     
+  flex-direction: column;
+  gap: 1rem;        
+  min-height: 0;     
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto 1rem auto; 
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    &.full-width {
+      width: 100%;
+    }
+    
+    &.center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    &.left {
+      float: left;
+      margin-right: 1rem;
+    }
+    
+    &.right {
+      float: right;
+      margin-left: 1rem;
+    }
+  }
+}
 
+  // Stack windows vertically on smaller screens
+@media (max-width: 900px) {
+
+  .plot-modal-left,
+  .plot-modal-right {
+    left: 50%;
+    width: 90vw;
+    height: 40vh;
+  }
+  
+  .plot-modal-left {
+    top: 25%;
+  }
+  
+  .plot-modal-right {
+    top: 75%;
+  }
+  
+  .plot-window-title {
+    font-size: 1.25rem;
+  }
+  
+  .plot-window-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .plot-window-content {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .plot-modal-container {
+    height: 90vh;
+  }
+  
+  .plot-modal-single,
+  .plot-modal-left,
+  .plot-modal-right {
+    width: 95vw;
+    left: 50%;
+  }
+  
+  .plot-top-panel {
+    max-width: 95vw;
+  }
 }

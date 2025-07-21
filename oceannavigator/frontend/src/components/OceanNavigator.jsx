@@ -133,7 +133,7 @@ useEffect(() => {
   });
 }, [dataset0.id, dataset0.variable, dataset0.time, dataset0.depth, dataset1.id, dataset1.variable, dataset1.time, dataset1.depth, compareDatasets, mapSettings.projection, mapSettings.interpType, mapSettings.interpRadius, mapSettings.interpNeighbours]);
 
-  // Add this after your existing state declarations
+
 const {
   plotWindows,
   createPlotWindow,
@@ -145,7 +145,7 @@ const {
   bringToFront
 } = usePlotWindowManager();
 
-// Add these helper functions before the action function
+
 const generatePlotWindowId = (type, coordinates) => {
   const timestamp = Date.now();
   const coordStr = coordinates ? coordinates.slice(0, 2).join(',') : '';
@@ -163,6 +163,8 @@ const generatePlotWindowTitle = (type, coordinates) => {
       return `Area Plot - ${coordinates.length} vertices`;
     case "track":
       return `Track Plot`;
+    case "class4":
+      return `Class 4 Analysis - ${coordinates?.name || 'Observation'}`;
     default:
       return `${type} Plot`;
   }
@@ -195,6 +197,17 @@ const createPlotComponent = (type, plotData) => {
       return <AreaWindow {...commonProps} />;
     case "track":
       return <TrackWindow {...commonProps} dataset={dataset0} track={plotData.coordinates} />;
+    case "class4":
+      return (
+        <Class4Window
+          dataset={dataset0.id}
+          plotData={plotData}
+          class4type={plotData.class4type || class4Type}
+          init={subquery}
+          action={action}
+          key={`class4_${Date.now()}`}
+        />
+      );
     default:
       return <div key={Date.now()}>Unknown plot type: {type}</div>;
   }
@@ -501,6 +514,20 @@ case "plot":
         />
       );
       modalTitle = "Class4";
+       // NEW CODE (creates plot window):
+  if (plotData && plotData.id) {
+    const class4PlotData = {
+      ...plotData,
+      type: "class4",
+      class4type: class4Type
+    };
+    
+    const windowId = `class4_${plotData.id}_${Date.now()}`;
+    const windowTitle = `Class 4 Analysis - ${plotData.name || plotData.id}`;
+    const plotComponent = createPlotComponent("class4", class4PlotData);
+    
+    createPlotWindow(windowId, windowTitle, plotComponent, { plotData: class4PlotData });
+  }
       break;
     case "settings":
       modalBodyContent = (
@@ -603,7 +630,7 @@ case "plot":
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
-      {/* Add these components before the existing Modal components */}
+    
       <PlotWindowManager
         plotWindows={plotWindows}
         updatePlotWindow={updatePlotWindow}
