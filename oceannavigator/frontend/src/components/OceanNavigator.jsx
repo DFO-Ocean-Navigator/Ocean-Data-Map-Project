@@ -26,8 +26,11 @@ import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
-import { PlotWindowManager, PlotSidePanel, usePlotWindowManager } from './PlotWindowManager.jsx';
-
+import {
+  PlotWindowManager,
+  PlotSidePanel,
+  usePlotWindowManager,
+} from "./PlotWindowManager.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -122,96 +125,127 @@ function OceanNavigator(props) {
     }
   }, []);
 
-
   // Effect to update existing plot windows when main data changes
-useEffect(() => {
-  plotWindows.forEach(window => {
-    if (window.plotData && window.plotData.type) {
-      const updatedComponent = createPlotComponent(window.plotData.type, window.plotData);
-      updatePlotComponent(window.id, updatedComponent);
-    }
-  });
-}, [dataset0.id, dataset0.variable, dataset0.time, dataset0.depth, dataset1.id, dataset1.variable, dataset1.time, dataset1.depth, compareDatasets, mapSettings.projection, mapSettings.interpType, mapSettings.interpRadius, mapSettings.interpNeighbours]);
+  useEffect(() => {
+    plotWindows.forEach((window) => {
+      if (window.plotData && window.plotData.type) {
+        const updatedComponent = createPlotComponent(
+          window.plotData.type,
+          window.plotData
+        );
+        updatePlotComponent(window.id, updatedComponent);
+      }
+    });
+  }, [
+    dataset0.id,
+    dataset0.variable,
+    dataset0.time,
+    dataset0.depth,
+    dataset1.id,
+    dataset1.variable,
+    dataset1.time,
+    dataset1.depth,
+    compareDatasets,
+    mapSettings.projection,
+    mapSettings.interpType,
+    mapSettings.interpRadius,
+    mapSettings.interpNeighbours,
+  ]);
 
+  const {
+    plotWindows,
+    createPlotWindow,
+    updatePlotWindow,
+    updatePlotComponent,
+    closePlotWindow,
+    minimizePlotWindow,
+    restorePlotWindow,
+    bringToFront,
+  } = usePlotWindowManager();
 
-const {
-  plotWindows,
-  createPlotWindow,
-  updatePlotWindow,
-  updatePlotComponent,
-  closePlotWindow,
-  minimizePlotWindow,
-  restorePlotWindow,
-  bringToFront
-} = usePlotWindowManager();
-
-
-const generatePlotWindowId = (type, coordinates) => {
-  const timestamp = Date.now();
-  const coordStr = coordinates ? coordinates.slice(0, 2).join(',') : '';
-  return `${type}_${coordStr}_${timestamp}`;
-};
-
-const generatePlotWindowTitle = (type, coordinates) => {
-  switch (type) {
-    case "Point":
-      const coordTitle = coordinates.map((p) => formatLatLon(p[0], p[1])).join(", ");
-      return `Point Plot - ${coordTitle}`;
-    case "LineString":
-      return `Line Plot - (${coordinates.map(ll => formatLatLon(ll[0], ll[1])).join("), (")})`;
-    case "Polygon":
-      return `Area Plot - ${coordinates.length} vertices`;
-    case "track":
-      return `Track Plot`;
-    case "class4":
-      return `Class 4 Analysis - ${coordinates?.name || 'Observation'}`;
-    default:
-      return `${type} Plot`;
-  }
-};
-
-const createPlotComponent = (type, plotData) => {
-  // Always use current state, not stored state
-  const commonProps = {
-    plotData,
-    dataset_0: dataset0,  // Always current dataset0
-    dataset_1: dataset1,  // Always current dataset1
-    mapSettings,          // Always current mapSettings
-    names,
-    updateDataset0,
-    updateDataset1,
-    init: subquery,
-    action,
-    dataset_compare: compareDatasets,  // Always current compare state
-    setCompareDatasets,
-    key: `${type}_${Date.now()}`, // Force re-render with unique key
+  const generatePlotWindowId = (type, coordinates) => {
+    const timestamp = Date.now();
+    const coordStr = coordinates ? coordinates.slice(0, 2).join(",") : "";
+    return `${type}_${coordStr}_${timestamp}`;
   };
 
-  switch (type) {
-    case "Point":
-      return <PointWindow {...commonProps} />;
-    case "LineString":
-      const line_distance = mapRef.current ? mapRef.current.getLineDistance(plotData.coordinates) : 0;
-      return <LineWindow {...commonProps} line_distance={line_distance} />;
-    case "Polygon":
-      return <AreaWindow {...commonProps} />;
-    case "track":
-      return <TrackWindow {...commonProps} dataset={dataset0} track={plotData.coordinates} />;
-    case "class4":
-      return (
-        <Class4Window
-          dataset={dataset0.id}
-          plotData={plotData}
-          class4type={plotData.class4type || class4Type}
-          init={subquery}
-          action={action}
-          key={`class4_${Date.now()}`}
-        />
-      );
-    default:
-      return <div key={Date.now()}>Unknown plot type: {type}</div>;
-  }
-};
+  const generatePlotWindowTitle = (type, coordinates) => {
+    switch (type) {
+      case "Point":
+        const coordTitle = coordinates
+          .map((p) => formatLatLon(p[0], p[1]))
+          .join(", ");
+        return `Point Plot - ${coordTitle}`;
+      case "LineString":
+        return `Line Plot - (${coordinates
+          .map((ll) => formatLatLon(ll[0], ll[1]))
+          .join("), (")})`;
+      case "Polygon":
+        return `Area Plot - ${coordinates.length} vertices`;
+      case "track":
+        return `Track Plot`;
+      case "class4":
+        return `Class 4 Analysis - ${coordinates?.name || "Observation"}`;
+      default:
+        return `${type} Plot`;
+    }
+  };
+
+  const createPlotComponent = (type, plotData) => {
+    const commonProps = {
+      plotData,
+      dataset_0: dataset0,
+      dataset_1: dataset1,
+      mapSettings,
+      names,
+      updateDataset0,
+      updateDataset1,
+      init: subquery,
+      action,
+      dataset_compare: compareDatasets,
+      setCompareDatasets,
+      key: `${type}_${Date.now()}`,
+    };
+
+    switch (type) {
+      case "Point":
+        return <PointWindow {...commonProps} />;
+      case "LineString":
+        const line_distance = mapRef.current
+          ? mapRef.current.getLineDistance(plotData.coordinates)
+          : 0;
+        return <LineWindow {...commonProps} line_distance={line_distance} />;
+      case "Polygon":
+        return <AreaWindow {...commonProps} />;
+      case "track":
+        return (
+          <TrackWindow
+            plotData={plotData}
+            dataset={dataset0}
+            track={plotData.coordinates}
+            mapSettings={mapSettings}
+            names={names}
+            onUpdate={updateDataset0}
+            init={subquery}
+            action={action}
+            key={`track_${Date.now()}`}
+          />
+        );
+      case "class4":
+        return (
+          <Class4Window
+            dataset={dataset0.id}
+            plotData={plotData}
+            class4type={plotData.class4type || class4Type}
+            init={subquery}
+            action={action}
+            key={`class4_${Date.now()}`}
+          />
+        );
+      default:
+        return <div key={Date.now()}>Unknown plot type: {type}</div>;
+    }
+  };
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -235,19 +269,30 @@ const createPlotComponent = (type, plotData) => {
           mapRef.current.startFeatureDraw();
         }
         break;
-case "plot":
-  let newPlotData = mapRef.current.getPlotData();
-  if (newPlotData.type) {
-    // Create a new plot window instead of showing a modal
-    const windowId = generatePlotWindowId(newPlotData.type, newPlotData.coordinates);
-    const windowTitle = generatePlotWindowTitle(newPlotData.type, newPlotData.coordinates);
-    const plotComponent = createPlotComponent(newPlotData.type, newPlotData);
-    
-    // Store plotData with the window for future updates
-    createPlotWindow(windowId, windowTitle, plotComponent, { plotData: newPlotData });
-    setPlotData(newPlotData);
-  }
-  break;
+      case "plot":
+        let newPlotData = mapRef.current.getPlotData();
+        if (newPlotData.type) {
+          // Create a new plot window instead of showing a modal
+          const windowId = generatePlotWindowId(
+            newPlotData.type,
+            newPlotData.coordinates
+          );
+          const windowTitle = generatePlotWindowTitle(
+            newPlotData.type,
+            newPlotData.coordinates
+          );
+          const plotComponent = createPlotComponent(
+            newPlotData.type,
+            newPlotData
+          );
+
+          // Store plotData with the window for future updates
+          createPlotWindow(windowId, windowTitle, plotComponent, {
+            plotData: newPlotData,
+          });
+          setPlotData(newPlotData);
+        }
+        break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
         break;
@@ -454,7 +499,7 @@ case "plot":
       modalBodyContent = (
         <TrackWindow
           dataset={dataset0}
-          track={coordinates}
+          track={plotData.coordinates} // Fixed: use plotData.coordinates
           names={names}
           onUpdate={updateDataset0}
           init={subquery}
@@ -514,20 +559,24 @@ case "plot":
         />
       );
       modalTitle = "Class4";
-       // NEW CODE (creates plot window):
-  if (plotData && plotData.id) {
-    const class4PlotData = {
-      ...plotData,
-      type: "class4",
-      class4type: class4Type
-    };
-    
-    const windowId = `class4_${plotData.id}_${Date.now()}`;
-    const windowTitle = `Class 4 Analysis - ${plotData.name || plotData.id}`;
-    const plotComponent = createPlotComponent("class4", class4PlotData);
-    
-    createPlotWindow(windowId, windowTitle, plotComponent, { plotData: class4PlotData });
-  }
+      // NEW CODE (creates plot window):
+      if (plotData && plotData.id) {
+        const class4PlotData = {
+          ...plotData,
+          type: "class4",
+          class4type: class4Type,
+        };
+
+        const windowId = `class4_${plotData.id}_${Date.now()}`;
+        const windowTitle = `Class 4 Analysis - ${
+          plotData.name || plotData.id
+        }`;
+        const plotComponent = createPlotComponent("class4", class4PlotData);
+
+        createPlotWindow(windowId, windowTitle, plotComponent, {
+          plotData: class4PlotData,
+        });
+      }
       break;
     case "settings":
       modalBodyContent = (
@@ -630,7 +679,7 @@ case "plot":
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
-    
+
       <PlotWindowManager
         plotWindows={plotWindows}
         updatePlotWindow={updatePlotWindow}
@@ -639,11 +688,11 @@ case "plot":
         restorePlotWindow={restorePlotWindow}
       />
 
-  <PlotSidePanel
-    plotWindows={plotWindows}
-    restorePlotWindow={restorePlotWindow}
-    closePlotWindow={closePlotWindow}
-  />
+      <PlotSidePanel
+        plotWindows={plotWindows}
+        restorePlotWindow={restorePlotWindow}
+        closePlotWindow={closePlotWindow}
+      />
     </div>
   );
 }
