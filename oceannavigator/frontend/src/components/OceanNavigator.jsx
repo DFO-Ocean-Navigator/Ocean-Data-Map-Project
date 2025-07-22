@@ -169,25 +169,37 @@ function OceanNavigator(props) {
     return `${type}_${coordStr}_${timestamp}`;
   };
 
-  const generatePlotWindowTitle = (type, coordinates) => {
+  const generatePlotWindowTitle = (type, coordinates, plotData = null) => {
+    const hasName = plotData?.name && plotData.name !== "undefined";
+
     switch (type) {
       case "Point":
-        const coordTitle = coordinates
-          .map((p) => formatLatLon(p[0], p[1]))
-          .join(", ");
-        return `Point Plot - ${coordTitle}`;
+        return hasName
+          ? `${plotData.name} (Point)`
+          : `Point Plot - ${coordinates
+              .map((p) => formatLatLon(p[0], p[1]))
+              .join(", ")}`;
+
       case "LineString":
-        return `Line Plot - (${coordinates
-          .map((ll) => formatLatLon(ll[0], ll[1]))
-          .join("), (")})`;
+        return hasName
+          ? `${plotData.name} (Line)`
+          : `Line Plot - (${coordinates
+              .map((ll) => formatLatLon(ll[0], ll[1]))
+              .join("), (")})`;
+
       case "Polygon":
-        return `Area Plot - ${coordinates.length} vertices`;
+        return hasName
+          ? `${plotData.name} (Area)`
+          : `Area Plot - ${coordinates.length} vertices`;
+
       case "track":
-        return `Track Plot`;
+        return hasName ? `${plotData.name} (Track)` : `Track Plot`;
+
       case "class4":
         return `Class 4 Analysis - ${coordinates?.name || "Observation"}`;
+
       default:
-        return `${type} Plot`;
+        return hasName ? plotData.name : `${type} Plot`;
     }
   };
 
@@ -220,15 +232,9 @@ function OceanNavigator(props) {
       case "track":
         return (
           <TrackWindow
-            plotData={plotData}
+            {...commonProps}
             dataset={dataset0}
             track={plotData.coordinates}
-            mapSettings={mapSettings}
-            names={names}
-            onUpdate={updateDataset0}
-            init={subquery}
-            action={action}
-            key={`track_${Date.now()}`}
           />
         );
       case "class4":
@@ -279,7 +285,8 @@ function OceanNavigator(props) {
           );
           const windowTitle = generatePlotWindowTitle(
             newPlotData.type,
-            newPlotData.coordinates
+            newPlotData.coordinates,
+            newPlotData
           );
           const plotComponent = createPlotComponent(
             newPlotData.type,
@@ -499,7 +506,7 @@ function OceanNavigator(props) {
       modalBodyContent = (
         <TrackWindow
           dataset={dataset0}
-          track={plotData.coordinates} // Fixed: use plotData.coordinates
+          track={coordinates}
           names={names}
           onUpdate={updateDataset0}
           init={subquery}

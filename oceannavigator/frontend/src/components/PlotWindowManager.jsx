@@ -1,15 +1,7 @@
-// PlotWindowManager.jsx with All Styles in CSS
-import React, { useState, useRef, useEffect } from "react";
-import { Modal, Button, ButtonGroup } from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faWindowMinimize,
-  faWindowRestore,
-  faXmark,
-  faWindowMaximize,
-  faMinus,
-  faPlus,
-} from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faMinus } from "@fortawesome/free-solid-svg-icons";
 
 const PlotWindowManager = ({
   plotWindows,
@@ -40,7 +32,7 @@ const PlotWindowManager = ({
         <div className="plot-window-header">
           <h5 className="plot-window-title">{window.title}</h5>
 
-          <ButtonGroup size="sm">
+          <ButtonGroup className="button" size="sm">
             <Button
               variant="outline-secondary"
               size="sm"
@@ -79,7 +71,6 @@ const PlotWindowManager = ({
 // Top Horizontal Panel for Minimized Plots
 const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
   const minimizedWindows = plotWindows.filter((w) => w.minimized);
-  const activeWindows = plotWindows.filter((w) => !w.minimized);
 
   if (minimizedWindows.length === 0) return null;
 
@@ -112,7 +103,6 @@ const PlotSidePanel = ({ plotWindows, restorePlotWindow, closePlotWindow }) => {
     </div>
   );
 };
-
 
 const usePlotWindowManager = () => {
   const [plotWindows, setPlotWindows] = useState([]);
@@ -154,11 +144,6 @@ const usePlotWindowManager = () => {
     );
   };
 
-  const updateAllPlotWindows = (updates) => {
-    setPlotWindows((prev) => prev.map((window) => ({ ...window, ...updates })));
-  };
-
-  // New function to update plot component when data changes
   const updatePlotComponent = (id, newComponent) => {
     updatePlotWindow(id, { component: newComponent });
   };
@@ -196,7 +181,6 @@ const usePlotWindowManager = () => {
     plotWindows,
     createPlotWindow,
     updatePlotWindow,
-    updateAllPlotWindows,
     updatePlotComponent,
     closePlotWindow,
     minimizePlotWindow,
