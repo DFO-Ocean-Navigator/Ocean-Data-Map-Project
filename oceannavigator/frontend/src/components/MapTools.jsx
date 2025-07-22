@@ -10,6 +10,8 @@ import {
   faInfo,
   faRotateLeft,
   faChartLine,
+  faLock,
+  faLockOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Button from "react-bootstrap/Button";
@@ -21,19 +23,35 @@ import { withTranslation } from "react-i18next";
 function MapTools(props) {
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
-      props.updateUI({showAnnotationTools: false, showDrawingTools: true, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: true,
+        showObservationTools: false,
+      });
       props.action("startFeatureDraw");
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
       props.action("stopFeatureDraw");
     }
   };
 
   const handleObservations = () => {
     if (!props.uiSettings.showObservationTools) {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: true });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: true,
+      });
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
     }
   };
 
@@ -46,7 +64,9 @@ function MapTools(props) {
       <OverlayTrigger
         key="draw-overlay"
         placement="left"
-        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>
+        }
       >
         <Button
           key="draw-button"
@@ -76,7 +96,9 @@ function MapTools(props) {
       <OverlayTrigger
         key="preset-overlay"
         placement="left"
-        overlay={<Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>
+        }
       >
         <Button
           key="preset-button"
@@ -154,6 +176,27 @@ function MapTools(props) {
           onClick={() => handleShowModal("info-help")}
         >
           <FontAwesomeIcon icon={faInfo} />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger
+        key="lock-overlay"
+        placement="left"
+        overlay={
+          <Tooltip id={"lock-tooltip"}>
+            {props.uiSettings.mapLocked ? __("Unlock Map") : __("Lock Map")}
+          </Tooltip>
+        }
+      >
+        <Button
+          key="lock-button"
+          className={`tool-button ${
+            props.uiSettings.mapLocked ? "tool-button-active" : ""
+          }`}
+          onClick={() => props.action("toggleMapLock")}
+        >
+          <FontAwesomeIcon
+            icon={props.uiSettings.mapLocked ? faLock : faLockOpen}
+          />
         </Button>
       </OverlayTrigger>
     </div>
