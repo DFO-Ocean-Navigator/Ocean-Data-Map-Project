@@ -10,7 +10,6 @@ import {
   faInfo,
   faRotateLeft,
   faChartLine,
-  faTag,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Button from "react-bootstrap/Button";
@@ -58,27 +57,7 @@ function MapTools(props) {
     props.updateUI({ modalType: type, showModal: true });
   };
 
-  const handleAddPolygonLabel = () => {
-    const labelText = prompt("Enter label text for polygon center:");
-
-    if (labelText === null) {
-      return;
-    }
-
-    if (labelText.trim() === "") {
-      alert("Label text cannot be empty");
-      return;
-    }
-
-    const success = props.action("addPolygonLabel", labelText);
-
-    if (success === false) {
-      alert(
-        "Failed to add label. Please make sure you have drawn a polygon first."
-      );
-    }
-  };
-
+ 
   return (
     <div className="MapTools">
       <OverlayTrigger
@@ -96,28 +75,6 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faDrawPolygon} />
         </Button>
       </OverlayTrigger>
-
-      {/* Add Labels Button - only show when drawing polygons */}
-      {props.uiSettings.showDrawingTools && props.featureType === "Polygon" && (
-        <OverlayTrigger
-          key="add-label-overlay"
-          placement="left"
-          overlay={
-            <Tooltip id={"add-label-tooltip"}>
-              {__("Add Label to Polygon Center")}
-            </Tooltip>
-          }
-        >
-          <Button
-            key="add-label-button"
-            className="tool-button"
-            onClick={handleAddPolygonLabel}
-            style={{ marginBottom: "5px" }}
-          >
-            <FontAwesomeIcon icon={faTag} />
-          </Button>
-        </OverlayTrigger>
-      )}
 
       <OverlayTrigger
         key="enter-overlay"
