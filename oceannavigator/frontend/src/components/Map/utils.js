@@ -86,10 +86,10 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
-        maxZoom:7-1e-10,       
+        maxZoom: 7 - 1e-10,
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-          projection: projection,           
+          projection: projection,
         }),
       });
     case "ocean":
@@ -171,7 +171,7 @@ export const createMap = (
     }),
     opacity: mapSettings.mapBathymetryOpacity,
     visible: mapSettings.bathymetry,
-     preload: 1,
+    preload: 1,
   });
 
   const newLayerBathShapes = new VectorTileLayer({
@@ -581,7 +581,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               ];
             } else {
-              return [
+              const styles = [
                 new Style({
                   stroke: new Stroke({
                     color: "#ffffff",
@@ -595,9 +595,31 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                   }),
                 }),
               ];
+              if (feat.get("name")) {
+                styles.push(
+                  new Style({
+                    geometry: new olgeom.Point(
+                      feat.getGeometry().getInteriorPoint().getCoordinates()
+                    ),
+                    text: new Text({
+                      text: feat.get("name"),
+                      font: "14px sans-serif",
+                      fill: new Fill({
+                        color: "#000",
+                      }),
+                      stroke: new Stroke({
+                        color: "#ffffff",
+                        width: 2,
+                      }),
+                    }),
+                  })
+                );
+              }
+
+              return styles;
             }
           case "LineString":
-            return [
+            const styles = [
               new Style({
                 stroke: new Stroke({
                   color: "#ffffff",
@@ -611,6 +633,103 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
+
+            if (feat.get("name")) {
+              let geometry = feat.getGeometry();
+              const coordinates = geometry.getCoordinates();
+              if (coordinates && coordinates.length >= 2) {
+                // Calculating centroid
+                const startCoord = coordinates[0];
+                const endCoord = coordinates[coordinates.length - 1];
+                const centroidX = (startCoord[0] + endCoord[0]) / 2;
+                const centroidY = (startCoord[1] + endCoord[1]) / 2;
+
+                // Transforming coordinates to lat/lon for direction calculation
+                const startLatLon = olProj.transform(
+                  startCoord,
+                  mapSettings.projection,
+                  "EPSG:4326"
+                );
+                const endLatLon = olProj.transform(
+                  endCoord,
+                  mapSettings.projection,
+                  "EPSG:4326"
+                );
+
+                // Finding base point (lowest longitude) and target point
+                const basePoint =
+                  startLatLon[0] <= endLatLon[0] ? startLatLon : endLatLon;
+                const targetPoint =
+                  startLatLon[0] <= endLatLon[0] ? endLatLon : startLatLon;
+
+                const lonDiff = targetPoint[0] - basePoint[0];
+                const latDiff = targetPoint[1] - basePoint[1];
+
+                // Determining text positioning based on line direction
+                let textAlign = "center";
+                let textBaseline = "middle";
+                let offsetX = 0;
+                let offsetY = 0;
+
+                const tolerance = 0.0001;
+
+                if (Math.abs(lonDiff) < tolerance) {
+                  // Vertical line - text to the right
+                  textAlign = "left";
+                  offsetX = 15;
+                } else if (Math.abs(latDiff) < tolerance) {
+                  // Horizontal line - text on top
+                  textBaseline = "bottom";
+                  offsetY = -15;
+                } else if (latDiff > 0) {
+                  // Line going north (up)
+                  if (lonDiff > 0) {
+                    // North-east - text to the right
+                    textAlign = "left";
+                    offsetX = 15;
+                  } else {
+                    // North-west - text to the left
+                    textAlign = "right";
+                    offsetX = -15;
+                  }
+                } else {
+                  // Line going south (down)
+                  if (lonDiff > 0) {
+                    // South-east - text to the right
+                    textAlign = "left";
+                    offsetX = 15;
+                  } else {
+                    // South-west - text to the left
+                    textAlign = "right";
+                    offsetX = -15;
+                  }
+                }
+
+                styles.push(
+                  new Style({
+                    geometry: new olgeom.Point([centroidX, centroidY]),
+                    text: new Text({
+                      text: feat.get("name"),
+                      font: "14px sans-serif",
+                      fill: new Fill({
+                        color: "#000",
+                      }),
+                      stroke: new Stroke({
+                        color: "#ffffff",
+                        width: 2,
+                      }),
+                      textAlign: textAlign,
+                      textBaseline: textBaseline,
+                      offsetX: offsetX,
+                      offsetY: offsetY,
+                      rotation: 0,
+                    }),
+                  })
+                );
+              }
+            }
+
+            return styles;
           case "Point":
             return new Style({
               image: new Circle({
