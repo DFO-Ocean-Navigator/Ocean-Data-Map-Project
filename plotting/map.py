@@ -1,9 +1,15 @@
 import copy
+import hashlib
 import os
+import pathlib
+import pickle
+import threading
 import tempfile
 from textwrap import wrap
+from typing import Union
 
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,9 +19,8 @@ from matplotlib.path import Path
 from osgeo import gdal, osr
 from shapely.geometry import LinearRing, MultiPolygon, Point
 from shapely.geometry import Polygon as Poly
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
-import plotting.basemap as basemap
 import plotting.colormap as colormap
 import plotting.overlays as overlays
 import plotting.utils as utils
@@ -24,6 +29,11 @@ from oceannavigator import DatasetConfig
 from plotting.plotter import Plotter
 from utils.errors import ClientError
 from utils.misc import list_areas
+
+from oceannavigator.settings import get_settings
+
+
+settings = get_settings()
 
 
 class MapPlotter(Plotter):
@@ -68,7 +78,7 @@ class MapPlotter(Plotter):
 
             rings = [LinearRing(po) for po in a["polygons"]]
             if len(rings) > 1:
-                u = cascaded_union(rings)
+                u = unary_union(rings)
             else:
                 u = rings[0]
 
@@ -82,7 +92,7 @@ class MapPlotter(Plotter):
         data = None
 
         if len(all_rings) > 1:
-            combined = cascaded_union(all_rings)
+            combined = unary_union(all_rings)
         else:
             combined = all_rings[0]
 
@@ -131,6 +141,66 @@ class MapPlotter(Plotter):
         mask = data.mask + ~inside_points
         return data.data[~mask]
 
+    def load_map(
+        self,
+        plot_proj: ccrs,
+        extent: list,
+        figuresize: list,
+        dpi: int,
+    ) -> Union[plt.figure, plt.axes]:
+
+        CACHE_DIR = settings.cache_dir
+        filename = self._get_filename(plot_proj.proj4_params["proj"], extent)
+        filename = pathlib.Path(CACHE_DIR).joinpath(filename)
+
+        pc_proj = ccrs.PlateCarree()
+        pc_extent = pc_proj.transform_points(
+            plot_proj, np.array(extent[:2]), np.array(extent[2:])
+        )
+        pc_extent = [
+            pc_extent[0, 0] - 5,
+            pc_extent[0, 1] - 5,
+            pc_extent[1, 0] + 5,
+            pc_extent[1, 1] + 5,
+        ]
+
+        if not filename.exists():
+            fig = plt.figure(figsize=figuresize, dpi=dpi)
+            ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
+            ax.set_extent(extent, crs=plot_proj)
+
+            ax.add_feature(cfeature.LAND, facecolor="grey", zorder=1)
+            ax.coastlines(edgecolor="black", zorder=1)
+
+            ax.gridlines(
+                draw_labels={"bottom": "x", "left": "y"},
+                dms=True,
+                x_inline=False,
+                y_inline=False,
+                xlabel_style={"size": 10, "rotation": 0},
+                ylabel_style={"size": 10},
+                zorder=2,
+            )
+
+            def do_pickle(fig, ax, filename: str) -> None:
+                pickle.dump((fig, ax), open(filename, "wb"), -1)
+
+            pathlib.Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
+
+            t = threading.Thread(target=do_pickle, args=(fig, ax, filename))
+            t.daemon = True
+            t.start()
+        else:
+            fig, ax = pickle.load(open(filename, "rb"))
+
+        return fig, ax
+
+    def _get_filename(self, projection: str, extent: list) -> str:
+        hash = hashlib.sha1(
+            ";".join(str(x) for x in [projection] + extent).encode()
+        ).hexdigest()
+        return hash + ".pickle"
+
     def load_data(self):
 
         width_scale = 1.25
@@ -143,27 +213,27 @@ class MapPlotter(Plotter):
             self.centroid[0] > 80 or near_pole or covers_pole
         ):  # north pole projection
 
-                blat = min(self.bounds[0], self.bounds[2])
-                blat = 5 * np.floor(blat / 5)
+            blat = min(self.bounds[0], self.bounds[2])
+            blat = 5 * np.floor(blat / 5)
 
-                self.plot_projection = ccrs.Stereographic(
-                    central_latitude=90,
-                    central_longitude=0,
-                )
-                width_scale = 1.5
+            self.plot_projection = ccrs.Stereographic(
+                central_latitude=90,
+                central_longitude=0,
+            )
+            width_scale = 1.5
 
-                proj_pts = self.plot_projection.transform_points(
-                    self.pc_projection,
-                    self.points[0][:, 1],
-                    self.points[0][:, 0],
-                )
+            proj_pts = self.plot_projection.transform_points(
+                self.pc_projection,
+                self.points[0][:, 1],
+                self.points[0][:, 0],
+            )
 
-                proj_bounds = np.array(
-                    [
-                        [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
-                        [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
-                    ]
-                )
+            proj_bounds = np.array(
+                [
+                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                ]
+            )
 
         elif self.projection == "EPSG:3031" and (
             (
@@ -172,28 +242,28 @@ class MapPlotter(Plotter):
             )
             or near_pole
         ):  # south pole projection
-                blat = max(self.bounds[0], self.bounds[2])
-                blat = 5 * np.ceil(blat / 5)
-                # is centerered close to the south pole
+            blat = max(self.bounds[0], self.bounds[2])
+            blat = 5 * np.ceil(blat / 5)
+            # is centerered close to the south pole
 
-                self.plot_projection = ccrs.Stereographic(
-                    central_latitude=-90,
-                    central_longitude=0,
-                )
-                width_scale = 1.5
+            self.plot_projection = ccrs.Stereographic(
+                central_latitude=-90,
+                central_longitude=0,
+            )
+            width_scale = 1.5
 
-                proj_pts = self.plot_projection.transform_points(
-                    self.pc_projection,
-                    self.points[0][:, 1],
-                    self.points[0][:, 0],
-                )
+            proj_pts = self.plot_projection.transform_points(
+                self.pc_projection,
+                self.points[0][:, 1],
+                self.points[0][:, 0],
+            )
 
-                proj_bounds = np.array(
-                    [
-                        [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
-                        [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
-                    ]
-                )
+            proj_bounds = np.array(
+                [
+                    [proj_pts[:, 0].min(), proj_pts[:, 1].min()],
+                    [proj_pts[:, 0].max(), proj_pts[:, 1].max()],
+                ]
+            )
 
         elif abs(self.centroid[1] - self.bounds[1]) > 90:
 
@@ -233,8 +303,6 @@ class MapPlotter(Plotter):
         else:
             gridy = 500
             gridx = int(500 / aspect_ratio)
-
-        self.plot_res = basemap.get_resolution(height, width)
 
         x_grid, y_grid, self.plot_extent = cimg_transform.mesh_projection(
             self.plot_projection,
@@ -715,12 +783,8 @@ class MapPlotter(Plotter):
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
         figuresize = list(map(float, self.size.split("x")))
-        fig, map_plot = basemap.load_map(
-            self.plot_projection,
-            self.plot_extent,
-            figuresize,
-            self.dpi,
-            self.plot_res,
+        fig, map_plot = self.load_map(
+            self.plot_projection, self.plot_extent, figuresize, self.dpi
         )
 
         ax = plt.gca()
