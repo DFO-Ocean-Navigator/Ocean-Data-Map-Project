@@ -10,7 +10,6 @@ import DatasetDropdown from "./DatasetDropdown.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
-
 import {
   GetDatasetsPromise,
   GetVariablesPromise,
@@ -308,20 +307,35 @@ function DatasetSelector(props) {
 
   let datasetSelector = null;
 
-  if (availableDatasets && availableDatasets.length > 0) {
-    datasetSelector = (
-      <DatasetDropdown
-        id={`dataset-selector-dataset-selector-${props.id}`}
-        key={`dataset-selector-dataset-selector-${props.id}`}
-        options={availableDatasets}
-        label={__("Dataset")}
-        placeholder={__("Dataset")}
-        onChange={updateDataset}
-        selected={dataset.id}
-        horizontalLayout={props.horizontalLayout}
-      />
-    );
-  }
+if (availableDatasets && availableDatasets.length > 0) {
+  datasetSelector = (
+    <div className="dataset-selector-container">
+      <div className="d-flex align-items-center">
+        <div className="flex-grow-1 me-2">
+          <DatasetDropdown
+            id={`dataset-selector-dataset-selector-${props.id}`}
+            key={`dataset-selector-dataset-selector-${props.id}`}
+            options={availableDatasets}
+            label={__("Dataset")}
+            placeholder={__("Dataset")}
+            onChange={updateDataset}
+            selected={dataset.id}
+            horizontalLayout={props.horizontalLayout}
+          />
+        </div>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => props.action && props.action("showDatasetSearch")}
+          title="Search Datasets"
+          className="dataset-search-btn"
+        >
+          🔍
+        </Button>
+      </div>
+    </div>
+  );
+}
 
   let variableSelector = null;
   if (
@@ -604,6 +618,7 @@ function DatasetSelector(props) {
 DatasetSelector.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
+  action: PropTypes.func,
   variables: PropTypes.string,
   multipleVariables: PropTypes.bool,
   showQuiverSelector: PropTypes.bool,
