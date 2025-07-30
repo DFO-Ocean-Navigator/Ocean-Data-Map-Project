@@ -839,6 +839,220 @@ def filter_datasets_by_date(
                 })            
     return {"datasets": matching_datasets}
 
+# Add this endpoint to your FastAPI router in paste-2.txt
+
+@router.post("/datasets/filter/location")
+def filter_datasets_by_location(
+    request: dict,
+    latitude: float = Query(description="Latitude coordinate"),
+    longitude: float = Query(description="Longitude coordinate"),
+    tolerance: float = Query(default=0.1, description="Tolerance in degrees for coordinate matching"),
+):
+    """
+    Filter datasets by location from a provided list of dataset IDs.
+    Returns datasets that contain data at or near the specified coordinates.
+    """
+    dataset_ids = request.get("dataset_ids", [])
+    if not dataset_ids:
+        dataset_ids = DatasetConfig.get_datasets()
+
+    matching_datasets = []
+
+    for dataset_id in dataset_ids:
+        try:
+            config = DatasetConfig(dataset_id)
+            dataset_contains_location = False
+
+            # Check if the coordinates are within the dataset bounds
+            if check_dataset_location(dataset_id, latitude, longitude, tolerance):
+                dataset_contains_location = True
+
+            if dataset_contains_location:
+                matching_datasets.append(
+                    {
+                        "id": dataset_id,
+                        "name": config.name,
+                        "group": getattr(config, "group", ""),
+                        "subgroup": getattr(config, "subgroup", ""),
+                        "type": getattr(config, "type", "Unknown"),
+                        "quantum": config.quantum,
+                        "help": getattr(config, "help", ""),
+                        "attribution": getattr(config, "attribution", ""),
+                        "matchingVariables": [],
+                    }
+                )
+
+        except Exception as e:
+            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+            continue
+
+    return {"datasets": matching_datasets}
+
+
+def check_dataset_location(dataset_id, target_lat, target_lon, tolerance=0.1):
+    """
+    Check if a given coordinate falls within the geographic bounds of a dataset.
+    
+    Args:
+        dataset_id: The dataset identifier
+        target_lat: Target latitude
+        target_lon: Target longitude  
+        tolerance: Tolerance in degrees for coordinate matching
+        
+    Returns:
+        bool: True if the location is within the dataset bounds
+    """
+    try:
+        config = DatasetConfig(dataset_id)
+        url = config.url if not isinstance(config.url, list) else config.url[0]
+        
+        # # Handle SQLite datasets
+        # if url.endswith(".sqlite3"):
+        #     return check_sqlite_location(config, target_lat, target_lon, tolerance)
+        
+        # # Handle NetCDF datasets
+        # else:
+        return check_netcdf_location(config, target_lat, target_lon, tolerance)
+            
+    except Exception as e:
+        log().warning(f"Error checking location for dataset {dataset_id}: {str(e)}")
+        return False
+
+
+
+
+def check_netcdf_location(config, target_lat, target_lon, tolerance):
+    """
+    Check location bounds for NetCDF datasets.
+    """
+    try:
+        # Get a sample variable to open the dataset
+        sample_variables = config.variables[0]
+        if not sample_variables:
+            return False
+            
+        
+        
+        with open_dataset(config, variable=sample_variables, timestamp=-1) as dataset:
+            # Get latitude and longitude variables
+            lat_var = None
+            lon_var = None
+            
+                                  
+            # Fallback to common variable names
+            if lat_var is None:
+                for name in ['lat', 'latitude', 'y', 'nav_lat']:
+                    if name in dataset.nc_data.dataset.variables:
+                        lat_var = name
+                        break
+                        
+            if lon_var is None:
+                for name in ['lon', 'longitude', 'x', 'nav_lon']:
+                    if name in dataset.nc_data.dataset.variables:
+                        lon_var = name
+                        break
+            
+            if lat_var is None or lon_var is None:
+                log().warning(f"Could not find lat/lon variables for dataset {config}")
+                return False
+                
+            # Get the coordinate arrays
+            lat_data = dataset.nc_data.dataset.variables[lat_var][:]
+            lon_data = dataset.nc_data.dataset.variables[lon_var][:]
+            
+            # Handle different coordinate structures
+            if lat_data.ndim == 1 and lon_data.ndim == 1:
+                # 1D coordinate arrays
+                lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
+                lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
+            else:
+                # 2D coordinate arrays (curvilinear grids)
+                lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
+                lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
+            
+            # Normalize longitude to [-180, 180] range
+            def normalize_lon(lon):
+                while lon > 180:
+                    lon -= 360
+                while lon < -180:
+                    lon += 360
+                return lon
+            
+            target_lon = normalize_lon(target_lon)
+            lon_min = normalize_lon(lon_min)
+            lon_max = normalize_lon(lon_max)
+            
+            # Handle longitude wrap-around
+            if lon_max < lon_min:  # Dataset crosses the date line
+                lon_in_bounds = (target_lon >= lon_min) or (target_lon <= lon_max)
+            else:
+                lon_in_bounds = (lon_min - tolerance) <= target_lon <= (lon_max + tolerance)
+            
+            # Check latitude bounds
+            lat_in_bounds = (lat_min - tolerance) <= target_lat <= (lat_max + tolerance)
+            
+            return lat_in_bounds and lon_in_bounds
+            
+    except Exception as e:
+        log().warning(f"Error checking NetCDF location: {str(e)}")
+        return False
+
+
+
+
+
+def get_netcdf_bounds(config):
+    """
+    Get geographic bounds from NetCDF dataset.
+    """
+    try:
+        sample_variables = list(config.variables.keys())
+        if not sample_variables:
+            return None
+            
+        sample_variable = sample_variables[0]
+        
+        with open_dataset(config, variable=sample_variable, timestamp=-1) as dataset:
+            # Find lat/lon variables (reuse logic from check_netcdf_location)
+            lat_var = None
+            lon_var = None
+            
+            for var_name in dataset.nc_data.dataset.variables:
+                var = dataset.nc_data.dataset.variables[var_name]
+                if hasattr(var, 'standard_name'):
+                    if var.standard_name in ['latitude', 'grid_latitude']:
+                        lat_var = var_name
+                    elif var.standard_name in ['longitude', 'grid_longitude']:
+                        lon_var = var_name
+                        
+            if lat_var is None:
+                for name in ['lat', 'latitude', 'y', 'nav_lat']:
+                    if name in dataset.nc_data.dataset.variables:
+                        lat_var = name
+                        break
+                        
+            if lon_var is None:
+                for name in ['lon', 'longitude', 'x', 'nav_lon']:
+                    if name in dataset.nc_data.dataset.variables:
+                        lon_var = name
+                        break
+                        
+            if lat_var is None or lon_var is None:
+                return None
+                
+            lat_data = dataset.nc_data.dataset.variables[lat_var][:]
+            lon_data = dataset.nc_data.dataset.variables[lon_var][:]
+            
+            lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
+            lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
+            
+            return (lat_min, lat_max, lon_min, lon_max)
+            
+    except Exception as e:
+        log().warning(f"Error getting NetCDF bounds: {str(e)}")
+        return None
+
+
 
 @router.get("/class4/{class4_type}")
 def class4_file(

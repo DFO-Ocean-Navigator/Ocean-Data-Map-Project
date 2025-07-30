@@ -91,10 +91,17 @@ export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
 }
 
 // Filter datasets by location
-export function FilterDatasetsByLocationPromise(datasetIds, latitude, longitude) {
+
+export function FilterDatasetsByLocationPromise(datasetIds, latitude, longitude, tolerance = 0.1) {
   return instance.post('/api/v2.0/datasets/filter/location', 
     { dataset_ids: datasetIds },
-    { params: { latitude, longitude } }
+    { 
+      params: { 
+        latitude: latitude, 
+        longitude: longitude,
+        tolerance: tolerance
+      } 
+    }
   );
 }
 //returns a complete list of variables for users to select
