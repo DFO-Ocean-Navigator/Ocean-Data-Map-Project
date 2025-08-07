@@ -481,7 +481,7 @@ class PointWindow extends React.Component {
             <Nav.Link eventKey={TabEnum.MOORING}>{"Virtual Mooring"}</Nav.Link>
           </Nav.Item>
         </Nav>
-        <Row>
+        <Row className="plot-window-container">
           <Col className="settings-col" lg={2}>
             {inputs}
           </Col>
