@@ -155,6 +155,8 @@ const Map = forwardRef((props, ref) => {
     getLineDistance: getLineDistance,
   }));
 
+ 
+
   useEffect(() => {
     let overlay = new Overlay({
       element: popupElement0.current,
@@ -600,6 +602,7 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
+
     if (features.length > 0) {
       featureVectorSource.removeFeatures([features[features.length - 1]]);
     }

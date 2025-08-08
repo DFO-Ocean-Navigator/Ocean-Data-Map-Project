@@ -483,7 +483,11 @@ function OceanNavigator(props) {
         action={action}
       />
       <LinkButton action={action} />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+      />
       <Modal
         show={uiSettings.showModal}
         onHide={closeModal}
