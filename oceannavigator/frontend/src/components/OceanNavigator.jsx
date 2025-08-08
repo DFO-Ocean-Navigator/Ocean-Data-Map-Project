@@ -59,6 +59,7 @@ function OceanNavigator(props) {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
+    mapLocked: false,
   });
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
@@ -177,6 +178,15 @@ function OceanNavigator(props) {
         setCompareDatasets((prevCompare) => {
           return !prevCompare;
         });
+        break;
+      case "toggleMapLock":
+        const newLockState = !uiSettings.mapLocked;
+        updateUI({ mapLocked: newLockState });
+        if (newLockState) {
+          mapRef.current.lockMap();
+        } else {
+          mapRef.current.unlockMap();
+        }
         break;
       case "permalink":
         setSubquery(null);
