@@ -1085,7 +1085,7 @@ class MapPlotter(Plotter):
                     )
                     leg.get_title().set_fontsize("medium")
                     if not self.contour.get("hatch"):
-                        for legobj in leg.legendHandles:
+                        for legobj in leg.legend_handles:
                             legobj.set_linewidth(3)
 
         title = self.plotTitle

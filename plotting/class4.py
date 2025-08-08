@@ -289,7 +289,7 @@ class Class4Plotter(Plotter):
             loc="lower left",
             bbox_to_anchor=(0.05, 0.05),
         )
-        for legobj in leg.legendHandles:
+        for legobj in leg.legend_handles:
             legobj.set_linewidth(4.0)
 
         names = [
