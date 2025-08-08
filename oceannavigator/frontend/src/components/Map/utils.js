@@ -31,6 +31,8 @@ import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
 import * as olTilegrid from "ol/tilegrid";
 import { isMobile } from "react-device-detect";
+import Select from "ol/interaction/Select";
+import { pointerMove } from "ol/events/condition";
 
 function deg2rad(deg) {
   return (deg * Math.PI) / 180.0;
@@ -86,10 +88,10 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
-        maxZoom:7-1e-10,       
+        maxZoom: 7 - 1e-10,
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-          projection: projection,           
+          projection: projection,
         }),
       });
     case "ocean":
@@ -133,6 +135,8 @@ export const createMap = (
   maxZoom,
   mapRef
 ) => {
+  // ... all the existing layer setup code stays the same ...
+
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
     mapSettings.projection,
@@ -171,7 +175,7 @@ export const createMap = (
     }),
     opacity: mapSettings.mapBathymetryOpacity,
     visible: mapSettings.bathymetry,
-     preload: 1,
+    preload: 1,
   });
 
   const newLayerBathShapes = new VectorTileLayer({
@@ -195,12 +199,11 @@ export const createMap = (
 
   const anchor = [0.5, 0.5];
   const newLayerQuiver = new VectorTileLayer({
-    source: null, // set source during update function below
+    source: null,
     style: function (feature, resolution) {
       let scale = feature.get("scale");
       let rotation = null;
       if (!feature.get("bearing")) {
-        // bearing-only variable (no magnitude)
         rotation = deg2rad(parseFloat(feature.get("data")));
       } else {
         rotation = deg2rad(parseFloat(feature.get("bearing")));
@@ -246,7 +249,6 @@ export const createMap = (
         }),
       }),
     ]),
-
     overlays: [overlay],
   };
 
@@ -261,6 +263,66 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
+
+  const hoverStyle = new Style({
+    image: new Circle({
+      radius: 4,
+      fill: new Fill({
+        color: "#00ffff",
+      }),
+      stroke: new Stroke({
+        color: "#000000",
+      }),
+    }),
+    stroke: new Stroke({
+      color: "#00ffff",
+      width: 4,
+    }),
+    fill: new Fill({
+      color: "rgba(0,255,255,0.1)",
+    }),
+  });
+
+  let mainSelectInteractions = [];
+
+  const hoverSelect = new Select({
+    condition: pointerMove,
+    style: hoverStyle,
+    layers: [layerFeatureVector],
+    filter: function (feature, layer) {
+      if (feature.get("annotation")) {
+        return false;
+      }
+
+      for (let selectInteraction of mainSelectInteractions) {
+        if (selectInteraction && selectInteraction.getFeatures) {
+          const selectedFeatures = selectInteraction.getFeatures();
+          if (selectedFeatures.getArray().includes(feature)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    },
+  });
+
+  mapObject.addInteraction(hoverSelect);
+
+  const hoverControl = {
+    setActive: function (active) {
+      hoverSelect.setActive(active);
+    },
+    addSelectInteraction: function (selectInteraction) {
+      mainSelectInteractions.push(selectInteraction);
+    },
+    removeSelectInteraction: function (selectInteraction) {
+      const index = mainSelectInteractions.indexOf(selectInteraction);
+      if (index > -1) {
+        mainSelectInteractions.splice(index, 1);
+      }
+    },
+  };
 
   let selected = null;
   mapObject.on("pointermove", function (e) {
@@ -402,9 +464,11 @@ export const createMap = (
   newLayerObsDraw.setZIndex(7);
   newLayerQuiver.setZIndex(100);
 
-  return mapObject;
+  return {
+    mapObject,
+    hoverSelect: hoverControl,
+  };
 };
-
 const getText = function (feature, resolution, dom) {
   const type = dom.text.value;
   const maxResolution = dom.maxreso.value;
@@ -542,6 +606,10 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
       } else {
         switch (feat.get("type")) {
           case "Polygon":
+            const almostInvisibleFill = new Fill({
+              color: "rgba(255,255,255,0.01)",
+            });
+
             if (feat.get("key")) {
               return [
                 new Style({
@@ -549,15 +617,14 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                     color: "#ffffff",
                     width: 2,
                   }),
-                  fill: new Fill({
-                    color: "#ffffff00",
-                  }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   stroke: new Stroke({
                     color: "#000000",
                     width: 1,
                   }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   geometry: new olgeom.Point(
@@ -587,12 +654,14 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                     color: "#ffffff",
                     width: 5,
                   }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   stroke: new Stroke({
                     color: "#ff0000",
                     width: 3,
                   }),
+                  fill: almostInvisibleFill,
                 }),
               ];
             }
