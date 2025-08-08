@@ -26,6 +26,11 @@ import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
+import {
+  PlotWindowManager,
+  PlotSidePanel,
+  usePlotWindowManager,
+} from "./PlotWindowManager.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -120,6 +125,133 @@ function OceanNavigator(props) {
     }
   }, []);
 
+  // Effect to update existing plot windows when main data changes
+  useEffect(() => {
+    plotWindows.forEach((window) => {
+      if (window.plotData && window.plotData.type) {
+        const updatedComponent = createPlotComponent(
+          window.plotData.type,
+          window.plotData
+        );
+        updatePlotComponent(window.id, updatedComponent);
+      }
+    });
+  }, [
+    dataset0.id,
+    dataset0.variable,
+    dataset0.time,
+    dataset0.depth,
+    dataset1.id,
+    dataset1.variable,
+    dataset1.time,
+    dataset1.depth,
+    compareDatasets,
+    mapSettings.projection,
+    mapSettings.interpType,
+    mapSettings.interpRadius,
+    mapSettings.interpNeighbours,
+  ]);
+
+  const {
+    plotWindows,
+    createPlotWindow,
+    updatePlotWindow,
+    updatePlotComponent,
+    closePlotWindow,
+    minimizePlotWindow,
+    restorePlotWindow,
+    bringToFront,
+  } = usePlotWindowManager();
+
+  const generatePlotWindowId = (type, coordinates) => {
+    const timestamp = Date.now();
+    const coordStr = coordinates ? coordinates.slice(0, 2).join(",") : "";
+    return `${type}_${coordStr}_${timestamp}`;
+  };
+
+  const generatePlotWindowTitle = (type, coordinates, plotData = null) => {
+    const hasName = plotData?.name && plotData.name !== "undefined";
+
+    switch (type) {
+      case "Point":
+        return hasName
+          ? `${plotData.name} (Point)`
+          : `Point Plot - ${coordinates
+              .map((p) => formatLatLon(p[0], p[1]))
+              .join(", ")}`;
+
+      case "LineString":
+        return hasName
+          ? `${plotData.name} (Line)`
+          : `Line Plot - (${coordinates
+              .map((ll) => formatLatLon(ll[0], ll[1]))
+              .join("), (")})`;
+
+      case "Polygon":
+        return hasName
+          ? `${plotData.name} (Area)`
+          : `Area Plot - ${coordinates.length} vertices`;
+
+      case "track":
+        return hasName ? `${plotData.name} (Track)` : `Track Plot`;
+
+      case "class4":
+        return `Class 4 Analysis - ${coordinates?.name || "Observation"}`;
+
+      default:
+        return hasName ? plotData.name : `${type} Plot`;
+    }
+  };
+
+  const createPlotComponent = (type, plotData) => {
+    const commonProps = {
+      plotData,
+      dataset_0: dataset0,
+      dataset_1: dataset1,
+      mapSettings,
+      names,
+      updateDataset0,
+      updateDataset1,
+      init: subquery,
+      action,
+      dataset_compare: compareDatasets,
+      setCompareDatasets,
+      key: `${type}_${Date.now()}`,
+    };
+
+    switch (type) {
+      case "Point":
+        return <PointWindow {...commonProps} />;
+      case "LineString":
+        const line_distance = mapRef.current
+          ? mapRef.current.getLineDistance(plotData.coordinates)
+          : 0;
+        return <LineWindow {...commonProps} line_distance={line_distance} />;
+      case "Polygon":
+        return <AreaWindow {...commonProps} />;
+      case "track":
+        return (
+          <TrackWindow
+            {...commonProps}
+            dataset={dataset0}
+            track={plotData.coordinates}
+          />
+        );
+      case "class4":
+        return (
+          <Class4Window
+            dataset={dataset0.id}
+            plotData={plotData}
+            class4type={plotData.class4type || class4Type}
+            init={subquery}
+            action={action}
+            key={`class4_${Date.now()}`}
+          />
+        );
+      default:
+        return <div key={Date.now()}>Unknown plot type: {type}</div>;
+    }
+  };
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -146,8 +278,26 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (newPlotData.type) {
+          // Create a new plot window instead of showing a modal
+          const windowId = generatePlotWindowId(
+            newPlotData.type,
+            newPlotData.coordinates
+          );
+          const windowTitle = generatePlotWindowTitle(
+            newPlotData.type,
+            newPlotData.coordinates,
+            newPlotData
+          );
+          const plotComponent = createPlotComponent(
+            newPlotData.type,
+            newPlotData
+          );
+
+          // Store plotData with the window for future updates
+          createPlotWindow(windowId, windowTitle, plotComponent, {
+            plotData: newPlotData,
+          });
           setPlotData(newPlotData);
-          updateUI({ modalType: newPlotData.type, showModal: true });
         }
         break;
       case "selectedFeatureIds":
@@ -416,6 +566,24 @@ function OceanNavigator(props) {
         />
       );
       modalTitle = "Class4";
+      // NEW CODE (creates plot window):
+      if (plotData && plotData.id) {
+        const class4PlotData = {
+          ...plotData,
+          type: "class4",
+          class4type: class4Type,
+        };
+
+        const windowId = `class4_${plotData.id}_${Date.now()}`;
+        const windowTitle = `Class 4 Analysis - ${
+          plotData.name || plotData.id
+        }`;
+        const plotComponent = createPlotComponent("class4", class4PlotData);
+
+        createPlotWindow(windowId, windowTitle, plotComponent, {
+          plotData: class4PlotData,
+        });
+      }
       break;
     case "settings":
       modalBodyContent = (
@@ -518,6 +686,20 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
+
+      <PlotWindowManager
+        plotWindows={plotWindows}
+        updatePlotWindow={updatePlotWindow}
+        closePlotWindow={closePlotWindow}
+        minimizePlotWindow={minimizePlotWindow}
+        restorePlotWindow={restorePlotWindow}
+      />
+
+      <PlotSidePanel
+        plotWindows={plotWindows}
+        restorePlotWindow={restorePlotWindow}
+        closePlotWindow={closePlotWindow}
+      />
     </div>
   );
 }

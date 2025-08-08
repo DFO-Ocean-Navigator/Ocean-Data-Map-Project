@@ -534,6 +534,7 @@ const Map = forwardRef((props, ref) => {
     let selected = select0.getFeatures().getArray();
     let type, id, coordinates, observation;
     if (selected.length > 0) {
+      name = selected[0].get("name");
       if (selected[0].get("class") === "observation") {
         type = selected[0].getGeometry().constructor.name;
         type = type === "LineString" ? "track" : type;
@@ -548,6 +549,7 @@ const Map = forwardRef((props, ref) => {
           coordinates: coordinates,
           id: id,
           observation: observation,
+          name: name,
         };
       } else {
         type = selected[0].get("type");
@@ -578,6 +580,7 @@ const Map = forwardRef((props, ref) => {
       coordinates: coordinates,
       id: id,
       observation: observation,
+      name: name,
     };
   };
 
