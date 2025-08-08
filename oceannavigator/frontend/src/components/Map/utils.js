@@ -135,6 +135,8 @@ export const createMap = (
   maxZoom,
   mapRef
 ) => {
+  // ... all the existing layer setup code stays the same ...
+
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
     mapSettings.projection,
@@ -197,12 +199,11 @@ export const createMap = (
 
   const anchor = [0.5, 0.5];
   const newLayerQuiver = new VectorTileLayer({
-    source: null, // set source during update function below
+    source: null,
     style: function (feature, resolution) {
       let scale = feature.get("scale");
       let rotation = null;
       if (!feature.get("bearing")) {
-        // bearing-only variable (no magnitude)
         rotation = deg2rad(parseFloat(feature.get("data")));
       } else {
         rotation = deg2rad(parseFloat(feature.get("bearing")));
@@ -248,7 +249,6 @@ export const createMap = (
         }),
       }),
     ]),
-
     overlays: [overlay],
   };
 
@@ -263,7 +263,17 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
+
   const hoverStyle = new Style({
+    image: new Circle({
+      radius: 4,
+      fill: new Fill({
+        color: "#00ffff",
+      }),
+      stroke: new Stroke({
+        color: "#000000",
+      }),
+    }),
     stroke: new Stroke({
       color: "#00ffff",
       width: 4,
@@ -273,13 +283,46 @@ export const createMap = (
     }),
   });
 
+  let mainSelectInteractions = [];
+
   const hoverSelect = new Select({
     condition: pointerMove,
     style: hoverStyle,
     layers: [layerFeatureVector],
+    filter: function (feature, layer) {
+      if (feature.get("annotation")) {
+        return false;
+      }
+
+      for (let selectInteraction of mainSelectInteractions) {
+        if (selectInteraction && selectInteraction.getFeatures) {
+          const selectedFeatures = selectInteraction.getFeatures();
+          if (selectedFeatures.getArray().includes(feature)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    },
   });
 
   mapObject.addInteraction(hoverSelect);
+
+  const hoverControl = {
+    setActive: function (active) {
+      hoverSelect.setActive(active);
+    },
+    addSelectInteraction: function (selectInteraction) {
+      mainSelectInteractions.push(selectInteraction);
+    },
+    removeSelectInteraction: function (selectInteraction) {
+      const index = mainSelectInteractions.indexOf(selectInteraction);
+      if (index > -1) {
+        mainSelectInteractions.splice(index, 1);
+      }
+    },
+  };
 
   let selected = null;
   mapObject.on("pointermove", function (e) {
@@ -421,9 +464,11 @@ export const createMap = (
   newLayerObsDraw.setZIndex(7);
   newLayerQuiver.setZIndex(100);
 
-  return mapObject;
+  return {
+    mapObject,
+    hoverSelect: hoverControl,
+  };
 };
-
 const getText = function (feature, resolution, dom) {
   const type = dom.text.value;
   const maxResolution = dom.maxreso.value;
