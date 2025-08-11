@@ -24,6 +24,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
+import { AnnotationOverlayManager } from '../AnnotationOverlay.jsx';
 
 
 import {
@@ -112,6 +113,8 @@ const Map = forwardRef((props, ref) => {
   const [mapView, setMapView] = useState();
   const [annotationMode, setAnnotationMode] = useState(false);
   const [annotationOverlays, setAnnotationOverlays] = useState([]);
+  const [annotationManager, setAnnotationManager] = useState(null);
+  const annotationModeRef = useRef(false);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -232,7 +235,25 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("extent", extent);
     });
 
+     newMap.on("click", (e) => {
+    if (!annotationModeRef.current) return;
+    const coord = e.coordinate;
+    setAnnotationMode(false); 
+    annotationModeRef.current = false;
+    newMap.getViewport().style.cursor = ""; 
+
+    props.updateAnnotationCoord(coord);
+    props.updateUI({
+      annotationMode: false,
+      modalType: "annotation",
+      showModal: true,
+    });
+  });
+
     addDblClickPlot(newMap, newSelect);
+     // Create annotation manager
+   const newAnnotationManager = new AnnotationOverlayManager(newMap);
+  setAnnotationManager(newAnnotationManager);
 
     let mapLayers = newMap.getLayers().getArray();
 
@@ -243,6 +264,11 @@ const Map = forwardRef((props, ref) => {
     setAnnotationVectorSource(newAnnotationVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
+     return () => {
+    if (newAnnotationManager) {
+      newAnnotationManager.cleanup();
+    }
+  };
   }, []);
 
   useEffect(() => {
@@ -853,17 +879,17 @@ const Map = forwardRef((props, ref) => {
       map1layers[6].setSource(newFeatureVectorSource);
       map1layers[7].setSource(newObsDrawSource);
     }
-    // at the end of resetMap()
-    annotationOverlays.forEach((o) => map0.removeOverlay(o));
-    setAnnotationOverlays([]);
-  };
+     if (annotationManager) {
+    annotationManager.clearAllAnnotations();
+  }
+};
+
 
   const drawObsPoint = () => {
     if (removeMapInteractions(map0, "Point")) {
       return;
     }
 
-    //Resets map (in case other plots have been drawn)
     resetMap();
     let newDrawAction = obsPointDrawAction(
       map0,
@@ -907,97 +933,38 @@ const Map = forwardRef((props, ref) => {
     }
   };
 
-  const addAnnotationLabel = (text, coord) => {
-    const el = document.createElement("div");
-    el.className = "annotation-box";
-    const closeBtn = document.createElement("span");
-    closeBtn.className = "annotation-close";
-    closeBtn.innerHTML = "×";
-    el.appendChild(closeBtn);
-    const textNode = document.createTextNode(text);
-    el.insertBefore(textNode, closeBtn);
+ 
 
-    const overlay = new Overlay({
-      element: el,
-      position: coord,
-      positioning: "bottom-left",
-      offset: [0, -30],
-    });
-    map0.addOverlay(overlay);
-    setAnnotationOverlays((prev) => [...prev, overlay]);
-    let dragging = false;
-    let startPixel;
 
-    el.addEventListener("mousedown", (evt) => {
-      dragging = true;
-      startPixel = [evt.clientX, evt.clientY];
-      evt.stopPropagation();
-    });
 
-    window.addEventListener("mousemove", (evt) => {
-      if (!dragging) return;
-      const deltaX = evt.clientX - startPixel[0];
-      const deltaY = evt.clientY - startPixel[1];
-      startPixel = [evt.clientX, evt.clientY];
+const addAnnotationLabel = (text, coord) => {
+  if (annotationManager) {
+    annotationManager.addAnnotationLabel(text, coord);
+  }
+};
 
-      const currPixel = map0.getPixelFromCoordinate(overlay.getPosition());
-      const newPixel = [currPixel[0] + deltaX, currPixel[1] + deltaY];
-      const newCoord = map0.getCoordinateFromPixel(newPixel);
-      overlay.setPosition(newCoord);
-    });
+const undoAnnotationLabel = () => {
+  if (annotationManager) {
+    annotationManager.undoLastAnnotation();
+  }
+};
 
-    window.addEventListener("mouseup", () => {
-      dragging = false;
-    });
-
-    closeBtn.addEventListener("click", (evt) => {
-      map0.removeOverlay(overlay);
-      setAnnotationOverlays((all) => all.filter((o) => o !== overlay));
-      evt.stopPropagation();
-    });
-  };
-
-  const undoAnnotationLabel = () => {
-    setAnnotationOverlays((all) => {
-      const list = [...all];
-      const last = list.pop();
-      if (last) map0.removeOverlay(last);
-      return list;
-    });
-  };
-
-  const clearAnnotationLabels = () => {
-    annotationOverlays.forEach((o) => map0.removeOverlay(o));
-    setAnnotationOverlays([]);
-  };
+const clearAnnotationLabels = () => {
+  if (annotationManager) {
+    annotationManager.clearAllAnnotations();
+  }
+};
 
   const enableAnnotationMode = () => {
     setAnnotationMode(true);
+    annotationModeRef.current = true;
     map0.getViewport().style.cursor = "crosshair";
   };
   const disableAnnotationMode = () => {
     setAnnotationMode(false);
+    annotationModeRef.current = false;
     map0.getViewport().style.cursor = "";
   };
-
-  useEffect(() => {
-    if (!map0) return;
-    const onMapClick = (e) => {
-      if (!annotationMode) return;
-      const coord = e.coordinate;
-      disableAnnotationMode();
-      props.updateAnnotationCoord(coord);
-      props.updateUI({
-        annotationMode: false,
-        modalType: "annotation",
-        showModal: true,
-      });
-    };
-    map0.on("click", onMapClick);
-    return () => {
-      map0.un("click", onMapClick);
-    };
-  }, [map0, annotationMode]);
 
   const updateProjection = (map, dataset) => {
     resetMap();
