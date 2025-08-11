@@ -281,7 +281,7 @@ class ObservationPlotter(PointPlotter):
 
                 leg = axis.legend(l, loc="best")
 
-                for legobj in leg.legendHandles:
+                for legobj in leg.legend_handles:
                     legobj.set_linewidth(4.0)
 
         ax[0].invert_yaxis()
