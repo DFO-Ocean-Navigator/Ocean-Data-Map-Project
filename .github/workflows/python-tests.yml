@@ -33,17 +33,21 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - name: Set up Python 3.12.0
+    - name: Set up Python 3.13.5
       uses: actions/setup-python@v2
       with:
-        python-version: 3.12.0
-    - uses: conda-incubator/setup-miniconda@v2
+        python-version: 3.13.5
+    - uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: 3.12.0
+        python-version: 3.13.5
+        installer-url: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+        allow-softlinks: true
+        show-channel-urls: true
+        use-only-tar-bz2: true
     - name: Update environment
-      run: conda env update -f config/conda/environment.yml --name test --quiet
+      run: mamba env update -f config/mamba/environment.yml --name test --quiet
     - name: Run tests
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
-        conda activate test
+        mamba activate test
         ./run_python_tests.sh

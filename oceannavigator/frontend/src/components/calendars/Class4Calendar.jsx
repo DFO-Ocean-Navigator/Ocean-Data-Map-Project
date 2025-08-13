@@ -61,7 +61,7 @@ function Class4Calendar(props) {
   };
 
   const getNextMonth = (month, year) => {
-    const nextMonth = month < 11 ? month + 1 : 1;
+    const nextMonth = month < 11 ? month + 1 : 0;
     const nextMonthYear = month < 11 ? year : year + 1;
     return [nextMonth, nextMonthYear];
   };
