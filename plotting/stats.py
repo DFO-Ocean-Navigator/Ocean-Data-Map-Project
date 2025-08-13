@@ -8,7 +8,7 @@ import numpy as np
 
 # from flask_babel import gettext
 from shapely.geometry import LinearRing, MultiPolygon, Point, Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 from data import open_dataset
 from oceannavigator import DatasetConfig
@@ -218,7 +218,7 @@ def get_names_rings(area):
     for idx, a in enumerate(area):
         rings = [LinearRing(p) for p in a["polygons"]]
         if len(rings) > 1:
-            u = cascaded_union(rings)
+            u = unary_union(rings)
         else:
             u = rings[0]
         all_rings.append(u.envelope)
@@ -242,7 +242,7 @@ def convert_to_bounded_lon(lon):
 
 def compute_bounds(all_rings):
     if len(all_rings) > 1:
-        combined = cascaded_union(all_rings)
+        combined = unary_union(all_rings)
     else:
         combined = all_rings[0]
 

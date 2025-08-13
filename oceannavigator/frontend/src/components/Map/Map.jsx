@@ -20,6 +20,7 @@ import Point from "ol/geom/Point.js";
 import LineString from "ol/geom/LineString.js";
 import Polygon from "ol/geom/Polygon.js";
 import Select from "ol/interaction/Select.js";
+import { pointerMove } from "ol/events/condition";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
@@ -135,6 +136,8 @@ const Map = forwardRef((props, ref) => {
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
   const popupElement1 = useRef(null);
+  const [hoverSelect0, setHoverSelect0] = useState();
+  const [hoverSelect1, setHoverSelect1] = useState();
 
   useImperativeHandle(ref, () => ({
     startFeatureDraw: startFeatureDraw,
@@ -160,6 +163,71 @@ const Map = forwardRef((props, ref) => {
     resetMap: resetMap,
     getLineDistance: getLineDistance,
   }));
+
+  //styles for hover select
+  const createHoverSelect = (selectInteraction, layerFeatureVector) => {
+    const hoverStyle = new Style({
+      image: new Circle({
+        radius: 4,
+        fill: new Fill({
+          color: "#00ffff",
+        }),
+        stroke: new Stroke({
+          color: "#000000",
+        }),
+      }),
+      stroke: new Stroke({
+        color: "#00ffff",
+        width: 4,
+      }),
+      fill: new Fill({
+        color: "rgba(0,255,255,0.1)",
+      }),
+    });
+
+    const selectedHoverStyle = new Style({
+      stroke: new Stroke({
+        color: "#0099ff",
+        width: 4,
+      }),
+      fill: new Fill({
+        color: "rgba(0,153,255,0.3)", 
+      }),
+      image: new Circle({
+        radius: 4,
+        fill: new Fill({
+          color: "#0099ff",
+        }),
+        stroke: new Stroke({
+          color: "#ffffff",
+          width: 1,
+        }),
+      }),
+    });
+
+    const hoverSelect = new Select({
+      condition: pointerMove,
+      style: function (feature, resolution) {
+        // Skip annotation features
+        if (feature.get("annotation")) {
+          return null;
+        }
+
+        const selectedFeatures = selectInteraction.getFeatures().getArray();
+        if (selectedFeatures.includes(feature)) {
+          return selectedHoverStyle;
+        }
+
+        return hoverStyle;
+      },
+      layers: [layerFeatureVector],
+      filter: function (feature, layer) {
+        return !feature.get("annotation");
+      },
+    });
+
+    return hoverSelect;
+  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -204,7 +272,9 @@ const Map = forwardRef((props, ref) => {
     );
 
     const newSelect = createSelect();
+    const newHoverSelect = createHoverSelect(newSelect, newLayerFeatureVector);
     newMap.addInteraction(newSelect);
+    newMap.addInteraction(newHoverSelect);
 
     newMap.on("moveend", function () {
       const c = olProj
@@ -247,6 +317,7 @@ const Map = forwardRef((props, ref) => {
     setMap0(newMap);
     setMapView(newMapView);
     setSelect0(newSelect);
+    setHoverSelect0(newHoverSelect);
     setLayerBasemap(mapLayers[0]);
 
     setFeatureVectorSource(newFeatureVectorSource);
@@ -260,6 +331,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     let newMap = null;
+    let newHoverSelect = null;
     if (props.compareDatasets) {
       let overlay = new Overlay({
         element: popupElement1.current,
@@ -273,7 +345,7 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings
       );
 
-      newMap = createMap(
+      const newMap = createMap(
         props.mapSettings,
         overlay,
         popupElement1,
@@ -284,15 +356,24 @@ const Map = forwardRef((props, ref) => {
         MAX_ZOOM[props.mapSettings.projection],
         mapRef1
       );
-
-      let newSelect = createSelect();
+      
+      const newSelect = createSelect();
+      const newHoverSelect = createHoverSelect(
+        newSelect,
+        newLayerFeatureVector
+      );
       newMap.addInteraction(newSelect);
+      newMap.addInteraction(newHoverSelect);
+      if (newHoverSelect && newHoverSelect.addSelectInteraction) {
+        newHoverSelect.addSelectInteraction(newSelect);
+      }
 
       addDblClickPlot(newMap, newSelect);
 
       setSelect1(newSelect);
     }
     setMap1(newMap);
+    setHoverSelect1(newHoverSelect);
   }, [props.compareDatasets]);
 
   useEffect(() => {
@@ -861,8 +942,10 @@ const Map = forwardRef((props, ref) => {
 
   const drawObsPoint = () => {
     if (removeMapInteractions(map0, "Point")) {
+      hoverSelect0.setActive(true);
       return;
     }
+    hoverSelect0.setActive(false);
 
     resetMap();
     let newDrawAction = obsPointDrawAction(
@@ -872,12 +955,18 @@ const Map = forwardRef((props, ref) => {
       props.action
     );
     map0.addInteraction(newDrawAction);
+    //event listener to re-enable hover when drawing ends
+    newDrawAction.on("drawend", () => {
+      hoverSelect0.setActive(true);
+    });
   };
 
   const drawObsArea = () => {
     if (removeMapInteractions(map0, "Polygon")) {
+      hoverSelect0.setActive(true);
       return;
     }
+    hoverSelect0.setActive(false);
 
     resetMap();
     let newDrawAction = obsAreaDrawAction(
@@ -887,11 +976,18 @@ const Map = forwardRef((props, ref) => {
       props.action
     );
     map0.addInteraction(newDrawAction);
+    newDrawAction.on("drawend", () => {
+      hoverSelect0.setActive(true);
+    });
   };
 
   const startFeatureDraw = () => {
     let source = map0.getLayers().getArray()[5].getSource();
     let newDrawAction = getDrawAction(source, props.featureType);
+    hoverSelect0.setActive(false);
+    if (props.compareDatasets && hoverSelect1 && hoverSelect1.setActive) {
+      hoverSelect1.setActive(false);
+    }
 
     map0.addInteraction(newDrawAction);
     if (props.compareDatasets) {
@@ -904,6 +1000,10 @@ const Map = forwardRef((props, ref) => {
     removeMapInteractions(map0);
     if (props.compareDatasets) {
       removeMapInteractions(map1);
+    }
+    hoverSelect0.setActive(true);
+    if (props.compareDatasets && hoverSelect1) {
+      hoverSelect1.setActive(true);
     }
   };
 

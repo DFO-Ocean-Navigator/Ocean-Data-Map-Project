@@ -244,7 +244,6 @@ export const createMap = (
         }),
       }),
     ]),
-
     overlays: [overlay],
   };
 
@@ -507,6 +506,10 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
       } else {
         switch (feat.get("type")) {
           case "Polygon":
+            const almostInvisibleFill = new Fill({
+              color: "rgba(255,255,255,0.01)",
+            });
+
             if (feat.get("key")) {
               return [
                 new Style({
@@ -514,15 +517,14 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                     color: "#ffffff",
                     width: 2,
                   }),
-                  fill: new Fill({
-                    color: "#ffffff00",
-                  }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   stroke: new Stroke({
                     color: "#000000",
                     width: 1,
                   }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   geometry: new olgeom.Point(
@@ -552,12 +554,14 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                     color: "#ffffff",
                     width: 5,
                   }),
+                  fill: almostInvisibleFill,
                 }),
                 new Style({
                   stroke: new Stroke({
                     color: "#ff0000",
                     width: 3,
                   }),
+                  fill: almostInvisibleFill,
                 }),
               ];
             }

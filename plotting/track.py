@@ -328,7 +328,7 @@ class TrackPlotter(Plotter):
 
             if len(legend) > 1:
                 leg = plt.legend(legend, loc="best")
-                for legobj in leg.legendHandles:
+                for legobj in leg.legend_handles:
                     legobj.set_linewidth(4.0)
 
             if len(np.unique(self.depth)) == 1:
