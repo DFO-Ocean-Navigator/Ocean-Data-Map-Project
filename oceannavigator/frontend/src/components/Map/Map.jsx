@@ -110,10 +110,7 @@ const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
-  const [annotationMode, setAnnotationMode] = useState(false);
-  const [annotationOverlays, setAnnotationOverlays] = useState([]);
   const [annotationManager, setAnnotationManager] = useState(null);
-  const annotationModeRef = useRef(false);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -128,7 +125,6 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [drawAction, setDrawAction] = useState();
@@ -145,8 +141,7 @@ const Map = forwardRef((props, ref) => {
     addAnnotationLabel: addAnnotationLabel,
     undoAnnotationLabel: undoAnnotationLabel,
     clearAnnotationLabels: clearAnnotationLabels,
-    enableAnnotationMode: enableAnnotationMode,
-    disableAnnotationMode: disableAnnotationMode,
+    getMapCenter: getMapCenter,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -191,7 +186,7 @@ const Map = forwardRef((props, ref) => {
         width: 4,
       }),
       fill: new Fill({
-        color: "rgba(0,153,255,0.3)", 
+        color: "rgba(0,153,255,0.3)",
       }),
       image: new Circle({
         radius: 4,
@@ -227,6 +222,9 @@ const Map = forwardRef((props, ref) => {
     });
 
     return hoverSelect;
+  };
+  const getMapCenter = () => {
+    return mapView.getCenter();
   };
 
   useEffect(() => {
@@ -292,23 +290,8 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("extent", extent);
     });
 
-    newMap.on("click", (e) => {
-      if (!annotationModeRef.current) return;
-      const coord = e.coordinate;
-      setAnnotationMode(false);
-      annotationModeRef.current = false;
-      newMap.getViewport().style.cursor = "";
-
-      props.updateAnnotationCoord(coord);
-      props.updateUI({
-        annotationMode: false,
-        modalType: "annotation",
-        showModal: true,
-      });
-    });
-
     addDblClickPlot(newMap, newSelect);
-    // Create annotation manager
+
     const newAnnotationManager = new AnnotationOverlayManager(newMap);
     setAnnotationManager(newAnnotationManager);
 
@@ -356,7 +339,7 @@ const Map = forwardRef((props, ref) => {
         MAX_ZOOM[props.mapSettings.projection],
         mapRef1
       );
-      
+
       const newSelect = createSelect();
       const newHoverSelect = createHoverSelect(
         newSelect,
@@ -369,12 +352,22 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, newSelect);
+      if (annotationManager) {
+        annotationManager.setSecondaryMap(newMap);
+      }
 
       setSelect1(newSelect);
+      setMap1(newMap);
+      setHoverSelect1(newHoverSelect);
+    } else {
+      if (annotationManager) {
+        annotationManager.setSecondaryMap(null);
+      }
+      setMap1(null);
+      setSelect1(null);
+      setHoverSelect1(null);
     }
-    setMap1(newMap);
-    setHoverSelect1(newHoverSelect);
-  }, [props.compareDatasets]);
+  }, [props.compareDatasets, annotationManager]);
 
   useEffect(() => {
     if (props.dataset0.default_location) {
@@ -1009,7 +1002,7 @@ const Map = forwardRef((props, ref) => {
 
   const addAnnotationLabel = (text, coord) => {
     if (annotationManager) {
-      annotationManager.addAnnotationLabel(text, coord);
+      annotationManager.addAnnotationLabel(text.trim(), coord);
     }
   };
 
@@ -1023,17 +1016,6 @@ const Map = forwardRef((props, ref) => {
     if (annotationManager) {
       annotationManager.clearAllAnnotations();
     }
-  };
-
-  const enableAnnotationMode = () => {
-    setAnnotationMode(true);
-    annotationModeRef.current = true;
-    map0.getViewport().style.cursor = "crosshair";
-  };
-  const disableAnnotationMode = () => {
-    setAnnotationMode(false);
-    annotationModeRef.current = false;
-    map0.getViewport().style.cursor = "";
   };
 
   const updateProjection = (map, dataset) => {

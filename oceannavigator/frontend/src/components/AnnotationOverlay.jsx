@@ -1,109 +1,131 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
 import Overlay from "ol/Overlay.js";
 
-/**
- * Creates and manages annotation overlays on the map
- */
 export class AnnotationOverlayManager {
-  constructor(map) {
-    this.map = map;
-    this.overlays = [];
+  constructor(primaryMap, secondaryMap = null) {
+    this.maps = [primaryMap, secondaryMap].filter(Boolean);
+    this.annotations = new Map();
+    this.nextId = 1;
   }
 
-  addAnnotationLabel = (text, coord) => {
-    const container = document.createElement("div");
-    container.className = "annotation-container";
+  setSecondaryMap = (map) => {
+    this.maps = [this.maps[0], map].filter(Boolean);
+    this.annotations.forEach(({ overlays, ...data }) => {
+      if (map && overlays.length === 1) {
+        overlays.push(this._createOverlay(data));
+        map.addOverlay(overlays[1]);
+      } else if (!map && overlays[1]) {
+        this.maps[0].removeOverlay(overlays[1]);
+        overlays[1].getElement().remove();
+        overlays.pop();
+      }
+    });
+  };
 
-    const root = ReactDOM.createRoot(container);
-    root.render(
-      <div className="annotation-box">
-        <button
-          className="annotation-close"
-          onClick={() => this.removeOverlayByContainer(container)}
-        >
-          ×
-        </button>
-        <div className="annotation-text">{text}</div>
+  addAnnotationLabel = (text, coord) => {
+    const id = this.nextId++;
+    const data = { id, text, position: coord };
+    const overlays = this.maps.map(() => this._createOverlay(data));
+
+    overlays.forEach((overlay, i) => this.maps[i]?.addOverlay(overlay));
+    this.annotations.set(id, { ...data, overlays });
+    return data;
+  };
+
+  _createOverlay = ({ id, text, position }) => {
+    const el = document.createElement("div");
+    el.innerHTML = `
+      <div class="annotation-box">
+        <button class="annotation-close">×</button>
+        <div class="annotation-text">${text}</div>
+        <div class="annotation-arrow"></div>
       </div>
-    );
+    `;
 
     const overlay = new Overlay({
-      element: container,
-      position: coord,
-      positioning: "bottom-left",
-      offset: [0, -30],
+      element: el,
+      position,
+      positioning: "bottom-center",
+      offset: [0, -10],
     });
 
-    this.map.addOverlay(overlay);
-    this.overlays.push(overlay);
-    this._setupDragging(container, overlay);
+    el.querySelector(".annotation-close").addEventListener("click", () => {
+      this.removeAnnotationById(id);
+    });
 
-    // Keep only what you actually need later
-    overlay._reactRoot = root;
-
+    this._addDrag(el, overlay, id);
     return overlay;
   };
 
-  _setupDragging = (element, overlay) => {
-    let dragging = false;
-    let startPixel;
+  _addDrag = (el, overlay, id) => {
+    let dragging = false,
+      start;
 
-    element.addEventListener("mousedown", (evt) => {
-      if (evt.target.closest(".annotation-close")) return;
+    el.onmousedown = (e) => {
+      if (e.target.className === "annotation-close") return;
       dragging = true;
-      startPixel = [evt.clientX, evt.clientY];
-      evt.stopPropagation();
-      element.style.cursor = "move";
-      element.classList.add("dragging");
-    });
-
-    const handleMouseMove = (evt) => {
-      if (!dragging) return;
-      const dx = evt.clientX - startPixel[0];
-      const dy = evt.clientY - startPixel[1];
-      startPixel = [evt.clientX, evt.clientY];
-      const curr = this.map.getPixelFromCoordinate(overlay.getPosition());
-      const next = [curr[0] + dx, curr[1] + dy];
-      overlay.setPosition(this.map.getCoordinateFromPixel(next));
+      start = [e.clientX, e.clientY];
+      el.style.cursor = "move";
+      e.stopPropagation();
     };
 
-    const handleMouseUp = () => {
+    const move = (e) => {
       if (!dragging) return;
+      const [dx, dy] = [e.clientX - start[0], e.clientY - start[1]];
+      start = [e.clientX, e.clientY];
+
+      const pos = overlay.getPosition();
+      const map = this.maps.find((m) =>
+        m.getOverlays().getArray().includes(overlay)
+      );
+      const pixel = map.getPixelFromCoordinate(pos);
+      const newPos = map.getCoordinateFromPixel([pixel[0] + dx, pixel[1] + dy]);
+
+      this._sync(id, newPos);
+    };
+
+    const up = () => {
       dragging = false;
-      element.style.cursor = "";
-      element.classList.remove("dragging");
+      el.style.cursor = "";
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
     overlay._cleanup = () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      el.remove();
     };
   };
 
-  removeOverlayByContainer = (container) => {
-    const overlay = this.overlays.find((o) => o.getElement() === container);
-    if (overlay) this.removeOverlay(overlay);
+  _sync = (id, position) => {
+    const annotation = this.annotations.get(id);
+    if (!annotation) return;
+    annotation.position = position;
+    annotation.overlays.forEach((overlay) => overlay.setPosition(position));
   };
 
-  removeOverlay = (overlay) => {
-    this.map.removeOverlay(overlay);
-    this.overlays = this.overlays.filter((o) => o !== overlay);
-    overlay._reactRoot?.unmount();
-    overlay._cleanup?.();
+  removeAnnotationById = (id) => {
+    const annotation = this.annotations.get(id);
+    if (!annotation) return;
+
+    annotation.overlays.forEach((overlay, i) => {
+      this.maps[i]?.removeOverlay(overlay);
+      overlay._cleanup();
+    });
+    this.annotations.delete(id);
   };
 
   undoLastAnnotation = () => {
-    const last = this.overlays[this.overlays.length - 1];
-    if (last) this.removeOverlay(last);
+    const lastId = Math.max(...this.annotations.keys());
+    this.removeAnnotationById(lastId);
   };
 
   clearAllAnnotations = () => {
-    const all = [...this.overlays];
-    all.forEach(this.removeOverlay);
+    [...this.annotations.keys()].forEach((id) => this.removeAnnotationById(id));
   };
 
-  getOverlays = () => [...this.overlays];
+  getAnnotations = () =>
+    [...this.annotations.values()].map(({ overlays, ...data }) => data);
+
+  cleanup = () => this.clearAllAnnotations();
 }
