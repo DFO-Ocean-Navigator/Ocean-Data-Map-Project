@@ -23,7 +23,7 @@ export class AnnotationOverlayManager {
 
   addAnnotationLabel = (text, coord) => {
     const id = this.nextId++;
-    const data = { id, text, position: coord };
+    const data = { id, text, position: coord, direction: 0 };
     const overlays = this.maps.map(() => this._createOverlay(data));
 
     overlays.forEach((overlay, i) => this.maps[i]?.addOverlay(overlay));
@@ -31,13 +31,13 @@ export class AnnotationOverlayManager {
     return data;
   };
 
-  _createOverlay = ({ id, text, position }) => {
+  _createOverlay = ({ id, text, position, direction = 0 }) => {
     const el = document.createElement("div");
     el.innerHTML = `
       <div class="annotation-box">
         <button class="annotation-close">×</button>
         <div class="annotation-text">${text}</div>
-        <div class="annotation-arrow"></div>
+        <div class="annotation-arrow arrow-${direction}"></div>
       </div>
     `;
 
@@ -56,13 +56,26 @@ export class AnnotationOverlayManager {
     return overlay;
   };
 
+  _rotateArrow = (id) => {
+    const annotation = this.annotations.get(id);
+    if (!annotation) return;
+
+    annotation.direction = (annotation.direction + 1) % 4;
+    annotation.overlays.forEach((overlay) => {
+      const arrow = overlay.getElement().querySelector(".annotation-arrow");
+      arrow.className = `annotation-arrow arrow-${annotation.direction}`;
+    });
+  };
+
   _addDrag = (el, overlay, id) => {
     let dragging = false,
-      start;
+      start,
+      hasMoved = false;
 
     el.onmousedown = (e) => {
       if (e.target.className === "annotation-close") return;
       dragging = true;
+      hasMoved = false;
       start = [e.clientX, e.clientY];
       el.style.cursor = "move";
       e.stopPropagation();
@@ -71,6 +84,10 @@ export class AnnotationOverlayManager {
     const move = (e) => {
       if (!dragging) return;
       const [dx, dy] = [e.clientX - start[0], e.clientY - start[1]];
+      // if mouse moved more than 3 pixels (indicates drag, not click)
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasMoved = true;
+      }
       start = [e.clientX, e.clientY];
 
       const pos = overlay.getPosition();
@@ -83,9 +100,13 @@ export class AnnotationOverlayManager {
       this._sync(id, newPos);
     };
 
-    const up = () => {
+    const up = (e) => {
+      if (!dragging) return;
       dragging = false;
       el.style.cursor = "";
+      if (!hasMoved && e.target.className !== "annotation-close") {
+        this._rotateArrow(id);
+      }
     };
 
     window.addEventListener("mousemove", move);
