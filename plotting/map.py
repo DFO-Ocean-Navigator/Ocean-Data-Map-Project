@@ -805,11 +805,7 @@ class MapPlotter(Plotter):
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
         figuresize = list(map(float, self.size.split("x")))
-        fig, map_plot = self.load_map(
-            self.plot_projection, self.plot_extent, figuresize, self.dpi
-        )
-
-        ax = plt.gca()
+        fig, ax = self.load_map(self.plot_extent, figuresize, self.dpi)
 
         if self.scale:
             vmin = self.scale[0]
@@ -819,7 +815,7 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        c = map_plot.imshow(
+        c = ax.imshow(
             self.data,
             vmin=vmin,
             vmax=vmax,
@@ -859,7 +855,7 @@ class MapPlotter(Plotter):
                     qcmap = colormap.colormaps.get("speed")
                 else:
                     qcmap = colormap.colormaps.get(self.quiver["colormap"])
-                q = map_plot.quiver(
+                q = ax.quiver(
                     x,
                     y,
                     qx,
@@ -874,7 +870,7 @@ class MapPlotter(Plotter):
                     transform=self.plot_projection,
                 )
             else:
-                q = map_plot.quiver(
+                q = ax.quiver(
                     x,
                     y,
                     qx,
@@ -912,7 +908,7 @@ class MapPlotter(Plotter):
 
         if self.show_bathymetry:
             # Plot bathymetry on top
-            cs = map_plot.contour(
+            cs = ax.contour(
                 self.longitude,
                 self.latitude,
                 self.bathymetry,
@@ -954,7 +950,7 @@ class MapPlotter(Plotter):
                         transform=self.plot_projection,
                         zorder=3,
                     )
-                    map_plot.add_patch(poly)
+                    ax.add_patch(poly)
 
             if self.names is not None and len(self.names) > 1:
                 for idx, name in enumerate(self.names):
@@ -1007,7 +1003,7 @@ class MapPlotter(Plotter):
                         cmap = colormap.find_colormap(self.contour_name)
 
                 if not self.contour.get("hatch"):
-                    contours = map_plot.contour(
+                    contours = ax.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -1021,7 +1017,7 @@ class MapPlotter(Plotter):
                     hatches = ["//", "xx", "\\\\", "--", "||", "..", "oo", "**"]
                     if len(levels) + 1 < len(hatches):
                         hatches = hatches[0 : len(levels) + 2]
-                    map_plot.contour(
+                    ax.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -1031,7 +1027,7 @@ class MapPlotter(Plotter):
                         transform=self.pc_projection,
                         zorder=5,
                     )
-                    contours = map_plot.contourf(
+                    contours = ax.contourf(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -1123,7 +1119,7 @@ class MapPlotter(Plotter):
                 self.date_formatter(self.timestamp),
             )
         plt.title(title.strip())
-        axpos = map_plot.get_position()
+        axpos = ax.get_position()
         pos_x = axpos.x0 + axpos.width + 0.01
         pos_y = axpos.y0
         cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
@@ -1158,7 +1154,7 @@ class MapPlotter(Plotter):
             y_offset,
             self.get_stats_str(masked_data, var_unit),
             fontsize=14,
-            transform=map_plot.transAxes,
+            transform=ax.transAxes,
         )
 
         return super(MapPlotter, self).plot(fig)
