@@ -35,6 +35,8 @@ import {
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
+  disableMapNavigation,
+  enableMapNavigation,
 } from "./utils";
 import {
   getDrawAction,
@@ -156,6 +158,8 @@ const Map = forwardRef((props, ref) => {
     drawObsArea: drawObsArea,
     resetMap: resetMap,
     getLineDistance: getLineDistance,
+    lockMap: lockMap,
+    unlockMap: unlockMap,
   }));
 
   //styles for hover select
@@ -521,7 +525,23 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
+  const lockMap = () => {
+  if (map0) {
+    disableMapNavigation(map0);
+    if (props.compareDatasets && map1) {
+      disableMapNavigation(map1);
+    }
+  }
+};
 
+const unlockMap = () => {
+  if (map0) {
+    enableMapNavigation(map0);
+    if (props.compareDatasets && map1) {
+      enableMapNavigation(map1);
+    }
+  }
+};
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
