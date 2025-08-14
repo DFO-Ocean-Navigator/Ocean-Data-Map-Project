@@ -17,8 +17,7 @@ from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
-from shapely.geometry import LinearRing, MultiPolygon, Point
-from shapely.geometry import Polygon as Poly
+from shapely.geometry import box, LinearRing, MultiPolygon, Point, Polygon as Poly
 from shapely.ops import unary_union
 
 import plotting.colormap as colormap
@@ -141,6 +140,34 @@ class MapPlotter(Plotter):
         mask = data.mask + ~inside_points
         return data.data[~mask]
 
+    def get_land_geoms(self, extent: tuple) -> list:
+        # Returns a list of land shape geometries that intersect the plot extent
+        scaler = cfeature.AdaptiveScaler("110m", (("50m", 50), ("10m", 15)))
+        land_shp = cfeature.NaturalEarthFeature(
+            "physical", "land", scale=scaler.scale_from_extent(extent)
+        )
+
+        lon_min, lon_max, lat_min, lat_max = extent
+
+        geometries = []
+        if lon_min <= lon_max:
+            bbox = box(lon_min, lat_min, lon_max, lat_max)
+            for geom in land_shp.geometries():
+                inter = geom.intersection(bbox)
+                if not inter.is_empty:
+                    geometries.append(inter)
+        else:
+            # plot wraps longitudes
+            west_box = box(lon_min, lat_min, 180, lat_max)
+            east_box = box(-180, lat_min, lon_max, lat_max)
+            for geom in land_shp.geometries():
+                for bb in (west_box, east_box):
+                    inter = geom.intersection(bb)
+                    if not inter.is_empty:
+                        geometries.append(inter)
+
+        return geometries
+
     def load_map(
         self,
         plot_proj: ccrs,
@@ -153,24 +180,19 @@ class MapPlotter(Plotter):
         filename = self._get_filename(plot_proj.proj4_params["proj"], extent)
         filename = pathlib.Path(CACHE_DIR).joinpath(filename)
 
-        pc_proj = ccrs.PlateCarree()
-        pc_extent = pc_proj.transform_points(
-            plot_proj, np.array(extent[:2]), np.array(extent[2:])
-        )
-        pc_extent = [
-            pc_extent[0, 0] - 5,
-            pc_extent[0, 1] - 5,
-            pc_extent[1, 0] + 5,
-            pc_extent[1, 1] + 5,
-        ]
-
         if not filename.exists():
             fig = plt.figure(figsize=figuresize, dpi=dpi)
             ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
             ax.set_extent(extent, crs=plot_proj)
+            pc_extent = ax.get_extent(crs=self.pc_projection)
 
-            ax.add_feature(cfeature.LAND, facecolor="grey", zorder=1)
-            ax.coastlines(edgecolor="black", zorder=1)
+            land_geoms = self.get_land_geoms(pc_extent)
+            ax.add_geometries(
+                land_geoms,
+                crs=self.pc_projection,
+                facecolor="grey",
+                edgecolor="black",
+            )
 
             ax.gridlines(
                 draw_labels={"bottom": "x", "left": "y"},
