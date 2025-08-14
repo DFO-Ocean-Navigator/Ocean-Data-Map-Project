@@ -16,10 +16,6 @@ module.exports = {
       publicPath: "/public/"
     },
   plugins: [
-    new webpack.DefinePlugin({
-      "_": "this.props.t",
-      "__": "props.t",
-    }),
     new HtmlWebpackPlugin({
       filename: "index.html",
       hash: true,
