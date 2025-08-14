@@ -48,8 +48,6 @@ function DatasetSelector({
   action,
   t,
 }) {
-  // Using t as the translation function instead of __
-  const __ = t;
   const [loading, setLoading] = useState(true);
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [loadingTitle, setLoadingTitle] = useState("");
@@ -331,8 +329,8 @@ function DatasetSelector({
         id={`dataset-selector-dataset-selector-${id}`}
         key={`dataset-selector-dataset-selector-${id}`}
         options={availableDatasets}
-        label={__("Dataset")}
-        placeholder={__("Dataset")}
+        label={t("Dataset")}
+        placeholder={t("Dataset")}
         onChange={updateDataset}
         selected={dataset.id}
         horizontalLayout={horizontalLayout}
@@ -364,9 +362,9 @@ function DatasetSelector({
     variableSelector = stillHasVariablesToShow && (
       <SelectBox
         id={`dataset-selector-variable-selector-${id}`}
-        name={__("variable")}
-        label={__("Variable")}
-        placeholder={__("Variable")}
+        name={t("variable")}
+        label={t("Variable")}
+        placeholder={t("Variable")}
         options={optionsData}
         onChange={updateDataset}
         selected={selected}
@@ -395,8 +393,8 @@ function DatasetSelector({
         <SelectBox
           id={`dataset-selector-quiver-selector-${id}`}
           name="quiverVariable"
-          label={__("Quiver")}
-          placeholder={__("Quiver Variable")}
+          label={t("Quiver")}
+          placeholder={t("Quiver Variable")}
           options={quiverVariables}
           onChange={updateDataset}
           selected={dataset.quiverVariable}
@@ -432,8 +430,8 @@ function DatasetSelector({
       <SelectBox
         id={`dataset-selector-depth-selector-${id}`}
         name={"depth"}
-        label={__("Depth")}
-        placeholder={__("Depth")}
+        label={t("Depth")}
+        placeholder={t("Depth")}
         options={
           showDepthsAll
             ? datasetDepths
@@ -478,7 +476,7 @@ function DatasetSelector({
             key="starttime"
             id="starttime"
             state={dataset.starttime}
-            title={__("Start Time (UTC)")}
+            title={t("Start Time (UTC)")}
             onUpdate={updateDataset}
             max={dataset.time}
             dataset={dataset}
@@ -488,7 +486,7 @@ function DatasetSelector({
             key="time"
             id="time"
             state={dataset.time}
-            title={__("End Time (UTC)")}
+            title={t("End Time (UTC)")}
             onUpdate={updateDataset}
             min={dataset.starttime}
             dataset={dataset}
@@ -503,7 +501,7 @@ function DatasetSelector({
           id="time"
           state={dataset.time}
           onUpdate={updateDataset}
-          title={__("Time (UTC)")}
+          title={t("Time (UTC)")}
           dataset={dataset}
           timestamps={datasetTimestamps}
           horizontalLayout={horizontalLayout}
@@ -516,7 +514,7 @@ function DatasetSelector({
     <OverlayTrigger
       key="draw-overlay"
       placement={horizontalLayout ? "top" : "bottom"}
-      overlay={<Tooltip id={"draw-tooltip"}>{__("Apply Changes")}</Tooltip>}
+      overlay={<Tooltip id={"draw-tooltip"}>{t("Apply Changes")}</Tooltip>}
     >
       <Button
         className="go-button"
@@ -525,7 +523,7 @@ function DatasetSelector({
         onClick={handleGoButton}
         disabled={loading}
       >
-        {__("Go")}
+        {t("Go")}
       </Button>
     </OverlayTrigger>
   );
@@ -570,7 +568,7 @@ function DatasetSelector({
     <Form.Check
       type="switch"
       id="custom-switch"
-      label={__("Compare Datasets")}
+      label={t("Compare Datasets")}
       checked={compareDatasets}
       onChange={() => {
         action("toggleCompare");
@@ -601,7 +599,7 @@ function DatasetSelector({
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
-          <Modal.Title>{`${__("Loading")} ${loadingTitle}`}</Modal.Title>
+          <Modal.Title>{`${t("Loading")} ${loadingTitle}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ProgressBar now={loadingPercent} />
