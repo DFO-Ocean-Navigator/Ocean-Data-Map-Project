@@ -170,20 +170,19 @@ class MapPlotter(Plotter):
 
     def load_map(
         self,
-        plot_proj: ccrs,
         extent: list,
         figuresize: list,
         dpi: int,
     ) -> Union[plt.figure, plt.axes]:
 
         CACHE_DIR = settings.cache_dir
-        filename = self._get_filename(plot_proj.proj4_params["proj"], extent)
+        filename = self._get_filename(self.plot_projection.proj4_params["proj"], extent)
         filename = pathlib.Path(CACHE_DIR).joinpath(filename)
 
         if not filename.exists():
             fig = plt.figure(figsize=figuresize, dpi=dpi)
-            ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
-            ax.set_extent(extent, crs=plot_proj)
+            ax = plt.axes(projection=self.plot_projection, facecolor="dimgrey")
+            ax.set_extent(extent, crs=self.plot_projection)
             pc_extent = ax.get_extent(crs=self.pc_projection)
 
             land_geoms = self.get_land_geoms(pc_extent)
