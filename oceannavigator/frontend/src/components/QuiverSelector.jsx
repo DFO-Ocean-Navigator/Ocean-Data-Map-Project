@@ -1,11 +1,9 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const QuiverSelector = ({ state, dataset, id, title, children, onUpdate }) => {
-  const { t: _ } = useTranslation();
-
+const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
   // Mirror your old onUpdate method
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
@@ -20,13 +18,6 @@ const QuiverSelector = ({ state, dataset, id, title, children, onUpdate }) => {
 
     onUpdate(id, { ...state, ...patch });
   };
-
-  // Preload translation keys (same as your _("...") calls)
-  _("Colourmap");
-  _("Show Magnitude");
-  _("No");
-  _("Length");
-  _("Colour");
 
   return (
     <div className="QuiverSelector input">
@@ -71,6 +62,7 @@ QuiverSelector.propTypes = {
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
   children: PropTypes.node,
+  t: PropTypes.func.isRequired,
 };
 
-export default QuiverSelector;
+export default withTranslation()(QuiverSelector);

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Row, Button, OverlayTrigger, Tooltip, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle }) => {
-  const { t: _ } = useTranslation();
+const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle, t: _ }) => {
   const [userProvidedTitle, setUserProvidedTitle] = useState(plotTitle);
 
   // Sync state when plotTitle prop changes
@@ -54,7 +53,7 @@ const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle }) => {
       </Row>
     </div>
   );
-};
+}
 
 //***********************************************************************
 CustomPlotLabels.propTypes = {
@@ -62,6 +61,7 @@ CustomPlotLabels.propTypes = {
   title: PropTypes.string,
   plotTitle: PropTypes.string,
   updatePlotTitle: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
-export default CustomPlotLabels;
+export default withTranslation()(CustomPlotLabels);

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
 function ComboBox({
   id,
@@ -16,27 +16,13 @@ function ComboBox({
   alwaysShow = false,
   def = "",
   children,
+  t: _,
 }) {
-  const { t: _ } = useTranslation();
-  const isMounted = useRef(false);
   const [optionsData, setOptionsData] = useState([]);
   const [showHelp, setShowHelp] = useState(false);
-  const [lastUrl, setLastUrl] = useState(null);
 
-  // track mount/unmount
   useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  // re‑populate whenever url or incomingData change
-  useEffect(() => {
-    if (url !== lastUrl || incomingData !== undefined) {
-      setLastUrl(url);
-      populate();
-    }
+    populate();
   }, [url, incomingData]);
 
   function populate() {
@@ -44,10 +30,9 @@ function ComboBox({
       axios
         .get(url)
         .then((res) => {
-          if (!isMounted.current) return;
           let list = res.data.slice();
           const ids = list.map((d) => d.id);
-          // insert “none” if appropriate
+
           if (
             (propState === "" && typeof propState === "string") ||
             propState === "none"
@@ -219,6 +204,7 @@ ComboBox.propTypes = {
   alwaysShow: PropTypes.bool,
   def: PropTypes.string,
   children: PropTypes.node,
+  t: PropTypes.func.isRequired,
 };
 
-export default ComboBox;
+export default withTranslation()(ComboBox);

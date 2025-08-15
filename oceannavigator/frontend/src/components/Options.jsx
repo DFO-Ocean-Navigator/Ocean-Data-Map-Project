@@ -10,11 +10,9 @@ import {
 import Icon from "./lib/Icon.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const Options = ({ options, updateOptions }) => {
-  const { t: _ } = useTranslation();
-
+const Options = ({ options, updateOptions, t: _ }) => {
   // Local state mirrors props.options
   const [interpType, setInterpType] = useState(options.interpType);
   const [interpRadius, setInterpRadius] = useState(options.interpRadius);
@@ -177,7 +175,6 @@ const Options = ({ options, updateOptions }) => {
   );
 };
 
-//***********************************************************************
 Options.propTypes = {
   options: PropTypes.shape({
     interpType: PropTypes.string,
@@ -189,6 +186,7 @@ Options.propTypes = {
     topoShadedRelief: PropTypes.bool,
   }).isRequired,
   updateOptions: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
-export default Options;
+export default withTranslation()(Options);

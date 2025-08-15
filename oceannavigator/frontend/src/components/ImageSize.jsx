@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const ImageSize = ({ id, title, onUpdate }) => {
-  const { t: _ } = useTranslation();
-  // Preload translation
-  _("inches");
-
+const ImageSize = ({ id, title, onUpdate, t: _ }) => {
   const [width, setWidth] = useState(10);
   const [height, setHeight] = useState(7);
   const [dpi, setDpi] = useState(144);
+  
   const changed = (key, value) => {
     const num = parseFloat(value);
     if (isNaN(num)) return;
@@ -88,6 +85,7 @@ ImageSize.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
+  t: PropTypes.func.isRequired,
 };
 
-export default ImageSize;
+export default withTranslation()(ImageSize);

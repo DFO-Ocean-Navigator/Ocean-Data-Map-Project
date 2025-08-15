@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Accordion, Card, Row, Col } from "react-bootstrap";
 import ComboBox from "./ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const Class4Window = ({ dataset, class4type, plotData, init = {}, action }) => {
-  const { t: _ } = useTranslation();
-  // Track if mounted to prevent no-op errors with the Ajax callbacks.
-  const isMountedRef = useRef(false);
-
+const Class4Window = ({
+  dataset,
+  class4type,
+  plotData,
+  init = {},
+  action,
+  t: _,
+}) => {
   const [forecast, setForecast] = useState(init.forecast || "best");
   const [showmap, setShowmap] = useState(init.showmap || false);
   const [climatology, setClimatology] = useState(init.climatology || false);
@@ -20,15 +23,7 @@ const Class4Window = ({ dataset, class4type, plotData, init = {}, action }) => {
   const [dpi, setDpi] = useState(init.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   const onLocalUpdate = (key, value) => {
-    if (!isMountedRef.current) return;
     switch (key) {
       case "forecast":
         return setForecast(value);
@@ -154,6 +149,7 @@ Class4Window.propTypes = {
   plotData: PropTypes.object.isRequired,
   init: PropTypes.object,
   action: PropTypes.func,
+  t: PropTypes.func.isRequired,
 };
 
-export default Class4Window;
+export default withTranslation()(Class4Window);

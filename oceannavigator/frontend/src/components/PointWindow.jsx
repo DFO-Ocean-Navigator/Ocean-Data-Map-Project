@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
@@ -9,7 +9,7 @@ import CustomPlotLabels from "./CustomPlotLabels.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import { GetVariablesPromise } from "../remote/OceanNavigator.js";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
 const TabEnum = {
   PROFILE: 1,
@@ -31,20 +31,33 @@ const PointWindow = ({
   updateDataset,
   setCompareDatasets,
   swapViews,
+  t: _,
 }) => {
-  const { t: _ } = useTranslation();
-  const mountedRef = useRef(false);
+  // UI state
+  const [selected, setSelected] = useState(init?.selected || TabEnum.PROFILE);
 
-  const [state, setState] = useState(() => ({
-    selected: TabEnum.PROFILE,
-    showmap: false,
-    colormap: "default",
-    datasetVariables: [],
-    observation_variable: [0],
-    size: "10x7",
-    dpi: 144,
-    plotTitles: Array(7).fill(""),
-    dataset_0: {
+  // Display settings
+  const [displaySettings, setDisplaySettings] = useState({
+    showmap: init?.showmap || false,
+    colormap: init?.colormap || "default",
+  });
+
+  // Data state
+  const [dataState, setDataState] = useState({
+    datasetVariables: init?.datasetVariables || [],
+    observation_variable: init?.observation_variable || [0],
+  });
+
+  // Plot settings
+  const [plotSettings, setPlotSettings] = useState({
+    size: init?.size || "10x7",
+    dpi: init?.dpi || 144,
+    plotTitles: init?.plotTitles || Array(7).fill(""),
+  });
+
+  // Dataset state - keep as single object due to complexity
+  const [dataset_0, setDataset_0] = useState(
+    init?.dataset_0 || {
       id: ds0.id,
       variable: [ds0.variable],
       variable_range: {},
@@ -52,40 +65,39 @@ const PointWindow = ({
       depth: ds0.depth,
       starttime: ds0.starttime,
       options: ds0.options,
-    },
-  }));
+    }
+  );
 
-  // merge init
+ // merge init
   useEffect(() => {
-    if (init) setState((s) => ({ ...s, ...init }));
+    if (init) {
+      if (init.selected !== undefined) setSelected(init.selected);
+      if (init.showmap !== undefined || init.colormap !== undefined) {
+        setDisplaySettings(prev => ({
+          ...prev,
+          ...(init.showmap !== undefined && { showmap: init.showmap }),
+          ...(init.colormap !== undefined && { colormap: init.colormap }),
+        }));
+      }
+    }
   }, [init]);
 
-  // mounted flag
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  // populate variables on mount or dataset change
-  useEffect(() => {
-    GetVariablesPromise(state.dataset_0.id).then(
-      (res) =>
-        mountedRef.current &&
-        setState((s) => ({
-          ...s,
+    GetVariablesPromise(dataset_0.id).then(
+      (res) => {
+        setDataState(prev => ({
+          ...prev,
           datasetVariables: res.data.map((v) => v.id),
-        })),
+        }));
+      },
       (err) => console.error(err)
     );
-  }, [state.dataset_0.id]);
+  }, [dataset_0.id]);
 
   const onLocalUpdate = (key, value) => {
-    if (!mountedRef.current) return;
     // handle dataset key specially
     if (key === "dataset") {
-      setState((s) => ({ ...s, dataset_0: { ...s.dataset_0, ...value } }));
+      setDataset_0(prev => ({ ...prev, ...value }));
       if (value.variable.length === 1) {
         const v = value.variable[0];
         updateDataset("dataset", { ...value, variable: v });
@@ -96,39 +108,46 @@ const PointWindow = ({
       action("updatePoint", value);
       return;
     }
-    setState((s) => {
-      const upd = {};
-      if (Array.isArray(key)) key.forEach((k, i) => (upd[k] = value[i]));
-      else upd[key] = value;
-      return { ...s, ...upd };
-    });
+
+    // Route updates to appropriate state groups
+    if (["showmap", "colormap"].includes(key)) {
+      setDisplaySettings(prev => ({ ...prev, [key]: value }));
+    } else if (["datasetVariables", "observation_variable"].includes(key)) {
+      setDataState(prev => ({ ...prev, [key]: value }));
+    } else if (["size", "dpi"].includes(key)) {
+      setPlotSettings(prev => ({ ...prev, [key]: value }));
+    } else if (Array.isArray(key)) {
+      const updates = {};
+      key.forEach((k, i) => {
+        updates[k] = value[i];
+      });
+      
+      // Distribute updates to appropriate state groups
+      Object.entries(updates).forEach(([k, v]) => {
+        onLocalUpdate(k, v);
+      });
+    }
   };
 
   // Handles when a tab is selected
   const onSelect = (k) => {
-    setState((s) => ({ ...s, selected: parseInt(k) }));
+    setSelected(parseInt(k));
   };
 
   //Updates Plot with User Specified Title
   const updatePlotTitle = (title) => {
-    setState((s) => {
-      const arr = [...s.plotTitles];
-      arr[s.selected - 1] = title;
-      return { ...s, plotTitles: arr };
+    setPlotSettings(prev => {
+      const arr = [...prev.plotTitles];
+      arr[selected - 1] = title;
+      return { ...prev, plotTitles: arr };
     });
   };
 
   // UI constants
-  const {
-    selected,
-    showmap,
-    datasetVariables,
-    observation_variable,
-    size,
-    dpi,
-    plotTitles,
-    dataset_0,
-  } = state;
+  const { showmap, colormap } = displaySettings;
+  const { datasetVariables, observation_variable } = dataState;
+  const { size, dpi, plotTitles } = plotSettings;
+  
   const only3d = [TabEnum.PROFILE, TabEnum.OBSERVATION].includes(selected);
   const showDepthSelector = selected === TabEnum.MOORING;
   const showTimeRange = [TabEnum.STICK, TabEnum.MOORING].includes(selected);
@@ -318,7 +337,7 @@ const PointWindow = ({
         starttime: dataset_0.starttime,
         endtime: dataset_0.time,
         depth: dataset_0.depth,
-        colormap: state.colormap,
+        colormap: colormap,
         interp: mapSettings.interpType,
         radius: mapSettings.interpRadius,
         neighbours: mapSettings.interpNeighbours,
@@ -330,7 +349,7 @@ const PointWindow = ({
           <ComboBox
             key="colormap"
             id="colormap"
-            state={state.colormap}
+            state={colormap}
             onUpdate={onLocalUpdate}
             url="/api/v2.0/plot/colormaps"
             title={_("Colourmap")}
@@ -351,6 +370,16 @@ const PointWindow = ({
       inputs = [global, multiDepthVector];
       break;
   }
+
+  // permlink_subquery from current state
+  const permlink_subquery = {
+    selected,
+    starttime: dataset_0.starttime,
+    ...displaySettings,
+    ...plotSettings,
+    ...dataState,
+    dataset_0,
+  };
 
   return (
     <div className="PointWindow Window">
@@ -393,7 +422,7 @@ const PointWindow = ({
         <Col lg={10} className="plot-col">
           <PlotImage
             query={plot_query}
-            permlink_subquery={{ selected, starttime: dataset_0.starttime }}
+            permlink_subquery={permlink_subquery}
             action={action}
           />
         </Col>
@@ -402,7 +431,6 @@ const PointWindow = ({
   );
 };
 
-//***********************************************************************
 PointWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
   mapSettings: PropTypes.object,
@@ -410,6 +438,10 @@ PointWindow.propTypes = {
   action: PropTypes.func,
   init: PropTypes.object,
   updateDataset: PropTypes.func,
+  dataset_0: PropTypes.object.isRequired,
+  setCompareDatasets: PropTypes.func,
+  swapViews: PropTypes.func,
+  t: PropTypes.func.isRequired,
 };
 
-export default PointWindow;
+export default withTranslation()(PointWindow);

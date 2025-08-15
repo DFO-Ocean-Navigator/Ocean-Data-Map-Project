@@ -2,10 +2,9 @@ import React, { useState, useRef } from "react";
 import { Button, Card, Form, Row, Col } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const Permalink = ({ generatePermLink, compareDatasets }) => {
-  const { t: _ } = useTranslation();
+const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
   const textareaRef = useRef(null);
 
   // Default options
@@ -112,6 +111,7 @@ const Permalink = ({ generatePermLink, compareDatasets }) => {
 Permalink.propTypes = {
   generatePermLink: PropTypes.func.isRequired,
   compareDatasets: PropTypes.bool,
+  t: PropTypes.func.isRequired,
 };
 
-export default Permalink;
+export default withTranslation()(Permalink);

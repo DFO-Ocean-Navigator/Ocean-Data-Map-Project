@@ -10,15 +10,12 @@ import {
 } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
 const FAIL_IMAGE = require("./fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
-const PlotImage = ({ query, permlink_subquery, action }) => {
-  const { t: _ } = useTranslation();
-  // Track if mounted to prevent no-op errors with the Ajax callbacks.
-  const isMountedRef = useRef(false);
+const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const imagelinkRef = useRef(null);
 
   // Local state
@@ -82,7 +79,6 @@ const PlotImage = ({ query, permlink_subquery, action }) => {
 
   // Load image when query changes
   useEffect(() => {
-    isMountedRef.current = true;
     const [type, qry] = generateQuery(query);
     const qs = JSON.stringify(qry);
     if (qs !== queryString) {
@@ -97,23 +93,16 @@ const PlotImage = ({ query, permlink_subquery, action }) => {
           params: { query: qs, format: "json" },
         })
         .then((res) => {
-          if (isMountedRef.current) {
-            setLoading(false);
-            setFail(false);
-            setUrl(res.data);
-          }
+          setLoading(false);
+          setFail(false);
+          setUrl(res.data);
         })
         .catch(() => {
-          if (isMountedRef.current) {
-            setLoading(false);
-            setFail(true);
-            setUrl(FAIL_IMAGE);
-          }
+          setLoading(false);
+          setFail(true);
+          setUrl(FAIL_IMAGE);
         });
     }
-    return () => {
-      isMountedRef.current = false;
-    };
   }, [query, generateQuery, queryString]);
 
   // Toggle image link modal
@@ -282,6 +271,7 @@ PlotImage.propTypes = {
   query: PropTypes.object,
   permlink_subquery: PropTypes.object,
   action: PropTypes.func,
+  t: PropTypes.func.isRequired,
 };
 
-export default PlotImage;
+export default withTranslation()(PlotImage);

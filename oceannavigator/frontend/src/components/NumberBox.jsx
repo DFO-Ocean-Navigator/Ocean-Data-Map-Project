@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const NumberBox = ({ id, title, state: propState, onUpdate, children }) => {
-  const { t: _ } = useTranslation();
+const NumberBox = ({ id, title, state: propState, onUpdate, children, t: _ }) => {
   const [value, setValue] = useState(propState);
   const [showHelp, setShowHelp] = useState(false);
   const timeoutRef = useRef(null);
@@ -83,13 +82,14 @@ const NumberBox = ({ id, title, state: propState, onUpdate, children }) => {
     </div>
   );
 };
-//***********************************************************************
+
 NumberBox.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.number,
   children: PropTypes.node,
+  t: PropTypes.func.isRequired,
 };
 
-export default NumberBox;
+export default withTranslation()(NumberBox);

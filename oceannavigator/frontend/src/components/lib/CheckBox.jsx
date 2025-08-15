@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
+import { withTranslation } from "react-i18next";
 
-const CheckBox = ({ id, title, checked, onUpdate, style }) => {
+const CheckBox = ({ id, title, checked, onUpdate, style, t: _ }) => {
   const handleChange = (e) => {
     onUpdate(id, e.target.checked);
   };
@@ -25,7 +26,7 @@ CheckBox.propTypes = {
   checked: PropTypes.bool,
   onUpdate: PropTypes.func.isRequired,
   style: PropTypes.object,
+  t: PropTypes.func.isRequired,
 };
 
-export default CheckBox;
-
+export default withTranslation()(CheckBox);

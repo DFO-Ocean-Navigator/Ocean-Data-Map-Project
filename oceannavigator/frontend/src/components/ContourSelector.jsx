@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import ComboBox from "./ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
-  const { t: _ } = useTranslation();
-
+const ContourSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
   // Internal levels state
   const [levels, setLevels] = useState(state.levels || "-10,0,10");
   const auto = state.levels === "auto";
@@ -43,10 +41,15 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
     handleUpdate("levels", levels);
   };
 
-  // Auto-levels toggle
-  const onUpdateAuto = (_k, checked) => {
-    if (checked) handleUpdate("levels", "auto");
-    else updateLevels();
+ 
+  const onUpdateAuto = (key, checked) => {
+    if (checked) {
+      handleUpdate("levels", "auto");
+    } else {
+      const manualLevels = levels !== "auto" ? levels : "-10,0,10";
+      setLevels(manualLevels);
+      handleUpdate("levels", manualLevels);
+    }
   };
 
   // Render
@@ -117,7 +120,7 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate }) => {
     </div>
   );
 };
-//***********************************************************************
+
 ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
   dataset: PropTypes.string.isRequired,
@@ -125,6 +128,7 @@ ContourSelector.propTypes = {
   title: PropTypes.string,
   children: PropTypes.node,
   onUpdate: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
-export default ContourSelector;
+export default withTranslation()(ContourSelector);

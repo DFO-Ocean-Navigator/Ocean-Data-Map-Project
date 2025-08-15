@@ -16,6 +16,7 @@ function SelectBox({
   multiple = false,
   horizontalLayout = false,
   helpContent = null,
+  t: _,
 }) {
   const [showHelp, setShowHelp] = useState(false);
   const toggleShowHelp = () => setShowHelp((h) => !h);
@@ -75,6 +76,7 @@ SelectBox.propTypes = {
   multiple: PropTypes.bool,
   horizontalLayout: PropTypes.bool,
   helpContent: PropTypes.arrayOf(PropTypes.object),
+  t: PropTypes.func.isRequired,
 };
 
 export default withTranslation()(

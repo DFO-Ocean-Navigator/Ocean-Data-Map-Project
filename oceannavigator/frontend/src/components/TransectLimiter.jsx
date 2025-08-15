@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form } from "react-bootstrap";
 import NumberBox from "./NumberBox.jsx";
 import PropTypes from "prop-types";
-import { useTranslation } from "react-i18next";
+import { withTranslation } from "react-i18next";
 
 const TransectLimiter = ({
   id,
@@ -10,9 +10,8 @@ const TransectLimiter = ({
   parameter,
   state: propState,
   onUpdate,
+  t: _,
 }) => {
-  const { t: _ } = useTranslation();
-
   // Determine initial limit and value from propState
   const initialLimit = !(isNaN(propState) || propState === false);
   const initialValue = initialLimit ? parseInt(propState, 10) : 200;
@@ -73,6 +72,7 @@ TransectLimiter.propTypes = {
   parameter: PropTypes.string,
   state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
   onUpdate: PropTypes.func,
+  t: PropTypes.func.isRequired,
 };
 
-export default TransectLimiter;
+export default withTranslation()(TransectLimiter);
