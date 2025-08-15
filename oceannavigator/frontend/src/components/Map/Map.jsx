@@ -25,6 +25,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
+import { AnnotationOverlayManager } from "../AnnotationOverlay.jsx";
 
 import {
   createMapView,
@@ -100,16 +101,16 @@ data tiles: 1
 land shapes (mbt tiles): 2
 bathy lines: 3
 bathy shapes: 4
-annotations: 5
-vector features: 6
-observation drawing: 7
-quivers: 8
+vector features: 5
+observation drawing: 6
+quivers: 7
 *****************/
 
 const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
+  const [annotationManager, setAnnotationManager] = useState(null);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -124,7 +125,6 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-  const [annotationVectorSource, setAnnotationVectorSource] = useState();
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [drawAction, setDrawAction] = useState();
@@ -141,6 +141,7 @@ const Map = forwardRef((props, ref) => {
     addAnnotationLabel: addAnnotationLabel,
     undoAnnotationLabel: undoAnnotationLabel,
     clearAnnotationLabels: clearAnnotationLabels,
+    getMapCenter: getMapCenter,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -185,7 +186,7 @@ const Map = forwardRef((props, ref) => {
         width: 4,
       }),
       fill: new Fill({
-        color: "rgba(0,153,255,0.3)", 
+        color: "rgba(0,153,255,0.3)",
       }),
       image: new Circle({
         radius: 4,
@@ -222,6 +223,9 @@ const Map = forwardRef((props, ref) => {
 
     return hoverSelect;
   };
+  const getMapCenter = () => {
+    return mapView.getCenter();
+  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -238,16 +242,6 @@ const Map = forwardRef((props, ref) => {
       4,
       MIN_ZOOM[projection],
       MAX_ZOOM[projection]
-    );
-
-    let newAnnotationVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-    });
-
-    let newLayerAnnotationVector = createAnnotationVectorLayer(
-      newAnnotationVectorSource
     );
 
     let newFeatureVectorSource = new VectorSource({
@@ -269,7 +263,6 @@ const Map = forwardRef((props, ref) => {
       popupElement0,
       newMapView,
       layerData0,
-      newLayerAnnotationVector,
       newLayerFeatureVector,
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
@@ -299,6 +292,9 @@ const Map = forwardRef((props, ref) => {
 
     addDblClickPlot(newMap, newSelect);
 
+    const newAnnotationManager = new AnnotationOverlayManager(newMap);
+    setAnnotationManager(newAnnotationManager);
+
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
@@ -306,9 +302,14 @@ const Map = forwardRef((props, ref) => {
     setSelect0(newSelect);
     setHoverSelect0(newHoverSelect);
     setLayerBasemap(mapLayers[0]);
-    setAnnotationVectorSource(newAnnotationVectorSource);
+
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
+    return () => {
+      if (newAnnotationManager) {
+        newAnnotationManager.cleanup();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -322,9 +323,6 @@ const Map = forwardRef((props, ref) => {
         positioning: "bottom-center",
       });
 
-      let newLayerAnnotationVector = createAnnotationVectorLayer(
-        annotationVectorSource
-      );
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
         props.mapSettings
@@ -336,13 +334,12 @@ const Map = forwardRef((props, ref) => {
         popupElement1,
         mapView,
         layerData1,
-        newLayerAnnotationVector,
         newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
         mapRef1
       );
-      
+
       const newSelect = createSelect();
       const newHoverSelect = createHoverSelect(
         newSelect,
@@ -355,12 +352,22 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, newSelect);
+      if (annotationManager) {
+        annotationManager.setSecondaryMap(newMap);
+      }
 
       setSelect1(newSelect);
+      setMap1(newMap);
+      setHoverSelect1(newHoverSelect);
+    } else {
+      if (annotationManager) {
+        annotationManager.setSecondaryMap(null);
+      }
+      setMap1(null);
+      setSelect1(null);
+      setHoverSelect1(null);
     }
-    setMap1(newMap);
-    setHoverSelect1(newHoverSelect);
-  }, [props.compareDatasets]);
+  }, [props.compareDatasets, annotationManager]);
 
   useEffect(() => {
     if (props.dataset0.default_location) {
@@ -434,7 +441,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0) {
-      let quiverLayer = map0.getLayers().getArray()[8];
+      let quiverLayer = map0.getLayers().getArray()[7];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
@@ -449,7 +456,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1) {
-      let quiverLayer = map1.getLayers().getArray()[8];
+      let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
@@ -464,7 +471,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (drawAction) {
-      let source = map0.getLayers().getArray()[6].getSource();
+      let source = map0.getLayers().getArray()[5].getSource();
       let newDrawAction = getDrawAction(source, props.featureType);
 
       removeMapInteractions(map0, "all");
@@ -902,32 +909,27 @@ const Map = forwardRef((props, ref) => {
 
     let map0Layers = map0.getLayers().getArray();
 
-    let newAnnotationVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-    });
-    map0Layers[5].setSource(newAnnotationVectorSource);
-    setAnnotationVectorSource(newAnnotationVectorSource);
-
     let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    map0Layers[6].setSource(newFeatureVectorSource);
+    map0Layers[5].setSource(newFeatureVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-    map0Layers[7].setSource(newObsDrawSource);
+    map0Layers[6].setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
 
     if (props.compareDatasets) {
       let map1layers = map1.getLayers().getArray();
-      map1layers[6].setSource(newFeatureVectorSource);
-      map1layers[7].setSource(newObsDrawSource);
+      map1layers[5].setSource(newFeatureVectorSource);
+      map1layers[6].setSource(newObsDrawSource);
+    }
+    if (annotationManager) {
+      annotationManager.clearAllAnnotations();
     }
   };
 
@@ -938,7 +940,6 @@ const Map = forwardRef((props, ref) => {
     }
     hoverSelect0.setActive(false);
 
-    //Resets map (in case other plots have been drawn)
     resetMap();
     let newDrawAction = obsPointDrawAction(
       map0,
@@ -974,7 +975,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const startFeatureDraw = () => {
-    let source = map0.getLayers().getArray()[6].getSource();
+    let source = map0.getLayers().getArray()[5].getSource();
     let newDrawAction = getDrawAction(source, props.featureType);
     hoverSelect0.setActive(false);
     if (props.compareDatasets && hoverSelect1 && hoverSelect1.setActive) {
@@ -999,24 +1000,22 @@ const Map = forwardRef((props, ref) => {
     }
   };
 
-  const addAnnotationLabel = (text) => {
-    let feature = new Feature({
-      geometry: new Point(mapView.getCenter()),
-      name: text,
-      annotation: true,
-    });
-    annotationVectorSource.addFeature(feature);
+  const addAnnotationLabel = (text, coord) => {
+    if (annotationManager) {
+      annotationManager.addAnnotationLabel(text.trim(), coord);
+    }
   };
 
   const undoAnnotationLabel = () => {
-    let features = annotationVectorSource.getFeatures();
-    if (features.length > 0) {
-      annotationVectorSource.removeFeatures([features[features.length - 1]]);
+    if (annotationManager) {
+      annotationManager.undoLastAnnotation();
     }
   };
 
   const clearAnnotationLabels = () => {
-    annotationVectorSource.clear();
+    if (annotationManager) {
+      annotationManager.clearAllAnnotations();
+    }
   };
 
   const updateProjection = (map, dataset) => {
@@ -1106,8 +1105,8 @@ const Map = forwardRef((props, ref) => {
 
     featureVectorSource.refresh();
 
-    if (mapLayers[8].getSource()) {
-      mapLayers[8].setSource(getQuiverSource(dataset, props.mapSettings));
+    if (mapLayers[7].getSource()) {
+      mapLayers[7].setSource(getQuiverSource(dataset, props.mapSettings));
     }
   };
 
