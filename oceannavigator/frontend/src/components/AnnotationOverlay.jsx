@@ -2,8 +2,8 @@ import Overlay from "ol/Overlay.js";
 
 export class AnnotationOverlayManager {
   constructor(primaryMap, onUpdateAnnotation = null) {
-    this.maps = [primaryMap];
-    this.onUpdateAnnotation = onUpdateAnnotation;
+    this.maps = [primaryMap].filter(Boolean);
+    this.annotations = new Map();
   }
 
   setSecondaryMap = (map) => {
@@ -11,7 +11,24 @@ export class AnnotationOverlayManager {
   };
 
   createAnnotationOverlays = (annotationData) => {
-    return this.maps.map(() => this._createOverlay(annotationData));
+    // return this.maps.map(() => this._createOverlay(annotationData));
+    const { id, direction = 0 } = annotationData;
+ 
+    // Get or create the registry entry
+    let entry = this.annotations.get(id);
+    if (!entry) {
+      entry = { id, direction, overlays: [] };
+      this.annotations.set(id, entry);
+    }
+ 
+    // Always use the entry’s current direction so both maps stay in sync
+    const overlays = this.maps.map(() =>
+      this._createOverlay({ ...annotationData, direction: entry.direction })
+    );
+ 
+    // Track these overlays for future rotations/cleanup
+    entry.overlays.push(...overlays);
+    return overlays;
   };
 
   _createOverlay = ({ id, text, position, direction = 0 }) => {
@@ -39,6 +56,17 @@ export class AnnotationOverlayManager {
 
     this._addDrag(el, overlay, id);
     return overlay;
+  };
+
+ _rotateArrow = (id) => {
+    const annotation = this.annotations.get(id);
+    if (!annotation) return;
+
+    annotation.direction = (annotation.direction + 1) % 4;
+    annotation.overlays.forEach((overlay) => {
+      const arrow = overlay.getElement().querySelector(".annotation-arrow");
+      arrow.className = `annotation-arrow arrow-${annotation.direction}`;
+    });
   };
 
   _addDrag = (el, overlay, id) => {
@@ -72,10 +100,6 @@ export class AnnotationOverlayManager {
         const pixel = map.getPixelFromCoordinate(pos);
         const newPos = map.getCoordinateFromPixel([pixel[0] + dx, pixel[1] + dy]);
         overlay.setPosition(newPos);
-
-        if (this.onUpdateAnnotation) {
-          this.onUpdateAnnotation(id, { position: newPos });
-        }
       }
     };
 
@@ -84,9 +108,7 @@ export class AnnotationOverlayManager {
       dragging = false;
       el.style.cursor = "";
       if (!hasMoved && e.target.className !== "annotation-close") {
-        if (this.onUpdateAnnotation) {
-          this.onUpdateAnnotation(id, { _rotate: true });
-        }
+        this._rotateArrow(id);
       }
     };
 

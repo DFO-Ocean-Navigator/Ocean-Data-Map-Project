@@ -326,9 +326,7 @@ const Map = forwardRef((props, ref) => {
 
     addDblClickPlot(newMap, newSelect);
 
-    const newAnnotationManager = new AnnotationOverlayManager(
-      newMap
-    );
+    const newAnnotationManager = new AnnotationOverlayManager(newMap);
     setAnnotationManager(newAnnotationManager);
 
     let mapLayers = newMap.getLayers().getArray();
@@ -392,16 +390,32 @@ const Map = forwardRef((props, ref) => {
         annotationManager.setSecondaryMap(newMap, annotations);
       }
 
+       if (map0 && map0.getOverlays) {
+      const existingOverlays = map0.getOverlays().getArray();
+      
+      existingOverlays.forEach(overlay => {
+   const rawId = overlay.get?.('id') ?? overlay.getId?.();
+   const id = typeof rawId === 'string' ? rawId.replace('annotation_', '') : rawId;
+   const text = overlay.getElement().querySelector('.annotation-text')?.textContent || '';
+   const position = overlay.getPosition();
+   const cls = overlay.getElement().querySelector('.annotation-arrow')?.className || '';
+   const m = cls.match(/\barrow-(\d)\b/);
+   const direction = m ? parseInt(m[1], 10) : 0;
+   const annotationData = { id, text, position, direction };
+            if (annotationManager) {
+              const newOverlays = annotationManager.createAnnotationOverlays(annotationData);
+              if (newOverlays[1]) {
+                newMap.addOverlay(newOverlays[1]);
+              }
+            }
+          });
+          //  annotationManager.setSecondaryMap(newMap);
+          // }
+          }
+        
       setSelect1(newSelect);
       setMap1(newMap);
       setHoverSelect1(newHoverSelect);
-    } else {
-      if (annotationManager) {
-        annotationManager.setSecondaryMap(null, annotations);
-      }
-      setMap1(null);
-      setSelect1(null);
-      setHoverSelect1(null);
     }
   }, [props.compareDatasets, annotationManager]);
 
@@ -964,8 +978,11 @@ const Map = forwardRef((props, ref) => {
       map1layers[5].setSource(newFeatureVectorSource);
       map1layers[6].setSource(newObsDrawSource);
     }
-    if (annotationManager) {
-      annotationManager.clearAllOverlays();
+    if (annotations) {
+      map0.getOverlays().clear();
+      if (map1) {
+        map1.getOverlays().clear();
+      }
     }
     setAnnotations(new globalThis.Map());
     setNextAnnotationId(1);
