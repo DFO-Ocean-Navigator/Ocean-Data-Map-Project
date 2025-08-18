@@ -30,7 +30,6 @@ import { AnnotationOverlayManager } from "../AnnotationOverlay.jsx";
 import {
   createMapView,
   createMap,
-  createAnnotationVectorLayer,
   createFeatureVectorLayer,
   getBasemap,
   getDataSource,
@@ -111,6 +110,8 @@ const Map = forwardRef((props, ref) => {
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
   const [annotationManager, setAnnotationManager] = useState(null);
+  const [annotations, setAnnotations] = useState(new globalThis.Map());
+  const [nextAnnotationId, setNextAnnotationId] = useState(1);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -226,6 +227,39 @@ const Map = forwardRef((props, ref) => {
   const getMapCenter = () => {
     return mapView.getCenter();
   };
+  const addAnnotationLabel = (text, coord) => {
+    if (annotationManager) {
+      const id = nextAnnotationId;
+      const annotationData = {
+        id,
+        text: text.trim(),
+        position: coord,
+        direction: 0,
+      };
+
+      const overlays =
+        annotationManager.createAnnotationOverlays(annotationData);
+      map0.addOverlay(overlays[0]);
+      if (map1 && overlays[1]) {
+        map1.addOverlay(overlays[1]);
+      }
+      setNextAnnotationId((prev) => prev + 1);
+    }
+  };
+
+  const undoAnnotationLabel = () => {
+    map0.getOverlays().pop();
+    if (map1) {
+      map1.getOverlays().pop();
+    }
+  };
+
+  const clearAnnotationLabels = () => {
+    map0.getOverlays().clear();
+    if (map1) {
+      map1.getOverlays().clear();
+    }
+  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -292,7 +326,9 @@ const Map = forwardRef((props, ref) => {
 
     addDblClickPlot(newMap, newSelect);
 
-    const newAnnotationManager = new AnnotationOverlayManager(newMap);
+    const newAnnotationManager = new AnnotationOverlayManager(
+      newMap
+    );
     setAnnotationManager(newAnnotationManager);
 
     let mapLayers = newMap.getLayers().getArray();
@@ -353,7 +389,7 @@ const Map = forwardRef((props, ref) => {
 
       addDblClickPlot(newMap, newSelect);
       if (annotationManager) {
-        annotationManager.setSecondaryMap(newMap);
+        annotationManager.setSecondaryMap(newMap, annotations);
       }
 
       setSelect1(newSelect);
@@ -361,7 +397,7 @@ const Map = forwardRef((props, ref) => {
       setHoverSelect1(newHoverSelect);
     } else {
       if (annotationManager) {
-        annotationManager.setSecondaryMap(null);
+        annotationManager.setSecondaryMap(null, annotations);
       }
       setMap1(null);
       setSelect1(null);
@@ -929,8 +965,10 @@ const Map = forwardRef((props, ref) => {
       map1layers[6].setSource(newObsDrawSource);
     }
     if (annotationManager) {
-      annotationManager.clearAllAnnotations();
+      annotationManager.clearAllOverlays();
     }
+    setAnnotations(new globalThis.Map());
+    setNextAnnotationId(1);
   };
 
   const drawObsPoint = () => {
@@ -997,24 +1035,6 @@ const Map = forwardRef((props, ref) => {
     hoverSelect0.setActive(true);
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
-    }
-  };
-
-  const addAnnotationLabel = (text, coord) => {
-    if (annotationManager) {
-      annotationManager.addAnnotationLabel(text.trim(), coord);
-    }
-  };
-
-  const undoAnnotationLabel = () => {
-    if (annotationManager) {
-      annotationManager.undoLastAnnotation();
-    }
-  };
-
-  const clearAnnotationLabels = () => {
-    if (annotationManager) {
-      annotationManager.clearAllAnnotations();
     }
   };
 
