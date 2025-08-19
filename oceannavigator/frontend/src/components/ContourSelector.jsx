@@ -4,7 +4,15 @@ import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const ContourSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const ContourSelector = ({
+  state,
+  dataset,
+  id,
+  title,
+  children,
+  onUpdate,
+  t: _,
+}) => {
   // Internal levels state
   const [levels, setLevels] = useState(state.levels || "-10,0,10");
   const auto = state.levels === "auto";
@@ -41,7 +49,6 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }
     handleUpdate("levels", levels);
   };
 
- 
   const onUpdateAuto = (key, checked) => {
     if (checked) {
       handleUpdate("levels", "auto");
@@ -68,7 +75,14 @@ const ContourSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }
 
       <div
         className="sub"
-        style={{ display: !state.variable ? "none" : "block" }}
+        style={{
+          display:
+            state.variable === "none" ||
+            state.variable === "" ||
+            !state.variable
+              ? "none"
+              : "block",
+        }}
       >
         <CheckBox
           id="hatch"

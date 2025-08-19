@@ -46,7 +46,6 @@ const AreaWindow = (props) => {
     showarea: props.init?.showarea ?? true,
     bathymetry: props.init?.bathymetry ?? true,
     surfacevariable: props.init?.surfacevariable || "none",
-    syncLocalToGlobalState: props.init?.syncLocalToGlobalState || false,
   });
 
   // Feature settings
@@ -98,14 +97,7 @@ const AreaWindow = (props) => {
       setColormaps((prev) => ({ ...prev, [colorKey]: value }));
     } else if (key === "size" || key === "dpi") {
       setPlotSettings((prev) => ({ ...prev, [key]: value }));
-    } else if (
-      [
-        "showarea",
-        "bathymetry",
-        "surfacevariable",
-        "syncLocalToGlobalState",
-      ].includes(key)
-    ) {
+    } else if (["showarea", "bathymetry", "surfacevariable"].includes(key)) {
       setMapSettings((prev) => ({ ...prev, [key]: value }));
     } else if (key === "quiver") {
       setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
