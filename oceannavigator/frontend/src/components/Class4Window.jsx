@@ -24,23 +24,36 @@ const Class4Window = ({
   const [models, setModels] = useState(init.models || []);
 
   const onLocalUpdate = (key, value) => {
-    switch (key) {
-      case "forecast":
-        return setForecast(value);
-      case "showmap":
-        return setShowmap(value);
-      case "climatology":
-        return setClimatology(value);
-      case "error":
-        return setError(value);
-      case "size":
-        return setSize(value);
-      case "dpi":
-        return setDpi(value);
-      case "models":
-        return setModels(value);
-      default:
-        return;
+    if (typeof key === "string") {
+      switch (key) {
+        case "forecast":
+          setForecast(value);
+          break;
+        case "showmap":
+          setShowmap(value);
+          break;
+        case "climatology":
+          setClimatology(value);
+          break;
+        case "error":
+          setError(value);
+          break;
+        case "size":
+          setSize(value);
+          break;
+        case "dpi":
+          setDpi(value);
+          break;
+        case "models":
+          setModels(value);
+          break;
+        default:
+          break;
+      }
+    } else if (Array.isArray(key)) {
+      for (let i = 0; i < key.length; i++) {
+        onLocalUpdate(key[i], Array.isArray(value) ? value[i] : value);
+      }
     }
   };
 
@@ -64,6 +77,22 @@ const Class4Window = ({
     { id: "climatology", value: _("Value - Climatology") },
   ];
 
+  const plotOptions = (
+    <ImageSize
+      id="size"
+      state={size}
+      onUpdate={onLocalUpdate}
+      title={_("Saved Image Size")}
+    />
+  );
+
+  _("Forecast");
+  _("Show Location");
+  _("Show Climatology");
+  _("Additional Models");
+  _("Show Error");
+  _("Saved Image Size");
+
   return (
     <div className="Class4Window Window">
       <Row>
@@ -72,13 +101,16 @@ const Class4Window = ({
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
+                key="forecast"
                 id="forecast"
                 state={forecast}
+                def=""
                 url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
                 title={_("Forecast")}
                 onUpdate={onLocalUpdate}
               />
               <CheckBox
+                key="showmap"
                 id="showmap"
                 checked={showmap}
                 onUpdate={onLocalUpdate}
@@ -87,6 +119,7 @@ const Class4Window = ({
                 {_("showmap_help")}
               </CheckBox>
               <CheckBox
+                key="climatology"
                 id="climatology"
                 checked={climatology}
                 onUpdate={onLocalUpdate}
@@ -95,35 +128,31 @@ const Class4Window = ({
                 {_("climatology_help")}
               </CheckBox>
               <ComboBox
+                key="models"
                 id="models"
                 state={models}
                 multiple
+                onUpdate={onLocalUpdate}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
-                onUpdate={onLocalUpdate}
               />
               <ComboBox
+                key="error"
                 id="error"
                 state={error}
+                def=""
                 data={error_options}
                 title={_("Show Error")}
                 onUpdate={onLocalUpdate}
               />
-              <Accordion>
+              <Accordion id="class4_accordion">
                 <Accordion.Header>{_("Plot Options")}</Accordion.Header>
-                <Accordion.Body>
-                  <ImageSize
-                    id="size"
-                    state={size}
-                    onUpdate={onLocalUpdate}
-                    title={_("Saved Image Size")}
-                  />
-                </Accordion.Body>
+                <Accordion.Body>{plotOptions}</Accordion.Body>
               </Accordion>
             </Card.Body>
           </Card>
         </Col>
-        <Col lg={10} className="plot-col">
+        <Col lg={10}>
           <PlotImage
             query={plot_query} // For image saving link.
             permlink_subquery={{
