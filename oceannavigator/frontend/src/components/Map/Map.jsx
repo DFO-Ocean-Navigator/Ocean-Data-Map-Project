@@ -25,7 +25,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { AnnotationOverlayManager } from "../AnnotationOverlay.jsx";
+import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
 
 import {
   createMapView,
@@ -109,9 +109,7 @@ const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
-  const [annotationManager, setAnnotationManager] = useState(null);
-  const [annotations, setAnnotations] = useState(new globalThis.Map());
-  const [nextAnnotationId, setNextAnnotationId] = useState(1);
+  const [annotationOverlays, setAnnotationOverlays] = useState([]);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -227,39 +225,6 @@ const Map = forwardRef((props, ref) => {
   const getMapCenter = () => {
     return mapView.getCenter();
   };
-  const addAnnotationLabel = (text, coord) => {
-    if (annotationManager) {
-      const id = nextAnnotationId;
-      const annotationData = {
-        id,
-        text: text.trim(),
-        position: coord,
-        direction: 0,
-      };
-
-      const overlays =
-        annotationManager.createAnnotationOverlays(annotationData);
-      map0.addOverlay(overlays[0]);
-      if (map1 && overlays[1]) {
-        map1.addOverlay(overlays[1]);
-      }
-      setNextAnnotationId((prev) => prev + 1);
-    }
-  };
-
-  const undoAnnotationLabel = () => {
-    map0.getOverlays().pop();
-    if (map1) {
-      map1.getOverlays().pop();
-    }
-  };
-
-  const clearAnnotationLabels = () => {
-    map0.getOverlays().clear();
-    if (map1) {
-      map1.getOverlays().clear();
-    }
-  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -326,9 +291,6 @@ const Map = forwardRef((props, ref) => {
 
     addDblClickPlot(newMap, newSelect);
 
-    const newAnnotationManager = new AnnotationOverlayManager(newMap);
-    setAnnotationManager(newAnnotationManager);
-
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
@@ -339,11 +301,6 @@ const Map = forwardRef((props, ref) => {
 
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
-    return () => {
-      if (newAnnotationManager) {
-        newAnnotationManager.cleanup();
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -386,37 +343,24 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, newSelect);
-      if (annotationManager) {
-  //       annotationManager.setSecondaryMap(newMap, annotations);
-  //     }
 
-  //      if (map0 && map0.getOverlays) {
-  //     const existingOverlays = map0.getOverlays().getArray();
-      
-  //     existingOverlays.forEach(overlay => {
-  //  const rawId = overlay.get?.('id') ?? overlay.getId?.();
-  //  const id = typeof rawId === 'string' ? rawId.replace('annotation_', '') : rawId;
-  //  const text = overlay.getElement().querySelector('.annotation-text')?.textContent || '';
-  //  const position = overlay.getPosition();
-  //  const cls = overlay.getElement().querySelector('.annotation-arrow')?.className || '';
-  //  const m = cls.match(/\barrow-(\d)\b/);
-  //  const direction = m ? parseInt(m[1], 10) : 0;
-  //  const annotationData = { id, text, position, direction };
-  //           if (annotationManager) {
-  //             const newOverlays = annotationManager.createAnnotationOverlays(annotationData);
-  //             if (newOverlays[1]) {
-  //               newMap.addOverlay(newOverlays[1]);
-  //             }
-  //           }
-  //         });
-           annotationManager.setSecondaryMap(newMap);
-          }
-        
       setSelect1(newSelect);
       setMap1(newMap);
       setHoverSelect1(newHoverSelect);
+
+      let overlays = map0.getOverlays().getArray();
+
+      for (let overlay of overlays) {
+        if (overlay.getId() && overlay.getId().includes("annotation")) {
+          overlay.linkOverlay(newMap);
+        }
+      }
+    } else {
+      setMap1(null);
+      setSelect1(null);
+      setHoverSelect1(null);
     }
-  }, [props.compareDatasets, annotationManager]);
+  }, [props.compareDatasets]);
 
   useEffect(() => {
     if (props.dataset0.default_location) {
@@ -977,14 +921,7 @@ const Map = forwardRef((props, ref) => {
       map1layers[5].setSource(newFeatureVectorSource);
       map1layers[6].setSource(newObsDrawSource);
     }
-    if (annotations) {
-      map0.getOverlays().clear();
-      if (map1) {
-        map1.getOverlays().clear();
-      }
-    }
-    setAnnotations(new globalThis.Map());
-    setNextAnnotationId(1);
+    clearAnnotationLabels();
   };
 
   const drawObsPoint = () => {
@@ -1052,6 +989,44 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
     }
+  };
+
+  const addAnnotationLabel = (text, coord) => {
+    let overlay = new AnnotationOverlay(text, coord);
+    map0.addOverlay(overlay);
+    setAnnotationOverlays((prev) => [...prev, overlay]);
+    if (props.compareDatasets && map1) {
+      overlay.linkOverlay(map1);
+    }
+  };
+
+  const undoAnnotationLabel = () => {
+    if (annotationOverlays.length > 0) {
+      const lastOverlay = annotationOverlays[annotationOverlays.length - 1];
+
+      if (map0) {
+        map0.removeOverlay(lastOverlay);
+      }
+
+      if (lastOverlay.linkedOverlay && map1) {
+        map1.removeOverlay(lastOverlay.linkedOverlay);
+      }
+
+      setAnnotationOverlays((prev) => prev.slice(0, -1));
+    }
+  };
+
+  const clearAnnotationLabels = () => {
+    annotationOverlays.forEach((overlay) => {
+      if (map0) {
+        map0.removeOverlay(overlay);
+      }
+      if (overlay.linkedOverlay && map1) {
+        map1.removeOverlay(overlay.linkedOverlay);
+      }
+    });
+
+    setAnnotationOverlays([]);
   };
 
   const updateProjection = (map, dataset) => {
