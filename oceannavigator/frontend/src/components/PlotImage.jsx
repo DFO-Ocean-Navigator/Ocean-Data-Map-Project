@@ -223,11 +223,15 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           onSelect={generateScript}
           drop="up"
         >
-          {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-            <Dropdown.Item key={key} eventKey={key} disabled={fail}>
-              <Icon icon="code" /> {key}
-            </Dropdown.Item>
-          ))}
+{["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
+  <Dropdown.Item key={key} eventKey={key} disabled={fail}>
+    <Icon icon="code" />{" "}
+    {key === "rPlot" && "R - PLOT"}
+    {key === "pythonPlot" && "Python 3 - PLOT"}
+    {key === "pythonCSV" && "Python 3 - CSV"}
+    {key === "rCSV" && "R - CSV"}
+  </Dropdown.Item>
+))}
         </DropdownButton>
       </ButtonToolbar>
 
