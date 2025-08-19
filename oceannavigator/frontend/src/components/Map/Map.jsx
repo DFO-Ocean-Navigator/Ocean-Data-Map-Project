@@ -387,30 +387,29 @@ const Map = forwardRef((props, ref) => {
 
       addDblClickPlot(newMap, newSelect);
       if (annotationManager) {
-        annotationManager.setSecondaryMap(newMap, annotations);
-      }
+  //       annotationManager.setSecondaryMap(newMap, annotations);
+  //     }
 
-       if (map0 && map0.getOverlays) {
-      const existingOverlays = map0.getOverlays().getArray();
+  //      if (map0 && map0.getOverlays) {
+  //     const existingOverlays = map0.getOverlays().getArray();
       
-      existingOverlays.forEach(overlay => {
-   const rawId = overlay.get?.('id') ?? overlay.getId?.();
-   const id = typeof rawId === 'string' ? rawId.replace('annotation_', '') : rawId;
-   const text = overlay.getElement().querySelector('.annotation-text')?.textContent || '';
-   const position = overlay.getPosition();
-   const cls = overlay.getElement().querySelector('.annotation-arrow')?.className || '';
-   const m = cls.match(/\barrow-(\d)\b/);
-   const direction = m ? parseInt(m[1], 10) : 0;
-   const annotationData = { id, text, position, direction };
-            if (annotationManager) {
-              const newOverlays = annotationManager.createAnnotationOverlays(annotationData);
-              if (newOverlays[1]) {
-                newMap.addOverlay(newOverlays[1]);
-              }
-            }
-          });
-          //  annotationManager.setSecondaryMap(newMap);
-          // }
+  //     existingOverlays.forEach(overlay => {
+  //  const rawId = overlay.get?.('id') ?? overlay.getId?.();
+  //  const id = typeof rawId === 'string' ? rawId.replace('annotation_', '') : rawId;
+  //  const text = overlay.getElement().querySelector('.annotation-text')?.textContent || '';
+  //  const position = overlay.getPosition();
+  //  const cls = overlay.getElement().querySelector('.annotation-arrow')?.className || '';
+  //  const m = cls.match(/\barrow-(\d)\b/);
+  //  const direction = m ? parseInt(m[1], 10) : 0;
+  //  const annotationData = { id, text, position, direction };
+  //           if (annotationManager) {
+  //             const newOverlays = annotationManager.createAnnotationOverlays(annotationData);
+  //             if (newOverlays[1]) {
+  //               newMap.addOverlay(newOverlays[1]);
+  //             }
+  //           }
+  //         });
+           annotationManager.setSecondaryMap(newMap);
           }
         
       setSelect1(newSelect);
