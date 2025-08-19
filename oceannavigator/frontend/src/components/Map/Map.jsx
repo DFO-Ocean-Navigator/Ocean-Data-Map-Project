@@ -25,7 +25,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { AnnotationOverlayManager } from "../AnnotationOverlay.jsx";
+import { AnnotationOverlay } from "../AnnotationOverlay.jsx";
 
 import {
   createMapView,
@@ -110,7 +110,7 @@ const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
-  const [annotationManager, setAnnotationManager] = useState(null);
+
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -292,9 +292,6 @@ const Map = forwardRef((props, ref) => {
 
     addDblClickPlot(newMap, newSelect);
 
-    const newAnnotationManager = new AnnotationOverlayManager(newMap);
-    setAnnotationManager(newAnnotationManager);
-
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
@@ -305,11 +302,7 @@ const Map = forwardRef((props, ref) => {
 
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
-    return () => {
-      if (newAnnotationManager) {
-        newAnnotationManager.cleanup();
-      }
-    };
+
   }, []);
 
   useEffect(() => {
@@ -352,22 +345,26 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, newSelect);
-      if (annotationManager) {
-        annotationManager.setSecondaryMap(newMap);
-      }
 
       setSelect1(newSelect);
       setMap1(newMap);
       setHoverSelect1(newHoverSelect);
-    } else {
-      if (annotationManager) {
-        annotationManager.setSecondaryMap(null);
+
+      let overlays = map0.getOverlays().getArray();
+
+      for (let overlay of overlays) {
+        if (overlay.getId() && overlay.getId().includes("annotation")) {
+          overlay.linkOverlay(newMap)
+        }
       }
+
+    } else {
+
       setMap1(null);
       setSelect1(null);
       setHoverSelect1(null);
     }
-  }, [props.compareDatasets, annotationManager]);
+  }, [props.compareDatasets]);
 
   useEffect(() => {
     if (props.dataset0.default_location) {
@@ -928,9 +925,6 @@ const Map = forwardRef((props, ref) => {
       map1layers[5].setSource(newFeatureVectorSource);
       map1layers[6].setSource(newObsDrawSource);
     }
-    if (annotationManager) {
-      annotationManager.clearAllAnnotations();
-    }
   };
 
   const drawObsPoint = () => {
@@ -1001,21 +995,19 @@ const Map = forwardRef((props, ref) => {
   };
 
   const addAnnotationLabel = (text, coord) => {
-    if (annotationManager) {
-      annotationManager.addAnnotationLabel(text.trim(), coord);
+    let overlay = new AnnotationOverlay(text, coord)
+    map0.addOverlay(overlay)
+    if (props.compareDatasets) {
+      overlay.linkOverlay(map1)
     }
   };
 
   const undoAnnotationLabel = () => {
-    if (annotationManager) {
-      annotationManager.undoLastAnnotation();
-    }
+
   };
 
   const clearAnnotationLabels = () => {
-    if (annotationManager) {
-      annotationManager.clearAllAnnotations();
-    }
+
   };
 
   const updateProjection = (map, dataset) => {

@@ -1,83 +1,49 @@
 import Overlay from "ol/Overlay.js";
 
-export class AnnotationOverlayManager {
-  constructor(primaryMap, secondaryMap = null) {
-    this.maps = [primaryMap, secondaryMap].filter(Boolean);
-    this.annotations = new Map();
-    this.nextId = 1;
-  }
-
-  setSecondaryMap = (map) => {
-    this.maps = [this.maps[0], map].filter(Boolean);
-    this.annotations.forEach(({ overlays, ...data }) => {
-      if (map && overlays.length === 1) {
-        overlays.push(this._createOverlay(data));
-        map.addOverlay(overlays[1]);
-      } else if (!map && overlays[1]) {
-        this.maps[0].removeOverlay(overlays[1]);
-        overlays[1].getElement().remove();
-        overlays.pop();
-      }
-    });
-  };
-
-  addAnnotationLabel = (text, coord) => {
-    const id = this.nextId++;
-    const data = { id, text, position: coord, direction: 0 };
-    const overlays = this.maps.map(() => this._createOverlay(data));
-
-    overlays.forEach((overlay, i) => this.maps[i]?.addOverlay(overlay));
-    this.annotations.set(id, { ...data, overlays });
-    return data;
-  };
-
-  _createOverlay = ({ id, text, position, direction = 0 }) => {
-    const el = document.createElement("div");
-    el.innerHTML = `
+export class AnnotationOverlay extends Overlay {
+  constructor(text, position, linkedOverlay) {
+    const element = document.createElement("div");
+    element.innerHTML = `
       <div class="annotation-box">
         <button class="annotation-close">×</button>
         <div class="annotation-text">${text}</div>
-        <div class="annotation-arrow arrow-${direction}"></div>
       </div>
     `;
 
-    const overlay = new Overlay({
-      element: el,
-      position,
+    element.querySelector(".annotation-close").addEventListener("click", () => {
+      this.delete();
+    });
+
+    super({
+      id: `annotation_${Date.now() + Math.random()}`,
+      element: element,
+      position: position,
       positioning: "bottom-center",
       offset: [0, -10],
     });
 
-    el.querySelector(".annotation-close").addEventListener("click", () => {
-      this.removeAnnotationById(id);
-    });
+    this.addDrag = this.addDrag.bind(this);
+    this.linkOverlay = this.linkOverlay.bind(this);
+    this.unlinkOverlay = this.unlinkOverlay.bind(this);
+    this.delete = this.delete.bind(this);
+    this.cleanup = this.cleanup.bind(this);
 
-    this._addDrag(el, overlay, id);
-    return overlay;
-  };
+    this.addDrag(element);
+    this.text = text
+    this.linkedOverlay = linkedOverlay;
+  }
 
-  _rotateArrow = (id) => {
-    const annotation = this.annotations.get(id);
-    if (!annotation) return;
-
-    annotation.direction = (annotation.direction + 1) % 4;
-    annotation.overlays.forEach((overlay) => {
-      const arrow = overlay.getElement().querySelector(".annotation-arrow");
-      arrow.className = `annotation-arrow arrow-${annotation.direction}`;
-    });
-  };
-
-  _addDrag = (el, overlay, id) => {
+  addDrag(element) {
     let dragging = false,
       start,
       hasMoved = false;
 
-    el.onmousedown = (e) => {
+    element.onmousedown = (e) => {
       if (e.target.className === "annotation-close") return;
       dragging = true;
       hasMoved = false;
       start = [e.clientX, e.clientY];
-      el.style.cursor = "move";
+      element.style.cursor = "move";
       e.stopPropagation();
     };
 
@@ -90,63 +56,45 @@ export class AnnotationOverlayManager {
       }
       start = [e.clientX, e.clientY];
 
-      const pos = overlay.getPosition();
-      const map = this.maps.find((m) =>
-        m.getOverlays().getArray().includes(overlay)
-      );
+      const pos = this.getPosition();
+      const map = this.getMap();
       const pixel = map.getPixelFromCoordinate(pos);
       const newPos = map.getCoordinateFromPixel([pixel[0] + dx, pixel[1] + dy]);
-
-      this._sync(id, newPos);
+      this.setPosition(newPos);
+      if (this.linkedOverlay) {
+        this.linkedOverlay.setPosition(newPos)
+      }
     };
 
     const up = (e) => {
       if (!dragging) return;
       dragging = false;
-      el.style.cursor = "";
-      if (!hasMoved && e.target.className !== "annotation-close") {
-        this._rotateArrow(id);
-      }
+      element.style.cursor = "";
     };
 
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseup", up);
-    overlay._cleanup = () => {
-      window.removeEventListener("mousemove", move);
-      window.removeEventListener("mouseup", up);
-      el.remove();
-    };
-  };
+  }
 
-  _sync = (id, position) => {
-    const annotation = this.annotations.get(id);
-    if (!annotation) return;
-    annotation.position = position;
-    annotation.overlays.forEach((overlay) => overlay.setPosition(position));
-  };
+  linkOverlay(map) {
+    this.linkedOverlay = new AnnotationOverlay(this.text, this.getPosition(), this)
+    map.addOverlay(this.linkedOverlay)
+  }
 
-  removeAnnotationById = (id) => {
-    const annotation = this.annotations.get(id);
-    if (!annotation) return;
+  unlinkOverlay() {
+    this.linkedOverlay = null;
+  }
 
-    annotation.overlays.forEach((overlay, i) => {
-      this.maps[i]?.removeOverlay(overlay);
-      overlay._cleanup();
-    });
-    this.annotations.delete(id);
-  };
+  delete(){
+    this.getMap().removeOverlay(this)
+    if (this.linkedOverlay) {
+      this.linkedOverlay.getMap().removeOverlay(this.linkedOverlay)
+    }
+  }
 
-  undoLastAnnotation = () => {
-    const lastId = Math.max(...this.annotations.keys());
-    this.removeAnnotationById(lastId);
-  };
-
-  clearAllAnnotations = () => {
-    [...this.annotations.keys()].forEach((id) => this.removeAnnotationById(id));
-  };
-
-  getAnnotations = () =>
-    [...this.annotations.values()].map(({ overlays, ...data }) => data);
-
-  cleanup = () => this.clearAllAnnotations();
+  cleanup() {
+    window.removeEventListener("mousemove", move);
+    window.removeEventListener("mouseup", up);
+    this.getElement().remove();
+  }
 }
