@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import { withTranslation } from "react-i18next";
 
-const CheckBox = ({ id, title, checked, onUpdate, style, t: _ }) => {
+const CheckBox = ({ id, title, checked, onUpdate, t: _ }) => {
   const handleChange = (e) => {
     onUpdate(id, e.target.checked);
   };
@@ -15,7 +15,6 @@ const CheckBox = ({ id, title, checked, onUpdate, style, t: _ }) => {
       checked={checked}
       onChange={handleChange}
       label={title}
-      style={style}
     />
   );
 };
@@ -25,7 +24,6 @@ CheckBox.propTypes = {
   title: PropTypes.string.isRequired,
   checked: PropTypes.bool,
   onUpdate: PropTypes.func.isRequired,
-  style: PropTypes.object,
   t: PropTypes.func.isRequired,
 };
 
