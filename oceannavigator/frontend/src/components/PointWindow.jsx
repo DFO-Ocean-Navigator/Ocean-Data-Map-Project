@@ -29,8 +29,6 @@ const PointWindow = ({
   action,
   init,
   updateDataset,
-  setCompareDatasets,
-  swapViews,
   t: _,
 }) => {
   // UI state
@@ -439,8 +437,6 @@ PointWindow.propTypes = {
   init: PropTypes.object,
   updateDataset: PropTypes.func,
   dataset_0: PropTypes.object.isRequired,
-  setCompareDatasets: PropTypes.func,
-  swapViews: PropTypes.func,
   t: PropTypes.func.isRequired,
 };
 
