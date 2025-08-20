@@ -35,23 +35,23 @@ const PointWindow = ({
   const [selected, setSelected] = useState(init?.selected || TabEnum.PROFILE);
 
   // Display settings
-  const [displaySettings, setDisplaySettings] = useState({
-    showmap: init?.showmap || false,
-    colormap: init?.colormap || "default",
-  });
+  const [showMap, setShowMap] = useState(init?.showmap || false);
+  const [colormap, setColormap] = useState(init?.colormap || "default");
 
   // Data state
-  const [dataState, setDataState] = useState({
-    datasetVariables: init?.datasetVariables || [],
-    observation_variable: init?.observation_variable || [0],
-  });
+  const [datasetVariables, setDatasetVariables] = useState(
+    init?.datasetVariables || []
+  );
+  const [observationVariable, setObservationVariable] = useState(
+    init?.observation_variable || [0]
+  );
 
   // Plot settings
-  const [plotSettings, setPlotSettings] = useState({
-    size: init?.size || "10x7",
-    dpi: init?.dpi || 144,
-    plotTitles: init?.plotTitles || Array(7).fill(""),
-  });
+  const [plotSize, setPlotSize] = useState(init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
+  const [plotTitles, setPlotTitles] = useState(
+    init?.plotTitles || Array(7).fill("")
+  );
 
   // Dataset state - keep as single object due to complexity
   const [dataset_0, setDataset_0] = useState(
@@ -66,64 +66,21 @@ const PointWindow = ({
     }
   );
 
- // merge init
-  useEffect(() => {
-    if (init) {
-      if (init.selected !== undefined) setSelected(init.selected);
-      if (init.showmap !== undefined || init.colormap !== undefined) {
-        setDisplaySettings(prev => ({
-          ...prev,
-          ...(init.showmap !== undefined && { showmap: init.showmap }),
-          ...(init.colormap !== undefined && { colormap: init.colormap }),
-        }));
-      }
-    }
-  }, [init]);
-
+  // Fetch dataset variables when dataset ID changes
   useEffect(() => {
     GetVariablesPromise(dataset_0.id).then(
       (res) => {
-        setDataState(prev => ({
-          ...prev,
-          datasetVariables: res.data.map((v) => v.id),
-        }));
+        setDatasetVariables(res.data.map((v) => v.id));
       },
       (err) => console.error(err)
     );
   }, [dataset_0.id]);
 
-  const onLocalUpdate = (key, value) => {
-    // handle dataset key specially
-    if (key === "dataset") {
-      setDataset_0(prev => ({ ...prev, ...value }));
-      if (value.variable.length === 1) {
-        const v = value.variable[0];
-        updateDataset("dataset", { ...value, variable: v });
-      }
-      return;
-    }
-    if (key === "points") {
-      action("updatePoint", value);
-      return;
-    }
-
-    // Route updates to appropriate state groups
-    if (["showmap", "colormap"].includes(key)) {
-      setDisplaySettings(prev => ({ ...prev, [key]: value }));
-    } else if (["datasetVariables", "observation_variable"].includes(key)) {
-      setDataState(prev => ({ ...prev, [key]: value }));
-    } else if (["size", "dpi"].includes(key)) {
-      setPlotSettings(prev => ({ ...prev, [key]: value }));
-    } else if (Array.isArray(key)) {
-      const updates = {};
-      key.forEach((k, i) => {
-        updates[k] = value[i];
-      });
-      
-      // Distribute updates to appropriate state groups
-      Object.entries(updates).forEach(([k, v]) => {
-        onLocalUpdate(k, v);
-      });
+  const handleDatasetUpdate = (key, value) => {
+    setDataset_0((prev) => ({ ...prev, ...value }));
+    if (value.variable && value.variable.length === 1) {
+      const v = value.variable[0];
+      updateDataset("dataset", { ...value, variable: v });
     }
   };
 
@@ -132,20 +89,21 @@ const PointWindow = ({
     setSelected(parseInt(k));
   };
 
-  //Updates Plot with User Specified Title
+  // Updates Plot with User Specified Title
   const updatePlotTitle = (title) => {
-    setPlotSettings(prev => {
-      const arr = [...prev.plotTitles];
+    setPlotTitles((prev) => {
+      const arr = [...prev];
       arr[selected - 1] = title;
-      return { ...prev, plotTitles: arr };
+      return arr;
     });
   };
 
+  // Handle points update
+  const handlePointsUpdate = (key, value) => {
+    action("updatePoint", value);
+  };
+
   // UI constants
-  const { showmap, colormap } = displaySettings;
-  const { datasetVariables, observation_variable } = dataState;
-  const { size, dpi, plotTitles } = plotSettings;
-  
   const only3d = [TabEnum.PROFILE, TabEnum.OBSERVATION].includes(selected);
   const showDepthSelector = selected === TabEnum.MOORING;
   const showTimeRange = [TabEnum.STICK, TabEnum.MOORING].includes(selected);
@@ -157,8 +115,8 @@ const PointWindow = ({
     <>
       <ImageSize
         id="size"
-        state={size}
-        onUpdate={onLocalUpdate}
+        state={plotSize}
+        onUpdate={(_, value) => setPlotSize(value)}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
@@ -177,7 +135,7 @@ const PointWindow = ({
       <Card.Body>
         <DatasetSelector
           id="dataset_0"
-          onUpdate={onLocalUpdate}
+          onUpdate={handleDatasetUpdate}
           showQuiverSelector={false}
           showVariableRange={false}
           showAxisRange={showAxisRange}
@@ -192,8 +150,8 @@ const PointWindow = ({
         />
         <CheckBox
           id="showmap"
-          checked={showmap}
-          onUpdate={onLocalUpdate}
+          checked={showMap}
+          onUpdate={(_, value) => setShowMap(value)}
           title={_("Show Location")}
         >
           {_("showmap_help")}
@@ -203,7 +161,7 @@ const PointWindow = ({
             id="points"
             state={plotData.coordinates}
             title={_("Location")}
-            onUpdate={onLocalUpdate}
+            onUpdate={handlePointsUpdate}
           />
         )}
         <Accordion>
@@ -221,7 +179,9 @@ const PointWindow = ({
         <ComboBox
           id="variable"
           state={dataset_0.variable}
-          onUpdate={onLocalUpdate}
+          onUpdate={(key, value) => {
+            setDataset_0((prev) => ({ ...prev, variable: value }));
+          }}
           url={`/api/v2.0/dataset/${dataset_0.id}/variables?vectors_only=True`}
           title={_("Variable")}
           multiple
@@ -232,7 +192,9 @@ const PointWindow = ({
           id="depth"
           multiple
           state={dataset_0.depth}
-          onUpdate={onLocalUpdate}
+          onUpdate={(key, value) => {
+            setDataset_0((prev) => ({ ...prev, depth: value }));
+          }}
           url={`/api/v2.0/depth/?variable=${dataset_0.variable}&dataset=${dataset_0.id}`}
           title={_("Depth")}
         />
@@ -248,10 +210,10 @@ const PointWindow = ({
           key="obsVarNumeric"
           id="observation_variable"
           multiple
-          state={observation_variable}
+          state={observationVariable}
           url={`/api/v2.0/observation/variables/station=${plotData.coordinates[0][2]}.json`}
           title={_("Observation Variable")}
-          onUpdate={onLocalUpdate}
+          onUpdate={(_, value) => setObservationVariable(value)}
         />
       );
     } else {
@@ -264,10 +226,10 @@ const PointWindow = ({
           key="obsVarNumeric"
           id="observation_variable"
           multiple
-          state={observation_variable}
+          state={observationVariable}
           data={data}
           title={_("Observation Variable")}
-          onUpdate={onLocalUpdate}
+          onUpdate={(_, value) => setObservationVariable(value)}
         />
       );
     }
@@ -284,10 +246,10 @@ const PointWindow = ({
   const plot_query = {
     dataset: dataset_0.id,
     point: plotData.coordinates,
-    showmap,
+    showmap: showMap,
     names,
-    size,
-    dpi,
+    size: plotSize,
+    dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
     type: "",
   };
@@ -324,7 +286,7 @@ const PointWindow = ({
     case TabEnum.OBSERVATION:
       plot_query.type = "observation";
       plot_query.observation = [plotData.id];
-      plot_query.observation_variable = observation_variable;
+      plot_query.observation_variable = observationVariable;
       inputs = [global, observationVariableElem];
       break;
     case TabEnum.MOORING:
@@ -348,7 +310,7 @@ const PointWindow = ({
             key="colormap"
             id="colormap"
             state={colormap}
-            onUpdate={onLocalUpdate}
+            onUpdate={(_, value) => setColormap(value)}
             url="/api/v2.0/plot/colormaps"
             title={_("Colourmap")}
           >
@@ -373,9 +335,13 @@ const PointWindow = ({
   const permlink_subquery = {
     selected,
     starttime: dataset_0.starttime,
-    ...displaySettings,
-    ...plotSettings,
-    ...dataState,
+    showmap: showMap,
+    colormap,
+    size: plotSize,
+    dpi: plotDpi,
+    plotTitles,
+    datasetVariables,
+    observation_variable: observationVariable,
     dataset_0,
   };
 
