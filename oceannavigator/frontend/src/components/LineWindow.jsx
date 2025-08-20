@@ -20,88 +20,56 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
-  const [scales, setScales] = useState({
-    scale: props.init?.scale || props.dataset_0.variable_scale + ",auto",
-    scale_1: props.init?.scale_1 || props.dataset_1.variable_scale + ",auto",
-    scale_diff: props.init?.scale_diff || "-10,10,auto",
-  });
+  const [scale, setScale] = useState(
+    props.init?.scale || props.dataset_0.variable_scale + ",auto"
+  );
+  const [scale1, setScale1] = useState(
+    props.init?.scale_1 || props.dataset_1.variable_scale + ",auto"
+  );
+  const [scaleDiff, setScaleDiff] = useState(
+    props.init?.scale_diff || "-10,10,auto"
+  );
 
   // Colormap settings
-  const [colormaps, setColormaps] = useState({
-    main: props.init?.colormap || "default",
-    right: props.init?.colormap_right || "default",
-    diff: props.init?.colormap_diff || "default",
-  });
+  const [mainColormap, setMainColormap] = useState(
+    props.init?.colormap || "default"
+  );
+  const [rightColormap, setRightColormap] = useState(
+    props.init?.colormap_right || "default"
+  );
+  const [diffColormap, setDiffColormap] = useState(
+    props.init?.colormap_diff || "default"
+  );
 
   // Plot settings
-  const [plotSettings, setPlotSettings] = useState({
-    size: props.init?.size || "10x7",
-    dpi: props.init?.dpi || 144,
-    titles: props.init?.plotTitles || Array(2).fill(""),
-  });
+  const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
+  const [plotTitles, setPlotTitles] = useState(
+    props.init?.plotTitles || Array(2).fill("")
+  );
 
   // Map and display settings
-  const [displaySettings, setDisplaySettings] = useState({
-    showmap: props.init?.showmap ?? true,
-    surfacevariable: props.init?.surfacevariable || "none",
-    selectedPlots: props.init?.selectedPlots || [0, 1, 1],
-  });
+  const [showMap, setShowMap] = useState(props.init?.showmap ?? true);
+  const [surfaceVariable, setSurfaceVariable] = useState(
+    props.init?.surfacevariable || "none"
+  );
+  const [selectedPlots, setSelectedPlots] = useState(
+    props.init?.selectedPlots || [0, 1, 1]
+  );
 
   // Transect-specific settings
-  const [transectSettings, setTransectSettings] = useState({
-    linearthresh: props.init?.linearthresh || false,
-    depth_limit: props.init?.depth_limit || false,
-    profile_distance: props.init?.profile_distance || -1,
-    show_profile: props.init?.show_profile || false,
-  });
-
-  // Initialize from props.init if provided
-  useEffect(() => {
-    if (props.init) {
-      if (props.init.selected !== undefined) setSelected(props.init.selected);
-      if (props.init.scale || props.init.scale_1 || props.init.scale_diff) {
-        setScales(prev => ({
-          ...prev,
-          ...(props.init.scale && { scale: props.init.scale }),
-          ...(props.init.scale_1 && { scale_1: props.init.scale_1 }),
-          ...(props.init.scale_diff && { scale_diff: props.init.scale_diff }),
-        }));
-      }
-      // Apply other init values as needed...
-    }
-  }, [props.init]);
-
-  const onLocalUpdate = (key, value) => {
-    if (Array.isArray(key)) {
-      // Handle multiple key-value pairs
-      const updates = {};
-      key.forEach((k, i) => {
-        updates[k] = value[i];
-      });
-      
-      // Distribute updates to appropriate state groups
-      Object.entries(updates).forEach(([k, v]) => {
-        onLocalUpdate(k, v);
-      });
-      return;
-    }
-
-    // Handle single key-value updates
-    if (key.includes("scale")) {
-      setScales(prev => ({ ...prev, [key]: value }));
-    } else if (key.includes("colormap") || key === "colormap_right" || key === "colormap_diff") {
-      const colorKey = key === "colormap" ? "main" :
-                      key === "colormap_right" ? "right" :
-                      key === "colormap_diff" ? "diff" : key;
-      setColormaps(prev => ({ ...prev, [colorKey]: value }));
-    } else if (["size", "dpi"].includes(key)) {
-      setPlotSettings(prev => ({ ...prev, [key]: value }));
-    } else if (["showmap", "surfacevariable", "selectedPlots"].includes(key)) {
-      setDisplaySettings(prev => ({ ...prev, [key]: value }));
-    } else if (["linearthresh", "depth_limit", "profile_distance", "show_profile"].includes(key)) {
-      setTransectSettings(prev => ({ ...prev, [key]: value }));
-    }
-  };
+  const [linearThresh, setLinearThresh] = useState(
+    props.init?.linearthresh || false
+  );
+  const [depthLimit, setDepthLimit] = useState(
+    props.init?.depth_limit || false
+  );
+  const [profileDistance, setProfileDistance] = useState(
+    props.init?.profile_distance || -1
+  );
+  const [showProfile, setShowProfile] = useState(
+    props.init?.show_profile || false
+  );
 
   const onSelect = (key) => {
     setSelected(parseInt(key));
@@ -109,19 +77,20 @@ const LineWindow = (props) => {
 
   const updatePlotTitle = (title) => {
     const idx = selected - 1;
-    setPlotSettings(prev => {
-      const titles = [...prev.titles];
+    setPlotTitles(prev => {
+      const titles = [...prev];
       titles[idx] = title;
-      return { ...prev, titles };
+      return titles;
     });
   };
 
   const handleProfileCheck = (_, value) => {
-    setTransectSettings(prev => ({
-      ...prev,
-      show_profile: value,
-      profile_distance: value ? 0 : -1,
-    }));
+    setShowProfile(value);
+    setProfileDistance(value ? 0 : -1);
+  };
+
+  const handleSliderChange = (x) => {
+    setProfileDistance((x / 100) * props.line_distance);
   };
 
   // UI segments
@@ -129,14 +98,14 @@ const LineWindow = (props) => {
     <>
       <ImageSize
         id="size"
-        state={plotSettings.size}
-        onUpdate={onLocalUpdate}
+        state={plotSize}
+        onUpdate={(_, value) => setPlotSize(value)}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
         title={_("Plot Title")}
-        plotTitle={plotSettings.titles[selected - 1]}
+        plotTitle={plotTitles[selected - 1]}
         updatePlotTitle={updatePlotTitle}
       />
     </>
@@ -163,15 +132,15 @@ const LineWindow = (props) => {
           props.dataset_0.variable === props.dataset_1.variable && (
             <Range
               id="scale_diff"
-              state={scales.scale_diff}
-              onUpdate={onLocalUpdate}
+              state={scaleDiff}
+              onUpdate={(_, value) => setScaleDiff(value)}
               title={_("Diff. Variable Range")}
             />
           )}
         <CheckBox
           id="showmap"
-          checked={displaySettings.showmap}
-          onUpdate={onLocalUpdate}
+          checked={showMap}
+          onUpdate={(_, value) => setShowMap(value)}
           title={_("Show Location")}
         >
           {_("showmap_help")}
@@ -190,8 +159,26 @@ const LineWindow = (props) => {
       <Card.Body>
         <ComboBox
           id="surfacevariable"
-          state={displaySettings.surfacevariable}
-          onUpdate={onLocalUpdate}
+          state={surfaceVariable}
+          onUpdate={(_, value) => {
+            console.log('Surface Variable ComboBox update - received value:', value, 'type:', typeof value);
+            
+            // Handle ComboBox returning array format: [variableName, range, flag1, flag2]
+            let variableName = value;
+            if (Array.isArray(value) && value.length > 0) {
+              variableName = value[0]; // Variable name is always first element
+              console.log('Extracted variable name from array:', variableName);
+            } else if (typeof value === 'object' && value !== null) {
+              // Handle object format if API returns objects instead of arrays
+              variableName = value.id || value.name || value.variable || "none";
+              console.log('Extracted variable name from object:', variableName);
+            } else if (typeof value !== 'string') {
+              variableName = String(value) || "none";
+              console.log('Converted to string:', variableName);
+            }
+            
+            setSurfaceVariable(variableName);
+          }}
           title={_("Surface Variable")}
           url={`/api/v2.0/dataset/${props.dataset_0.id}/variables`}
         >
@@ -199,8 +186,8 @@ const LineWindow = (props) => {
         </ComboBox>
         <TransectLimiter
           id="linearthresh"
-          state={transectSettings.linearthresh}
-          onUpdate={onLocalUpdate}
+          state={linearThresh}
+          onUpdate={(_, value) => setLinearThresh(value)}
           title={_("Exponential Plot")}
           parameter={_("Linear Threshold")}
         >
@@ -208,18 +195,18 @@ const LineWindow = (props) => {
         </TransectLimiter>
         <TransectLimiter
           id="depth_limit"
-          state={transectSettings.depth_limit}
-          onUpdate={onLocalUpdate}
+          state={depthLimit}
+          onUpdate={(_, value) => setDepthLimit(value)}
           title={_("Limit Depth")}
           parameter={_("Depth")}
         />
         <CheckBox
           id="show_profile"
-          checked={transectSettings.show_profile}
+          checked={showProfile}
           onUpdate={handleProfileCheck}
           title={_("Extract Profile Plot")}
         />
-        {transectSettings.show_profile && (
+        {showProfile && (
           <div className="slider-container">
             <Slider
               min={0}
@@ -231,12 +218,7 @@ const LineWindow = (props) => {
                 75: (((props.line_distance / 1000) * 3) / 4).toFixed(1),
                 100: (props.line_distance / 1000).toFixed(1),
               }}
-              onAfterChange={(x) =>
-                onLocalUpdate(
-                  "profile_distance",
-                  (x / 100) * props.line_distance
-                )
-              }
+              onAfterChange={handleSliderChange}
             />
           </div>
         )}
@@ -244,8 +226,8 @@ const LineWindow = (props) => {
           props.dataset_0.variable === props.dataset_1.variable && (
             <ComboBox
               id="colormap_diff"
-              state={colormaps.diff}
-              onUpdate={onLocalUpdate}
+              state={diffColormap}
+              onUpdate={(_, value) => setDiffColormap(value)}
               title={_("Diff. Colour Map")}
               url="/api/v2.0/plot/colormaps"
             >
@@ -276,8 +258,8 @@ const LineWindow = (props) => {
         />
         <ComboBox
           id="colormap"
-          state={colormaps.main}
-          onUpdate={onLocalUpdate}
+          state={mainColormap}
+          onUpdate={(_, value) => setMainColormap(value)}
           title={_("Colour Map")}
           url="/api/v2.0/plot/colormaps"
         >
@@ -305,8 +287,8 @@ const LineWindow = (props) => {
         />
         <ComboBox
           id="colormap_right"
-          state={colormaps.right}
-          onUpdate={onLocalUpdate}
+          state={rightColormap}
+          onUpdate={(_, value) => setRightColormap(value)}
           title={_("Colour Map")}
           url="/api/v2.0/plot/colormaps"
         >
@@ -317,40 +299,48 @@ const LineWindow = (props) => {
     </Card>
   );
 
+  // Debug logging
+  console.log('Current surfaceVariable:', surfaceVariable, 'type:', typeof surfaceVariable);
+  console.log('Plot query will include surfacevariable:', surfaceVariable);
+
   // Build plot query
   const baseQuery = {
     dataset: props.dataset_0.id,
     quantum: props.dataset_0.quantum,
     name: props.names[0],
-    size: plotSettings.size,
-    dpi: plotSettings.dpi,
-    plotTitle: plotSettings.titles[selected - 1],
+    size: plotSize,
+    dpi: plotDpi,
+    plotTitle: plotTitles[selected - 1],
   };
 
   let plot_query = {};
   if (selected === 1) {
+    // Ensure surfaceVariable is a string before sending to backend
+    const safeSurfaceVariable = typeof surfaceVariable === 'string' ? surfaceVariable : 'none';
+    
     plot_query = {
       ...baseQuery,
       type: "transect",
       variable: props.dataset_0.variable,
       path: props.plotData.coordinates,
-      scale: scales.scale,
-      colormap: colormaps.main,
-      showmap: displaySettings.showmap,
+      scale: scale,
+      colormap: mainColormap,
+      showmap: showMap,
       time: props.dataset_0.time,
-      linearthresh: transectSettings.linearthresh,
-      surfacevariable: displaySettings.surfacevariable,
-      depth_limit: transectSettings.depth_limit,
-      profile_distance: transectSettings.profile_distance,
-      selectedPlots: displaySettings.selectedPlots.toString(),
+      linearthresh: linearThresh,
+      surfacevariable: safeSurfaceVariable,
+      depth_limit: depthLimit,
+      profile_distance: profileDistance,
+      selectedPlots: selectedPlots.toString(),
       ...(props.dataset_compare &&
         props.dataset_0.variable === props.dataset_1.variable && {
           compare_to: {
+            ...props.dataset_1,  // Include all dataset_1 fields
             dataset: props.dataset_1.id,
-            scale: scales.scale_1,
-            scale_diff: scales.scale_diff,
-            colormap: colormaps.right,
-            colormap_diff: colormaps.diff,
+            scale: scale1,
+            scale_diff: scaleDiff,
+            colormap: rightColormap,
+            colormap_diff: diffColormap,
           },
         }),
     };
@@ -364,11 +354,12 @@ const LineWindow = (props) => {
       ...(props.dataset_compare &&
         props.dataset_0.variable === props.dataset_1.variable && {
           compare_to: {
+            ...props.dataset_1,  // Include all dataset_1 fields
             dataset: props.dataset_1.id,
-            scale: scales.scale_1,
-            scale_diff: scales.scale_diff,
-            colormap: colormaps.right,
-            colormap_diff: colormaps.diff,
+            scale: scale1,
+            scale_diff: scaleDiff,
+            colormap: rightColormap,
+            colormap_diff: diffColormap,
           },
         }),
     };
@@ -377,13 +368,22 @@ const LineWindow = (props) => {
   // Create permlink_subquery from current state
   const permlink_subquery = {
     selected,
-    ...scales,
-    colormap: colormaps.main,
-    colormap_right: colormaps.right,
-    colormap_diff: colormaps.diff,
-    ...plotSettings,
-    ...displaySettings,
-    ...transectSettings,
+    scale,
+    scale_1: scale1,
+    scale_diff: scaleDiff,
+    colormap: mainColormap,
+    colormap_right: rightColormap,
+    colormap_diff: diffColormap,
+    size: plotSize,
+    dpi: plotDpi,
+    plotTitles,
+    showmap: showMap,
+    surfacevariable: typeof surfaceVariable === 'string' ? surfaceVariable : 'none',
+    selectedPlots,
+    linearthresh: linearThresh,
+    depth_limit: depthLimit,
+    profile_distance: profileDistance,
+    show_profile: showProfile,
   };
 
   return (
