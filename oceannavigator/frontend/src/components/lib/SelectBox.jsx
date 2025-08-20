@@ -15,11 +15,8 @@ function SelectBox({
   loading = false,
   multiple = false,
   horizontalLayout = false,
-  helpContent = null,
   t: _,
 }) {
-  const [showHelp, setShowHelp] = useState(false);
-  const toggleShowHelp = () => setShowHelp((h) => !h);
 
   const opts = Array.isArray(options)
     ? options.map((opt) => (
@@ -75,7 +72,6 @@ SelectBox.propTypes = {
   loading: PropTypes.bool,
   multiple: PropTypes.bool,
   horizontalLayout: PropTypes.bool,
-  helpContent: PropTypes.arrayOf(PropTypes.object),
   t: PropTypes.func.isRequired,
 };
 
