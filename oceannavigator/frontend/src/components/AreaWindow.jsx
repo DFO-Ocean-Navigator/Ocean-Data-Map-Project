@@ -21,32 +21,38 @@ const AreaWindow = (props) => {
   const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
 
   // Scale settings
-  const [scales, setScales] = useState({
-    scale: props.init?.scale || props.dataset_0.variable_scale + ",auto",
-    scale_1: props.init?.scale_1 || props.dataset_1.scale_1 + ",auto",
-    scale_diff: props.init?.scale_diff || "-10,10,auto",
-  });
+  const [scale, setScale] = useState(
+    props.init?.scale || props.dataset_0.variable_scale + ",auto"
+  );
+  const [scale1, setScale1] = useState(
+    props.init?.scale_1 || props.dataset_1.scale_1 + ",auto"
+  );
+  const [scaleDiff, setScaleDiff] = useState(
+    props.init?.scale_diff || "-10,10,auto"
+  );
 
   // Colormap settings
-  const [colormaps, setColormaps] = useState({
-    left: props.init?.leftColormap || "default",
-    right: props.init?.rightColormap || "default",
-    diff: props.init?.colormap_diff || "default",
-  });
+  const [leftColormap, setLeftColormap] = useState(
+    props.init?.leftColormap || "default"
+  );
+  const [rightColormap, setRightColormap] = useState(
+    props.init?.rightColormap || "default"
+  );
+  const [diffColormap, setDiffColormap] = useState(
+    props.init?.colormap_diff || "default"
+  );
 
   // Plot settings
-  const [plotSettings, setPlotSettings] = useState({
-    size: props.init?.size || "10x7",
-    dpi: props.init?.dpi || 144,
-    title: props.init?.plotTitle,
-  });
+  const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
+  const [plotTitle, setPlotTitle] = useState(props.init?.plotTitle);
 
   // Map settings
-  const [mapSettings, setMapSettings] = useState({
-    showarea: props.init?.showarea ?? true,
-    bathymetry: props.init?.bathymetry ?? true,
-    surfacevariable: props.init?.surfacevariable || "none",
-  });
+  const [showArea, setShowArea] = useState(props.init?.showarea ?? true);
+  const [bathymetry, setBathymetry] = useState(props.init?.bathymetry ?? true);
+  const [surfaceVariable, setSurfaceVariable] = useState(
+    props.init?.surfacevariable || "none"
+  );
 
   // Feature settings
   const [quiver, setQuiver] = useState(
@@ -69,73 +75,46 @@ const AreaWindow = (props) => {
 
   // Sync scale when dataset_0.variable changes
   useEffect(() => {
-    setScales((prev) => ({
-      ...prev,
-      scale: props.dataset_0.variable_scale + ",auto",
-    }));
+    setScale(props.dataset_0.variable_scale + ",auto");
   }, [props.dataset_0.variable]);
 
-  const onLocalUpdate = (key, value) => {
-    // Handle different state groups
-    if (key === "scale" && Array.isArray(value)) {
-      setScales((prev) => ({ ...prev, scale: `${value[0]},${value[1]}` }));
-    } else if (key.includes("scale")) {
-      setScales((prev) => ({ ...prev, [key]: value }));
-    } else if (
-      key.includes("colormap") ||
-      key === "leftColormap" ||
-      key === "rightColormap"
-    ) {
-      const colorKey =
-        key === "leftColormap"
-          ? "left"
-          : key === "rightColormap"
-          ? "right"
-          : key === "colormap_diff"
-          ? "diff"
-          : key;
-      setColormaps((prev) => ({ ...prev, [colorKey]: value }));
-    } else if (key === "size" || key === "dpi") {
-      setPlotSettings((prev) => ({ ...prev, [key]: value }));
-    } else if (["showarea", "bathymetry", "surfacevariable"].includes(key)) {
-      setMapSettings((prev) => ({ ...prev, [key]: value }));
-    } else if (key === "quiver") {
-      setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
-    } else if (key === "contour") {
-      setContour(typeof value === "object" ? { ...contour, ...value } : value);
+  // Handler functions for specific updates
+  const handleScaleUpdate = (key, value) => {
+    if (Array.isArray(value)) {
+      setScale(`${value[0]},${value[1]}`);
     }
   };
 
-  const updatePlotTitle = (title) => {
-    if (title !== plotSettings.title) {
-      setPlotSettings((prev) => ({ ...prev, title }));
-    }
+  const handleQuiverUpdate = (key, value) => {
+    setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
+  };
+
+  const handleContourUpdate = (key, value) => {
+    setContour(typeof value === "object" ? { ...contour, ...value } : value);
   };
 
   const compareChanged = (checked) => {
     const newScale = checked
       ? "-10,10,auto"
       : props.dataset_0.variable_scale + ",auto";
-    setScales((prev) => ({ ...prev, scale: newScale }));
+    setScale(newScale);
     props.setCompareDatasets(checked);
   };
-
-  const onTabChange = (index) => setCurrentTab(index);
 
   // Prepare UI segments
   const plotOptions = (
     <div>
       <ImageSize
         id="size"
-        state={plotSettings.size}
-        onUpdate={onLocalUpdate}
+        state={plotSize}
+        onUpdate={(_, value) => setPlotSize(value)}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
         title={_("Plot Title")}
-        updatePlotTitle={updatePlotTitle}
-        plotTitle={plotSettings.title}
+        updatePlotTitle={setPlotTitle}
+        plotTitle={plotTitle}
       />
     </div>
   );
@@ -162,40 +141,28 @@ const AreaWindow = (props) => {
         <ColormapRange
           auto
           id="scale"
-          state={scales.scale.split(",")}
-          onUpdate={onLocalUpdate}
+          state={scale.split(",")}
+          onUpdate={handleScaleUpdate}
         />
-        {props.dataset_compare &&
-          props.dataset_0.variable === props.dataset_1.variable && (
-            <ComboBox
-              id="colormap_diff"
-              state={colormaps.diff}
-              def="default"
-              onUpdate={onLocalUpdate}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Diff. Colourmap")}
-            >
-              <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-            </ComboBox>
-          )}
-        {/* End of Compare Datasets options */}
+          {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
-          checked={mapSettings.bathymetry}
-          onUpdate={onLocalUpdate}
+          checked={bathymetry}
+          onUpdate={(_, value) => setBathymetry(value)}
           title={_("Show Bathymetry Contours")}
         />
+
         <CheckBox
           id="showarea"
-          checked={mapSettings.showarea}
-          onUpdate={onLocalUpdate}
+          checked={showArea}
+          onUpdate={(_, value) => setShowArea(value)}
           title={_("Show Selected Area(s)")}
         />
         {/* Arrow Selector Drop Down menu */}
         <QuiverSelector
           id="quiver"
           state={quiver}
-          onUpdate={onLocalUpdate}
+          onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
           title={_("Arrows")}
         />
@@ -203,10 +170,11 @@ const AreaWindow = (props) => {
         <ContourSelector
           id="contour"
           state={contour}
-          onUpdate={onLocalUpdate}
+          onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
           title={_("Additional Contours")}
         />
+
         <Accordion>
           <Accordion.Header>{_("Plot Options")}</Accordion.Header>
           <Accordion.Body>{plotOptions}</Accordion.Body>
@@ -239,9 +207,9 @@ const AreaWindow = (props) => {
         />
         <ComboBox
           id="leftColormap"
-          state={colormaps.left}
+          state={leftColormap}
           def="default"
-          onUpdate={onLocalUpdate}
+          onUpdate={(_, value) => setLeftColormap(value)}
           url="/api/v2.0/plot/colormaps"
           title={_("Colourmap")}
         >
@@ -265,9 +233,9 @@ const AreaWindow = (props) => {
         />
         <ComboBox
           id="rightColormap"
-          state={colormaps.right}
+          state={rightColormap}
           def="default"
-          onUpdate={onLocalUpdate}
+          onUpdate={(_, value) => setRightColormap(value)}
           url="/api/v2.0/plot/colormaps"
           title={_("Colourmap")}
         >
@@ -294,45 +262,51 @@ const AreaWindow = (props) => {
     const plot_query = {
       dataset: props.dataset_0.id,
       quantum: props.dataset_0.quantum,
-      scale: scales.scale,
+      scale: scale,
       name: props.name,
       type: "map",
-      colormap: colormaps.left,
+      colormap: leftColormap,
       time: props.dataset_0.time,
       area,
       depth: props.dataset_0.depth,
-      bathymetry: mapSettings.bathymetry,
+      bathymetry: bathymetry,
       quiver,
       contour,
-      showarea: mapSettings.showarea,
+      showarea: showArea,
       variable: props.dataset_0.variable,
       projection: props.mapSettings.projection,
-      size: plotSettings.size,
-      dpi: plotSettings.dpi,
+      size: plotSize,
+      dpi: plotDpi,
       interp: props.mapSettings.interpType,
       radius: props.mapSettings.interpRadius,
       neighbours: props.mapSettings.interpNeighbours,
-      plotTitle: plotSettings.title,
+      plotTitle: plotTitle,
       ...(props.dataset_compare && {
         compare_to: {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
-          scale: scales.scale_1,
-          scale_diff: scales.scale_diff,
-          colormap: colormaps.right,
-          colormap_diff: colormaps.diff,
+          scale: scale1,
+          scale_diff: scaleDiff,
+          colormap: rightColormap,
+          colormap_diff: diffColormap,
         },
       }),
     };
 
     const permlink_subquery = {
       currentTab,
-      ...scales,
-      leftColormap: colormaps.left,
-      rightColormap: colormaps.right,
-      colormap_diff: colormaps.diff,
-      ...plotSettings,
-      ...mapSettings,
+      scale,
+      scale_1: scale1,
+      scale_diff: scaleDiff,
+      leftColormap,
+      rightColormap,
+      colormap_diff: diffColormap,
+      size: plotSize,
+      dpi: plotDpi,
+      plotTitle,
+      showarea: showArea,
+      bathymetry,
+      surfacevariable: surfaceVariable,
       quiver,
       contour,
     };
@@ -348,7 +322,7 @@ const AreaWindow = (props) => {
 
   return (
     <div className="AreaWindow Window">
-      <Nav variant="tabs" activeKey={currentTab} onSelect={onTabChange}>
+      <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1}>{_("Map")}</Nav.Link>
         </Nav.Item>
