@@ -86,10 +86,10 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
-        maxZoom:7-1e-10,       
+        maxZoom: 7 - 1e-10,
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-          projection: projection,           
+          projection: projection,
         }),
       });
     case "ocean":
@@ -171,7 +171,7 @@ export const createMap = (
     }),
     opacity: mapSettings.mapBathymetryOpacity,
     visible: mapSettings.bathymetry,
-     preload: 1,
+    preload: 1,
   });
 
   const newLayerBathShapes = new VectorTileLayer({
@@ -246,7 +246,6 @@ export const createMap = (
         }),
       }),
     ]),
-
     overlays: [overlay],
   };
 
@@ -304,24 +303,21 @@ export const createMap = (
         popupElement.current.innerHTML = feature.get("name");
       }
 
-      if (feature.get("type") == "area") {
+      if (feature.get("type") == "Polygon") {
         mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
           selected = f;
           f.setStyle([
             new Style({
               stroke: new Stroke({
                 color: "#ffffff",
-                width: 2,
-              }),
-              fill: new Fill({
-                color: "#ffffff80",
-              }),
+                width: 5,
+              })
             }),
             new Style({
               stroke: new Stroke({
-                color: "#000000",
-                width: 1,
-              }),
+                color: "#ff0000",
+                width: 3,
+              })
             }),
             new Style({
               geometry: new olgeom.Point(
@@ -542,60 +538,20 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
       } else {
         switch (feat.get("type")) {
           case "Polygon":
-            if (feat.get("key")) {
-              return [
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 2,
-                  }),
-                  fill: new Fill({
-                    color: "#ffffff00",
-                  }),
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
-                  }),
-                }),
-                new Style({
-                  geometry: new olgeom.Point(
-                    olProj.transform(
-                      feat.get("centroid"),
-                      "EPSG:4326",
-                      mapSettings.projection
-                    )
-                  ),
-                  text: new Text({
-                    text: feat.get("name"),
-                    font: "14px sans-serif",
-                    fill: new Fill({
-                      color: "#000",
-                    }),
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 2,
-                    }),
-                  }),
-                }),
-              ];
-            } else {
-              return [
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 5,
-                  }),
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ff0000",
-                    width: 3,
-                  }),
-                }),
-              ];
-            }
+            return [
+              new Style({
+                stroke: new Stroke({
+                  color: "#ffffff",
+                  width: 5,
+                })
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: "#ff0000",
+                  width: 3,
+                })
+              }),
+            ];
           case "LineString":
             return [
               new Style({
