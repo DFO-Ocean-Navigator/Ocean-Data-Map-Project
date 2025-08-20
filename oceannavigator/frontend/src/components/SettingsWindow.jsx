@@ -32,6 +32,12 @@ const BASEMAPS = [
     value: "Maritime Chart Service",
     attribution: "Government of Canada",
   },
+  {
+    id: "litho",
+    value: "Seafloor Lithology",
+    attribution:
+      "Dutkiewicz, A., Müller R.D., O'Callaghan, S. and Jóson, H., 2015, Census of seafloor sediments in the world's ocean, Geology, 43, 795-798",
+  },
 ];
 
 function SettingsWindow(props) {

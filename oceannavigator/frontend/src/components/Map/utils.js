@@ -118,6 +118,14 @@ export const getBasemap = (
           projection: "EPSG:3857",
         }),
       });
+    case "litho":
+      return new TileLayer({
+        preload: 1,
+        source: new XYZ({
+          url: `/api/v2.0/tiles/litho/{z}/{x}/{y}?projection=${projection}`,
+          projection: projection,
+        }),
+      });
   }
 };
 
