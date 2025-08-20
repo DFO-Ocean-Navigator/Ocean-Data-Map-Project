@@ -77,7 +77,7 @@ const LineWindow = (props) => {
 
   const updatePlotTitle = (title) => {
     const idx = selected - 1;
-    setPlotTitles(prev => {
+    setPlotTitles((prev) => {
       const titles = [...prev];
       titles[idx] = title;
       return titles;
@@ -161,22 +161,14 @@ const LineWindow = (props) => {
           id="surfacevariable"
           state={surfaceVariable}
           onUpdate={(_, value) => {
-            console.log('Surface Variable ComboBox update - received value:', value, 'type:', typeof value);
-            
-            // Handle ComboBox returning array format: [variableName, range, flag1, flag2]
             let variableName = value;
             if (Array.isArray(value) && value.length > 0) {
-              variableName = value[0]; // Variable name is always first element
-              console.log('Extracted variable name from array:', variableName);
-            } else if (typeof value === 'object' && value !== null) {
-              // Handle object format if API returns objects instead of arrays
+              variableName = value[0];
+            } else if (typeof value === "object" && value !== null) {
               variableName = value.id || value.name || value.variable || "none";
-              console.log('Extracted variable name from object:', variableName);
-            } else if (typeof value !== 'string') {
+            } else if (typeof value !== "string") {
               variableName = String(value) || "none";
-              console.log('Converted to string:', variableName);
             }
-            
             setSurfaceVariable(variableName);
           }}
           title={_("Surface Variable")}
@@ -299,11 +291,6 @@ const LineWindow = (props) => {
     </Card>
   );
 
-  // Debug logging
-  console.log('Current surfaceVariable:', surfaceVariable, 'type:', typeof surfaceVariable);
-  console.log('Plot query will include surfacevariable:', surfaceVariable);
-
-  // Build plot query
   const baseQuery = {
     dataset: props.dataset_0.id,
     quantum: props.dataset_0.quantum,
@@ -315,9 +302,9 @@ const LineWindow = (props) => {
 
   let plot_query = {};
   if (selected === 1) {
-    // Ensure surfaceVariable is a string before sending to backend
-    const safeSurfaceVariable = typeof surfaceVariable === 'string' ? surfaceVariable : 'none';
-    
+    const safeSurfaceVariable =
+      typeof surfaceVariable === "string" ? surfaceVariable : "none";
+
     plot_query = {
       ...baseQuery,
       type: "transect",
@@ -332,17 +319,16 @@ const LineWindow = (props) => {
       depth_limit: depthLimit,
       profile_distance: profileDistance,
       selectedPlots: selectedPlots.toString(),
-      ...(props.dataset_compare &&
-        props.dataset_0.variable === props.dataset_1.variable && {
-          compare_to: {
-            ...props.dataset_1,  // Include all dataset_1 fields
-            dataset: props.dataset_1.id,
-            scale: scale1,
-            scale_diff: scaleDiff,
-            colormap: rightColormap,
-            colormap_diff: diffColormap,
-          },
-        }),
+      ...(props.dataset_compare && {
+        compare_to: {
+          ...props.dataset_1,
+          dataset: props.dataset_1.id,
+          scale: scale1,
+          scale_diff: scaleDiff,
+          colormap: rightColormap,
+          colormap_diff: diffColormap,
+        },
+      }),
     };
   } else {
     plot_query = {
@@ -354,7 +340,7 @@ const LineWindow = (props) => {
       ...(props.dataset_compare &&
         props.dataset_0.variable === props.dataset_1.variable && {
           compare_to: {
-            ...props.dataset_1,  // Include all dataset_1 fields
+            ...props.dataset_1,
             dataset: props.dataset_1.id,
             scale: scale1,
             scale_diff: scaleDiff,
@@ -378,7 +364,8 @@ const LineWindow = (props) => {
     dpi: plotDpi,
     plotTitles,
     showmap: showMap,
-    surfacevariable: typeof surfaceVariable === 'string' ? surfaceVariable : 'none',
+    surfacevariable:
+      typeof surfaceVariable === "string" ? surfaceVariable : "none",
     selectedPlots,
     linearthresh: linearThresh,
     depth_limit: depthLimit,
