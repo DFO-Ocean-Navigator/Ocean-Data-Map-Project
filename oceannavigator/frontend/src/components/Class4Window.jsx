@@ -23,45 +23,11 @@ const Class4Window = ({
   const [dpi, setDpi] = useState(init.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
-  const onLocalUpdate = (key, value) => {
-    if (typeof key === "string") {
-      switch (key) {
-        case "forecast":
-          setForecast(value);
-          break;
-        case "showmap":
-          setShowmap(value);
-          break;
-        case "climatology":
-          setClimatology(value);
-          break;
-        case "error":
-          setError(value);
-          break;
-        case "size":
-          setSize(value);
-          break;
-        case "dpi":
-          setDpi(value);
-          break;
-        case "models":
-          setModels(value);
-          break;
-        default:
-          break;
-      }
-    } else if (Array.isArray(key)) {
-      for (let i = 0; i < key.length; i++) {
-        onLocalUpdate(key[i], Array.isArray(value) ? value[i] : value);
-      }
-    }
-  };
-
   const plot_query = {
     type: "class4",
     class4type,
     dataset,
-    forecast,
+    forecast: forecast === "Best Estimate" ? "best" : forecast,
     class4id: plotData.id,
     showmap,
     climatology,
@@ -76,23 +42,33 @@ const Class4Window = ({
     { id: "observation", value: _("Value - Observation") },
     { id: "climatology", value: _("Value - Climatology") },
   ];
+  //multi-select handler
+  const handleModelsUpdate = (_, value) => {
+    const newModel =
+      Array.isArray(value) && value[0]
+        ? Array.isArray(value[0])
+          ? value[0][0]
+          : value[0]
+        : null;
 
-  const plotOptions = (
-    <ImageSize
-      id="size"
-      state={size}
-      onUpdate={onLocalUpdate}
-      title={_("Saved Image Size")}
-    />
-  );
+    if (newModel) {
+      setModels((prev) =>
+        prev.includes(newModel)
+          ? prev.filter((m) => m !== newModel)
+          : [...prev, newModel]
+      );
+    }
+  };
 
-  _("Forecast");
-  _("Show Location");
-  _("Show Climatology");
-  _("Additional Models");
-  _("Show Error");
-  _("Saved Image Size");
-
+  const handleErrorUpdate = (_, value) => {
+    setError(
+      Array.isArray(value)
+        ? value[0] || "none"
+        : typeof value === "object" && value
+        ? value.id || value.value || "none"
+        : value || "none"
+    );
+  };
   return (
     <div className="Class4Window Window">
       <Row>
@@ -101,60 +77,62 @@ const Class4Window = ({
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
-                key="forecast"
                 id="forecast"
                 state={forecast}
                 def=""
                 url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
                 title={_("Forecast")}
-                onUpdate={onLocalUpdate}
+                onUpdate={(_, value) => setForecast(value)}
               />
               <CheckBox
-                key="showmap"
                 id="showmap"
                 checked={showmap}
-                onUpdate={onLocalUpdate}
+                onUpdate={(_, value) => setShowmap(value)}
                 title={_("Show Location")}
               >
                 {_("showmap_help")}
               </CheckBox>
               <CheckBox
-                key="climatology"
                 id="climatology"
                 checked={climatology}
-                onUpdate={onLocalUpdate}
+                onUpdate={(_, value) => setClimatology(value)}
                 title={_("Show Climatology")}
               >
                 {_("climatology_help")}
               </CheckBox>
               <ComboBox
-                key="models"
                 id="models"
                 state={models}
                 multiple
-                onUpdate={onLocalUpdate}
+                onUpdate={handleModelsUpdate}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
               />
               <ComboBox
-                key="error"
                 id="error"
                 state={error}
                 def=""
                 data={error_options}
                 title={_("Show Error")}
-                onUpdate={onLocalUpdate}
+                onUpdate={handleErrorUpdate}
               />
-              <Accordion id="class4_accordion">
+              <Accordion>
                 <Accordion.Header>{_("Plot Options")}</Accordion.Header>
-                <Accordion.Body>{plotOptions}</Accordion.Body>
+                <Accordion.Body>
+                  <ImageSize
+                    id="size"
+                    state={size}
+                    onUpdate={(_, value) => setSize(value)}
+                    title={_("Saved Image Size")}
+                  />
+                </Accordion.Body>
               </Accordion>
             </Card.Body>
           </Card>
         </Col>
         <Col lg={10}>
           <PlotImage
-            query={plot_query} // For image saving link.
+            query={plot_query}
             permlink_subquery={{
               forecast,
               showmap,
