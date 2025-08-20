@@ -49,7 +49,7 @@ const LineWindow = (props) => {
 
   // Transect-specific settings
   const [transectSettings, setTransectSettings] = useState({
-    linearthresh: props.init?.linearthresh || 0,
+    linearthresh: props.init?.linearthresh || false,
     depth_limit: props.init?.depth_limit || false,
     profile_distance: props.init?.profile_distance || -1,
     show_profile: props.init?.show_profile || false,
