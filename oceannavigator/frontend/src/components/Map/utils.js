@@ -543,7 +543,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
         switch (feat.get("type")) {
           case "Polygon":
             if (feat.get("key")) {
-              return [
+              const styles = [
                 new Style({
                   stroke: new Stroke({
                     color: "#ffffff",
@@ -559,27 +559,17 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                     width: 3,
                   }),
                 }),
-                new Style({
-                  geometry: new olgeom.Point(
-                    olProj.transform(
-                      feat.get("centroid"),
-                      "EPSG:4326",
-                      mapSettings.projection
-                    )
-                  ),
-                  text: new Text({
-                    text: feat.get("name"),
-                    font: "14px sans-serif",
-                    fill: new Fill({
-                      color: "#000",
-                    }),
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 2,
-                    }),
-                  }),
-                }),
               ];
+
+              const textStyle = createFeatureTextStyle(
+                feat,
+                "#000",
+                "#ffffff",
+                mapSettings
+              );
+              if (textStyle) styles.push(textStyle);
+
+              return styles;
             } else {
               const styles = [
                 new Style({
@@ -595,35 +585,8 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                   }),
                 }),
               ];
-              if (feat.get("name")) {
-                let centroid = feat.get("labelCentroid");
-                if (!centroid) {
-                  // Fallback for features that don't have cached centroid
-                  centroid = feat
-                    .getGeometry()
-                    .getInteriorPoint()
-                    .getCoordinates();
-                  feat.set("labelCentroid", centroid);
-                }
-
-                styles.push(
-                  new Style({
-                    geometry: new olgeom.Point(centroid),
-                    text: new Text({
-                      text: feat.get("name"),
-                      font: "14px sans-serif",
-                      fill: new Fill({
-                        color: "#000",
-                      }),
-                      stroke: new Stroke({
-                        color: "#ffffff",
-                        width: 2,
-                      }),
-                    }),
-                  })
-                );
-              }
-
+              const textStyle = createFeatureTextStyle(feat);
+              if (textStyle) styles.push(textStyle);
               return styles;
             }
           case "LineString":
@@ -641,21 +604,9 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
-  if (feat.get("name")) {
-    styles.push(new Style({
-      text: new Text({
-        text: feat.get("name"),
-        font: "14px sans-serif",
-        fill: new Fill({ color: "#000" }),
-        stroke: new Stroke({ color: "#ffffff", width: 2 }),
-        textAlign: "center",
-        textBaseline: "bottom",
-        offsetY: -8,
-      })
-    }));
-  }
-
-  return styles;
+            const textStyle = createFeatureTextStyle(feat);
+            if (textStyle) styles.push(textStyle);
+            return styles;
           case "Point":
             return new Style({
               image: new Circle({
@@ -760,6 +711,57 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
   });
 };
 
+export const createFeatureTextStyle = (
+  feature,
+  textColor = "#000",
+  strokeColor = "#ffffff",
+  mapSettings = null
+) => {
+  if (!feature.get("name")) return null;
+
+  const type = feature.get("type");
+  let geometry = undefined;
+  let textBaseline = "middle";
+  let offsetY = 0;
+
+  if (type === "LineString") {
+    // For LineString
+    textBaseline = "bottom";
+    offsetY = -8;
+  } else if (type === "Polygon") {
+    // Special case for predefined polygons
+    if (feature.get("key") && mapSettings) {
+      geometry = new olgeom.Point(
+        olProj.transform(
+          feature.get("centroid"),
+          "EPSG:4326",
+          mapSettings.projection
+        )
+      );
+    } else {
+      // Regular polygons
+      let centroid = feature.get("labelCentroid");
+      if (!centroid) {
+        centroid = feature.getGeometry().getInteriorPoint().getCoordinates();
+        feature.set("labelCentroid", centroid);
+      }
+      geometry = new olgeom.Point(centroid);
+    }
+  }
+
+  return new Style({
+    geometry: geometry,
+    text: new Text({
+      text: feature.get("name"),
+      font: "14px sans-serif",
+      fill: new Fill({ color: textColor }),
+      stroke: new Stroke({ color: strokeColor, width: 2 }),
+      textAlign: "center",
+      textBaseline: textBaseline,
+      offsetY: offsetY,
+    }),
+  });
+};
 export const getDataSource = (dataset, mapSettings) => {
   let scale = dataset.variable_scale;
   if (Array.isArray(scale)) {

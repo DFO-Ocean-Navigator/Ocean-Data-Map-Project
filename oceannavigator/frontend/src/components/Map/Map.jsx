@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill } from "ol/style";
+import { Style, Circle, Stroke, Fill, Text } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -34,6 +34,7 @@ import {
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
+  createFeatureTextStyle,
 } from "./utils";
 import {
   getDrawAction,
@@ -440,26 +441,28 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
-
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
-        return new Style({
-          stroke: new Stroke({
-            color: "#0099ff",
-            width: 4,
-          }),
-          image: new Circle({
-            radius: 4,
-            fill: new Fill({
-              color: "#0099ff",
-            }),
-            stroke: new Stroke({
-              color: "#ffffff",
-              width: 1,
+        const styles = [
+          new Style({
+            stroke: new Stroke({ color: "#0099ff", width: 4 }),
+            image: new Circle({
+              radius: 4,
+              fill: new Fill({ color: "#0099ff" }),
+              stroke: new Stroke({ color: "#ffffff", width: 1 }),
             }),
           }),
-        });
+        ];
+        const textStyle = createFeatureTextStyle(
+          feat,
+          "#0099ff",
+          "#ffffff",
+          props.mapSettings
+        );
+        if (textStyle) styles.push(textStyle);
+
+        return styles;
       },
     });
 
@@ -600,7 +603,6 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) => feature.get("class") !== "observation"
     );
-
     if (features.length > 0) {
       featureVectorSource.removeFeatures([features[features.length - 1]]);
     }
@@ -622,8 +624,6 @@ const Map = forwardRef((props, ref) => {
       case "Polygon":
         coordinates = [...coordinates, coordinates[0]];
         geom = new Polygon([coordinates]);
-        const centroid = geom.getInteriorPoint().getCoordinates();
-        feature.set("labelCentroid", centroid);
         break;
     }
     feature.setGeometry(geom);
