@@ -143,7 +143,7 @@ function ComboBox({
       optionsData.length > 1 && optionsData[optionsData.length - 1].help
         ? optionsData.map((d) => (
             <p key={d.id}>
-              <em>{d.value}</em>:{" "}
+              <em>{d.value}</em>
               <span dangerouslySetInnerHTML={{ __html: d.help }} />
             </p>
           ))
