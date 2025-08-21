@@ -34,6 +34,7 @@ import {
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
+  calculateLabelPositioning
 } from "./utils";
 import {
   getDrawAction,
@@ -620,10 +621,16 @@ const Map = forwardRef((props, ref) => {
         break;
       case "LineString":
         geom = new LineString(coordinates);
+         const labelPositioning = calculateLabelPositioning(geom);
+         if (labelPositioning) {
+        feature.set('labelPositioning', labelPositioning);
+      }
         break;
       case "Polygon":
         coordinates = [...coordinates, coordinates[0]];
         geom = new Polygon([coordinates]);
+         const centroid = geom.getInteriorPoint().getCoordinates();
+      feature.set('labelCentroid', centroid);
         break;
     }
     feature.setGeometry(geom);

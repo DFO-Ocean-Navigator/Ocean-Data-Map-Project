@@ -596,27 +596,32 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               ];
               if (feat.get("name")) {
-                styles.push(
-                  new Style({
-                    geometry: new olgeom.Point(
-                      feat.getGeometry().getInteriorPoint().getCoordinates()
-                    ),
-                    text: new Text({
-                      text: feat.get("name"),
-                      font: "14px sans-serif",
-                      fill: new Fill({
-                        color: "#000",
-                      }),
-                      stroke: new Stroke({
-                        color: "#ffffff",
-                        width: 2,
-                      }),
-                    }),
-                  })
-                );
-              }
+       let centroid = feat.get('labelCentroid');
+    if (!centroid) {
+      // Fallback for features that don't have cached centroid
+      centroid = feat.getGeometry().getInteriorPoint().getCoordinates();
+      feat.set('labelCentroid', centroid); // Cache for future use
+    }
 
-              return styles;
+    styles.push(
+      new Style({
+        geometry: new olgeom.Point(centroid),
+        text: new Text({
+          text: feat.get("name"),
+          font: "14px sans-serif",
+          fill: new Fill({
+            color: "#000",
+          }),
+          stroke: new Stroke({
+            color: "#ffffff",
+            width: 2,
+          }),
+        }),
+      })
+    );
+  }
+
+  return styles;
             }
           case "LineString":
             const styles = [
@@ -633,103 +638,37 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
+ if (feat.get("name")) {
+    // Check for cached positioning first
+    let labelPos = feat.get('labelPositioning');
+    
+    // Fall back to calculation if not cached (for features not created via updateFeatureGeometry)
+    if (!labelPos) {
+      labelPos = calculateLabelPositioning(feat.getGeometry());
+      if (labelPos) {
+        // Cache for future use
+        feat.set('labelPositioning', labelPos); 
+      }
+    }
+    
+    if (labelPos) {
+      styles.push(new Style({
+        geometry: new olgeom.Point(labelPos.centroid),
+        text: new Text({
+          text: feat.get("name"),
+          font: "14px sans-serif",
+          fill: new Fill({ color: "#000" }),
+          stroke: new Stroke({ color: "#ffffff", width: 2 }),
+          textAlign: labelPos.textAlign,
+          textBaseline: labelPos.textBaseline,
+          offsetX: labelPos.offsetX,
+          offsetY: labelPos.offsetY
+        })
+      }));
+    }
+  }
 
-            if (feat.get("name")) {
-              let geometry = feat.getGeometry();
-              const coordinates = geometry.getCoordinates();
-              if (coordinates && coordinates.length >= 2) {
-                // Calculating centroid
-                const startCoord = coordinates[0];
-                const endCoord = coordinates[coordinates.length - 1];
-                const centroidX = (startCoord[0] + endCoord[0]) / 2;
-                const centroidY = (startCoord[1] + endCoord[1]) / 2;
-
-                // Transforming coordinates to lat/lon for direction calculation
-                const startLatLon = olProj.transform(
-                  startCoord,
-                  mapSettings.projection,
-                  "EPSG:4326"
-                );
-                const endLatLon = olProj.transform(
-                  endCoord,
-                  mapSettings.projection,
-                  "EPSG:4326"
-                );
-
-                // Finding base point (lowest longitude) and target point
-                const basePoint =
-                  startLatLon[0] <= endLatLon[0] ? startLatLon : endLatLon;
-                const targetPoint =
-                  startLatLon[0] <= endLatLon[0] ? endLatLon : startLatLon;
-
-                const lonDiff = targetPoint[0] - basePoint[0];
-                const latDiff = targetPoint[1] - basePoint[1];
-
-                // Determining text positioning based on line direction
-                let textAlign = "center";
-                let textBaseline = "middle";
-                let offsetX = 0;
-                let offsetY = 0;
-
-                const tolerance = 0.0001;
-
-                if (Math.abs(lonDiff) < tolerance) {
-                  // Vertical line - text to the right
-                  textAlign = "left";
-                  offsetX = 15;
-                } else if (Math.abs(latDiff) < tolerance) {
-                  // Horizontal line - text on top
-                  textBaseline = "bottom";
-                  offsetY = -15;
-                } else if (latDiff > 0) {
-                  // Line going north (up)
-                  if (lonDiff > 0) {
-                    // North-east - text to the right
-                    textAlign = "left";
-                    offsetX = 15;
-                  } else {
-                    // North-west - text to the left
-                    textAlign = "right";
-                    offsetX = -15;
-                  }
-                } else {
-                  // Line going south (down)
-                  if (lonDiff > 0) {
-                    // South-east - text to the right
-                    textAlign = "left";
-                    offsetX = 15;
-                  } else {
-                    // South-west - text to the left
-                    textAlign = "right";
-                    offsetX = -15;
-                  }
-                }
-
-                styles.push(
-                  new Style({
-                    geometry: new olgeom.Point([centroidX, centroidY]),
-                    text: new Text({
-                      text: feat.get("name"),
-                      font: "14px sans-serif",
-                      fill: new Fill({
-                        color: "#000",
-                      }),
-                      stroke: new Stroke({
-                        color: "#ffffff",
-                        width: 2,
-                      }),
-                      textAlign: textAlign,
-                      textBaseline: textBaseline,
-                      offsetX: offsetX,
-                      offsetY: offsetY,
-                      rotation: 0,
-                    }),
-                  })
-                );
-              }
-            }
-
-            return styles;
+  return styles;
           case "Point":
             return new Style({
               image: new Circle({
@@ -856,6 +795,38 @@ export const getDataSource = (dataset, mapSettings) => {
   dataSource.projection = mapSettings.projection;
 
   return dataSource;
+};
+export const calculateLabelPositioning = (geometry) => {
+  const [startX, startY] = geometry.getFirstCoordinate();
+  const [endX, endY] = geometry.getLastCoordinate();
+  
+  if (startX === undefined || endX === undefined) return null;
+  
+  const extent = geometry.getExtent();
+  const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+  
+  const positions = [
+    [-22.5, 22.5, "center", "bottom", [0, -1]],     // East
+    [22.5, 67.5, "right", "bottom", [-0.7, -0.7]], // NE  
+    [67.5, 112.5, "left", "middle", [1, 0]],       // North
+    [112.5, 157.5, "left", "top", [0.7, 0.7]],     // NW
+    [157.5, 202.5, "center", "top", [0, 1]],       // West
+    [202.5, 247.5, "left", "bottom", [0.7, -0.7]], // SW
+    [247.5, 292.5, "right", "middle", [-1, 0]],    // South
+    [292.5, 337.5, "right", "top", [-0.7, 0.7]]    // SE
+  ];
+  
+  const normalizedAngle = (angle + 360) % 360;
+  const [,, align, baseline, [xMult, yMult]] = positions.find(([min, max]) => 
+    normalizedAngle >= min && normalizedAngle < max) || positions[0];
+  
+  return {
+    centroid: [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2],
+    textAlign: align,
+    textBaseline: baseline,
+    offsetX: xMult * 15,
+    offsetY: yMult * 15
+  };
 };
 
 export const getQuiverSource = (dataset, mapSettings) => {
