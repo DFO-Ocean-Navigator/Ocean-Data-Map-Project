@@ -464,5 +464,5 @@ class Plotter(metaclass=ABCMeta):
             legend = None
 
         if legend:
-            for legobj in legend.legendHandles:
+            for legobj in legend.legend_handles:
                 legobj.set_linewidth(4.0)
