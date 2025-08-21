@@ -596,32 +596,35 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               ];
               if (feat.get("name")) {
-       let centroid = feat.get('labelCentroid');
-    if (!centroid) {
-      // Fallback for features that don't have cached centroid
-      centroid = feat.getGeometry().getInteriorPoint().getCoordinates();
-      feat.set('labelCentroid', centroid); // Cache for future use
-    }
+                let centroid = feat.get("labelCentroid");
+                if (!centroid) {
+                  // Fallback for features that don't have cached centroid
+                  centroid = feat
+                    .getGeometry()
+                    .getInteriorPoint()
+                    .getCoordinates();
+                  feat.set("labelCentroid", centroid);
+                }
 
-    styles.push(
-      new Style({
-        geometry: new olgeom.Point(centroid),
-        text: new Text({
-          text: feat.get("name"),
-          font: "14px sans-serif",
-          fill: new Fill({
-            color: "#000",
-          }),
-          stroke: new Stroke({
-            color: "#ffffff",
-            width: 2,
-          }),
-        }),
-      })
-    );
-  }
+                styles.push(
+                  new Style({
+                    geometry: new olgeom.Point(centroid),
+                    text: new Text({
+                      text: feat.get("name"),
+                      font: "14px sans-serif",
+                      fill: new Fill({
+                        color: "#000",
+                      }),
+                      stroke: new Stroke({
+                        color: "#ffffff",
+                        width: 2,
+                      }),
+                    }),
+                  })
+                );
+              }
 
-  return styles;
+              return styles;
             }
           case "LineString":
             const styles = [
@@ -638,34 +641,18 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
- if (feat.get("name")) {
-    // Check for cached positioning first
-    let labelPos = feat.get('labelPositioning');
-    
-    // Fall back to calculation if not cached (for features not created via updateFeatureGeometry)
-    if (!labelPos) {
-      labelPos = calculateLabelPositioning(feat.getGeometry());
-      if (labelPos) {
-        // Cache for future use
-        feat.set('labelPositioning', labelPos); 
-      }
-    }
-    
-    if (labelPos) {
-      styles.push(new Style({
-        geometry: new olgeom.Point(labelPos.centroid),
-        text: new Text({
-          text: feat.get("name"),
-          font: "14px sans-serif",
-          fill: new Fill({ color: "#000" }),
-          stroke: new Stroke({ color: "#ffffff", width: 2 }),
-          textAlign: labelPos.textAlign,
-          textBaseline: labelPos.textBaseline,
-          offsetX: labelPos.offsetX,
-          offsetY: labelPos.offsetY
-        })
-      }));
-    }
+  if (feat.get("name")) {
+    styles.push(new Style({
+      text: new Text({
+        text: feat.get("name"),
+        font: "14px sans-serif",
+        fill: new Fill({ color: "#000" }),
+        stroke: new Stroke({ color: "#ffffff", width: 2 }),
+        textAlign: "center",
+        textBaseline: "bottom",
+        offsetY: -8,
+      })
+    }));
   }
 
   return styles;
@@ -795,38 +782,6 @@ export const getDataSource = (dataset, mapSettings) => {
   dataSource.projection = mapSettings.projection;
 
   return dataSource;
-};
-export const calculateLabelPositioning = (geometry) => {
-  const [startX, startY] = geometry.getFirstCoordinate();
-  const [endX, endY] = geometry.getLastCoordinate();
-  
-  if (startX === undefined || endX === undefined) return null;
-  
-  const extent = geometry.getExtent();
-  const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-  
-  const positions = [
-    [-22.5, 22.5, "center", "bottom", [0, -1]],     // East
-    [22.5, 67.5, "right", "bottom", [-0.7, -0.7]], // NE  
-    [67.5, 112.5, "left", "middle", [1, 0]],       // North
-    [112.5, 157.5, "left", "top", [0.7, 0.7]],     // NW
-    [157.5, 202.5, "center", "top", [0, 1]],       // West
-    [202.5, 247.5, "left", "bottom", [0.7, -0.7]], // SW
-    [247.5, 292.5, "right", "middle", [-1, 0]],    // South
-    [292.5, 337.5, "right", "top", [-0.7, 0.7]]    // SE
-  ];
-  
-  const normalizedAngle = (angle + 360) % 360;
-  const [,, align, baseline, [xMult, yMult]] = positions.find(([min, max]) => 
-    normalizedAngle >= min && normalizedAngle < max) || positions[0];
-  
-  return {
-    centroid: [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2],
-    textAlign: align,
-    textBaseline: baseline,
-    offsetX: xMult * 15,
-    offsetY: yMult * 15
-  };
 };
 
 export const getQuiverSource = (dataset, mapSettings) => {
