@@ -53,6 +53,7 @@ from plotting.stick import StickPlotter
 from plotting.tile import bathymetry as plot_bathymetry
 from plotting.tile import scale as plot_scale
 from plotting.tile import topo as plot_topography
+from plotting.tile import litho as plot_lithology
 from plotting.timeseries import TimeseriesPlotter
 from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
@@ -960,6 +961,43 @@ def topography_tiles(
         )
 
     img = plot_topography(projection, x, y, zoom, shaded_relief)
+    return _cache_and_send_img(img, f)
+
+@router.get("/tiles/litho/{zoom}/{x}/{y}")
+def lithology_tiles(
+    zoom: int = Path(examples=[4]),
+    x: int = Path(examples=[0]),
+    y: int = Path(examples=[1]),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
+    ),
+):
+    """
+    Generates seafloor lithology tiles
+    """
+
+    settings = get_settings()
+
+    f = os.path.join(
+        settings.cache_dir,
+        "api",
+        "v2.0",
+        "tiles",
+        "litho",
+        projection,
+        str(zoom),
+        str(x),
+        f"{y}.png",
+    )
+
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
+
+    img = plot_lithology(projection, x, y, zoom)
     return _cache_and_send_img(img, f)
 
 

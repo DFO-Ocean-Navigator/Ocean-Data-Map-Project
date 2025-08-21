@@ -437,6 +437,37 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     return buf
 
 
+def litho(projection: str, x: int, y: int, z: int) -> BytesIO:
+    settings = get_settings()
+
+    lat, lon = get_latlon_coords(projection, x, y, z)
+    if len(lat.shape) == 1:
+        lat, lon = np.meshgrid(lat, lon)
+
+    xpx = x * 256
+    ypx = y * 256
+
+    data = None
+    with Dataset(settings.litho_file % (projection, z), "r") as dataset:
+        data = dataset["lithology"][ypx : (ypx + 256), xpx : (xpx + 256)]
+
+    sm = matplotlib.cm.ScalarMappable(
+        matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=1, vmax=13),
+        cmap="Set1",
+    )
+    img = sm.to_rgba(np.squeeze(data))
+
+    img = np.clip(img, 0, 1)
+
+    im = Image.fromarray((img * 255.0).astype(np.uint8))
+
+    buf = BytesIO()
+    im.save(buf, format="PNG", optimize=True)
+    buf.seek(0)
+
+    return buf
+
+
 async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
     settings = get_settings()
 
