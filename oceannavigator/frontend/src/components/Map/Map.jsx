@@ -157,71 +157,6 @@ const Map = forwardRef((props, ref) => {
     getLineDistance: getLineDistance,
   }));
 
-  //styles for hover select
-  const createHoverSelect = (selectInteraction, layerFeatureVector) => {
-    const hoverStyle = new Style({
-      image: new Circle({
-        radius: 4,
-        fill: new Fill({
-          color: "#00ffff",
-        }),
-        stroke: new Stroke({
-          color: "#000000",
-        }),
-      }),
-      stroke: new Stroke({
-        color: "#00ffff",
-        width: 4,
-      }),
-      fill: new Fill({
-        color: "rgba(0,255,255,0.1)",
-      }),
-    });
-
-    const selectedHoverStyle = new Style({
-      stroke: new Stroke({
-        color: "#0099ff",
-        width: 4,
-      }),
-      fill: new Fill({
-        color: "rgba(0,153,255,0.3)",
-      }),
-      image: new Circle({
-        radius: 4,
-        fill: new Fill({
-          color: "#0099ff",
-        }),
-        stroke: new Stroke({
-          color: "#ffffff",
-          width: 1,
-        }),
-      }),
-    });
-
-    const hoverSelect = new Select({
-      condition: pointerMove,
-      style: function (feature, resolution) {
-        // Skip annotation features
-        if (feature.get("annotation")) {
-          return null;
-        }
-
-        const selectedFeatures = selectInteraction.getFeatures().getArray();
-        if (selectedFeatures.includes(feature)) {
-          return selectedHoverStyle;
-        }
-
-        return hoverStyle;
-      },
-      layers: [layerFeatureVector],
-      filter: function (feature, layer) {
-        return !feature.get("annotation");
-      },
-    });
-
-    return hoverSelect;
-  };
-
   useEffect(() => {
     let overlay = new Overlay({
       element: popupElement0.current,
@@ -556,6 +491,68 @@ const Map = forwardRef((props, ref) => {
     });
 
     return newSelect;
+  };
+
+  const createHoverSelect = (selectInteraction, layerFeatureVector) => {
+    const hoverSelect = new Select({
+      condition: pointerMove,
+      style: function (feature, resolution) {
+        const selectedFeatures = selectInteraction.getFeatures().getArray();
+        let fillColor = selectedFeatures.includes(feature)
+          ? "#0099ff"
+          : "#ff0000";
+        if (feature.get("type") === "Point") {
+          return new Style({
+            stroke: new Stroke({
+              color: "#ffffff88",
+              width: 16,
+            }),
+            image: new Circle({
+              radius: 6,
+              fill: new Fill({
+                color: fillColor,
+              }),
+              stroke: new Stroke({
+                color: "#ffffffff",
+                width: 3,
+              }),
+            }),
+          });
+        }
+        return [
+          new Style({
+            stroke: new Stroke({
+              color: "#ffffff22",
+              width: 16,
+            }),
+          }),
+          new Style({
+            stroke: new Stroke({
+              color: "#ffffff88",
+              width: 12,
+            }),
+          }),
+          new Style({
+            stroke: new Stroke({
+              color: "#ffffffff",
+              width: 8,
+            }),
+          }),
+          new Style({
+            stroke: new Stroke({
+              color: fillColor,
+              width: 4,
+            }),
+          }),
+        ];
+      },
+      layers: [layerFeatureVector],
+      filter: function (feature, layer) {
+        return !feature.get("annotation");
+      },
+    });
+
+    return hoverSelect;
   };
 
   const getFeatures = () => {

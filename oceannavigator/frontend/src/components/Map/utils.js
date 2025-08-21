@@ -298,24 +298,21 @@ export const createMap = (
         popupElement.current.innerHTML = feature.get("name");
       }
 
-      if (feature.get("type") == "area") {
+      if (feature.get("type") == "Polygon") {
         mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
           selected = f;
           f.setStyle([
             new Style({
               stroke: new Stroke({
                 color: "#ffffff",
-                width: 2,
-              }),
-              fill: new Fill({
-                color: "#ffffff80",
-              }),
+                width: 5,
+              })
             }),
             new Style({
               stroke: new Stroke({
-                color: "#000000",
-                width: 1,
-              }),
+                color: "#ff0000",
+                width: 3,
+              })
             }),
             new Style({
               geometry: new olgeom.Point(
@@ -506,65 +503,20 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
       } else {
         switch (feat.get("type")) {
           case "Polygon":
-            const almostInvisibleFill = new Fill({
-              color: "rgba(255,255,255,0.01)",
-            });
-
-            if (feat.get("key")) {
-              return [
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 2,
-                  }),
-                  fill: almostInvisibleFill,
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
-                  }),
-                  fill: almostInvisibleFill,
-                }),
-                new Style({
-                  geometry: new olgeom.Point(
-                    olProj.transform(
-                      feat.get("centroid"),
-                      "EPSG:4326",
-                      mapSettings.projection
-                    )
-                  ),
-                  text: new Text({
-                    text: feat.get("name"),
-                    font: "14px sans-serif",
-                    fill: new Fill({
-                      color: "#000",
-                    }),
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 2,
-                    }),
-                  }),
-                }),
-              ];
-            } else {
-              return [
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ffffff",
-                    width: 5,
-                  }),
-                  fill: almostInvisibleFill,
-                }),
-                new Style({
-                  stroke: new Stroke({
-                    color: "#ff0000",
-                    width: 3,
-                  }),
-                  fill: almostInvisibleFill,
-                }),
-              ];
-            }
+            return [
+              new Style({
+                stroke: new Stroke({
+                  color: "#ffffff",
+                  width: 5,
+                })
+              }),
+              new Style({
+                stroke: new Stroke({
+                  color: "#ff0000",
+                  width: 3,
+                })
+              }),
+            ];
           case "LineString":
             return [
               new Style({
