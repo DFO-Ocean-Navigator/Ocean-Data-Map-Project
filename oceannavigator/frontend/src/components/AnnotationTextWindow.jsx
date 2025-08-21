@@ -7,9 +7,8 @@ function AnnotationTextWindow(props) {
   const [inputText, setInputText] = useState("");
 
   const onSubmit = () => {
-    const centerCoord = props.mapRef.current.getMapCenter();
-    props.mapRef.current.addAnnotationLabel(inputText.trim(), centerCoord);
-    props.updateUI({ annotationMode: false, modalType: "", showModal: false });
+    props.mapRef.current.addAnnotationLabel(inputText.trim());
+    props.updateUI({modalType: "", showModal: false });
   };
 
   const onUndo = () => {

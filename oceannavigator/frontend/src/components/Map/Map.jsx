@@ -25,7 +25,7 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
+import { AnnotationOverlay } from "./AnnotationOverlay.js";
 
 import {
   createMapView,
@@ -140,7 +140,6 @@ const Map = forwardRef((props, ref) => {
     addAnnotationLabel: addAnnotationLabel,
     undoAnnotationLabel: undoAnnotationLabel,
     clearAnnotationLabels: clearAnnotationLabels,
-    getMapCenter: getMapCenter,
     getFeatures: getFeatures,
     getPlotData: getPlotData,
     selectFeatures: selectFeatures,
@@ -222,9 +221,6 @@ const Map = forwardRef((props, ref) => {
 
     return hoverSelect;
   };
-  const getMapCenter = () => {
-    return mapView.getCenter();
-  };
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -298,7 +294,6 @@ const Map = forwardRef((props, ref) => {
     setSelect0(newSelect);
     setHoverSelect0(newHoverSelect);
     setLayerBasemap(mapLayers[0]);
-
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
   }, []);
@@ -991,7 +986,8 @@ const Map = forwardRef((props, ref) => {
     }
   };
 
-  const addAnnotationLabel = (text, coord) => {
+  const addAnnotationLabel = (text) => {
+    const coord= mapView.getCenter();
     let overlay = new AnnotationOverlay(text, coord);
     map0.addOverlay(overlay);
     setAnnotationOverlays((prev) => [...prev, overlay]);

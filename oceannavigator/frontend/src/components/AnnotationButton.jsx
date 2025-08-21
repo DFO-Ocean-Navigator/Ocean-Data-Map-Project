@@ -11,7 +11,6 @@ function AnnotationButton(props) {
     props.updateUI({
       modalType: "annotation",
       showModal: true,
-      annotationMode: false,
     });
   };
 
