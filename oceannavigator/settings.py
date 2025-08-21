@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     drifter_catalog_url: str = ""
     drifter_url: str = ""
     etopo_file: str = ""
+    litho_file: str = ""
     log_level: str = "DEBUG"
     observation_agg_url: str = ""
     overlay_kml_dir: str = ""
