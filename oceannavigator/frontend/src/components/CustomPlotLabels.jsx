@@ -1,87 +1,67 @@
-import React from "react";
-import { Row, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
+import React, { useState, useEffect } from "react";
+import { Row, Button, OverlayTrigger, Tooltip, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
-
 import { withTranslation } from "react-i18next";
 
-class CustomPlotLabels extends React.PureComponent {
-  constructor(props) {
-    super(props);
+const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle, t: _ }) => {
+  const [userProvidedTitle, setUserProvidedTitle] = useState(plotTitle);
 
-    this.state = {
-      userProvidedTitle: props.plotTitle, //Holds user defined plot title
-    };
-
-    this.updateParent = this.updateParent.bind(this);
-    this.updateState = this.updateState.bind(this);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({ userProvidedTitle: nextProps.plotTitle });
-  }
+  // Sync state when plotTitle prop changes
+  useEffect(() => {
+    setUserProvidedTitle(plotTitle); //Holds user defined plot title
+  }, [plotTitle]);
 
   //Updates new title value as user types
-  updateState(e) {
-    this.setState({
-      userProvidedTitle: e.target.value, //Changes stored title value
-    });
-  }
+  //Changes stored title value
+  const handleChange = (e) => {
+    setUserProvidedTitle(e.target.value);
+  };
 
   //Updates title on button click
-  updateParent(e) {
-    if (e.target.id === "titleBox") {
+  const handleSubmit = (e) => {
+    if (e.target.id === id) {
       e.preventDefault();
     }
+    updatePlotTitle(userProvidedTitle);
+  };
 
-    this.props.updatePlotTitle(this.state.userProvidedTitle);
-  }
-
-  render() {
-    return (
-      <div className="custom-plot-labels">
-        <div>
-          <h1 className="plot-label-title">{this.props.title}</h1>
-          <Row>
-            <Form //Keeps everything in the same row
-              style={{
-                paddingLeft: "15px",
-                paddingRight: "15px",
-              }}
-              id="titleBox"
-              onSubmit={this.updateParent} //Calls when user hits enter
-            >
-              {/* Updated Plot Title Input Field*/}
-              <Form.Control
-                value={this.state.userProvidedTitle}
-                ref={(input) => (this.textInput = input)}
-                style={{ width: "83%" }}
-                type="text"
-                onChange={this.updateState}
-                placeholder={_("Default")}
-              ></Form.Control>
-
-              {/* Update Plot Title Button */}
-              <OverlayTrigger
-                placement="right"
-                overlay={<Tooltip id="tooltip">{_("Apply Title")}</Tooltip>}
-              >
-                <Button onClick={this.updateParent}>Apply</Button>
-              </OverlayTrigger>
-            </Form>
-          </Row>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="custom-plot-labels">
+      <h1 className="plot-label-title">{title}</h1>
+      <Row>
+        <Form //Keeps everything in the same row
+          id={id}
+          onSubmit={handleSubmit}
+          style={{ paddingLeft: "15px", paddingRight: "15px" }}
+        >
+          {/* Updated Plot Title Input Field*/}
+          <Form.Control
+            type="text"
+            value={userProvidedTitle || ""}
+            onChange={handleChange}
+            placeholder={_("Default")}
+            style={{ width: "83%" }}
+          />
+          {/* Update Plot Title Button */}
+          <OverlayTrigger
+            placement="right"
+            overlay={<Tooltip id="tooltip">{_("Apply Title")}</Tooltip>}
+          >
+            <Button onClick={handleSubmit}>Apply</Button>
+          </OverlayTrigger>
+        </Form>
+      </Row>
+    </div>
+  );
 }
 
 //***********************************************************************
 CustomPlotLabels.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
-  updatePlotTitle: PropTypes.func,
   plotTitle: PropTypes.string,
+  updatePlotTitle: PropTypes.func.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 export default withTranslation()(CustomPlotLabels);

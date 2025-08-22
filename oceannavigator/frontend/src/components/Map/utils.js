@@ -127,7 +127,6 @@ export const createMap = (
   popupElement,
   mapView,
   layerData,
-  layerAnnotationVector,
   layerFeatureVector,
   obsDrawSource,
   maxZoom,
@@ -225,7 +224,6 @@ export const createMap = (
       newLayerLandShapes,
       newLayerBath,
       newLayerBathShapes,
-      layerAnnotationVector,
       layerFeatureVector,
       newLayerObsDraw,
       newLayerQuiver,
@@ -252,9 +250,6 @@ export const createMap = (
   let mapObject = new Map(options);
   mapObject.setTarget(mapRef.current);
 
-  const modify = new Modify({ source: layerAnnotationVector.getSource() });
-  mapObject.addInteraction(modify);
-
   mapObject.getInteractions().forEach((interaction) => {
     if (interaction instanceof DoubleClickZoom) {
       interaction.setActive(false);
@@ -273,7 +268,7 @@ export const createMap = (
         return feature;
       }
     );
-    if (feature && feature.get("name") && !feature.get("annotation")) {
+    if (feature && feature.get("name")) {
       overlay.setPosition(e.coordinate);
       if (feature.get("data")) {
         let bearing = feature.get("bearing");
@@ -393,9 +388,8 @@ export const createMap = (
   newLayerLandShapes.setZIndex(2);
   newLayerBath.setZIndex(3);
   newLayerBathShapes.setZIndex(4);
-  layerAnnotationVector.setZIndex(5);
-  layerFeatureVector.setZIndex(6);
-  newLayerObsDraw.setZIndex(7);
+  layerFeatureVector.setZIndex(5);
+  newLayerObsDraw.setZIndex(6);
   newLayerQuiver.setZIndex(100);
 
   return mapObject;
@@ -420,35 +414,6 @@ const getText = function (feature, resolution, dom) {
   }
 
   return text;
-};
-
-export const createAnnotationVectorLayer = (source) => {
-  return new VectorLayer({
-    source: source,
-    style: function (feature, resolution) {
-      return new Style({
-        stroke: new Stroke({
-          color: "blue",
-          width: 1,
-        }),
-        fill: new Fill({
-          color: "rgba(0, 0, 255, 0.1)",
-        }),
-        text: new Text({
-          font: "20px sans-serif",
-          text: feature.get("name"),
-          backgroundFill: new Fill({ color: "rgba(255, 255, 255, 0.6)" }),
-          backgroundStroke: new Stroke({
-            color: "rgb(0, 0, 0)",
-            width: 1,
-          }),
-          placement: "Point",
-          overflow: "wrap",
-          padding: [2, 2, 2, 2],
-        }),
-      });
-    },
-  });
 };
 
 export const createFeatureVectorLayer = (source, mapSettings) => {
