@@ -660,6 +660,37 @@ export const getDataSource = (dataset, mapSettings) => {
   return dataSource;
 };
 
+export const disableMapNavigation = (map) => {
+  const interactions = map.getInteractions();
+  const navigationInteractions = [];
+
+  interactions.forEach((interaction) => {
+    if (
+      interaction.constructor.name === "DragPan" ||
+      interaction.constructor.name === "MouseWheelZoom" ||
+      interaction.constructor.name === "PinchZoom" ||
+      interaction.constructor.name === "KeyboardPan" ||
+      interaction.constructor.name === "KeyboardZoom"
+    ) {
+      interaction.setActive(false);
+      navigationInteractions.push(interaction);
+    }
+  });
+
+  map.set("_disabledNavigationInteractions", navigationInteractions);
+};
+
+export const enableMapNavigation = (map) => {
+  const navigationInteractions = map.get("_disabledNavigationInteractions");
+
+  if (navigationInteractions) {
+    navigationInteractions.forEach((interaction) => {
+      interaction.setActive(true);
+    });
+    map.unset("_disabledNavigationInteractions");
+  }
+};
+
 export const getQuiverSource = (dataset, mapSettings) => {
   const quiverSource = new VectorTile({
     url:
