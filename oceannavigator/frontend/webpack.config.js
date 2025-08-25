@@ -7,19 +7,17 @@ const APP_DIR = path.resolve(__dirname, "src");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: [
-      APP_DIR + "/index.jsx",
-  ],
+  entry: [APP_DIR + "/index.jsx"],
   output: {
-      path: BUILD_DIR,
-      filename: "oceannavigator.js",
-      publicPath: "/public/"
-    },
+    path: BUILD_DIR,
+    filename: "oceannavigator.js",
+    publicPath: "/public/",
+  },
   plugins: [
     new webpack.DefinePlugin({
-      "_": "props.t",
-      "__": "props.t",
-      "process.env.LOGGER_LEVEL": JSON.stringify('info')
+      _: "props.t",
+      __: "props.t",
+      "process.env.LOGGER_LEVEL": JSON.stringify("info"),
     }),
     new HtmlWebpackPlugin({
       filename: "index.html",
@@ -28,7 +26,6 @@ module.exports = {
       xhtml: true,
       template: "src/index.ejs",
     }),
-
   ],
   devServer: {
     port: 3030, // you can change the port
@@ -50,14 +47,14 @@ module.exports = {
         test: /\.(png|gif|svg|eot|woff2?|ttf|svg)(\?.*)?$/,
         loader: "file-loader",
         options: {
-          name: "/[name].[ext]"
-        }
-      }
+          name: "/[name].[ext]",
+        },
+      },
     ],
   },
   resolve: {
     alias: {
       "axios/lib": path.resolve(__dirname, "./node_modules/axios/lib"),
-    }
-  }
+    },
+  },
 };
