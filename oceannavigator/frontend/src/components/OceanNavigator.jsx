@@ -23,28 +23,9 @@ import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
-
-import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
-import {
-  PlotWindowManager,
-  PlotSidePanel,
-  usePlotWindowManager,
-} from "./PlotWindowManager.jsx";
-
-function formatLatLon(latitude, longitude) {
-  latitude = latitude > 90 ? 90 : latitude;
-  latitude = latitude < -90 ? -90 : latitude;
-  longitude = longitude > 180 ? longitude - 360 : longitude;
-  longitude = longitude < -180 ? 360 + longitude : longitude;
-  let formatted = "";
-  formatted += Math.abs(latitude).toFixed(4) + " ";
-  formatted += latitude >= 0 ? "N" : "S";
-  formatted += ", ";
-  formatted += Math.abs(longitude).toFixed(4) + " ";
-  formatted += longitude >= 0 ? "E" : "W";
-  return formatted;
-}
+import { withTranslation } from "react-i18next";
+import { MinimizedPlotBar, ActivePlotsContainer } from "./PlotComponents.jsx";
 
 function OceanNavigator(props) {
   const mapRef = useRef();
@@ -53,7 +34,7 @@ function OceanNavigator(props) {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const [compareDatasets, setCompareDatasets] = useState(false);
   const [mapSettings, setMapSettings] = useState({
-    projection: "EPSG:3857", // Map projection
+    projection: "EPSG:3857",
     basemap: "topo",
     extent: [],
     hideDataLayer: false,
@@ -65,6 +46,8 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
+  const [minimizedPlots, setMinimizedPlots] = useState([]);
+  const [activePlots, setActivePlots] = useState([]);
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
   const [class4Type, setClass4Type] = useState("ocean_predict");
@@ -125,85 +108,8 @@ function OceanNavigator(props) {
     }
   }, []);
 
-  // Effect to update existing plot windows when main data changes
-  useEffect(() => {
-    plotWindows.forEach((window) => {
-      if (window.plotData && window.plotData.type) {
-        const updatedComponent = createPlotComponent(
-          window.plotData.type,
-          window.plotData
-        );
-        updatePlotComponent(window.id, updatedComponent);
-      }
-    });
-  }, [
-    dataset0.id,
-    dataset0.variable,
-    dataset0.time,
-    dataset0.depth,
-    dataset1.id,
-    dataset1.variable,
-    dataset1.time,
-    dataset1.depth,
-    compareDatasets,
-    mapSettings.projection,
-    mapSettings.interpType,
-    mapSettings.interpRadius,
-    mapSettings.interpNeighbours,
-  ]);
-
-  const {
-    plotWindows,
-    createPlotWindow,
-    updatePlotWindow,
-    updatePlotComponent,
-    closePlotWindow,
-    minimizePlotWindow,
-    restorePlotWindow,
-    bringToFront,
-  } = usePlotWindowManager();
-
-  const generatePlotWindowId = (type, coordinates) => {
-    const timestamp = Date.now();
-    const coordStr = coordinates ? coordinates.slice(0, 2).join(",") : "";
-    return `${type}_${coordStr}_${timestamp}`;
-  };
-
-  const generatePlotWindowTitle = (type, coordinates, plotData = null) => {
-    const hasName = plotData?.name && plotData.name !== "undefined";
-
-    switch (type) {
-      case "Point":
-        return hasName
-          ? `${plotData.name} (Point)`
-          : `Point Plot - ${coordinates
-              .map((p) => formatLatLon(p[0], p[1]))
-              .join(", ")}`;
-
-      case "LineString":
-        return hasName
-          ? `${plotData.name} (Line)`
-          : `Line Plot - (${coordinates
-              .map((ll) => formatLatLon(ll[0], ll[1]))
-              .join("), (")})`;
-
-      case "Polygon":
-        return hasName
-          ? `${plotData.name} (Area)`
-          : `Area Plot - ${coordinates.length} vertices`;
-
-      case "track":
-        return hasName ? `${plotData.name} (Track)` : `Track Plot`;
-
-      case "class4":
-        return `Class 4 Analysis - ${coordinates?.name || "Observation"}`;
-
-      default:
-        return hasName ? plotData.name : `${type} Plot`;
-    }
-  };
-
-  const createPlotComponent = (type, plotData) => {
+  const createPlotComponent = (plotData, plotId) => {
+    const { type } = plotData;
     const commonProps = {
       plotData,
       dataset_0: dataset0,
@@ -216,17 +122,22 @@ function OceanNavigator(props) {
       action,
       dataset_compare: compareDatasets,
       setCompareDatasets,
-      key: `${type}_${Date.now()}`,
+      key: plotId,
     };
 
     switch (type) {
       case "Point":
-        return <PointWindow {...commonProps} />;
+        return <PointWindow {...commonProps} updateDataset={updateDataset0} />;
       case "LineString":
-        const line_distance = mapRef.current
-          ? mapRef.current.getLineDistance(plotData.coordinates)
-          : 0;
-        return <LineWindow {...commonProps} line_distance={line_distance} />;
+        const line_distance =
+          mapRef.current?.getLineDistance?.(plotData.coordinates) || 0;
+        return (
+          <LineWindow
+            {...commonProps}
+            line_distance={line_distance}
+            onUpdate={updateDataset0}
+          />
+        );
       case "Polygon":
         return <AreaWindow {...commonProps} />;
       case "track":
@@ -235,6 +146,7 @@ function OceanNavigator(props) {
             {...commonProps}
             dataset={dataset0}
             track={plotData.coordinates}
+            onUpdate={updateDataset0}
           />
         );
       case "class4":
@@ -245,13 +157,14 @@ function OceanNavigator(props) {
             class4type={plotData.class4type || class4Type}
             init={subquery}
             action={action}
-            key={`class4_${Date.now()}`}
+            key={plotId}
           />
         );
       default:
-        return <div key={Date.now()}>Unknown plot type: {type}</div>;
+        return <div key={plotId}>Unknown plot type: {type}</div>;
     }
   };
+
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -278,25 +191,32 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (newPlotData.type) {
-          // Create a new plot window instead of showing a modal
-          const windowId = generatePlotWindowId(
-            newPlotData.type,
-            newPlotData.coordinates
-          );
-          const windowTitle = generatePlotWindowTitle(
-            newPlotData.type,
-            newPlotData.coordinates,
-            newPlotData
-          );
-          const plotComponent = createPlotComponent(
-            newPlotData.type,
-            newPlotData
-          );
+          const plotId = newPlotData.id;
 
-          // Store plotData with the window for future updates
-          createPlotWindow(windowId, windowTitle, plotComponent, {
+          const existingMinimized = minimizedPlots.find(
+            (plot) => plot.id === plotId
+          );
+          if (existingMinimized) {
+            action("restorePlot", plotId);
+            return;
+          }
+
+          const newActivePlot = {
+            id: plotId,
             plotData: newPlotData,
+            component: createPlotComponent(newPlotData, plotId),
+          };
+
+          setActivePlots((prev) => {
+            const newActivePlots = [...prev];
+            if (newActivePlots.length >= 2) {
+              const oldestPlot = newActivePlots.shift();
+              setMinimizedPlots((prevMin) => [...prevMin, oldestPlot]);
+            }
+            return [...newActivePlots, newActivePlot];
           });
+
+          updateUI({ showModal: true });
           setPlotData(newPlotData);
         }
         break;
@@ -308,7 +228,6 @@ function OceanNavigator(props) {
         mapRef.current.loadFeatures(arg, arg2);
         break;
       case "drawObsPoint":
-        // Enable point selection in both maps
         mapRef.current.drawObsPoint();
         break;
       case "drawObsArea":
@@ -324,24 +243,90 @@ function OceanNavigator(props) {
         setClass4Type(arg);
         break;
       case "toggleCompare":
-        setCompareDatasets((prevCompare) => {
-          return !prevCompare;
-        });
+        setCompareDatasets((prevCompare) => !prevCompare);
         break;
       case "permalink":
         setSubquery(null);
         setShowPermalink(true);
         break;
+      case "minimizePlot":
+        const plotToMinimize = activePlots.find((plot) => plot.id === arg);
+        if (plotToMinimize) {
+          setMinimizedPlots((prev) => [
+            ...prev,
+            {
+              id: plotToMinimize.id,
+              plotData: plotToMinimize.plotData,
+            },
+          ]);
+
+          setActivePlots((prev) => prev.filter((plot) => plot.id !== arg));
+
+          if (activePlots.length === 1) {
+            updateUI({ showModal: false, modalType: "" });
+            setPlotData({});
+          }
+        }
+        break;
+      case "restorePlot":
+        const plotToRestore = minimizedPlots.find((plot) => plot.id === arg);
+        if (plotToRestore) {
+          const restoredPlot = {
+            id: plotToRestore.id,
+            plotData: plotToRestore.plotData,
+            component: createPlotComponent(
+              plotToRestore.plotData,
+              plotToRestore.id
+            ),
+          };
+
+          setActivePlots((prev) => {
+            const newActivePlots = [...prev];
+
+            if (newActivePlots.length >= 2) {
+              const oldestPlot = newActivePlots.shift();
+              setMinimizedPlots((prevMin) => [
+                ...prevMin.filter((p) => p.id !== arg),
+                {
+                  id: oldestPlot.id,
+                  plotData: oldestPlot.plotData,
+                },
+              ]);
+            }
+
+            return [...newActivePlots, restoredPlot];
+          });
+
+          setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== arg));
+          updateUI({ showModal: true });
+          setPlotData(plotToRestore.plotData);
+        }
+        break;
+      case "closePlot":
+        if (arg) {
+          setActivePlots((prev) => {
+            const filtered = prev.filter((plot) => plot.id !== arg);
+            if (filtered.length === 0) {
+              updateUI({ showModal: false, modalType: "" });
+              setPlotData({});
+            }
+            return filtered;
+          });
+          setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== arg));
+        } else {
+          setActivePlots([]);
+          updateUI({ showModal: false, modalType: "" });
+          setPlotData({});
+        }
+        break;
     }
   };
 
   const updateMapState = (key, value) => {
-    setMapState((prevMapState) => {
-      return {
-        ...prevMapState,
-        [key]: value,
-      };
-    });
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      [key]: value,
+    }));
   };
 
   const updateDataset0 = (key, value) => {
@@ -350,12 +335,10 @@ function OceanNavigator(props) {
         setDataset0(value);
         break;
       default:
-        setDataset0((prevDataset) => {
-          return {
-            ...prevDataset,
-            [key]: value,
-          };
-        });
+        setDataset0((prevDataset) => ({
+          ...prevDataset,
+          [key]: value,
+        }));
     }
   };
 
@@ -365,51 +348,42 @@ function OceanNavigator(props) {
         setDataset1(value);
         break;
       default:
-        setDataset1((prevDataset) => {
-          return {
-            ...prevDataset,
-            [key]: value,
-          };
-        });
+        setDataset1((prevDataset) => ({
+          ...prevDataset,
+          [key]: value,
+        }));
     }
   };
 
   const updateUI = (newSettings) => {
-    setUiSettings((prevUISettings) => {
-      return { ...prevUISettings, ...newSettings };
-    });
+    setUiSettings((prevUISettings) => ({
+      ...prevUISettings,
+      ...newSettings,
+    }));
   };
 
   const closeModal = () => {
-    setUiSettings((prevUiSettings) => {
-      return {
-        ...prevUiSettings,
-        showModal: false,
-        modalType: "",
-      };
-    });
+    setUiSettings((prevUiSettings) => ({
+      ...prevUiSettings,
+      showModal: false,
+      modalType: "",
+    }));
   };
 
   const updateMapSettings = (key, value) => {
-    setMapSettings((prevMapSettings) => {
-      let newMapSettings = {
-        ...prevMapSettings,
-        [key]: value,
-      };
-      return newMapSettings;
-    });
+    setMapSettings((prevMapSettings) => ({
+      ...prevMapSettings,
+      [key]: value,
+    }));
   };
 
   const generatePermLink = (permalinkSettings) => {
     let query = {};
-    // We have a request from Point/Line/AreaWindow component.
-
     query.subquery = subquery;
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.features = mapRef.current.getFeatures();
 
-    // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
         switch (setting) {
@@ -434,170 +408,67 @@ function OceanNavigator(props) {
     );
   };
 
+  const isNonPlotModal = uiSettings.showModal && activePlots.length === 0;
+
   let modalBodyContent = null;
   let modalTitle = "";
   let modalSize = "lg";
-  switch (uiSettings.modalType) {
-    case "Point":
-      modalBodyContent = (
-        <PointWindow
-          dataset_0={dataset0}
-          plotData={plotData}
-          mapSettings={mapSettings}
-          updateDataset={updateDataset0}
-          init={subquery}
-          action={action}
-        />
-      );
-      modalTitle = plotData.coordinates.map((p) => formatLatLon(p[0], p[1]));
-      modalTitle = modalTitle.join(", ");
-      break;
-    case "LineString":
-      const line_distance = mapRef.current.getLineDistance(
-        plotData.coordinates
-      );
-      modalBodyContent = (
-        <LineWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          plotData={plotData}
-          line_distance={line_distance}
-          mapSettings={mapSettings}
-          names={names}
-          onUpdate={updateDataset0}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset0}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
 
-      modalTitle =
-        "(" +
-        plotData.coordinates
-          .map(function (ll) {
-            return formatLatLon(ll[0], ll[1]);
-          })
-          .join("), (") +
-        ")";
-      break;
-    case "Polygon":
-      modalBodyContent = (
-        <AreaWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          plotData={plotData}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset1}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-        />
-      );
-
-      modalTitle = "";
-      break;
-    case "track":
-      modalBodyContent = (
-        <TrackWindow
-          dataset={dataset0}
-          track={coordinates}
-          names={names}
-          onUpdate={updateDataset0}
-          init={subquery}
-          action={action}
-        />
-      );
-
-      modalTitle = "";
-      break;
-    case "presetFeatures":
-      modalBodyContent = <PresetFeaturesWindow action={action} />;
-      modalTitle = "Preset Features";
-      break;
-    case "editFeatures":
-      modalBodyContent = (
-        <ModifyFeaturesWindow
-          selectedFeatureIds={selectedFeatureIds}
-          action={action}
-          updateUI={updateUI}
-          mapRef={mapRef}
-        />
-      );
-      modalTitle = __("Edit Map Features");
-      break;
-    case "annotation":
-      modalBodyContent = (
-        <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
-      );
-      modalTitle = __("Add Annotation Label");
-      modalSize = "md";
-      break;
-    case "observationSelect":
-      modalBodyContent = (
-        <ObservationSelector area={observationArea} action={action} />
-      );
-      modalTitle = "Select Observations";
-      break;
-    case "class4Selector":
-      modalBodyContent = (
-        <Class4Selector
-          class4Type={class4Type}
-          action={action}
-          updateUI={updateUI}
-        />
-      );
-      modalTitle = "Select Class4";
-      modalSize = "sm";
-      break;
-    case "class4":
-      modalBodyContent = (
-        <Class4Window
-          dataset={dataset0.id}
-          plotData={plotData}
-          class4type={class4Type}
-          init={subquery}
-          action={action}
-        />
-      );
-      modalTitle = "Class4";
-      // NEW CODE (creates plot window):
-      if (plotData && plotData.id) {
-        const class4PlotData = {
-          ...plotData,
-          type: "class4",
-          class4type: class4Type,
-        };
-
-        const windowId = `class4_${plotData.id}_${Date.now()}`;
-        const windowTitle = `Class 4 Analysis - ${
-          plotData.name || plotData.id
-        }`;
-        const plotComponent = createPlotComponent("class4", class4PlotData);
-
-        createPlotWindow(windowId, windowTitle, plotComponent, {
-          plotData: class4PlotData,
-        });
-      }
-      break;
-    case "settings":
-      modalBodyContent = (
-        <SettingsWindow
-          mapSettings={mapSettings}
-          updateMapSettings={updateMapSettings}
-        />
-      );
-      modalTitle = __("Settings");
-      break;
-    case "info-help":
-      modalBodyContent = <InfoHelpWindow />;
-      modalTitle = __("Info/Help");
-      break;
+  if (isNonPlotModal) {
+    switch (uiSettings.modalType) {
+      case "presetFeatures":
+        modalBodyContent = <PresetFeaturesWindow action={action} />;
+        modalTitle = "Preset Features";
+        break;
+      case "editFeatures":
+        modalBodyContent = (
+          <ModifyFeaturesWindow
+            selectedFeatureIds={selectedFeatureIds}
+            action={action}
+            updateUI={updateUI}
+            mapRef={mapRef}
+          />
+        );
+        modalTitle = __("Edit Map Features");
+        break;
+      case "annotation":
+        modalBodyContent = (
+          <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
+        );
+        modalTitle = __("Add Annotation Label");
+        modalSize = "md";
+        break;
+      case "observationSelect":
+        modalBodyContent = (
+          <ObservationSelector area={observationArea} action={action} />
+        );
+        modalTitle = "Select Observations";
+        break;
+      case "class4Selector":
+        modalBodyContent = (
+          <Class4Selector
+            class4Type={class4Type}
+            action={action}
+            updateUI={updateUI}
+          />
+        );
+        modalTitle = "Select Class4";
+        modalSize = "sm";
+        break;
+      case "settings":
+        modalBodyContent = (
+          <SettingsWindow
+            mapSettings={mapSettings}
+            updateMapSettings={updateMapSettings}
+          />
+        );
+        modalTitle = __("Settings");
+        break;
+      case "info-help":
+        modalBodyContent = <InfoHelpWindow />;
+        modalTitle = __("Info/Help");
+        break;
+    }
   }
 
   return (
@@ -617,6 +488,12 @@ function OceanNavigator(props) {
           right={true}
         />
       ) : null}
+
+      <MinimizedPlotBar
+        minimizedPlots={minimizedPlots}
+        onRestore={(plotId) => action("restorePlot", plotId)}
+        onClose={(plotId) => action("closePlot", plotId)}
+      />
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -652,8 +529,15 @@ function OceanNavigator(props) {
       />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+
+      <ActivePlotsContainer
+        activePlots={activePlots}
+        onMinimize={(plotId) => action("minimizePlot", plotId)}
+        onClose={(plotId) => action("closePlot", plotId)}
+      />
+
       <Modal
-        show={uiSettings.showModal}
+        show={isNonPlotModal}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
         size={modalSize}
@@ -686,20 +570,6 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
-
-      <PlotWindowManager
-        plotWindows={plotWindows}
-        updatePlotWindow={updatePlotWindow}
-        closePlotWindow={closePlotWindow}
-        minimizePlotWindow={minimizePlotWindow}
-        restorePlotWindow={restorePlotWindow}
-      />
-
-      <PlotSidePanel
-        plotWindows={plotWindows}
-        restorePlotWindow={restorePlotWindow}
-        closePlotWindow={closePlotWindow}
-      />
     </div>
   );
 }
