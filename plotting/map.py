@@ -17,8 +17,7 @@ from matplotlib.colors import FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
-from shapely.geometry import LinearRing, MultiPolygon, Point
-from shapely.geometry import Polygon as Poly
+from shapely.geometry import box, LinearRing, MultiPolygon, Point, Polygon as Poly
 from shapely.ops import unary_union
 
 import plotting.colormap as colormap
@@ -141,36 +140,58 @@ class MapPlotter(Plotter):
         mask = data.mask + ~inside_points
         return data.data[~mask]
 
+    def get_land_geoms(self, extent: tuple) -> list:
+        # Returns a list of land shape geometries that intersect the plot extent
+        scaler = cfeature.AdaptiveScaler("110m", (("50m", 50), ("10m", 15)))
+        land_shp = cfeature.NaturalEarthFeature(
+            "physical", "land", scale=scaler.scale_from_extent(extent)
+        )
+
+        lon_min, lon_max, lat_min, lat_max = extent
+
+        geometries = []
+        if lon_min <= lon_max:
+            bbox = box(lon_min, lat_min, lon_max, lat_max)
+            for geom in land_shp.geometries():
+                inter = geom.intersection(bbox)
+                if not inter.is_empty:
+                    geometries.append(inter)
+        else:
+            # plot wraps longitudes
+            west_box = box(lon_min, lat_min, 180, lat_max)
+            east_box = box(-180, lat_min, lon_max, lat_max)
+            for geom in land_shp.geometries():
+                for bb in (west_box, east_box):
+                    inter = geom.intersection(bb)
+                    if not inter.is_empty:
+                        geometries.append(inter)
+
+        return geometries
+
     def load_map(
         self,
-        plot_proj: ccrs,
         extent: list,
         figuresize: list,
         dpi: int,
     ) -> Union[plt.figure, plt.axes]:
 
         CACHE_DIR = settings.cache_dir
-        filename = self._get_filename(plot_proj.proj4_params["proj"], extent)
+        filename = self._get_filename(self.plot_projection.proj4_params["proj"], extent)
         filename = pathlib.Path(CACHE_DIR).joinpath(filename)
-
-        pc_proj = ccrs.PlateCarree()
-        pc_extent = pc_proj.transform_points(
-            plot_proj, np.array(extent[:2]), np.array(extent[2:])
-        )
-        pc_extent = [
-            pc_extent[0, 0] - 5,
-            pc_extent[0, 1] - 5,
-            pc_extent[1, 0] + 5,
-            pc_extent[1, 1] + 5,
-        ]
 
         if not filename.exists():
             fig = plt.figure(figsize=figuresize, dpi=dpi)
-            ax = plt.axes(projection=plot_proj, facecolor="dimgrey")
-            ax.set_extent(extent, crs=plot_proj)
+            ax = plt.axes(projection=self.plot_projection, facecolor="dimgrey")
+            ax.set_extent(extent, crs=self.plot_projection)
+            pc_extent = ax.get_extent(crs=self.pc_projection)
 
-            ax.add_feature(cfeature.LAND, facecolor="grey", zorder=1)
-            ax.coastlines(edgecolor="black", zorder=1)
+            land_geoms = self.get_land_geoms(pc_extent)
+            ax.add_geometries(
+                land_geoms,
+                crs=self.pc_projection,
+                facecolor="grey",
+                edgecolor="black",
+            )
 
             ax.gridlines(
                 draw_labels={"bottom": "x", "left": "y"},
@@ -783,11 +804,7 @@ class MapPlotter(Plotter):
             return (buf, self.mime, self.filename.replace(".geotiff", ".tif"))
         # Figure size
         figuresize = list(map(float, self.size.split("x")))
-        fig, map_plot = self.load_map(
-            self.plot_projection, self.plot_extent, figuresize, self.dpi
-        )
-
-        ax = plt.gca()
+        fig, ax = self.load_map(self.plot_extent, figuresize, self.dpi)
 
         if self.scale:
             vmin = self.scale[0]
@@ -797,7 +814,7 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        c = map_plot.imshow(
+        c = ax.imshow(
             self.data,
             vmin=vmin,
             vmax=vmax,
@@ -837,7 +854,7 @@ class MapPlotter(Plotter):
                     qcmap = colormap.colormaps.get("speed")
                 else:
                     qcmap = colormap.colormaps.get(self.quiver["colormap"])
-                q = map_plot.quiver(
+                q = ax.quiver(
                     x,
                     y,
                     qx,
@@ -852,7 +869,7 @@ class MapPlotter(Plotter):
                     transform=self.plot_projection,
                 )
             else:
-                q = map_plot.quiver(
+                q = ax.quiver(
                     x,
                     y,
                     qx,
@@ -890,7 +907,7 @@ class MapPlotter(Plotter):
 
         if self.show_bathymetry:
             # Plot bathymetry on top
-            cs = map_plot.contour(
+            cs = ax.contour(
                 self.longitude,
                 self.latitude,
                 self.bathymetry,
@@ -932,7 +949,7 @@ class MapPlotter(Plotter):
                         transform=self.plot_projection,
                         zorder=3,
                     )
-                    map_plot.add_patch(poly)
+                    ax.add_patch(poly)
 
             if self.names is not None and len(self.names) > 1:
                 for idx, name in enumerate(self.names):
@@ -985,7 +1002,7 @@ class MapPlotter(Plotter):
                         cmap = colormap.find_colormap(self.contour_name)
 
                 if not self.contour.get("hatch"):
-                    contours = map_plot.contour(
+                    contours = ax.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -999,7 +1016,7 @@ class MapPlotter(Plotter):
                     hatches = ["//", "xx", "\\\\", "--", "||", "..", "oo", "**"]
                     if len(levels) + 1 < len(hatches):
                         hatches = hatches[0 : len(levels) + 2]
-                    map_plot.contour(
+                    ax.contour(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -1009,7 +1026,7 @@ class MapPlotter(Plotter):
                         transform=self.pc_projection,
                         zorder=5,
                     )
-                    contours = map_plot.contourf(
+                    contours = ax.contourf(
                         self.longitude,
                         self.latitude,
                         self.contour_data[0],
@@ -1101,7 +1118,7 @@ class MapPlotter(Plotter):
                 self.date_formatter(self.timestamp),
             )
         plt.title(title.strip())
-        axpos = map_plot.get_position()
+        axpos = ax.get_position()
         pos_x = axpos.x0 + axpos.width + 0.01
         pos_y = axpos.y0
         cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
@@ -1136,7 +1153,7 @@ class MapPlotter(Plotter):
             y_offset,
             self.get_stats_str(masked_data, var_unit),
             fontsize=14,
-            transform=map_plot.transAxes,
+            transform=ax.transAxes,
         )
 
         return super(MapPlotter, self).plot(fig)

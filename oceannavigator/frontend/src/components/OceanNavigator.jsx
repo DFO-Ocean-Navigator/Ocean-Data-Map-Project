@@ -239,6 +239,12 @@ function OceanNavigator(props) {
       };
     });
   };
+const swapViews = () => {
+  // Swap dataset0 and dataset1
+  const tempDataset = dataset0;
+  setDataset0(dataset1);
+  setDataset1(tempDataset);
+};
 
   const updateMapSettings = (key, value) => {
     setMapSettings((prevMapSettings) => {
@@ -316,11 +322,12 @@ function OceanNavigator(props) {
           names={names}
           onUpdate={updateDataset0}
           updateDataset0={updateDataset0}
-          updateDataset1={updateDataset0}
+          updateDataset1={updateDataset1}
           init={subquery}
           action={action}
           dataset_compare={compareDatasets}
           setCompareDatasets={setCompareDatasets}
+          swapViews={swapViews}
         />
       );
 
@@ -347,6 +354,7 @@ function OceanNavigator(props) {
           action={action}
           dataset_compare={compareDatasets}
           setCompareDatasets={setCompareDatasets}
+          swapViews={swapViews}
         />
       );
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "./ComboBox.jsx";
@@ -7,498 +7,418 @@ import CheckBox from "./lib/CheckBox.jsx";
 import ImageSize from "./ImageSize.jsx";
 import TransectLimiter from "./TransectLimiter.jsx";
 import DatasetSelector from "./DatasetSelector.jsx";
-import PropTypes from "prop-types";
 import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import LocationInput from "./LocationInput.jsx";
+import PropTypes from "prop-types";
 import Slider from "rc-slider";
-
 import "rc-slider/assets/index.css";
-
 import { withTranslation } from "react-i18next";
 
-class LineWindow extends React.Component {
-  constructor(props) {
-    super(props);
+const LineWindow = (props) => {
+  const { t: _ } = props;
 
-    // Track if mounted to prevent no-op errors with the Ajax callbacks.
-    this._mounted = false;
+  // UI state
+  const [selected, setSelected] = useState(props.init?.selected || 1);
 
-    this.state = {
-      selected: 1,
-      scale: props.dataset_0.variable_scale + ",auto",
-      scale_1: props.dataset_1.variable_scale + ",auto",
-      scale_diff: "-10,10,auto",
-      colormap: "default",
-      colormap_right: "default", // Colourmap for second (right) plot
-      colormap_diff: "default", // Colourmap for difference plot
-      showmap: true,
-      surfacevariable: "none",
-      linearthresh: 0,
-      size: "10x7",
-      dpi: 144,
-      depth_limit: false,
-      plotTitles: Array(2).fill(""),
-      selectedPlots: [0, 1, 1],
-      profile_distance: -1,
-      show_profile: false,
-      timer: null,
-    };
+  // Scale settings
+  const [scale, setScale] = useState(
+    props.init?.scale || props.dataset_0.variable_scale + ",auto"
+  );
+  const [scale1, setScale1] = useState(
+    props.init?.scale_1 || props.dataset_1.variable_scale + ",auto"
+  );
+  const [scaleDiff, setScaleDiff] = useState(
+    props.init?.scale_diff || "-10,10,auto"
+  );
 
-    if (props.init !== null) {
-      this.state = { ...this.state, ...props.init };
-    }
+  // Colormap settings
+  const [mainColormap, setMainColormap] = useState(
+    props.init?.colormap || "default"
+  );
+  const [rightColormap, setRightColormap] = useState(
+    props.init?.colormap_right || "default"
+  );
+  const [diffColormap, setDiffColormap] = useState(
+    props.init?.colormap_diff || "default"
+  );
 
-    // Function bindings
-    this.onLocalUpdate = this.onLocalUpdate.bind(this);
-    this.onSelect = this.onSelect.bind(this);
-    this.updatePlotTitle = this.updatePlotTitle.bind(this);
-    this.updateSelectedPlots = this.updateSelectedPlots.bind(this);
-    this.handleProfileCheck = this.handleProfileCheck.bind(this);
-  }
+  // Plot settings
+  const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
+  const [plotTitles, setPlotTitles] = useState(
+    props.init?.plotTitles || Array(2).fill("")
+  );
 
-  componentDidMount() {
-    this._mounted = true;
-  }
+  // Map and display settings
+  const [showMap, setShowMap] = useState(props.init?.showmap ?? true);
+  const [surfaceVariable, setSurfaceVariable] = useState(
+    props.init?.surfacevariable || "none"
+  );
+  const [selectedPlots, setSelectedPlots] = useState(
+    props.init?.selectedPlots || [0, 1, 1]
+  );
 
-  componentWillUnmount() {
-    this._mounted = false;
-  }
+  // Transect-specific settings
+  const [linearThresh, setLinearThresh] = useState(
+    props.init?.linearthresh || false
+  );
+  const [depthLimit, setDepthLimit] = useState(
+    props.init?.depth_limit || false
+  );
+  const [profileDistance, setProfileDistance] = useState(
+    props.init?.profile_distance || -1
+  );
+  const [showProfile, setShowProfile] = useState(
+    props.init?.show_profile || false
+  );
 
-  //Updates Plot with User Specified Title
-  updatePlotTitle(title) {
-    if (title !== this.state.plotTitles[this.state.selected - 1]) {
-      //If new plot title
-      const newTitles = this.state.plotTitles;
-      newTitles[this.state.selected - 1] = title;
-      this.setState({ plotTitles: newTitles }); //Update Plot Title
-    }
-  }
+  const onSelect = (key) => {
+    setSelected(parseInt(key));
+  };
 
-  updateSelectedPlots(plots_selected, compare) {
-    let temp = [1, 0, 0];
-
-    if (plots_selected[0]) {
-      temp[0] = 1;
-    } else {
-      temp[0] = 0;
-    }
-    if (plots_selected[1]) {
-      temp[1] = 1;
-    } else {
-      temp[1] = 0;
-    }
-    if (plots_selected[2]) {
-      temp[2] = 1;
-    } else {
-      temp[2] = 0;
-    }
-
-    if (compare) {
-      this.setState({
-        comparePlots: temp,
-      });
-    } else {
-      this.setState({
-        selectedPlots: temp,
-      });
-    }
-  }
-
-  onLocalUpdate(key, value) {
-    if (this._mounted) {
-      var newState = {};
-      if (typeof key === "string") {
-        newState[key] = value;
-      } else {
-        for (let i = 0; i < key.length; ++i) {
-          newState[key[i]] = value[i];
-        }
-      }
-
-      this.setState(newState);
-    }
-  }
-
-  onSelect(key) {
-    this.setState({
-      selected: parseInt(key),
+  const updatePlotTitle = (title) => {
+    const idx = selected - 1;
+    setPlotTitles((prev) => {
+      const titles = [...prev];
+      titles[idx] = title;
+      return titles;
     });
-  }
+  };
 
-  handleProfileCheck(key, value) {
-    if (value) {
-      this.setState({
-        show_profile: true,
-        profile_distance: 0,
-      });
-    } else {
-      this.setState({
-        show_profile: false,
-        profile_distance: -1,
-      });
-    }
-  }
+  const handleProfileCheck = (_, value) => {
+    setShowProfile(value);
+    setProfileDistance(value ? 0 : -1);
+  };
 
-  render() {
-    _("Dataset");
-    _("Time");
-    _("Start Time");
-    _("End Time");
-    _("Variable");
-    _("Variable Range");
-    _("Colourmap");
-    _("Show Location");
-    _("Linear Threshold");
-    _("Surface Variable");
-    _("Saved Image Size");
+  const handleSliderChange = (x) => {
+    setProfileDistance((x / 100) * props.line_distance);
+  };
 
-    const line_distance = this.props.line_distance;
-    const slider_marks = {
-      0: "0km",
-      25: (line_distance / 1000 / 4).toFixed(1),
-      50: (line_distance / 1000 / 2).toFixed(1),
-      75: ((line_distance / 1000) * (3 / 4)).toFixed(1),
-      100: (line_distance / 1000).toFixed(1),
-    };
+  // UI segments
+  const plotOptions = (
+    <>
+      <ImageSize
+        id="size"
+        state={plotSize}
+        onUpdate={(_, value) => setPlotSize(value)}
+        title={_("Saved Image Size")}
+      />
+      <CustomPlotLabels
+        id="title"
+        title={_("Plot Title")}
+        plotTitle={plotTitles[selected - 1]}
+        updatePlotTitle={updatePlotTitle}
+      />
+    </>
+  );
 
-    const plotOptions = (
-      <div>
-        <ImageSize
-          key="size"
-          id="size"
-          state={this.state.size}
-          onUpdate={this.onLocalUpdate}
-          title={_("Saved Image Size")}
+  const globalSettings = (
+    <Card id="global_settings" variant="primary">
+      <Card.Header>{_("Global Settings")}</Card.Header>
+      <Card.Body>
+        <CheckBox
+          id="dataset_compare"
+          checked={props.dataset_compare}
+          onUpdate={(_, checked) => props.setCompareDatasets(checked)}
+          title={_("Compare Datasets")}
         />
-        <CustomPlotLabels
-          key="title"
-          id="title"
-          title={_("Plot Title")}
-          updatePlotTitle={this.updatePlotTitle}
-          plotTitle={this.state.plotTitles[this.state.selected - 1]}
-        />
-      </div>
-    );
-
-    const global = (
-      <Card key="global_settings" id="global_settings" variant="primary">
-        <Card.Header>{_("Global Settings")}</Card.Header>
-        <Card.Body className="global-settings-card">
-          <CheckBox
-            id="dataset_compare"
-            key="dataset_compare"
-            checked={this.props.dataset_compare}
-            onUpdate={(_, checked) => this.props.setCompareDatasets(checked)}
-            title={_("Compare Datasets")}
-          />
-          <Button
-            key="swap_views"
-            id="swap_views"
-            variant="default"
-            style={{ display: this.props.dataset_compare ? "block" : "none" }}
-            onClick={this.props.swapViews}
-          >
-            {_("Swap Views")}
-          </Button>
-
-          {/*Show range widget for difference plot iff in compare mode and both variables are equal*/}
-          <div
-            style={{
-              display:
-                this.props.dataset_compare &&
-                this.props.dataset_0.variable == this.props.dataset_1.variable
-                  ? "block"
-                  : "none",
-            }}
-          >
+        <Button
+          id="swap_views"
+          style={{ display: props.dataset_compare ? "block" : "none" }}
+          onClick={props.swapViews}
+        >
+          {_("Swap Views")}
+        </Button>
+        {props.dataset_compare &&
+          props.dataset_0.variable === props.dataset_1.variable && (
             <Range
-              auto
-              key="scale_diff"
               id="scale_diff"
-              state={this.state.scale_diff}
-              def={""}
-              onUpdate={this.onLocalUpdate}
+              state={scaleDiff}
+              onUpdate={(_, value) => setScaleDiff(value)}
               title={_("Diff. Variable Range")}
             />
-          </div>
-
-          <CheckBox
-            key="showmap"
-            id="showmap"
-            checked={this.state.showmap}
-            onUpdate={this.onLocalUpdate}
-            title={_("Show Map Location")}
-          >
-            {_("showmap_help")}
-          </CheckBox>
-
-          <Accordion>
-            <Accordion.Header>Plot Options</Accordion.Header>
-            <Accordion.Body>{plotOptions}</Accordion.Body>
-          </Accordion>
-        </Card.Body>
-      </Card>
-    );
-
-    const transectSettings = (
-      <Card key="transect_settings" id="transect_settings" variant="primary">
-        <Card.Header>{_("Transect Settings")}</Card.Header>
-        <Card.Body className="global-settings-card">
-          <ComboBox
-            key="surfacevariable"
-            id="surfacevariable"
-            state={this.state.surfacevariable}
-            onUpdate={this.onLocalUpdate}
-            title={_("Surface Variable")}
-            url={`/api/v2.0/dataset/${this.props.dataset_0.id}/variables`}
-          >
-            {_("surfacevariable_help")}
-          </ComboBox>
-
-          <TransectLimiter
-            key="linearthresh"
-            id="linearthresh"
-            state={this.state.linearthresh}
-            onUpdate={this.onLocalUpdate}
-            title={_("Exponential Plot")}
-            parameter={_("Linear Threshold")}
-          >
-            {_("linearthresh_help")}
-          </TransectLimiter>
-
-          <TransectLimiter
-            key="depth_limit"
-            id="depth_limit"
-            state={this.state.depth_limit}
-            onUpdate={this.onLocalUpdate}
-            title={_("Limit Depth")}
-            parameter={_("Depth")}
-          />
-
-          <div>
-            <CheckBox
-              key="show_profile"
-              id="show_profile"
-              checked={this.state.show_profile}
-              onUpdate={this.handleProfileCheck}
-              title={_("Extract Profile Plot")}
-            ></CheckBox>
-
-            {this.state.show_profile && (
-              <div className="slider-container">
-                <Slider
-                  min={0}
-                  max={100}
-                  marks={slider_marks}
-                  onChangeComplete={(x) =>
-                    this.onLocalUpdate(
-                      "profile_distance",
-                      (x / 100) * this.props.line_distance
-                    )
-                  }
-                />
-              </div>
-            )}
-          </div>
-          <div
-            style={{
-              display:
-                this.props.dataset_compare &&
-                this.props.dataset_0.variable == this.props.dataset_1.variable
-                  ? "block"
-                  : "none",
-            }}
-          >
-            <ComboBox
-              key="colormap_diff"
-              id="colormap_diff"
-              state={this.state.colormap_diff}
-              def="default"
-              onUpdate={this.onLocalUpdate}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Diff. Colour Map")}
-            >
-              {_("colourmap_help")}
-              <img src="/plot/colormaps.png/" />
-            </ComboBox>
-          </div>
-        </Card.Body>
-      </Card>
-    );
-
-    const dataset = (
-      <Card key="left_map" id="left_map" variant="primary">
-        <Card.Header>
-          {this.props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
-        </Card.Header>
-        <Card.Body className="global-settings-card">
-          <DatasetSelector
-            key="line_window_dataset_0"
-            id="dataset_0"
-            onUpdate={this.props.updateDataset0}
-            variables={this.state.selected == 2 ? "all" : "3d"}
-            showQuiverSelector={false}
-            showDepthSelector={this.state.selected == 2}
-            showTimeRange={this.state.selected == 2}
-            showVariableRange={false}
-            mapSettings={this.props.mapSettings}
-            mountedDataset={this.props.dataset_0}
-          />
-
-          <ComboBox
-            key="colormap"
-            id="colormap"
-            state={this.state.colormap}
-            def="default"
-            onUpdate={this.onLocalUpdate}
-            url="/api/v2.0/plot/colormaps"
-            title={_("Colour Map")}
-          >
-            {_("colourmap_help")}
-            <img src="/plot/colormaps.png/" />
-          </ComboBox>
-        </Card.Body>
-      </Card>
-    );
-
-    const compare_dataset = (
-      <div key="compare_dataset">
-        <Card key="right_map" id="right_map" variant="primary">
-          <Card.Header>{_("Right Map")}</Card.Header>
-          <Card.Body className="global-settings-card">
-            <DatasetSelector
-              key="line_window_dataset_1"
-              id="dataset_1"
-              onUpdate={this.props.updateDataset1}
-              variables={this.state.selected == 2 ? "all" : "3d"}
-              showQuiverSelector={false}
-              showDepthSelector={this.state.selected == 2}
-              showTimeRange={this.state.selected == 2}
-              showVariableRange={false}
-              mapSettings={this.props.mapSettings}
-              mountedDataset={this.props.dataset_1}
-            />
-
-            <ComboBox
-              key="colormap_right"
-              id="colormap_right"
-              state={this.state.colormap_right}
-              def="default"
-              onUpdate={this.onLocalUpdate}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Colour Map")}
-            >
-              {_("colourmap_help")}
-              <img src="/plot/colormaps.png/" />
-            </ComboBox>
-          </Card.Body>
-        </Card>
-      </div>
-    );
-
-    // Input panels
-    const leftInputs = [global];
-    const rightInputs = [dataset];
-    if (this.props.dataset_compare) {
-      rightInputs.push(compare_dataset);
-    }
-    const plot_query = {
-      dataset: this.props.dataset_0.id,
-      quantum: this.props.dataset_0.quantum,
-      variable: this.props.dataset_0.variable,
-      path: this.props.plotData.coordinates,
-      scale: this.state.scale,
-      colormap: this.state.colormap,
-      showmap: this.state.showmap,
-      name: this.props.names[0],
-      size: this.state.size,
-      dpi: this.state.dpi,
-      plotTitle: this.state.plotTitles[this.state.selected - 1],
-    };
-
-    switch (this.state.selected) {
-      case 1:
-        plot_query.type = "transect";
-        plot_query.time = this.props.dataset_0.time;
-        plot_query.surfacevariable = this.state.surfacevariable;
-        plot_query.linearthresh = this.state.linearthresh;
-        plot_query.depth_limit = this.state.depth_limit;
-        plot_query.profile_distance = this.state.profile_distance;
-        plot_query.selectedPlots = this.state.selectedPlots.toString();
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = { ...this.props.dataset_1 };
-          plot_query.compare_to.dataset = this.props.dataset_1.id;
-          plot_query.compare_to.scale = this.state.scale_1;
-          plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
-          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-        leftInputs.push(transectSettings);
-        break;
-      case 2:
-        plot_query.type = "hovmoller";
-        plot_query.endtime = this.props.dataset_0.time;
-        plot_query.starttime = this.props.dataset_0.starttime;
-        plot_query.depth = this.props.dataset_0.depth;
-        if (this.props.dataset_compare) {
-          plot_query.compare_to = { ...this.props.dataset_1 };
-          plot_query.compare_to.dataset = this.props.dataset_1.id;
-          plot_query.compare_to.scale = this.state.scale_1;
-          plot_query.compare_to.scale_diff = this.state.scale_diff;
-          plot_query.compare_to.colormap = this.state.colormap_right;
-          plot_query.compare_to.colormap_diff = this.state.colormap_diff;
-        }
-        break;
-    }
-
-    return (
-      <div className="LineWindow Window">
-        <Nav
-          variant="tabs"
-          activeKey={this.state.selected}
-          onSelect={this.onSelect}
+          )}
+        <CheckBox
+          id="showmap"
+          checked={showMap}
+          onUpdate={(_, value) => setShowMap(value)}
+          title={_("Show Location")}
         >
-          <Nav.Item>
-            <Nav.Link eventKey={1}>{_("Transect")}</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            {" "}
-            <Nav.Link eventKey={2}>{_("Hovmöller Diagram")}</Nav.Link>
-          </Nav.Item>
-        </Nav>
-        <Row className="plot-window-container">
-          <Col className="settings-col" lg={2}>
-            {leftInputs}
-          </Col>
-          <Col className="plot-col" lg={8}>
-            <PlotImage
-              query={plot_query}
-              permlink_subquery={this.state}
-              action={this.props.action}
-            />
-          </Col>
-          <Col className="settings-col" lg={2}>
-            {rightInputs}
-          </Col>
-        </Row>
-      </div>
-    );
-  }
-}
+          {_("showmap_help")}
+        </CheckBox>
+        <Accordion>
+          <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+          <Accordion.Body>{plotOptions}</Accordion.Body>
+        </Accordion>
+      </Card.Body>
+    </Card>
+  );
 
-//***********************************************************************
+  const transectSettingsCard = (
+    <Card id="transect_settings" variant="primary">
+      <Card.Header>{_("Transect Settings")}</Card.Header>
+      <Card.Body>
+        <ComboBox
+          id="surfacevariable"
+          state={surfaceVariable}
+          onUpdate={(_, value) => {
+            let variableName = value;
+            if (Array.isArray(value) && value.length > 0) {
+              variableName = value[0];
+            } else if (typeof value === "object" && value !== null) {
+              variableName = value.id || value.name || value.variable || "none";
+            } else if (typeof value !== "string") {
+              variableName = String(value) || "none";
+            }
+            setSurfaceVariable(variableName);
+          }}
+          title={_("Surface Variable")}
+          url={`/api/v2.0/dataset/${props.dataset_0.id}/variables`}
+        >
+          {_("surfacevariable_help")}
+        </ComboBox>
+        <TransectLimiter
+          id="linearthresh"
+          state={linearThresh}
+          onUpdate={(_, value) => setLinearThresh(value)}
+          title={_("Exponential Plot")}
+          parameter={_("Linear Threshold")}
+        >
+          {_("linearthresh_help")}
+        </TransectLimiter>
+        <TransectLimiter
+          id="depth_limit"
+          state={depthLimit}
+          onUpdate={(_, value) => setDepthLimit(value)}
+          title={_("Limit Depth")}
+          parameter={_("Depth")}
+        />
+        <CheckBox
+          id="show_profile"
+          checked={showProfile}
+          onUpdate={handleProfileCheck}
+          title={_("Extract Profile Plot")}
+        />
+        {showProfile && (
+          <div className="slider-container">
+            <Slider
+              min={0}
+              max={100}
+              marks={{
+                0: "0km",
+                25: (props.line_distance / 1000 / 4).toFixed(1),
+                50: (props.line_distance / 1000 / 2).toFixed(1),
+                75: (((props.line_distance / 1000) * 3) / 4).toFixed(1),
+                100: (props.line_distance / 1000).toFixed(1),
+              }}
+              onAfterChange={handleSliderChange}
+            />
+          </div>
+        )}
+        {props.dataset_compare &&
+          props.dataset_0.variable === props.dataset_1.variable && (
+            <ComboBox
+              id="colormap_diff"
+              state={diffColormap}
+              onUpdate={(_, value) => setDiffColormap(value)}
+              title={_("Diff. Colour Map")}
+              url="/api/v2.0/plot/colormaps"
+            >
+              {_("colourmap_help")}
+              <img src="/plot/colormaps.png/" alt="" />
+            </ComboBox>
+          )}
+      </Card.Body>
+    </Card>
+  );
+
+  const leftDataset = (
+    <Card id="left_map" variant="primary">
+      <Card.Header>
+        {props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+      </Card.Header>
+      <Card.Body>
+        <DatasetSelector
+          id="dataset_0"
+          onUpdate={props.updateDataset0}
+          variables={selected === 2 ? "all" : "3d"}
+          showQuiverSelector={false}
+          showDepthSelector={selected === 2}
+          showTimeRange={selected === 2}
+          showVariableRange={false}
+          mapSettings={props.mapSettings}
+          mountedDataset={props.dataset_0}
+        />
+        <ComboBox
+          id="colormap"
+          state={mainColormap}
+          onUpdate={(_, value) => setMainColormap(value)}
+          title={_("Colour Map")}
+          url="/api/v2.0/plot/colormaps"
+        >
+          {_("colourmap_help")}
+          <img src="/plot/colormaps.png/" alt="" />
+        </ComboBox>
+      </Card.Body>
+    </Card>
+  );
+
+  const rightDataset = props.dataset_compare && (
+    <Card id="right_map" variant="primary">
+      <Card.Header>{_("Right Map")}</Card.Header>
+      <Card.Body>
+        <DatasetSelector
+          id="dataset_1"
+          onUpdate={props.updateDataset1}
+          variables={selected === 2 ? "all" : "3d"}
+          showQuiverSelector={false}
+          showDepthSelector={selected === 2}
+          showTimeRange={selected === 2}
+          showVariableRange={false}
+          mapSettings={props.mapSettings}
+          mountedDataset={props.dataset_1}
+        />
+        <ComboBox
+          id="colormap_right"
+          state={rightColormap}
+          onUpdate={(_, value) => setRightColormap(value)}
+          title={_("Colour Map")}
+          url="/api/v2.0/plot/colormaps"
+        >
+          {_("colourmap_help")}
+          <img src="/plot/colormaps.png/" alt="" />
+        </ComboBox>
+      </Card.Body>
+    </Card>
+  );
+
+  const baseQuery = {
+    dataset: props.dataset_0.id,
+    quantum: props.dataset_0.quantum,
+    name: props.names[0],
+    size: plotSize,
+    dpi: plotDpi,
+    plotTitle: plotTitles[selected - 1],
+  };
+
+  let plot_query = {};
+  if (selected === 1) {
+    const safeSurfaceVariable =
+      typeof surfaceVariable === "string" ? surfaceVariable : "none";
+
+    plot_query = {
+      ...baseQuery,
+      type: "transect",
+      variable: props.dataset_0.variable,
+      path: props.plotData.coordinates,
+      scale: scale,
+      colormap: mainColormap,
+      showmap: showMap,
+      time: props.dataset_0.time,
+      linearthresh: linearThresh,
+      surfacevariable: safeSurfaceVariable,
+      depth_limit: depthLimit,
+      profile_distance: profileDistance,
+      selectedPlots: selectedPlots.toString(),
+      ...(props.dataset_compare && {
+        compare_to: {
+          ...props.dataset_1,
+          dataset: props.dataset_1.id,
+          scale: scale1,
+          scale_diff: scaleDiff,
+          colormap: rightColormap,
+          colormap_diff: diffColormap,
+        },
+      }),
+    };
+  } else {
+    plot_query = {
+      ...baseQuery,
+      type: "hovmoller",
+      starttime: props.dataset_0.starttime,
+      endtime: props.dataset_0.time,
+      depth: props.dataset_0.depth,
+      ...(props.dataset_compare &&
+        props.dataset_0.variable === props.dataset_1.variable && {
+          compare_to: {
+            ...props.dataset_1,
+            dataset: props.dataset_1.id,
+            scale: scale1,
+            scale_diff: scaleDiff,
+            colormap: rightColormap,
+            colormap_diff: diffColormap,
+          },
+        }),
+    };
+  }
+
+  // Create permlink_subquery from current state
+  const permlink_subquery = {
+    selected,
+    scale,
+    scale_1: scale1,
+    scale_diff: scaleDiff,
+    colormap: mainColormap,
+    colormap_right: rightColormap,
+    colormap_diff: diffColormap,
+    size: plotSize,
+    dpi: plotDpi,
+    plotTitles,
+    showmap: showMap,
+    surfacevariable:
+      typeof surfaceVariable === "string" ? surfaceVariable : "none",
+    selectedPlots,
+    linearthresh: linearThresh,
+    depth_limit: depthLimit,
+    profile_distance: profileDistance,
+    show_profile: showProfile,
+  };
+
+  return (
+    <div className="LineWindow Window">
+      <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
+        <Nav.Item>
+          <Nav.Link eventKey={1}>{_("Transect")}</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey={2}>{_("Hovmöller Diagram")}</Nav.Link>
+        </Nav.Item>
+      </Nav>
+      <Row className="plot-window-container">
+        <Col lg={2} className="settings-col">
+          {globalSettings}
+          {transectSettingsCard}
+        </Col>
+        <Col lg={8} className="plot-col">
+          <PlotImage
+            query={plot_query}
+            permlink_subquery={permlink_subquery}
+            action={props.action}
+          />
+        </Col>
+        <Col lg={2} className="settings-col">
+          {leftDataset}
+          {rightDataset}
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
 LineWindow.propTypes = {
-  generatePermLink: PropTypes.func,
   dataset_compare: PropTypes.bool,
-  dataset_0: PropTypes.object,
-  dataset_1: PropTypes.object,
+  dataset_0: PropTypes.object.isRequired,
+  dataset_1: PropTypes.object.isRequired,
+  mapSettings: PropTypes.object.isRequired,
+  setCompareDatasets: PropTypes.func.isRequired,
+  swapViews: PropTypes.func.isRequired,
+  updateDataset0: PropTypes.func.isRequired,
+  updateDataset1: PropTypes.func.isRequired,
+  line_distance: PropTypes.number,
   names: PropTypes.array,
   plotData: PropTypes.object,
-  onUpdate: PropTypes.func,
-  init: PropTypes.object,
   action: PropTypes.func,
-  swapViews: PropTypes.func,
-  showHelp: PropTypes.func,
+  init: PropTypes.object,
+  t: PropTypes.func.isRequired,
 };
 
 export default withTranslation()(LineWindow);

@@ -7,8 +7,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withTranslation } from "react-i18next";
 
 function AnnotationButton(props) {
-  const handleAnnotation = () => {
-    props.updateUI({ modalType: "annotation", showModal: true });
+  const handleClick = () => {
+    props.updateUI({
+      modalType: "annotation",
+      showModal: true,
+    });
   };
 
   return (
@@ -19,7 +22,7 @@ function AnnotationButton(props) {
         <Tooltip id={"annotation-tooltip"}>{__("Add Map Annotation")}</Tooltip>
       }
     >
-      <Button onClick={handleAnnotation} className="annotation-button">
+      <Button onClick={handleClick} className="annotation-button">
         <FontAwesomeIcon icon={faPencil} />
       </Button>
     </OverlayTrigger>

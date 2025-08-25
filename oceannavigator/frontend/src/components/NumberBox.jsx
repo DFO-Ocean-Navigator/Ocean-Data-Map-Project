@@ -1,123 +1,95 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-
 import { withTranslation } from "react-i18next";
 
-class NumberBox extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: this.props.state,
-    };
+const NumberBox = ({ id, title, state: propState, onUpdate, children, t: _ }) => {
+  const [value, setValue] = useState(propState);
+  const [showHelp, setShowHelp] = useState(false);
+  const timeoutRef = useRef(null);
 
-    // Function bindings
-    this.updateParent = this.updateParent.bind(this);
-    this.changed = this.changed.bind(this);
-    this.keyPress = this.keyPress.bind(this);
-    this.closeHelp = this.closeHelp.bind(this);
-    this.showHelp = this.showHelp.bind(this);
-  }
+  // Sync propState to local value
+  useEffect(() => {
+    setValue(propState);
+  }, [propState]);
 
-  updateParent() {
-    this.props.onUpdate(this.props.id, this.state.value);
-  }
+  const updateParent = () => {
+    onUpdate(id, value);
+  };
 
-  changed(num, str) {
-    clearTimeout(this.timeout);
-
-    num = Number(num)
+  const changed = (newVal) => {
+    clearTimeout(timeoutRef.current);
+    const num = Number(newVal);
     if (!isNaN(num)) {
-      this.setState({
-        value: num,
-      });
+      setValue(num);
     }
+    timeoutRef.current = setTimeout(updateParent, 1250);
+  };
 
-    this.timeout = setTimeout(this.updateParent, 1250);
-  }
-
-  keyPress(e) {
-    var key = e.which || e.keyCode;
-    if (key === 13) {
-      this.changed();
-      this.updateParent();
-      return false;
-    } else {
-      return true;
+  const keyPress = (e) => {
+    if (e.key === "Enter") {
+      changed(value);
+      updateParent();
+      e.preventDefault();
     }
-  }
+  };
 
-  closeHelp() {
-    this.setState({
-      showHelp: false,
-    });
-  }
+  const hasHelp = React.Children.count(children) > 0;
 
-  showHelp() {
-    this.setState({
-      showHelp: true,
-    });
-  }
-
-  render() {
-    var hasHelp = this.props.children != null && this.props.children.length > 0;
-    return (
-      <div className="NumberBox">
-        <h1 className="numberbox-title">
-          {this.props.title}
-          <span className="help-button"
-            onClick={this.showHelp}
-            style={{ display: hasHelp ? "block" : "none" }}
-          >
+  return (
+    <div className="NumberBox">
+      <h1 className="numberbox-title">
+        {title}
+        {hasHelp && (
+          <span className="help-button" onClick={() => setShowHelp(true)}>
             ?
           </span>
-        </h1>
+        )}
+      </h1>
 
-        <Modal
-          show={this.state.showHelp}
-          onHide={this.closeHelp}
-          variant="large"
-          dialogClassName="helpdialog"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              {_("titlehelp", { title: this.props.title })}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>{this.props.children}</Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.closeHelp}>
-              <Icon icon="close" /> {_("Close")}
-            </Button>
-          </Modal.Footer>
-        </Modal>
+      <Modal
+        show={showHelp}
+        onHide={() => setShowHelp(false)}
+        dialogClassName="helpdialog"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{children}</Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setShowHelp(false)}>
+            <Icon icon="close" /> {_("Close")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-        <table className="numberbox-table">
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  className="table-input"
-                  type="number"
-                  value={this.state.value}
-                  onChange={(e)=>this.changed(e.target.value)}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-}
+      <table className="numberbox-table">
+        <tbody>
+          <tr>
+            <td>
+              <input
+                className="table-input"
+                type="number"
+                value={value}
+                onChange={(e) => changed(e.target.value)}
+                onKeyPress={keyPress}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
-//***********************************************************************
 NumberBox.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.number,
+  children: PropTypes.node,
+  t: PropTypes.func.isRequired,
 };
 
 export default withTranslation()(NumberBox);
