@@ -21,19 +21,35 @@ import { withTranslation } from "react-i18next";
 function MapTools(props) {
   const handleDrawing = () => {
     if (!props.uiSettings.showDrawingTools) {
-      props.updateUI({showAnnotationTools: false, showDrawingTools: true, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: true,
+        showObservationTools: false,
+      });
       props.action("startFeatureDraw");
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
       props.action("stopFeatureDraw");
     }
   };
 
   const handleObservations = () => {
     if (!props.uiSettings.showObservationTools) {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: true });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: true,
+      });
     } else {
-      props.updateUI({ showAnnotationTools: false, showDrawingTools: false, showObservationTools: false });
+      props.updateUI({
+        showAnnotationTools: false,
+        showDrawingTools: false,
+        showObservationTools: false,
+      });
     }
   };
 
@@ -41,12 +57,15 @@ function MapTools(props) {
     props.updateUI({ modalType: type, showModal: true });
   };
 
+ 
   return (
     <div className="MapTools">
       <OverlayTrigger
         key="draw-overlay"
         placement="left"
-        overlay={<Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"draw-tooltip"}>{__("Draw Map Features")}</Tooltip>
+        }
       >
         <Button
           key="draw-button"
@@ -76,7 +95,9 @@ function MapTools(props) {
       <OverlayTrigger
         key="preset-overlay"
         placement="left"
-        overlay={<Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>}
+        overlay={
+          <Tooltip id={"preset-tooltip"}>{__("Preset Features")}</Tooltip>
+        }
       >
         <Button
           key="preset-button"
