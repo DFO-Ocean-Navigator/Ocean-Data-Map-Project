@@ -690,23 +690,17 @@ export const createFeatureTextStyle = (
     textBaseline = "bottom";
     offsetY = -8;
   } else if (type === "Polygon") {
-    // Special case for predefined polygons
-    if (feature.get("key") && mapSettings) {
-      geometry = new olgeom.Point(
-        olProj.transform(
-          feature.get("centroid"),
-          "EPSG:4326",
-          mapSettings.projection
-        )
-      );
-    } else {
-      // Regular polygons
-      let centroid = feature.get("labelCentroid");
-      if (!centroid) {
-        centroid = feature.getGeometry().getInteriorPoint().getCoordinates();
-        feature.set("labelCentroid", centroid);
-      }
-      geometry = new olgeom.Point(centroid);
+    if (!feature.get("centroid")) {
+      let centroid = feature.getGeometry().getInteriorPoint().getCoordinates();
+      feature.set("centroid", olProj.toLonLat(centroid).slice(0, 2));
+    }
+    geometry = new olgeom.Point(
+      olProj.transform(
+        feature.get("centroid"),
+        "EPSG:4326",
+        mapSettings.projection
+      )
+    );
     }
   }
 
