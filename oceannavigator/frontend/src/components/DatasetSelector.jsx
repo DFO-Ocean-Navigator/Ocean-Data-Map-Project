@@ -18,8 +18,6 @@ import {
   GetDepthsPromise,
 } from "../remote/OceanNavigator.js";
 
-import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-
 import { withTranslation } from "react-i18next";
 
 import "rc-slider/assets/index.css";
@@ -34,13 +32,11 @@ function DatasetSelector({
   showQuiverSelector = true,
   showTimeRange = false,
   showDepthSelector = true,
-  showVariableRange = true,
   showAxisRange = false,
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
   mountedDataset,
-  mapSettings,
   showTimeSlider,
   compareDatasets,
   showCompare,
@@ -53,7 +49,6 @@ function DatasetSelector({
   const [datasetVariables, setDatasetVariables] = useState([]);
   const [datasetTimestamps, setDatasetTimestamps] = useState([]);
   const [datasetDepths, setDatasetDepths] = useState([]);
-  const [optionsState, setOptionsState] = useState(options);
   const [dataset, setDataset] = useState(mountedDataset);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
@@ -104,9 +99,6 @@ function DatasetSelector({
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
-        let interpType = mapSettings.interpType;
-        let interpRadius = mapSettings.interpRadius;
-        let interpNeighbours = mapSettings.interpNeighbours;
         const variableIds = variableResult.data.map((v) => {
           return v.id;
         });
@@ -115,15 +107,6 @@ function DatasetSelector({
           newVariable = variableResult.data[0].id;
           newVariableScale = variableResult.data[0].scale;
           variable_range[newVariable] = null;
-          interpType =
-            variableResult.data[0].interp?.interpType ||
-            MAP_DEFAULTS.interpType;
-          interpRadius =
-            variableResult.data[0].interp?.interpRadius ||
-            MAP_DEFAULTS.interpRadius;
-          interpNeighbours =
-            variableResult.data[0].interp?.interpNeighbours ||
-            MAP_DEFAULTS.interpNeighbours;
         }
 
         GetTimestampsPromise(newDataset, newVariable).then(
@@ -165,12 +148,6 @@ function DatasetSelector({
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
                 setDatasetDepths(depthResult.data);
-                setOptionsState({
-                  ...options,
-                  interpType: interpType,
-                  interpRadius: interpRadius,
-                  interpNeighbours: interpNeighbours,
-                });
                 setLoading(false);
                 setLoadingPercent(100);
 
@@ -208,7 +185,6 @@ function DatasetSelector({
     }
 
     let newDataset = {};
-    let newOptions = {};
 
     // Multiple variables were selected
     // so don't update everything else
@@ -238,21 +214,10 @@ function DatasetSelector({
         variable_range: newVariableRange,
         variable_two_dimensional: variable.two_dimensional,
       };
-      newOptions = {
-        ...mapSettings,
-        interpType: variable.interp?.interpType || MAP_DEFAULTS.interpType,
-        interpRadius:
-          variable.interp?.interpRadius || MAP_DEFAULTS.interpRadius,
-        interpNeighbours:
-          variable.interp?.interpNeighbours || MAP_DEFAULTS.interpNeighbours,
-      };
     }
 
     setDataset((prevDataset) => {
       return { ...prevDataset, ...newDataset };
-    });
-    setOptionsState((prevOptions) => {
-      return { ...prevOptions, ...newOptions };
     });
   };
 
@@ -339,19 +304,19 @@ function DatasetSelector({
 
   let variableSelector = null;
   if (showVariableSelector && datasetVariables && datasetVariables.length > 0) {
-    let optionsData = [];
+    let variableOptions = [];
     if (variables === "3d") {
-      optionsData = datasetVariables.filter((v) => {
+      variableOptions = datasetVariables.filter((v) => {
         return v.two_dimensional === false;
       });
     } else {
-      optionsData = datasetVariables;
+      variableOptions = datasetVariables;
     }
 
     // Work-around for when someone selected a plot that requires
     // 3D variables, but the selected dataset doesn't have any LOL.
     // This check prevents a white-screen crash.
-    const stillHasVariablesToShow = optionsData.length > 0;
+    const stillHasVariablesToShow = variableOptions.length > 0;
 
     let selected = dataset.variable;
     if (multipleVariables && !Array.isArray(selected)) {
@@ -364,7 +329,7 @@ function DatasetSelector({
         name={t("variable")}
         label={t("Variable")}
         placeholder={t("Variable")}
-        options={optionsData}
+        options={variableOptions}
         onChange={updateDataset}
         selected={selected}
         multiple={multipleVariables}
@@ -408,8 +373,8 @@ function DatasetSelector({
           max={1}
           marks={{
             "-1": "-",
-            0: "",
-            1: "+",
+            "0": "",
+            "1": "+",
           }}
           defaultValue={dataset.quiverDensity}
           onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
@@ -617,13 +582,11 @@ DatasetSelector.propTypes = {
   showQuiverSelector: PropTypes.bool,
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
-  showVariableRange: PropTypes.bool,
   showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
-  mapSettings: PropTypes.object,
   showTimeSlider: PropTypes.bool,
   compareDatasets: PropTypes.bool,
   showCompare: PropTypes.bool,
