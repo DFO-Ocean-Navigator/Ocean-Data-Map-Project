@@ -306,13 +306,13 @@ export const createMap = (
               stroke: new Stroke({
                 color: "#ffffff",
                 width: 5,
-              })
+              }),
             }),
             new Style({
               stroke: new Stroke({
                 color: "#ff0000",
                 width: 3,
-              })
+              }),
             }),
             new Style({
               geometry: new olgeom.Point(
@@ -546,7 +546,12 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                   }),
                 }),
               ];
-              const textStyle = createFeatureTextStyle(feat);
+              const textStyle = createFeatureTextStyle(
+                feat,
+                "#000",
+                "#ffffff",
+                mapSettings
+              );
               if (textStyle) styles.push(textStyle);
               return styles;
             }
@@ -565,7 +570,9 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
-            const textStyle = createFeatureTextStyle(feat);
+            const textStyle = createFeatureTextStyle(feat,                "#000",
+                "#ffffff",
+                mapSettings);
             if (textStyle) styles.push(textStyle);
             return styles;
           case "Point":
@@ -701,7 +708,6 @@ export const createFeatureTextStyle = (
         mapSettings.projection
       )
     );
-    }
   }
 
   return new Style({

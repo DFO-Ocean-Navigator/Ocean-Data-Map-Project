@@ -467,7 +467,7 @@ const Map = forwardRef((props, ref) => {
         ];
         const textStyle = createFeatureTextStyle(
           feat,
-          "#0099ff",
+          "#000",
           "#ffffff",
           props.mapSettings
         );
@@ -497,65 +497,55 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
-    const hoverSelect = new Select({
+    return new Select({
       condition: pointerMove,
-      style: function (feature, resolution) {
-        const selectedFeatures = selectInteraction.getFeatures().getArray();
-        let fillColor = selectedFeatures.includes(feature)
-          ? "#0099ff"
-          : "#ff0000";
+      layers: [layerFeatureVector],
+      filter: (feature) => !feature.get("annotation"),
+      style: (feature, resolution) => {
+        const isSelected = selectInteraction
+          .getFeatures()
+          .getArray()
+          .includes(feature);
+        const fillColor = isSelected ? "#0099ff" : "#ff0000";
+
+
+        const textStyle = createFeatureTextStyle(
+          feature, 
+          "#000", 
+          "#ffffff",
+          props.mapSettings
+        );
+
         if (feature.get("type") === "Point") {
-          return new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 16,
-            }),
+          const pointStyle = new Style({
+            stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
               radius: 6,
-              fill: new Fill({
-                color: fillColor,
-              }),
-              stroke: new Stroke({
-                color: "#ffffffff",
-                width: 3,
-              }),
+              fill: new Fill({ color: fillColor }),
+              stroke: new Stroke({ color: "#ffffffff", width: 3 }),
             }),
           });
+          return textStyle ? [pointStyle, textStyle] : [pointStyle];
         }
-        return [
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff22",
-              width: 16,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 12,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffffff",
-              width: 8,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: fillColor,
-              width: 4,
-            }),
-          }),
-        ];
-      },
-      layers: [layerFeatureVector],
-      filter: function (feature, layer) {
-        return !feature.get("annotation");
+
+        const glow1 = new Style({
+          stroke: new Stroke({ color: "#ffffff22", width: 16 }),
+        });
+        const glow2 = new Style({
+          stroke: new Stroke({ color: "#ffffff88", width: 12 }),
+        });
+        const white = new Style({
+          stroke: new Stroke({ color: "#ffffffff", width: 8 }),
+        });
+        const color = new Style({
+          stroke: new Stroke({ color: fillColor, width: 4 }),
+        });
+
+        return textStyle
+          ? [glow1, glow2, white, color, textStyle]
+          : [glow1, glow2, white, color];
       },
     });
-
-    return hoverSelect;
   };
 
   const getFeatures = () => {
@@ -987,7 +977,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const addAnnotationLabel = (text) => {
-    const coord= mapView.getCenter();
+    const coord = mapView.getCenter();
     let overlay = new AnnotationOverlay(text, coord);
     map0.addOverlay(overlay);
     setAnnotationOverlays((prev) => [...prev, overlay]);
