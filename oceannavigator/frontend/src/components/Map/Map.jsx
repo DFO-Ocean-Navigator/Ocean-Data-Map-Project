@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill } from "ol/style";
+import { Style, Circle, Stroke, Fill, Text } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -35,6 +35,7 @@ import {
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
+  createFeatureTextStyle,
 } from "./utils";
 import {
   getDrawAction,
@@ -451,26 +452,28 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
-
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
-        return new Style({
-          stroke: new Stroke({
-            color: "#0099ff",
-            width: 4,
-          }),
-          image: new Circle({
-            radius: 4,
-            fill: new Fill({
-              color: "#0099ff",
-            }),
-            stroke: new Stroke({
-              color: "#ffffff",
-              width: 1,
+        const styles = [
+          new Style({
+            stroke: new Stroke({ color: "#0099ff", width: 4 }),
+            image: new Circle({
+              radius: 4,
+              fill: new Fill({ color: "#0099ff" }),
+              stroke: new Stroke({ color: "#ffffff", width: 1 }),
             }),
           }),
-        });
+        ];
+        const textStyle = createFeatureTextStyle(
+          feat,
+          "#000",
+          "#ffffff",
+          props.mapSettings
+        );
+        if (textStyle) styles.push(textStyle);
+
+        return styles;
       },
     });
 
@@ -494,65 +497,55 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
-    const hoverSelect = new Select({
+    return new Select({
       condition: pointerMove,
-      style: function (feature, resolution) {
-        const selectedFeatures = selectInteraction.getFeatures().getArray();
-        let fillColor = selectedFeatures.includes(feature)
-          ? "#0099ff"
-          : "#ff0000";
+      layers: [layerFeatureVector],
+      filter: (feature) => !feature.get("annotation"),
+      style: (feature, resolution) => {
+        const isSelected = selectInteraction
+          .getFeatures()
+          .getArray()
+          .includes(feature);
+        const fillColor = isSelected ? "#0099ff" : "#ff0000";
+
+
+        const textStyle = createFeatureTextStyle(
+          feature, 
+          "#000", 
+          "#ffffff",
+          props.mapSettings
+        );
+
         if (feature.get("type") === "Point") {
-          return new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 16,
-            }),
+          const pointStyle = new Style({
+            stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
               radius: 6,
-              fill: new Fill({
-                color: fillColor,
-              }),
-              stroke: new Stroke({
-                color: "#ffffffff",
-                width: 3,
-              }),
+              fill: new Fill({ color: fillColor }),
+              stroke: new Stroke({ color: "#ffffffff", width: 3 }),
             }),
           });
+          return textStyle ? [pointStyle, textStyle] : [pointStyle];
         }
-        return [
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff22",
-              width: 16,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 12,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffffff",
-              width: 8,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: fillColor,
-              width: 4,
-            }),
-          }),
-        ];
-      },
-      layers: [layerFeatureVector],
-      filter: function (feature, layer) {
-        return !feature.get("annotation");
+
+        const glow1 = new Style({
+          stroke: new Stroke({ color: "#ffffff22", width: 16 }),
+        });
+        const glow2 = new Style({
+          stroke: new Stroke({ color: "#ffffff88", width: 12 }),
+        });
+        const white = new Style({
+          stroke: new Stroke({ color: "#ffffffff", width: 8 }),
+        });
+        const color = new Style({
+          stroke: new Stroke({ color: fillColor, width: 4 }),
+        });
+
+        return textStyle
+          ? [glow1, glow2, white, color, textStyle]
+          : [glow1, glow2, white, color];
       },
     });
-
-    return hoverSelect;
   };
 
   const getFeatures = () => {
@@ -984,7 +977,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const addAnnotationLabel = (text) => {
-    const coord= mapView.getCenter();
+    const coord = mapView.getCenter();
     let overlay = new AnnotationOverlay(text, coord);
     map0.addOverlay(overlay);
     setAnnotationOverlays((prev) => [...prev, overlay]);

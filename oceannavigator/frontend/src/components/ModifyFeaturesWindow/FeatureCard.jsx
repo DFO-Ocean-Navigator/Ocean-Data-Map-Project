@@ -191,7 +191,7 @@ function FeatureCard(props) {
         <Form.Control
           className="name-input"
           type="text"
-          value={featureName}
+          value={featureName?? ""}
           onChange={updateFeatureName}
         />
         <div className="header-buttons">
