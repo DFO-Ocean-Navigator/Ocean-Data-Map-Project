@@ -392,17 +392,16 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
     xpx = x * 256
     ypx = y * 256
 
-    scale = [-4000, 1000]
-    cmap = "BrBG_r"
-
-    land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
-    colors = np.vstack((water_colors, land_colors))
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
+    scales = [[0, 10000], [-4000, 1000], [0, 1000]]
+    land_colors = plt.cm.BrBG_r(np.geomspace(0.5, 0.8, 196))
+    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 0.7, 196))
+    ice_colors = colormap.colormaps["ice"](np.linspace(0.8, 1, 196))
+    colors = [water_colors, land_colors, ice_colors]
 
     data = None
     with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
         data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+        mask = dataset["mask"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
     shade = 0
     if shaded_relief:
@@ -419,19 +418,29 @@ def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesI
         shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
         shade[:, :, 3] = 0
 
-    sm = matplotlib.cm.ScalarMappable(
-        matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
-        cmap=cmap,
-    )
-    img = sm.to_rgba(np.squeeze(data))
+    ims = []
+    for idx, color in enumerate(colors):
+        cmap = matplotlib.colors.ListedColormap(color)
+        layer = data.astype(np.float32)
+        layer[mask != idx] = np.nan
+        scale = scales[idx]
 
-    img += shade
-    img = np.clip(img, 0, 1)
+        sm = matplotlib.cm.ScalarMappable(
+            matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
+            cmap=cmap,
+        )
 
-    im = Image.fromarray((img * 255.0).astype(np.uint8))
+        img = sm.to_rgba(np.squeeze(layer))
+        img += shade
+        img = np.clip(img, 0, 1)
+
+        ims.append(Image.fromarray((img * 255.0).astype(np.uint8)))
+
+    for n in range(2, 0, -1):
+        ims[n - 1].paste(ims[n], (0, 0), mask=ims[n])
 
     buf = BytesIO()
-    im.save(buf, format="PNG", optimize=True)
+    ims[0].save(buf, format="PNG", optimize=True)
     buf.seek(0)
 
     return buf
