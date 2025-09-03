@@ -304,9 +304,9 @@ class NetCDFData(Data):
                     return key
             return None
 
-        # Get lat/lon variable names from dataset (since they all differ >.>)
-        lat_var = find_variable("lat", list(self.dataset.variables.keys()))
-        lon_var = find_variable("lon", list(self.dataset.variables.keys()))
+        # Get dimension variable names
+        lat_var = self._dataset_config.lat_var_key
+        lon_var = self._dataset_config.lon_var_key
 
         depth_var = find_variable("depth", list(self.dataset.variables.keys()))
 
@@ -409,7 +409,7 @@ class NetCDFData(Data):
             time_slice = slice(int(time_range[0]), int(time_range[0]) + 1)
 
         subset = subset.isel(**{time_var: time_slice})
-        
+
         depth = query.get("depth")
 
         # Filter out unwanted variables
@@ -438,30 +438,34 @@ class NetCDFData(Data):
                     }
                 )
         if depth == "bottom":
-            
+
             bottom_idx = np.array([])
             for var in list(subset.data_vars):
                 if depth_var not in subset[var].dims:
                     continue
-            
+
                 da = subset[var]
-            
+
                 if bottom_idx.size == 0:
                     # Find the last valid (non-NaN) depth index for each point
                     valid_mask = da.notnull()
-            
+
                     # Find index of bottom at each coordinate
-                    bottom_idx = valid_mask.cumsum(depth_var).argmax(depth_var).compute()
-                    bottom_depths = subset[depth_var].isel({depth_var: bottom_idx[0,:]})
+                    bottom_idx = (
+                        valid_mask.cumsum(depth_var).argmax(depth_var).compute()
+                    )
+                    bottom_depths = subset[depth_var].isel(
+                        {depth_var: bottom_idx[0, :]}
+                    )
                     bottom_depths = bottom_depths.where(valid_mask[0, 0, :, :], np.nan)
                     bottom_depths = bottom_depths.drop_vars("time")
-            
+
                 # Extract bottom values using the indices
                 subset[var] = da.isel({depth_var: bottom_idx})
-            
+
             # Add bottom depths as coordinate
             subset.coords[depth_var] = bottom_depths
-             
+
         elif depth and depth != "all":
             subset = subset.isel({"depth": [int(depth)]})
 
@@ -470,8 +474,10 @@ class NetCDFData(Data):
             key: str(value) for key, value in subset[variable].attrs.items()
         }
 
-        # converting longitude values to -180 to 180
-        subset = subset.assign_coords({lon_var: (((subset[lon_var] + 180) % 360) - 180)})
+        # convert longitude values to -180 to 180 range
+        subset = subset.assign_coords(
+            {lon_var: (((subset[lon_var] + 180) % 360) - 180)}
+        )
         subset = subset.sortby(x_coord)
 
         output_format = query.get("output_format")
