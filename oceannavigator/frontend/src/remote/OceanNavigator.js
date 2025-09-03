@@ -48,62 +48,77 @@ export function GetPresetAreasPromise() {
 export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
-// Get all datasets (initial load)
-export function GetAllDatasetsPromise() {
-  return instance.get('/api/v2.0/datasets/all');
-}
 
 // Filter datasets by variable
 export function FilterDatasetsByVariablePromise(datasetIds, variable) {
-  return instance.post('/api/v2.0/datasets/filter/variable', 
-    { dataset_ids: datasetIds },
-    { params: { variable } }
-  );
+  const params = new URLSearchParams({
+    variable: variable
+  });
+  
+  if (datasetIds && datasetIds.length > 0) {
+    params.append('dataset_ids', datasetIds.join(','));
+  }
+  
+  return instance.get(`/api/v2.0/datasets/filter/variable?${params.toString()}`);
 }
 
 // Filter datasets by quiver variable
 export function FilterDatasetsByQuiverVariablePromise(datasetIds, quiverVariable) {
-  return instance.post('/api/v2.0/datasets/filter/quiver_variable', 
-    { dataset_ids: datasetIds },
-    { params: { quiver_variable: quiverVariable } }
-  );
+  const params = new URLSearchParams({
+    quiver_variable: quiverVariable
+  });
+  
+  if (datasetIds && datasetIds.length > 0) {
+    params.append('dataset_ids', datasetIds.join(','));
+  }
+  
+  return instance.get(`/api/v2.0/datasets/filter/quiver_variable?${params.toString()}`);
 }
 
 // Filter datasets by depth
 export function FilterDatasetsByDepthPromise(datasetIds, hasDepth, variable = null) {
-  const params = { has_depth: hasDepth };
-  if (variable) {
-    params.variable = variable;
+  const params = new URLSearchParams({
+    has_depth: hasDepth
+  });
+  
+  if (datasetIds && datasetIds.length > 0) {
+    params.append('dataset_ids', datasetIds.join(','));
   }
   
-  return instance.post('/api/v2.0/datasets/filter/depth', 
-    { dataset_ids: datasetIds },
-    { params }
-  );
+  if (variable) {
+    params.append('variable', variable);
+  }
+  
+  return instance.get(`/api/v2.0/datasets/filter/depth?${params.toString()}`);
 }
 
 // Filter datasets by date
 export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
-  return instance.post('/api/v2.0/datasets/filter/date', 
-    { dataset_ids: datasetIds },
-    { params: { target_date: targetDate } }
-  );
+  const params = new URLSearchParams({
+    target_date: targetDate
+  });
+  
+  if (datasetIds && datasetIds.length > 0) {
+    params.append('dataset_ids', datasetIds.join(','));
+  }
+  
+  return instance.get(`/api/v2.0/datasets/filter/date?${params.toString()}`);
 }
 
 // Filter datasets by location
-
-export function FilterDatasetsByLocationPromise(datasetIds, latitude, longitude, tolerance = 0.1) {
-  return instance.post('/api/v2.0/datasets/filter/location', 
-    { dataset_ids: datasetIds },
-    { 
-      params: { 
-        latitude: latitude, 
-        longitude: longitude,
-        tolerance: tolerance
-      } 
-    }
-  );
+export function FilterDatasetsByLocationPromise(datasetIds, latitude, longitude) {
+  const params = new URLSearchParams({
+    latitude: latitude.toString(),
+    longitude: longitude.toString()
+  });
+  
+  if (datasetIds && datasetIds.length > 0) {
+    params.append('dataset_ids', datasetIds.join(','));
+  }
+  
+  return instance.get(`/api/v2.0/datasets/filter/location?${params.toString()}`);
 }
+
 //returns a complete list of variables for users to select
 export function GetAllVariablesPromise() {
   return instance.get("/api/v2.0/datasets/variables/all")

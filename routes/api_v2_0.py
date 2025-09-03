@@ -20,13 +20,10 @@ from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
 import os
-from typing import List
+from pathlib import Path as FilePath
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
-from oceannavigator.log import log
-from oceannavigator.settings import get_settings
-from oceannavigator.dataset_config import DatasetConfig
+import pickle
 
-# Import the simple location checker
 import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
@@ -66,338 +63,9 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
 from typing import Optional, List
-import numpy as np
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-from dateutil.parser import parse as dateparse
-from datetime import datetime
-from netCDF4 import num2date
-# Import required modules for perimeter generation
-import pickle
-import logging
-from shapely.geometry import MultiPoint
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
-
-
-class SimplePerimeterGenerator:
-    """Generates dataset perimeters for fast location filtering."""
-    
-    def __init__(self, output_file: str = "dataset_perimeters.pkl"):
-        self.output_file = output_file
-        
-    def generate_all_perimeters(self):
-        """Generate perimeters for all datasets and save to file."""
-        log().info("Generating dataset perimeters...")
-        
-        dataset_keys = DatasetConfig.get_datasets()
-        perimeters = {}
-        
-        for i, dataset_key in enumerate(dataset_keys):
-            log().info(f"Processing {i+1}/{len(dataset_keys)}: {dataset_key}")
-            
-            try:
-                log().info(f'dataset key{dataset_key}')
-                config = DatasetConfig(dataset_key)
-               
-                perimeter = self._generate_netcdf_perimeter(dataset_key, config)
-                if perimeter:
-                    perimeters[dataset_key] = perimeter
-                    log().info(f"✓ Generated perimeter for {dataset_key}")
-                else:
-                    log().warning(f"✗ Could not generate perimeter for {dataset_key}")
-                    
-            except Exception as e:
-                log().error(f"✗ Error with {dataset_key}: {str(e)}")
-        
-        # Save perimeters
-        self._save_perimeters(perimeters)
-        log().info(f"Saved {len(perimeters)} dataset perimeters to {self.output_file}")
-        
-        return perimeters
-    
-    def _generate_netcdf_perimeter(self, dataset_key: str, config: DatasetConfig) -> Optional[dict]:
-        """Generate perimeter from NetCDF dataset."""
-        try:
-            # Get first available variable
-            if not hasattr(config, 'variables') or not config.variables:
-                return None
-                
-            sample_variable = config.variables[0]
-
-            with open_dataset(config, variable=sample_variable, timestamp=-1) as dataset:
-
-                # Find lat/lon variables
-                lat_var, lon_var = self._find_coord_vars(dataset)
-                if not lat_var or not lon_var:
-                    return None
-                
-                # Get coordinate data
-                lat_data = dataset.nc_data.dataset.variables[lat_var][:]
-                lon_data = dataset.nc_data.dataset.variables[lon_var][:]
-                
-                # Create perimeter polygon
-                polygon_coords = self._create_perimeter_coords(lat_data, lon_data)
-                if not polygon_coords:
-                    return None
-                
-                return {
-                    'coords': polygon_coords,  # List of [lon, lat] pairs
-                    'bounds': self._calculate_bounds(polygon_coords),  # [min_lon, min_lat, max_lon, max_lat]
-                    'type': 'netcdf'
-                }
-                
-        except Exception as e:
-            log().error(f"Error processing NetCDF dataset {dataset_key}: {str(e)}")
-            return None
-    
-    def _find_coord_vars(self, dataset):
-        """Find latitude and longitude variables in dataset."""
-        lat_var = None
-        lon_var = None
-        
-        # Try standard names first
-        for var_name in dataset.nc_data.dataset.variables:
-            var = dataset.nc_data.dataset.variables[var_name]
-            if hasattr(var, 'standard_name'):
-                if var.standard_name in ['latitude', 'grid_latitude']:
-                    lat_var = var_name
-                elif var.standard_name in ['longitude', 'grid_longitude']:
-                    lon_var = var_name
-        
-        # Fallback to common names
-        if not lat_var:
-            for name in ['lat', 'latitude', 'y', 'nav_lat']:
-                if name in dataset.nc_data.dataset.variables:
-                    lat_var = name
-                    break
-                    
-        if not lon_var:
-            for name in ['lon', 'longitude', 'x', 'nav_lon']:
-                if name in dataset.nc_data.dataset.variables:
-                    lon_var = name
-                    break
-        
-        return lat_var, lon_var
-    
-    def _create_perimeter_coords(self, lat_data: np.ndarray, lon_data: np.ndarray) -> Optional[List]:
-        """Create perimeter coordinates from lat/lon arrays."""
-        try:
-            # Flatten and clean data
-            lon_mesh, lat_mesh = np.meshgrid(lon_data, lat_data)
-            lat_flat = lat_mesh.flatten()
-            lon_flat = lon_mesh.flatten()
-            # lat_flat = np.array(lat_data).flatten()
-            # lon_flat = np.array(lon_data).flatten()
-            
-            # Remove invalid values
-            valid_mask = ~(np.isnan(lat_flat) | np.isnan(lon_flat))
-            lat_valid = lat_flat[valid_mask]
-            lon_valid = lon_flat[valid_mask]
-            
-            if len(lat_valid) < 3:
-                return None
-            
-            # Normalize longitude to [-180, 180]
-            lon_valid = ((lon_valid + 180) % 360) - 180
-            
-            # Sample points if too many (for performance)
-            if len(lat_valid) > 1000:
-                indices = np.linspace(0, len(lat_valid)-1, 1000, dtype=int)
-                lat_valid = lat_valid[indices]
-                lon_valid = lon_valid[indices]
-            
-            # Create convex hull
-            points = [(lon, lat) for lon, lat in zip(lon_valid, lat_valid)]
-            multipoint = MultiPoint(points)
-            hull = multipoint.convex_hull
-            
-            # Extract coordinates
-            if isinstance(hull, Polygon):
-                coords = list(hull.exterior.coords)
-            # else:
-                # Fallback to bounding box if convex hull fails
-            # lat_min = float(np.min(lat_data))
-            # lat_max = float(np.max(lat_data))
-            # lon_min = float(np.min(lon_data))
-            # lon_max = float(np.max(lon_data))
-            # coords = [
-            #     [lon_min, lat_min],
-            #     [lon_max, lat_min],
-            #     [lon_max, lat_max],
-            #     [lon_min, lat_max],
-            #     [lon_min, lat_min],  # close the polygon
-            # ]
-                    
-            return coords
-            
-        except Exception as e:
-            log().error(f"Error creating perimeter: {str(e)}")
-            return None
-    
-    def _calculate_bounds(self, coords: List) -> List[float]:
-        """Calculate bounding box from coordinates."""
-        lons = [c[0] for c in coords]
-        lats = [c[1] for c in coords]
-        return [min(lons), min(lats), max(lons), max(lats)]
-    
-    def _save_perimeters(self, perimeters: dict):
-        """Save perimeters to pickle file."""
-        with open(self.output_file, 'wb') as f:
-            pickle.dump(perimeters, f)
-    
-    def load_perimeters(self) -> dict:
-        """Load perimeters from file."""
-        try:
-            with open(self.output_file, 'rb') as f:
-                return pickle.load(f)
-        except FileNotFoundError:
-            log().error(f"Perimeters file not found: {self.output_file}")
-            return {}
-        except Exception as e:
-            log().error(f"Error loading perimeters: {str(e)}")
-            return {}
-
-
-class FastLocationChecker:
-    """Fast location checking using pre-computed perimeters."""
-    
-    def __init__(self, perimeters_file: str = "dataset_perimeters.pkl"):
-        self.perimeters_file = perimeters_file
-        self.perimeters = {}
-        self._load_perimeters()
-    
-    def _load_perimeters(self):
-        """Load perimeters from file."""
-        try:
-            with open(self.perimeters_file, 'rb') as f:
-                self.perimeters = pickle.load(f)
-            log().info(f"Loaded {len(self.perimeters)} dataset perimeters")
-        except FileNotFoundError:
-            log().warning(f"Perimeters file not found: {self.perimeters_file}")
-            self.perimeters = {}
-        except Exception as e:
-            log().error(f"Error loading perimeters: {str(e)}")
-            self.perimeters = {}
-    
-    def check_location(self, dataset_id: str, latitude: float, longitude: float, tolerance: float = 0.1) -> bool:
-        """
-        Check if a location is within a dataset's coverage.
-        
-        Args:
-            dataset_id: Dataset identifier
-            latitude: Target latitude
-            longitude: Target longitude  
-            tolerance: Buffer in degrees
-            
-        Returns:
-            True if location is within dataset coverage
-        """
-        if dataset_id not in self.perimeters:
-            # Check if this is a SQLite dataset (no spatial coverage)
-            try:
-                config = DatasetConfig(dataset_id)
-                url = config.url if not isinstance(config.url, list) else config.url[0]
-                if url.endswith(".sqlite3"):
-                    # SQLite datasets are observational data, not spatial grids
-                    # Return False since they don't have spatial coverage
-                    log().debug(f"SQLite dataset {dataset_id} has no spatial coverage")
-                    return False
-            except:
-                pass
-                
-            # For other missing perimeters, return False (could implement fallback)
-            log().warning(f"No perimeter found for {dataset_id}")
-            return False
-        
-        try:
-            perimeter_data = self.perimeters[dataset_id]
-            
-            # Quick bounds check first
-            bounds = perimeter_data['bounds']
-            min_lon, min_lat, max_lon, max_lat = bounds
-            
-            if not (min_lon - tolerance <= longitude <= max_lon + tolerance and
-                    min_lat - tolerance <= latitude <= max_lat + tolerance):
-                return False
-            
-            # Create polygon and check if point is inside
-            coords = perimeter_data['coords']
-            polygon = Polygon(coords)
-            
-            if tolerance > 0:
-                # Buffer the polygon for tolerance
-                polygon = polygon.buffer(tolerance)
-            
-            point = Point(longitude, latitude)
-            return polygon.contains(point)
-            
-        except Exception as e:
-            log().warning(f"Error checking location for {dataset_id}: {str(e)}")
-            return False
-    
-    def filter_datasets(self, dataset_ids: List[str], latitude: float, longitude: float, tolerance: float = 0.1) -> List[str]:
-        """Filter datasets by location."""
-        matching_datasets = []
-        
-        for dataset_id in dataset_ids:
-            if self.check_location(dataset_id, latitude, longitude, tolerance):
-                matching_datasets.append(dataset_id)
-        
-        return matching_datasets
-    
-    def reload_perimeters(self):
-        """Reload perimeters from file (useful after regeneration)."""
-        self._load_perimeters()
-    
-    def get_coverage_info(self, dataset_id: str) -> Optional[dict]:
-        """Get coverage information for a dataset."""
-        if dataset_id not in self.perimeters:
-            return None
-            
-        perimeter_data = self.perimeters[dataset_id]
-        bounds = perimeter_data['bounds']
-        
-        return {
-            'dataset_id': dataset_id,
-            'bounds': bounds,
-            'coverage_type': perimeter_data['type'],
-            'center_lat': (bounds[1] + bounds[3]) / 2,
-            'center_lon': (bounds[0] + bounds[2]) / 2,
-            'width_degrees': bounds[2] - bounds[0],
-            'height_degrees': bounds[3] - bounds[1]
-        }
-
-
-# ==================== INITIALIZATION ====================
-
-def initialize_location_checker():
-    """Initialize the location checker, generating perimeters if needed."""
-    perimeters_file = "dataset_perimeters.pkl"
-    
-    # Check if perimeters file exists
-    if not os.path.exists(perimeters_file):
-        log().info("Perimeters file not found, generating...")
-        try:
-            # Generate perimeters
-            generator = SimplePerimeterGenerator(perimeters_file)
-            perimeters = generator.generate_all_perimeters()
-            log().info(f"Successfully generated perimeters for {len(perimeters)} datasets")
-        except Exception as e:
-            log().error(f"Failed to generate perimeters: {str(e)}")
-            # Create empty file to avoid repeated attempts
-            with open(perimeters_file, 'wb') as f:
-                pickle.dump({}, f)
-    else:
-        log().info(f"Using existing perimeters file: {perimeters_file}")
-    
-    # Initialize and return the location checker
-    return FastLocationChecker(perimeters_file)
-
-# Initialize the location checker (this will generate perimeters if needed)
-location_checker = initialize_location_checker()
-
-# ==================== REST OF YOUR EXISTING CODE ====================
 
 try:
     Base.metadata.create_all(bind=engine)
@@ -778,32 +446,6 @@ def class4_data(
     return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
 
 
-@router.get("/datasets/all")
-def get_all_datasets():
-    """
-    Get all available datasets with basic information.
-    """
-    all_datasets = []
-    dataset_keys = DatasetConfig.get_datasets()
-
-    for dataset_key in dataset_keys:
-        config = DatasetConfig(dataset_key)
-        all_datasets.append(
-            {
-                "id": dataset_key,
-                "name": config.name,
-                "group": getattr(config, "group", ""),
-                "subgroup": getattr(config, "subgroup", ""),
-                "type": getattr(config, "type", "Unknown"),
-                "quantum": config.quantum,
-                "help": getattr(config, "help", ""),
-                "attribution": getattr(config, "attribution", ""),
-                "matchingVariables": [],
-            }
-        )
-
-    return {"datasets": all_datasets}
-
 
 @router.get("/datasets/variables/all")
 def get_all_variables():
@@ -832,22 +474,19 @@ def get_all_variables():
     return {"data": list(all_variables.values())}
 
 
-@router.post("/datasets/filter/variable")
+@router.get("/datasets/filter/variable")
 def filter_datasets_by_variable(
-    request: dict,
     variable: str = Query(description="Variable to filter by"),
+    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
 ):
-    """
-    Filter datasets by variable from a provided list of dataset IDs.
-    """
-    dataset_ids = request.get("dataset_ids", [])
-    if not dataset_ids:
-        # If no dataset_ids provided, use all available datasets
-        dataset_ids = DatasetConfig.get_datasets()
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
 
     matching_datasets = []
 
-    for dataset_id in dataset_ids:
+    for dataset_id in dataset_id_list:
         try:
             config = DatasetConfig(dataset_id)
             dataset_has_variable = False
@@ -953,21 +592,23 @@ def get_all_quiver_variables():
     return {"data": list(all_quiver_vars.values())}
 
 
-@router.post("/datasets/filter/quiver_variable")
+@router.get("/datasets/filter/quiver_variable")
 def filter_datasets_by_quiver_variable(
-    request: dict,
     quiver_variable: str = Query(description="Quiver variable to filter by"),
+    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
 ):
     """
     Filter datasets by quiver variable from a provided list of dataset IDs.
     """
-    dataset_ids = request.get("dataset_ids", [])
-    if not dataset_ids:
-        dataset_ids = DatasetConfig.get_datasets()
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
 
     matching_datasets = []
 
-    for dataset_id in dataset_ids:
+    for dataset_id in dataset_id_list:
+        try:
             config = DatasetConfig(dataset_id)
             dataset_has_quiver_var = False
             matching_variables = []
@@ -1003,27 +644,31 @@ def filter_datasets_by_quiver_variable(
                         "matchingVariables": matching_variables,
                     }
                 )
+        except Exception as e:
+            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+            continue
 
     return {"datasets": matching_datasets}
 
 
-@router.post("/datasets/filter/depth")
+
+@router.get("/datasets/filter/depth")
 def filter_datasets_by_depth(
-    request: dict,
     has_depth: str = Query(description="Depth requirement: 'yes', 'no'"),
+    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
     variable: Optional[str] = Query(None, description="Variable to check depth for"),
 ):
     """
     Filter datasets by depth dimensions from a provided list of dataset IDs.
     """
-    ##dvfdsd
-    dataset_ids = request.get("dataset_ids", [])
-    if not dataset_ids:
-        dataset_ids = DatasetConfig.get_datasets()
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
 
     matching_datasets = []
 
-    for dataset_id in dataset_ids:
+    for dataset_id in dataset_id_list:
         try:
             config = DatasetConfig(dataset_id)
             dataset_matches = False
@@ -1077,7 +722,6 @@ def filter_datasets_by_depth(
                         dims = db.get_all_dimensions()
                     has_depth_dims = "depth" in dims
                 else:
-                    #if any variables have depth
                     has_depth_dims = False
                     try:
                         sample_var = list(config.variables.keys())[0]
@@ -1137,23 +781,24 @@ def check_dataset_date(dataset_id, target_date):
         print(f"❌ Error opening or querying database for dataset {dataset_id}: {e}")
         return False
     
-@router.post("/datasets/filter/date")
+@router.get("/datasets/filter/date")
 def filter_datasets_by_date(
-    request: dict,
     target_date: str = Query(description="Target date in ISO format"),
+    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
 ):
     """
     Filters datasets by date availability from a provided list of dataset IDs.
     """
-    dataset_ids = request.get("dataset_ids", [])
-    if not dataset_ids:
-        dataset_ids = DatasetConfig.get_datasets()
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
 
     matching_datasets = []
     parsed_date = dateparse(target_date)
 
-    for dataset_id in dataset_ids:
-            
+    for dataset_id in dataset_id_list:
+        try:
             date_matches = check_dataset_date(dataset_id, parsed_date)
             if date_matches:
                 config = DatasetConfig(dataset_id)
@@ -1167,398 +812,64 @@ def filter_datasets_by_date(
                     "help": getattr(config, "help", ""),
                     "attribution": getattr(config, "attribution", ""),
                     "matchingVariables": [],
-                })            
+                })
+        except Exception as e:
+            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+            continue
+            
     return {"datasets": matching_datasets}
 
-# Add this endpoint to your FastAPI router in paste-2.txt
-
-# @router.post("/datasets/filter/location")
-# def filter_datasets_by_location(
-#     request: dict,
-#     latitude: float = Query(description="Latitude coordinate"),
-#     longitude: float = Query(description="Longitude coordinate"),
-#     tolerance: float = Query(default=0.1, description="Tolerance in degrees for coordinate matching"),
-# ):
-#     """
-#     Filter datasets by location from a provided list of dataset IDs.
-#     Returns datasets that contain data at or near the specified coordinates.
-#     """
-#     dataset_ids = request.get("dataset_ids", [])
-#     if not dataset_ids:
-#         dataset_ids = DatasetConfig.get_datasets()
-
-#     matching_datasets = []
-
-#     for dataset_id in dataset_ids:
-#         try:
-#             config = DatasetConfig(dataset_id)
-#             dataset_contains_location = False
-
-#             # Check if the coordinates are within the dataset bounds
-#             if check_dataset_location(dataset_id, latitude, longitude, tolerance):
-#                 dataset_contains_location = True
-
-#             if dataset_contains_location:
-#                 matching_datasets.append(
-#                     {
-#                         "id": dataset_id,
-#                         "name": config.name,
-#                         "group": getattr(config, "group", ""),
-#                         "subgroup": getattr(config, "subgroup", ""),
-#                         "type": getattr(config, "type", "Unknown"),
-#                         "quantum": config.quantum,
-#                         "help": getattr(config, "help", ""),
-#                         "attribution": getattr(config, "attribution", ""),
-#                         "matchingVariables": [],
-#                     }
-#                 )
-
-#         except Exception as e:
-#             log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
-#             continue
-
-#     return {"datasets": matching_datasets}
-
-
-# def check_dataset_location(dataset_id, target_lat, target_lon, tolerance=0.1):
-#     """
-#     Check if a given coordinate falls within the geographic bounds of a dataset.
-    
-#     Args:
-#         dataset_id: The dataset identifier
-#         target_lat: Target latitude
-#         target_lon: Target longitude  
-#         tolerance: Tolerance in degrees for coordinate matching
-        
-#     Returns:
-#         bool: True if the location is within the dataset bounds
-#     """
-#     try:
-#         config = DatasetConfig(dataset_id)
-#         url = config.url if not isinstance(config.url, list) else config.url[0]
-        
-#         # # Handle SQLite datasets
-#         # if url.endswith(".sqlite3"):
-#         #     return check_sqlite_location(config, target_lat, target_lon, tolerance)
-        
-#         # # Handle NetCDF datasets
-#         # else:
-#         return check_netcdf_location(config, target_lat, target_lon, tolerance)
-            
-#     except Exception as e:
-#         log().warning(f"Error checking location for dataset {dataset_id}: {str(e)}")
-#         return False
-
-
-
-
-# def check_netcdf_location(config, target_lat, target_lon, tolerance):
-#     """
-#     Check location bounds for NetCDF datasets.
-#     """
-#     try:
-#         # Get a sample variable to open the dataset
-#         sample_variables = config.variables[0]
-#         if not sample_variables:
-#             return False
-            
-        
-        
-#         with open_dataset(config, variable=sample_variables, timestamp=-1) as dataset:
-#             # Get latitude and longitude variables
-#             lat_var = None
-#             lon_var = None
-            
-                                  
-#             # Fallback to common variable names
-#             if lat_var is None:
-#                 for name in ['lat', 'latitude', 'y', 'nav_lat']:
-#                     if name in dataset.nc_data.dataset.variables:
-#                         lat_var = name
-#                         break
-                        
-#             if lon_var is None:
-#                 for name in ['lon', 'longitude', 'x', 'nav_lon']:
-#                     if name in dataset.nc_data.dataset.variables:
-#                         lon_var = name
-#                         break
-            
-#             if lat_var is None or lon_var is None:
-#                 log().warning(f"Could not find lat/lon variables for dataset {config}")
-#                 return False
-                
-#             # Get the coordinate arrays
-#             lat_data = dataset.nc_data.dataset.variables[lat_var][:]
-#             lon_data = dataset.nc_data.dataset.variables[lon_var][:]
-            
-#             # Handle different coordinate structures
-#             if lat_data.ndim == 1 and lon_data.ndim == 1:
-#                 # 1D coordinate arrays
-#                 lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
-#                 lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
-#             else:
-#                 # 2D coordinate arrays (curvilinear grids)
-#                 lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
-#                 lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
-            
-#             # Normalize longitude to [-180, 180] range
-#             def normalize_lon(lon):
-#                 while lon > 180:
-#                     lon -= 360
-#                 while lon < -180:
-#                     lon += 360
-#                 return lon
-            
-#             target_lon = normalize_lon(target_lon)
-#             lon_min = normalize_lon(lon_min)
-#             lon_max = normalize_lon(lon_max)
-            
-#             # Handle longitude wrap-around
-#             if lon_max < lon_min:  # Dataset crosses the date line
-#                 lon_in_bounds = (target_lon >= lon_min) or (target_lon <= lon_max)
-#             else:
-#                 lon_in_bounds = (lon_min - tolerance) <= target_lon <= (lon_max + tolerance)
-            
-#             # Check latitude bounds
-#             lat_in_bounds = (lat_min - tolerance) <= target_lat <= (lat_max + tolerance)
-            
-#             return lat_in_bounds and lon_in_bounds
-            
-#     except Exception as e:
-#         log().warning(f"Error checking NetCDF location: {str(e)}")
-#         return False
-
-
-
-
-
-# def get_netcdf_bounds(config):
-#     """
-#     Get geographic bounds from NetCDF dataset.
-#     """
-#     try:
-#         sample_variables = list(config.variables.keys())
-#         if not sample_variables:
-#             return None
-            
-#         sample_variable = sample_variables[0]
-        
-#         with open_dataset(config, variable=sample_variable, timestamp=-1) as dataset:
-#             # Find lat/lon variables (reuse logic from check_netcdf_location)
-#             lat_var = None
-#             lon_var = None
-            
-#             for var_name in dataset.nc_data.dataset.variables:
-#                 var = dataset.nc_data.dataset.variables[var_name]
-#                 if hasattr(var, 'standard_name'):
-#                     if var.standard_name in ['latitude', 'grid_latitude']:
-#                         lat_var = var_name
-#                     elif var.standard_name in ['longitude', 'grid_longitude']:
-#                         lon_var = var_name
-                        
-#             if lat_var is None:
-#                 for name in ['lat', 'latitude', 'y', 'nav_lat']:
-#                     if name in dataset.nc_data.dataset.variables:
-#                         lat_var = name
-#                         break
-                        
-#             if lon_var is None:
-#                 for name in ['lon', 'longitude', 'x', 'nav_lon']:
-#                     if name in dataset.nc_data.dataset.variables:
-#                         lon_var = name
-#                         break
-                        
-#             if lat_var is None or lon_var is None:
-#                 return None
-                
-#             lat_data = dataset.nc_data.dataset.variables[lat_var][:]
-#             lon_data = dataset.nc_data.dataset.variables[lon_var][:]
-            
-#             lat_min, lat_max = float(np.min(lat_data)), float(np.max(lat_data))
-#             lon_min, lon_max = float(np.min(lon_data)), float(np.max(lon_data))
-            
-#             return (lat_min, lat_max, lon_min, lon_max)
-            
-#     except Exception as e:
-#         log().warning(f"Error getting NetCDF bounds: {str(e)}")
-#         return None
-
-
-@router.post("/datasets/filter/location")
+@router.get("/datasets/filter/location")
 def filter_datasets_by_location(
-    request: dict,
     latitude: float = Query(description="Latitude coordinate"),
     longitude: float = Query(description="Longitude coordinate"),
-    tolerance: float = Query(default=0.1, description="Tolerance in degrees for coordinate matching"),
+    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
 ):
     """
     Filter datasets by location using pre-computed perimeter shapes.
-    Much faster than opening NetCDF files every time.
     """
-    dataset_ids = request.get("dataset_ids", [])
-    if not dataset_ids:
-        dataset_ids = DatasetConfig.get_datasets()
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
 
     try:
-        # Use fast perimeter-based filtering
-        matching_dataset_ids = location_checker.filter_datasets(
-            dataset_ids, latitude, longitude, tolerance
-        )
+        point = Point([longitude, latitude])
+        shapes_dir = FilePath("data/misc/dataset_shapes")
         
-        # Build response with dataset metadata
         matching_datasets = []
-        for dataset_id in matching_dataset_ids:
+        for dataset_id in dataset_id_list:
             try:
                 config = DatasetConfig(dataset_id)
-                matching_datasets.append({
-                    "id": dataset_id,
-                    "name": config.name,
-                    "group": getattr(config, "group", ""),
-                    "subgroup": getattr(config, "subgroup", ""),
-                    "type": getattr(config, "type", "Unknown"),
-                    "quantum": config.quantum,
-                    "help": getattr(config, "help", ""),
-                    "attribution": getattr(config, "attribution", ""),
-                    "matchingVariables": [],
-                })
+                name = config.name.strip().replace(" ", "_") + ".pkl"
+                path = shapes_dir / name
+                if not path.exists():
+                    log().warning(f"No shape file found for dataset {dataset_id}")
+                    continue
+                    
+                with open(path, "rb") as f:
+                    poly = pickle.load(f)
+                    
+                if poly.contains(point):
+                    matching_datasets.append({
+                        "id": dataset_id,
+                        "name": config.name,
+                        "group": getattr(config, "group", ""),
+                        "subgroup": getattr(config, "subgroup", ""),
+                        "type": getattr(config, "type", "Unknown"),
+                        "quantum": config.quantum,
+                        "help": getattr(config, "help", ""),
+                        "attribution": getattr(config, "attribution", ""),
+                        "matchingVariables": [],
+                    })
             except Exception as e:
-                log().warning(f"Error getting config for dataset {dataset_id}: {str(e)}")
+                log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
                 continue
-
-        log().info(f"Location filter: {len(matching_datasets)} datasets match location "
-                  f"({latitude}, {longitude}) from {len(dataset_ids)} candidates")
-        
+                
         return {"datasets": matching_datasets}
-        
     except Exception as e:
         log().error(f"Error in location filter: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Location filtering failed: {str(e)}")
-
-
-# Add admin endpoint to reload perimeters (useful when you regenerate them)
-@router.post("/admin/reload_perimeters")
-def reload_perimeters():
-    """
-    Reload dataset perimeters from file.
-    Call this after regenerating perimeters.
-    """
-    try:
-        global location_checker
-        location_checker.reload_perimeters()
-        return {"status": "success", "message": "Perimeters reloaded successfully"}
-        
-    except Exception as e:
-        log().error(f"Error reloading perimeters: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to reload perimeters: {str(e)}")
-
-
-@router.post("/admin/regenerate_perimeters")
-def regenerate_perimeters():
-    """
-    Force regeneration of dataset perimeters.
-    This will overwrite the existing perimeters file.
-    """
-    try:
-        perimeters_file = "dataset_perimeters.pkl"
-        log().info("Starting perimeter regeneration...")
-        
-        # Generate new perimeters
-        generator = SimplePerimeterGenerator(perimeters_file)
-        perimeters = generator.generate_all_perimeters()
-        
-        # Reload in the location checker
-        global location_checker
-        location_checker.reload_perimeters()
-        
-        return {
-            "status": "success", 
-            "message": f"Successfully regenerated perimeters for {len(perimeters)} datasets",
-            "perimeters_count": len(perimeters)
-        }
-        
-    except Exception as e:
-        log().error(f"Error regenerating perimeters: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to regenerate perimeters: {str(e)}")
-
-
-@router.get("/admin/perimeter_info")
-def perimeter_info():
-    """
-    Get information about loaded perimeters.
-    """
-    try:
-        num_perimeters = len(location_checker.perimeters)
-        perimeter_file_exists = os.path.exists(location_checker.perimeters_file)
-        
-        # Get sample coverage info
-        sample_datasets = list(location_checker.perimeters.keys())[:5]
-        sample_info = []
-        for dataset_id in sample_datasets:
-            info = location_checker.get_coverage_info(dataset_id)
-            if info:
-                sample_info.append(info)
-        
-        return {
-            "perimeters_loaded": num_perimeters,
-            "perimeters_file": location_checker.perimeters_file,
-            "file_exists": perimeter_file_exists,
-            "sample_coverage": sample_info
-        }
-        
-    except Exception as e:
-        log().error(f"Error getting perimeter info: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to get perimeter info: {str(e)}")
-
-
-@router.get("/admin/test_location")
-def test_location(
-    latitude: float = Query(description="Test latitude"),
-    longitude: float = Query(description="Test longitude"),
-    tolerance: float = Query(default=0.1, description="Tolerance in degrees"),
-    limit: int = Query(default=10, description="Max results to return")
-):
-    """
-    Test location filtering with specific coordinates.
-    Useful for debugging and verification.
-    """
-    try:
-        all_datasets = DatasetConfig.get_datasets()
-        
-        # Time the operation
-        import time
-        start_time = time.time()
-        
-        matching_datasets = location_checker.filter_datasets(
-            all_datasets, latitude, longitude, tolerance
-        )
-        
-        end_time = time.time()
-        duration_ms = round((end_time - start_time) * 1000, 2)
-        
-        # Get detailed info for first few matches
-        detailed_matches = []
-        for dataset_id in matching_datasets[:limit]:
-            info = location_checker.get_coverage_info(dataset_id)
-            if info:
-                try:
-                    config = DatasetConfig(dataset_id)
-                    info['name'] = config.name
-                except:
-                    pass
-                detailed_matches.append(info)
-        
-        return {
-            "test_location": {"latitude": latitude, "longitude": longitude, "tolerance": tolerance},
-            "total_datasets_checked": len(all_datasets),
-            "matching_datasets": len(matching_datasets),
-            "duration_ms": duration_ms,
-            "matches": detailed_matches,
-            "all_matching_ids": matching_datasets
-        }
-        
-    except Exception as e:
-        log().error(f"Error in location test: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Location test failed: {str(e)}")
+        return {"datasets": [], "error": str(e)}
 
 @router.get("/class4/{class4_type}")
 def class4_file(

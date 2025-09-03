@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
@@ -16,7 +15,7 @@ import DatePicker from "react-datepicker";
 import {
   GetAllVariablesPromise,
   GetAllQuiverVariablesPromise,
-  GetAllDatasetsPromise,
+  GetDatasetsPromise,
   FilterDatasetsByVariablePromise,
   FilterDatasetsByQuiverVariablePromise,
   FilterDatasetsByDepthPromise,
@@ -42,10 +41,12 @@ const DatasetSearchWindow = ({
   const [loadingMessage, setLoadingMessage] = useState("");
   const [locationSearchTime, setLocationSearchTime] = useState(null);
 
-  // Refs for uncontrolled location inputs
-  const latitudeInputRef = useRef(null);
-  const longitudeInputRef = useRef(null);
-  const toleranceInputRef = useRef(null);
+  // Controlled location inputs
+  const [locationInputs, setLocationInputs] = useState({
+    latitude: '',
+    longitude: '',
+    tolerance: '0.1'
+  });
   
   // Filter states
   const [activeFilters, setActiveFilters] = useState([]);
@@ -82,7 +83,7 @@ const DatasetSearchWindow = ({
         await Promise.all([
           GetAllVariablesPromise(),
           GetAllQuiverVariablesPromise(),
-          GetAllDatasetsPromise(),
+          GetDatasetsPromise(),
         ]);
 
       // Process variables
@@ -106,7 +107,12 @@ const DatasetSearchWindow = ({
       setAllQuiverVariables(quiverVars);
 
       // Show all datasets initially
-      const datasets = datasetsResult.data.datasets || [];
+      const raw = datasetsResult.data || [];
+      const datasets = raw.map(d=>({
+        ...d,
+        name: d.name ?? d.value ?? d.id,
+      }))
+
       setAllDatasets(datasets);
       setCurrentDatasets(datasets);
     } catch (error) {
@@ -117,10 +123,6 @@ const DatasetSearchWindow = ({
       setLoading(false);
       setLoadingMessage("");
     }
-  };
-
-  const getCurrentDatasetIds = () => {
-    return currentDatasets.map((d) => d.id);
   };
 
   const getFilterLabel = (filterType, filterValue, additionalParams = {}) => {
@@ -170,10 +172,12 @@ const DatasetSearchWindow = ({
       } else if (filterToRemove.type === "date") {
         newFilters.date = null;
       } else if (filterToRemove.type === "location") {
-        // Clear the input values directly
-        if (latitudeInputRef.current) latitudeInputRef.current.value = "";
-        if (longitudeInputRef.current) longitudeInputRef.current.value = "";
-        if (toleranceInputRef.current) toleranceInputRef.current.value = "0.1";
+        // Clear location inputs
+        setLocationInputs({
+          latitude: '',
+          longitude: '',
+          tolerance: '0.1'
+        });
       }
       setFilters(newFilters);
 
@@ -232,8 +236,7 @@ const DatasetSearchWindow = ({
             result = await FilterDatasetsByLocationPromise(
               datasetIds,
               filter.latitude,
-              filter.longitude,
-              filter.tolerance || 0.1
+              filter.longitude
             );
             const endTime = performance.now();
             setLocationSearchTime(Math.round(endTime - startTime));
@@ -263,10 +266,12 @@ const DatasetSearchWindow = ({
     setActiveFilters([]);
     setCurrentDatasets(allDatasets);
     setLocationSearchTime(null);
-    // Clear the input values directly
-    if (latitudeInputRef.current) latitudeInputRef.current.value = "";
-    if (longitudeInputRef.current) longitudeInputRef.current.value = "";
-    if (toleranceInputRef.current) toleranceInputRef.current.value = "0.1";
+    // Clear location inputs
+    setLocationInputs({
+      latitude: '',
+      longitude: '',
+      tolerance: '0.1'
+    });
   };
 
   const handleFilterChange = async (filterName, value) => {
@@ -334,8 +339,9 @@ const DatasetSearchWindow = ({
     await rebuildFilters(newActiveFilters);
   };
 
-
+  // Location input validation
   const validateCoordinate = (value, type) => {
+    if (value === '') return true;
     const num = parseFloat(value);
     if (isNaN(num)) return false;
     
@@ -344,77 +350,43 @@ const DatasetSearchWindow = ({
     } else if (type === 'longitude') {
       return num >= -180 && num <= 180;
     } else if (type === 'tolerance') {
-      return num >= 0 && num <= 5; // Reasonable tolerance range
+      return num >= 0 && num <= 5;
     }
     return false;
   };
 
-  // Enhanced input handlers with better validation
-  const handleLocationInput = (e, coordinateType) => {
-    const value = e.target.value;
+  // Handle location input changes
+  const handleLocationInputChange = (field, value) => {
+    setLocationInputs(prev => ({
+      ...prev,
+      [field]: value
+    }));
     
-    // Only allow numbers, decimal points, and minus sign at the beginning
-    let cleanValue = value.replace(/[^0-9.-]/g, "");
-
-    // Ensure minus sign only appears at the beginning
-    if (cleanValue.indexOf("-") > 0) {
-      cleanValue = cleanValue.replace(/-/g, "");
-      if (value.startsWith("-")) {
-        cleanValue = "-" + cleanValue;
-      }
-    }
-
-    // Limit to one decimal point
-    const parts = cleanValue.split(".");
-    if (parts.length > 2) {
-      cleanValue = parts[0] + "." + parts.slice(1).join("");
-    }
-
-    // Update the input value directly
-    if (cleanValue !== value) {
-      e.target.value = cleanValue;
-    }
-
-    // Visual validation feedback
-    const isValid = validateCoordinate(cleanValue, coordinateType);
-    e.target.classList.toggle('is-invalid', cleanValue && !isValid);
-    e.target.classList.toggle('is-valid', cleanValue && isValid);
+    // Trigger auto-search with debouncing
+    handleAutoLocationSearch();
   };
 
-  const handleLocationKeyPress = (e) => {
-    // Allow numbers, decimal point, minus sign, and navigation keys
-    if (!/[0-9.-]/.test(e.key) && 
-        !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
-
-  // Enhanced location search with better error handling and performance tracking
+  // Check if location search is enabled
   const isLocationSearchEnabled = () => {
-    if (!latitudeInputRef.current || !longitudeInputRef.current) return false;
+    const { latitude, longitude, tolerance } = locationInputs;
     
-    const lat = latitudeInputRef.current.value.trim();
-    const lon = longitudeInputRef.current.value.trim();
-    const tolerance = toleranceInputRef.current?.value.trim() || "0.1";
-    
-    return validateCoordinate(lat, 'latitude') && 
-           validateCoordinate(lon, 'longitude') && 
-           validateCoordinate(tolerance, 'tolerance') && 
+    return validateCoordinate(latitude, 'latitude') && 
+           validateCoordinate(longitude, 'longitude') && 
+           validateCoordinate(tolerance, 'tolerance') &&
+           latitude !== '' && longitude !== '' &&
            !loading;
   };
 
+  // Handle location search
   const handleLocationSearch = async () => {
     if (!isLocationSearchEnabled()) {
       setError("Please enter valid coordinates: latitude (-90 to 90), longitude (-180 to 180), and tolerance (0 to 5).");
       return;
     }
     
-    const latitude = parseFloat(latitudeInputRef.current.value.trim());
-    const longitude = parseFloat(longitudeInputRef.current.value.trim());
-    const tolerance = parseFloat(toleranceInputRef.current?.value.trim() || "0.1");
-
-    // Measure performance
-    const startTime = performance.now();
+    const latitude = parseFloat(locationInputs.latitude);
+    const longitude = parseFloat(locationInputs.longitude);
+    const tolerance = parseFloat(locationInputs.tolerance || "0.1");
 
     // Create new active filters list without location filter
     let newActiveFilters = activeFilters.filter((f) => f.type !== "location");
@@ -438,15 +410,13 @@ const DatasetSearchWindow = ({
     
     try {
       await rebuildFilters(newActiveFilters);
-      const endTime = performance.now();
-      setLocationSearchTime(Math.round(endTime - startTime));
     } catch (error) {
       setLocationSearchTime(null);
-      throw error;
+      setError("Location search failed. Please try again.");
     }
   };
 
-  // Auto-search when user types coordinates (debounced)
+  // Auto-search with debouncing
   const [searchTimeout, setSearchTimeout] = useState(null);
   
   const handleAutoLocationSearch = () => {
@@ -458,7 +428,7 @@ const DatasetSearchWindow = ({
       if (isLocationSearchEnabled()) {
         handleLocationSearch();
       }
-    }, 1000); // 1 second delay
+    }, 1500); // 1.5 second delay
     
     setSearchTimeout(timeout);
   };
@@ -607,50 +577,52 @@ const DatasetSearchWindow = ({
             </Form.Text>
           </Form.Group>
 
-          {/* Enhanced Location Selector */}
+          {/* Fixed Location Selector */}
           <Form.Group className="mb-3">
             <Form.Label>Geographic Location</Form.Label>
             <Row>
               <Col>
                 <Form.Control
-                  ref={latitudeInputRef}
                   type="text"
                   placeholder="Latitude (-90 to 90)"
+                  value={locationInputs.latitude}
                   disabled={loading}
-                  onInput={(e) => {
-                    handleLocationInput(e, 'latitude');
-                    handleAutoLocationSearch();
-                  }}
-                  onKeyPress={handleLocationKeyPress}
+                  onChange={(e) => handleLocationInputChange('latitude', e.target.value)}
+                  className={
+                    locationInputs.latitude && !validateCoordinate(locationInputs.latitude, 'latitude') 
+                      ? 'is-invalid' 
+                      : locationInputs.latitude ? 'is-valid' : ''
+                  }
                 />
               </Col>
               <Col>
                 <Form.Control
-                  ref={longitudeInputRef}
                   type="text"
                   placeholder="Longitude (-180 to 180)"
+                  value={locationInputs.longitude}
                   disabled={loading}
-                  onInput={(e) => {
-                    handleLocationInput(e, 'longitude');
-                    handleAutoLocationSearch();
-                  }}
-                  onKeyPress={handleLocationKeyPress}
+                  onChange={(e) => handleLocationInputChange('longitude', e.target.value)}
+                  className={
+                    locationInputs.longitude && !validateCoordinate(locationInputs.longitude, 'longitude') 
+                      ? 'is-invalid' 
+                      : locationInputs.longitude ? 'is-valid' : ''
+                  }
                 />
               </Col>
             </Row>
             <Row className="mt-2">
               <Col>
                 <Form.Control
-                  ref={toleranceInputRef}
                   type="text"
                   placeholder="Tolerance (degrees)"
-                  defaultValue="0.1"
+                  value={locationInputs.tolerance}
                   disabled={loading}
-                  onInput={(e) => {
-                    handleLocationInput(e, 'tolerance');
-                    handleAutoLocationSearch();
-                  }}
-                  onKeyPress={handleLocationKeyPress}
+                  onChange={(e) => handleLocationInputChange('tolerance', e.target.value)}
+                  className={
+                    locationInputs.tolerance && !validateCoordinate(locationInputs.tolerance, 'tolerance') 
+                      ? 'is-invalid' 
+                      : locationInputs.tolerance ? 'is-valid' : ''
+                  }
                 />
               </Col>
               <Col>
@@ -673,37 +645,10 @@ const DatasetSearchWindow = ({
               </Col>
             </Row>
             <Form.Text className="text-muted">
-              Enter coordinates and tolerance. Search happens automatically after 1 second
+              Enter coordinates and tolerance. Search happens automatically after 1.5 seconds
               or click "Search Location" immediately. Tolerance controls the buffer zone
               around your point (e.g., 0.1° ≈ 11km).
             </Form.Text>
-          </Form.Group>
-
-          {/* Quick location presets */}
-          <Form.Group className="mb-3">
-            <Form.Label>Quick Locations</Form.Label>
-            <div className="d-grid gap-2">
-              {[
-                { name: "Halifax, NS", lat: 44.6488, lon: -63.5752 },
-                { name: "Vancouver, BC", lat: 49.2827, lon: -123.1207 },
-                { name: "St. John's, NL", lat: 47.5615, lon: -52.7126 },
-                { name: "Arctic Ocean", lat: 75.0, lon: -100.0 },
-              ].map((location) => (
-                <Button
-                  key={location.name}
-                  variant="outline-secondary"
-                  size="sm"
-                  disabled={loading}
-                  onClick={() => {
-                    if (latitudeInputRef.current) latitudeInputRef.current.value = location.lat;
-                    if (longitudeInputRef.current) longitudeInputRef.current.value = location.lon;
-                    handleLocationSearch();
-                  }}
-                >
-                  {location.name}
-                </Button>
-              ))}
-            </div>
           </Form.Group>
         </Col>
 
@@ -737,15 +682,6 @@ const DatasetSearchWindow = ({
                     Showing all {allDatasets.length} available datasets. Use the
                     filters on the left to narrow down your search.
                   </p>
-                </div>
-                <div className="border rounded p-3 bg-light">
-                  <strong>🚀 Now with optimized location search!</strong>
-                  <ul className="text-start mt-2 mb-0">
-                    <li>Location filtering is now 50-300x faster</li>
-                    <li>Search by coordinates with customizable tolerance</li>
-                    <li>Auto-search as you type coordinates</li>
-                    <li>Quick location presets for common areas</li>
-                  </ul>
                 </div>
               </div>
             )}
