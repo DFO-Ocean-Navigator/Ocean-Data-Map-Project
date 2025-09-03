@@ -284,11 +284,9 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     # Mask out any topography if we're below the vector-tile threshold
     if z < 8:
         with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-            bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+            mask = dataset["mask"][ypx : (ypx + 256), xpx : (xpx + 256)]
 
-        bathymetry = gaussian_filter(bathymetry, 0.5)
-
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
+        data[mask != 0] = np.ma.masked
 
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap
