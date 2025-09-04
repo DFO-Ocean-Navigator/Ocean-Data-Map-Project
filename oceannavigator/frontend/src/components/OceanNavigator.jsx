@@ -23,9 +23,9 @@ import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
+
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
-import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 
 function formatLatLon(latitude, longitude) {
   latitude = latitude > 90 ? 90 : latitude;
@@ -59,7 +59,6 @@ function OceanNavigator(props) {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
-    showDatasetSearch: false,
   });
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
@@ -138,43 +137,6 @@ function OceanNavigator(props) {
       case "clearFeatures":
         mapRef.current.removeFeatures("all");
         break;
-      case "showDatasetSearch":
-        setUiSettings((prevUiSettings) => ({
-          ...prevUiSettings,
-          showModal: true,
-          modalType: "datasetSearch",
-        }));
-        break;
-
-      case "hideDatasetSearch":
-        setUiSettings((prevUiSettings) => ({
-          ...prevUiSettings,
-          showModal: false, // ✅ Add this
-          modalType: "", // ✅ Add this
-          showDatasetSearch: false,
-        }));
-        break;
-
-      case "applyDatasetFromSearch":
-        // Apply the selected dataset to dataset0
-        const selectedDataset = arg;
-        setDataset0((prevDataset) => ({
-          ...prevDataset,
-          id: selectedDataset,
-          // Reset other properties that depend on dataset
-          variable: null,
-          depth: 0,
-          starttime: null,
-          endtime: null,
-        }));
-
-        // Close the search modal
-        setUiSettings((prevUiSettings) => ({
-          ...prevUiSettings,
-          showDatasetSearch: false,
-        }));
-        break;
-
       case "resetMap":
         mapRef.current.resetMap();
         if (uiSettings.showDrawingTools) {
@@ -326,19 +288,6 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
-    case "datasetSearch":
-      modalBodyContent = (
-        <DatasetSearchWindow
-          show={true}
-          onClose={() => action("hideDatasetSearch")}
-          onApply={(datasetId) => action("applyDatasetFromSearch", datasetId)}
-          standalone={false}
-        />
-      );
-      modalTitle = "Dataset Search";
-      modalSize = "xl";
-      break;
-
     case "Point":
       modalBodyContent = (
         <PointWindow

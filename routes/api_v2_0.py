@@ -62,7 +62,7 @@ from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
-from typing import Optional, List
+from typing import Optional
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
@@ -446,7 +446,6 @@ def class4_data(
     return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
 
 
-
 @router.get("/datasets/variables/all")
 def get_all_variables():
     """
@@ -477,10 +476,12 @@ def get_all_variables():
 @router.get("/datasets/filter/variable")
 def filter_datasets_by_variable(
     variable: str = Query(description="Variable to filter by"),
-    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
+    dataset_ids: str = Query(
+        None, description="Comma-separated dataset IDs to filter from"
+    ),
 ):
     if dataset_ids:
-        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+        dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
     else:
         dataset_id_list = DatasetConfig.get_datasets()
 
@@ -493,10 +494,9 @@ def filter_datasets_by_variable(
             matching_variables = []
 
             # Check if variable exists in dataset
-            if hasattr(config, "variables") and variable in config.variables:
-                if not config.variable[variable].is_hidden:
-                    matching_variables.append(variable)
-                    dataset_has_variable = True
+            if variable in config.variables:
+                matching_variables.append(variable)
+                dataset_has_variable = True
             else:
                 # Check common variable mappings
                 common_variable_mappings = {
@@ -534,11 +534,10 @@ def filter_datasets_by_variable(
 
                 if variable in common_variable_mappings:
                     for alt_var in common_variable_mappings[variable]:
-                        if hasattr(config, "variables") and alt_var in config.variables:
-                            if not config.variable[alt_var].is_hidden:
-                                matching_variables.append(alt_var)
-                                dataset_has_variable = True
-                                break
+                        if alt_var in config.variables:
+                            matching_variables.append(alt_var)
+                            dataset_has_variable = True
+                            break
 
             if dataset_has_variable:
                 matching_datasets.append(
@@ -555,8 +554,7 @@ def filter_datasets_by_variable(
                     }
                 )
 
-        except Exception as e:
-            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+        except:
             continue
 
     return {"datasets": matching_datasets}
@@ -595,13 +593,15 @@ def get_all_quiver_variables():
 @router.get("/datasets/filter/quiver_variable")
 def filter_datasets_by_quiver_variable(
     quiver_variable: str = Query(description="Quiver variable to filter by"),
-    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
+    dataset_ids: str = Query(
+        None, description="Comma-separated dataset IDs to filter from"
+    ),
 ):
     """
     Filter datasets by quiver variable from a provided list of dataset IDs.
     """
     if dataset_ids:
-        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+        dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
     else:
         dataset_id_list = DatasetConfig.get_datasets()
 
@@ -610,27 +610,12 @@ def filter_datasets_by_quiver_variable(
     for dataset_id in dataset_id_list:
         try:
             config = DatasetConfig(dataset_id)
-            dataset_has_quiver_var = False
             matching_variables = []
-
-            if hasattr(config, "vector_variables") and config.vector_variables:
-                if quiver_variable in config.vector_variables:
-                    matching_variables.append(quiver_variable)
-                    dataset_has_quiver_var = True
-                else:
-                    common_quiver_mappings = {
-                        "magwatervel": ["magwatervel", "current_speed"],
-                        "icevelocity": ["icevelocity"],
-                    }
-
-                    if quiver_variable in common_quiver_mappings:
-                        for alt_var in common_quiver_mappings[quiver_variable]:
-                            if alt_var in config.vector_variables:
-                                matching_variables.append(alt_var)
-                                dataset_has_quiver_var = True
-                                break
-
-            if dataset_has_quiver_var:
+            if quiver_variable in config.vector_variables or (
+                quiver_variable == "magwatervel"
+                and "current_speed" in config.vector_variables
+            ):
+                matching_variables.append(quiver_variable)
                 matching_datasets.append(
                     {
                         "id": dataset_id,
@@ -644,25 +629,25 @@ def filter_datasets_by_quiver_variable(
                         "matchingVariables": matching_variables,
                     }
                 )
-        except Exception as e:
-            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+        except:
             continue
 
     return {"datasets": matching_datasets}
 
 
-
 @router.get("/datasets/filter/depth")
 def filter_datasets_by_depth(
     has_depth: str = Query(description="Depth requirement: 'yes', 'no'"),
-    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
+    dataset_ids: str = Query(
+        None, description="Comma-separated dataset IDs to filter from"
+    ),
     variable: Optional[str] = Query(None, description="Variable to check depth for"),
 ):
     """
     Filter datasets by depth dimensions from a provided list of dataset IDs.
     """
     if dataset_ids:
-        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+        dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
     else:
         dataset_id_list = DatasetConfig.get_datasets()
 
@@ -672,70 +657,10 @@ def filter_datasets_by_depth(
         try:
             config = DatasetConfig(dataset_id)
             dataset_matches = False
-
-            # If we have a specific variable to check
-            if variable and hasattr(config, "variables"):
-                selected_var = None
-
-                # Find the variable in the dataset
-                if variable in config.variables:
-                    selected_var = variable
-                else:
-                    # Try common mappings
-                    common_variable_mappings = {
-                        "votemper": ["votemper", "temperature", "tos", "thetao"],
-                        "vosaline": ["vosaline", "salinity", "sos", "so"],
-                        "vozocrtx": ["vozocrtx", "uos", "uo"],
-                        "vomecrty": ["vomecrty", "vos", "vo"],
-                    }
-
-                    if variable in common_variable_mappings:
-                        for alt_var in common_variable_mappings[variable]:
-                            if alt_var in config.variables:
-                                selected_var = alt_var
-                                break
-
-                if selected_var:
-                    # Check if this specific variable has depth
-                    if config.url.endswith(".sqlite3"):
-                        with SQLiteDatabase(config.url) as db:
-                            dims = db.get_all_dimensions()
-                        has_depth_dims = "depth" in dims
-                    else:
-                        try:
-                            with open_dataset(
-                                config, variable=selected_var, timestamp=-1
-                            ) as ds:
-                                var = ds.variables[selected_var]
-                                has_depth_dims = var.has_depth()
-                        except:
-                            has_depth_dims = False
-
-                    if has_depth == "yes" and has_depth_dims:
-                        dataset_matches = True
-                    elif has_depth == "no" and not has_depth_dims:
-                        dataset_matches = True
-            else:
-                # General depth check for the dataset
-                if config.url.endswith(".sqlite3"):
-                    with SQLiteDatabase(config.url) as db:
-                        dims = db.get_all_dimensions()
-                    has_depth_dims = "depth" in dims
-                else:
-                    has_depth_dims = False
-                    try:
-                        sample_var = list(config.variables.keys())[0]
-                        with open_dataset(
-                            config, variable=sample_var, timestamp=-1
-                        ) as ds:
-                            var = ds.variables[sample_var]
-                            has_depth_dims = var.has_depth()
-                    except:
-                        pass
-
-                if has_depth == "yes" and has_depth_dims:
-                    dataset_matches = True
-                elif has_depth == "no" and not has_depth_dims:
+            with SQLiteDatabase(config.url) as db:
+                dims = db.get_all_dimensions()
+                has_depth_dims = "yes" if "depth" in dims else "no"
+                if has_depth == has_depth_dims:
                     dataset_matches = True
 
             if dataset_matches:
@@ -753,44 +678,24 @@ def filter_datasets_by_depth(
                     }
                 )
 
-        except Exception as e:
-            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
+        except:
             continue
 
     return {"datasets": matching_datasets}
 
 
-def check_dataset_date(dataset_id, target_date):
-    config = DatasetConfig(dataset_id)
-    url = config.url if not isinstance(config.url, list) else config.url[0]
-    try:
-        with SQLiteDatabase(url) as db:
-            sample_var = config.variables[0] if config.variables else None
-            if sample_var:
-                vals = db.get_timestamps(sample_var)
-                time_dim_units = config.time_dim_units
-                if vals == []:
-                    return False
-                converted_times = time_index_to_datetime(vals, time_dim_units)
-
-                matched = any(dt.date() == target_date.date() for dt in converted_times)
-                return matched
-            else:
-                return False
-    except Exception as e:
-        print(f"❌ Error opening or querying database for dataset {dataset_id}: {e}")
-        return False
-    
 @router.get("/datasets/filter/date")
 def filter_datasets_by_date(
     target_date: str = Query(description="Target date in ISO format"),
-    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
+    dataset_ids: str = Query(
+        None, description="Comma-separated dataset IDs to filter from"
+    ),
 ):
     """
     Filters datasets by date availability from a provided list of dataset IDs.
     """
     if dataset_ids:
-        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
+        dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
     else:
         dataset_id_list = DatasetConfig.get_datasets()
 
@@ -799,10 +704,72 @@ def filter_datasets_by_date(
 
     for dataset_id in dataset_id_list:
         try:
-            date_matches = check_dataset_date(dataset_id, parsed_date)
-            if date_matches:
-                config = DatasetConfig(dataset_id)
-                matching_datasets.append({
+            config = DatasetConfig(dataset_id)
+            url = config.url
+            with SQLiteDatabase(url) as db:
+                sample_var = config.variables[0]
+                vals = db.get_timestamps(sample_var)
+                time_dim_units = config.time_dim_units
+                if vals == []:
+                    continue
+                converted_times = time_index_to_datetime(vals, time_dim_units)
+
+                matched = any(dt.date() == parsed_date.date() for dt in converted_times)
+                if matched:
+
+                    matching_datasets.append(
+                        {
+                            "id": dataset_id,
+                            "name": config.name,
+                            "group": getattr(config, "group", ""),
+                            "subgroup": getattr(config, "subgroup", ""),
+                            "type": getattr(config, "type", "Unknown"),
+                            "quantum": config.quantum,
+                            "help": getattr(config, "help", ""),
+                            "attribution": getattr(config, "attribution", ""),
+                            "matchingVariables": [],
+                        }
+                    )
+        except:
+            continue
+    return {"datasets": matching_datasets}
+
+
+@router.get("/datasets/filter/location")
+def filter_datasets_by_location(
+    latitude: float = Query(description="Latitude coordinate"),
+    longitude: float = Query(description="Longitude coordinate"),
+    dataset_ids: str = Query(
+        None, description="Comma-separated dataset IDs to filter from"
+    ),
+):
+    """
+    Filter datasets by location using pre-computed perimeter shapes.
+    """
+    if dataset_ids:
+        dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
+    else:
+        dataset_id_list = DatasetConfig.get_datasets()
+
+    point = Point([longitude, latitude])
+    shapes_dir = FilePath("data/misc/dataset_shapes")
+
+    matching_datasets = []
+    for dataset_id in dataset_id_list:
+
+        config = DatasetConfig(dataset_id)
+        name = config.name.strip().replace(" ", "_") + ".pkl"
+        path = shapes_dir / name
+        if not path.exists():
+            log().warning(f"No shape file found for dataset {dataset_id}")
+            continue
+
+        with open(path, "rb") as f:
+            poly = pickle.load(f)
+
+        if poly.contains(point):
+            matching_datasets.append(
+                {
                     "id": dataset_id,
                     "name": config.name,
                     "group": getattr(config, "group", ""),
@@ -812,64 +779,11 @@ def filter_datasets_by_date(
                     "help": getattr(config, "help", ""),
                     "attribution": getattr(config, "attribution", ""),
                     "matchingVariables": [],
-                })
-        except Exception as e:
-            log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
-            continue
-            
+                }
+            )
+
     return {"datasets": matching_datasets}
 
-@router.get("/datasets/filter/location")
-def filter_datasets_by_location(
-    latitude: float = Query(description="Latitude coordinate"),
-    longitude: float = Query(description="Longitude coordinate"),
-    dataset_ids: str = Query(None, description="Comma-separated dataset IDs to filter from"),
-):
-    """
-    Filter datasets by location using pre-computed perimeter shapes.
-    """
-    if dataset_ids:
-        dataset_id_list = [id.strip() for id in dataset_ids.split(',') if id.strip()]
-    else:
-        dataset_id_list = DatasetConfig.get_datasets()
-
-    try:
-        point = Point([longitude, latitude])
-        shapes_dir = FilePath("data/misc/dataset_shapes")
-        
-        matching_datasets = []
-        for dataset_id in dataset_id_list:
-            try:
-                config = DatasetConfig(dataset_id)
-                name = config.name.strip().replace(" ", "_") + ".pkl"
-                path = shapes_dir / name
-                if not path.exists():
-                    log().warning(f"No shape file found for dataset {dataset_id}")
-                    continue
-                    
-                with open(path, "rb") as f:
-                    poly = pickle.load(f)
-                    
-                if poly.contains(point):
-                    matching_datasets.append({
-                        "id": dataset_id,
-                        "name": config.name,
-                        "group": getattr(config, "group", ""),
-                        "subgroup": getattr(config, "subgroup", ""),
-                        "type": getattr(config, "type", "Unknown"),
-                        "quantum": config.quantum,
-                        "help": getattr(config, "help", ""),
-                        "attribution": getattr(config, "attribution", ""),
-                        "matchingVariables": [],
-                    })
-            except Exception as e:
-                log().warning(f"Error processing dataset {dataset_id}: {str(e)}")
-                continue
-                
-        return {"datasets": matching_datasets}
-    except Exception as e:
-        log().error(f"Error in location filter: {str(e)}")
-        return {"datasets": [], "error": str(e)}
 
 @router.get("/class4/{class4_type}")
 def class4_file(
@@ -944,7 +858,7 @@ def subset_query(
         timestamp=int(time_range[0]),
         endtime=int(time_range[1]),
     ) as dataset:
-
+        
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(

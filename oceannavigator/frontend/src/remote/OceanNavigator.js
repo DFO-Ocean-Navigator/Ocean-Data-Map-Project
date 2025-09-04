@@ -26,11 +26,14 @@ export function GetTimestampsPromise(dataset, variable) {
 }
 
 export function GetDepthsPromise(dataset, variable) {
-  return instance.get("/api/v2.0/dataset/" + dataset + "/" + variable + "/depths", {
-    params: {
-      include_all_key: true,
-    },
-  });
+  return instance.get(
+    "/api/v2.0/dataset/" + dataset + "/" + variable + "/depths",
+    {
+      params: {
+        include_all_key: true,
+      },
+    }
+  );
 }
 
 export function GetPresetPointsPromise() {
@@ -52,117 +55,93 @@ export function GetClass4Promise() {
 // Filter datasets by variable
 export function FilterDatasetsByVariablePromise(datasetIds, variable) {
   const params = new URLSearchParams({
-    variable: variable
+    variable: variable,
   });
-  
+
   if (datasetIds && datasetIds.length > 0) {
-    params.append('dataset_ids', datasetIds.join(','));
+    params.append("dataset_ids", datasetIds.join(","));
   }
-  
-  return instance.get(`/api/v2.0/datasets/filter/variable?${params.toString()}`);
+
+  return instance.get(
+    `/api/v2.0/datasets/filter/variable?${params.toString()}`
+  );
 }
 
 // Filter datasets by quiver variable
-export function FilterDatasetsByQuiverVariablePromise(datasetIds, quiverVariable) {
+export function FilterDatasetsByQuiverVariablePromise(
+  datasetIds,
+  quiverVariable
+) {
   const params = new URLSearchParams({
-    quiver_variable: quiverVariable
+    quiver_variable: quiverVariable,
   });
-  
+
   if (datasetIds && datasetIds.length > 0) {
-    params.append('dataset_ids', datasetIds.join(','));
+    params.append("dataset_ids", datasetIds.join(","));
   }
-  
-  return instance.get(`/api/v2.0/datasets/filter/quiver_variable?${params.toString()}`);
+
+  return instance.get(
+    `/api/v2.0/datasets/filter/quiver_variable?${params.toString()}`
+  );
 }
 
 // Filter datasets by depth
-export function FilterDatasetsByDepthPromise(datasetIds, hasDepth, variable = null) {
+export function FilterDatasetsByDepthPromise(datasetIds, hasDepth) {
   const params = new URLSearchParams({
-    has_depth: hasDepth
+    has_depth: hasDepth,
   });
-  
+
   if (datasetIds && datasetIds.length > 0) {
-    params.append('dataset_ids', datasetIds.join(','));
+    params.append("dataset_ids", datasetIds.join(","));
   }
-  
-  if (variable) {
-    params.append('variable', variable);
-  }
-  
+
   return instance.get(`/api/v2.0/datasets/filter/depth?${params.toString()}`);
 }
 
 // Filter datasets by date
 export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   const params = new URLSearchParams({
-    target_date: targetDate
+    target_date: targetDate,
   });
-  
+
   if (datasetIds && datasetIds.length > 0) {
-    params.append('dataset_ids', datasetIds.join(','));
+    params.append("dataset_ids", datasetIds.join(","));
   }
-  
+
   return instance.get(`/api/v2.0/datasets/filter/date?${params.toString()}`);
 }
 
 // Filter datasets by location
-export function FilterDatasetsByLocationPromise(datasetIds, latitude, longitude) {
+export function FilterDatasetsByLocationPromise(
+  datasetIds,
+  latitude,
+  longitude
+) {
   const params = new URLSearchParams({
     latitude: latitude.toString(),
-    longitude: longitude.toString()
+    longitude: longitude.toString(),
   });
-  
+
   if (datasetIds && datasetIds.length > 0) {
-    params.append('dataset_ids', datasetIds.join(','));
+    params.append("dataset_ids", datasetIds.join(","));
   }
-  
-  return instance.get(`/api/v2.0/datasets/filter/location?${params.toString()}`);
+
+  return instance.get(
+    `/api/v2.0/datasets/filter/location?${params.toString()}`
+  );
 }
 
 //returns a complete list of variables for users to select
 export function GetAllVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/variables/all")
+  return instance.get("/api/v2.0/datasets/variables/all");
 }
 
 //returns a complete list of vector-variables for users to select
 export function GetAllQuiverVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/quiver-variables/all")
+  return instance.get("/api/v2.0/datasets/quiver-variables/all");
 }
 
-export function SearchDatasetsPromise(filters) {
-  const params = new URLSearchParams();
-  
-  if (filters.variable && filters.variable.value && filters.variable.value !== "any") {
-    params.append("variable", filters.variable.value);
-  }
-  
-  if (filters.quiverVariable && filters.quiverVariable.value && 
-      filters.quiverVariable.value !== "any" && filters.quiverVariable.value !== "none") {
-    params.append("quiver_variable", filters.quiverVariable.value);
-  }
-  
-  // Updated to use hasDepth instead of depth
-  if (filters.hasDepth && filters.hasDepth.value && filters.hasDepth.value !== "both") {
-    params.append("has_depth", filters.hasDepth.value);
-  }
-  
-  if (filters.date) {
-    const dateISO = filters.date.toISOString();
-    params.append("start_date", dateISO);
-  }
-  
-  if (filters.latitude && filters.longitude) {
-    const lat = parseFloat(filters.latitude);
-    const lon = parseFloat(filters.longitude);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      params.append("latitude", lat);
-      params.append("longitude", lon);
-    }
-  }
-  
-  const url = `/api/v2.0/datasets/search${params.toString() ? '?' + params.toString() : ''}`;
-  return instance.get(url);
-}
+
 
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
