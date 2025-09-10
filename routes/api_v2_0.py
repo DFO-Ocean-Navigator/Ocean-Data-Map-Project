@@ -41,7 +41,7 @@ from data.observational import (
 )
 from data.sqlite_database import SQLiteDatabase
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
-from oceannavigator.dataset_config import DatasetConfig
+from oceannavigator.dataset_config import DatasetConfig, VariableConfig
 from oceannavigator.log import log
 from oceannavigator.settings import get_settings
 from plotting.class4 import Class4Plotter
@@ -473,6 +473,18 @@ def get_all_variables():
     return {"data": list(all_variables.values())}
 
 
+@router.get("/dataset/{dataset}/{variable}/scale")
+def variable_scale(dataset: str, variable: str):
+
+    config = DatasetConfig(dataset)
+    var = VariableConfig(config, variable)
+    s = var.scale
+    if isinstance(s, (list, tuple)) and len(s) == 2:
+        return f"{s[0]},{s[1]}"
+
+    return str(s)
+
+
 @router.get("/datasets/filter/variable")
 def filter_datasets_by_variable(
     variable: str = Query(description="Variable to filter by"),
@@ -550,11 +562,14 @@ def filter_datasets_by_variable(
                         "quantum": config.quantum,
                         "help": getattr(config, "help", ""),
                         "attribution": getattr(config, "attribution", ""),
-                        "matchingVariables": matching_variables,
+                        "model_class": getattr(config, "model_class", ""),
+                        "default_location": config.default_location,
+                        "sample_variable": config.variables[0],
                     }
                 )
 
         except:
+            print(f"matching_variables: {matching_variables} and dataset: {dataset_id}")
             continue
 
     return {"datasets": matching_datasets}
@@ -611,10 +626,14 @@ def filter_datasets_by_quiver_variable(
         try:
             config = DatasetConfig(dataset_id)
             matching_variables = []
-            if quiver_variable in config.vector_variables or (
-                quiver_variable == "magwatervel"
-                and "current_speed" in config.vector_variables
-            ):
+            if (
+                quiver_variable in config.vector_variables
+                or (
+                    quiver_variable == "magwatervel"
+                    and "current_speed" in config.vector_variables
+                )
+            ) and getattr(config, "model_class", "") == "Mercator":
+
                 matching_variables.append(quiver_variable)
                 matching_datasets.append(
                     {
@@ -626,7 +645,9 @@ def filter_datasets_by_quiver_variable(
                         "quantum": config.quantum,
                         "help": getattr(config, "help", ""),
                         "attribution": getattr(config, "attribution", ""),
-                        "matchingVariables": matching_variables,
+                        "model_class": getattr(config, "model_class", ""),
+                        "default_location": config.default_location,
+                        "sample_variable": config.variables[0],
                     }
                 )
         except:
@@ -674,7 +695,9 @@ def filter_datasets_by_depth(
                         "quantum": config.quantum,
                         "help": getattr(config, "help", ""),
                         "attribution": getattr(config, "attribution", ""),
-                        "matchingVariables": [],
+                        "model_class": getattr(config, "model_class", ""),
+                        "default_location": config.default_location,
+                        "sample_variable": config.variables[0],
                     }
                 )
 
@@ -727,7 +750,9 @@ def filter_datasets_by_date(
                             "quantum": config.quantum,
                             "help": getattr(config, "help", ""),
                             "attribution": getattr(config, "attribution", ""),
-                            "matchingVariables": [],
+                            "model_class": getattr(config, "model_class", ""),
+                            "default_location": config.default_location,
+                            "sample_variable": config.variables[0],
                         }
                     )
         except:
@@ -778,7 +803,9 @@ def filter_datasets_by_location(
                     "quantum": config.quantum,
                     "help": getattr(config, "help", ""),
                     "attribution": getattr(config, "attribution", ""),
-                    "matchingVariables": [],
+                    "model_class": getattr(config, "model_class", ""),
+                    "default_location": config.default_location,
+                    "sample_variable": config.variables[0],
                 }
             )
 
@@ -858,7 +885,7 @@ def subset_query(
         timestamp=int(time_range[0]),
         endtime=int(time_range[1]),
     ) as dataset:
-        
+
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(
