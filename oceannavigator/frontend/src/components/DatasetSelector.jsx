@@ -51,6 +51,12 @@ function DatasetSelector(props) {
   }, [availableDatasets]);
 
   useEffect(() => {
+    if (props.mountedDataset.id !== dataset.id || props.mountedDataset.variable !== dataset.variable) {
+      changeDataset(props.mountedDataset.id, props.mountedDataset.variable, true);
+    }
+  }, [props.mountedDataset]);
+
+  useEffect(() => {
     if (updateParent) {
       props.onUpdate("dataset", dataset);
       setUpdateParent(false);
@@ -584,6 +590,15 @@ function DatasetSelector(props) {
         {props.horizontalLayout ? null : timeSelector}
         {props.horizontalLayout ? goButton : null}
         {props.showCompare ? compareSwitch : null}
+          <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => props.action && props.action("showDatasetSearch")}
+          title="Search Datasets"
+          className="dataset-search-btn"
+        >
+           Search Datasets 🔍
+        </Button>
       </div>
       {props.horizontalLayout ? timeSelector : null}
       {props.horizontalLayout ? null : goButton}
@@ -615,6 +630,7 @@ DatasetSelector.propTypes = {
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
+  action:PropTypes.func,
 };
 
 DatasetSelector.defaultProps = {

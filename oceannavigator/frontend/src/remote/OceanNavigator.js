@@ -52,6 +52,10 @@ export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
 
+export function GetVariableScalePromise(dataset, variable) {
+  return instance.get(`/api/v2.0/dataset/${dataset}/${variable}/scale`);
+}
+
 // Filter datasets by variable
 export function FilterDatasetsByVariablePromise(datasetIds, variable) {
   const params = new URLSearchParams({

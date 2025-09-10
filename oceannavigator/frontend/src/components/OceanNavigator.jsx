@@ -23,7 +23,7 @@ import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
-
+import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
 
@@ -59,6 +59,7 @@ function OceanNavigator(props) {
     modalType: "",
     showDrawingTools: false,
     showObservationTools: false,
+    showDatasetSearch: false,
   });
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
@@ -136,6 +137,13 @@ function OceanNavigator(props) {
         break;
       case "clearFeatures":
         mapRef.current.removeFeatures("all");
+        break;
+      case "showDatasetSearch":
+        setUiSettings((prevUiSettings) => ({
+          ...prevUiSettings,
+          showModal: true,
+          modalType: "datasetSearch",
+        }));
         break;
       case "resetMap":
         mapRef.current.resetMap();
@@ -288,6 +296,17 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
+    case "datasetSearch":
+      modalBodyContent = (
+        <DatasetSearchWindow
+          updateDataset={updateDataset0}
+          closeModal={closeModal}
+        />
+      );
+      modalTitle = "Dataset Search";
+      modalSize = "xl";
+      break;
+
     case "Point":
       modalBodyContent = (
         <PointWindow
