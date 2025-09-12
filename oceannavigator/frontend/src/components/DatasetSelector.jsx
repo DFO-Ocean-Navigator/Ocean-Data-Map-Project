@@ -10,6 +10,7 @@ import DatasetDropdown from "./DatasetDropdown.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
+import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 
 import {
   GetDatasetsPromise,
@@ -37,6 +38,7 @@ function DatasetSelector(props) {
   const [dataset, setDataset] = useState(props.mountedDataset);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
+  const [showDatasetSearch, setShowDatasetSearch] = useState(false);
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -46,13 +48,24 @@ function DatasetSelector(props) {
 
   useEffect(() => {
     if (availableDatasets.length > 0) {
-      changeDataset(props.mountedDataset.id, props.mountedDataset.variable, true);
+      changeDataset(
+        props.mountedDataset.id,
+        props.mountedDataset.variable,
+        true
+      );
     }
   }, [availableDatasets]);
 
   useEffect(() => {
-    if (props.mountedDataset.id !== dataset.id || props.mountedDataset.variable !== dataset.variable) {
-      changeDataset(props.mountedDataset.id, props.mountedDataset.variable, true);
+    if (
+      props.mountedDataset.id !== dataset.id ||
+      props.mountedDataset.variable !== dataset.variable
+    ) {
+      changeDataset(
+        props.mountedDataset.id,
+        props.mountedDataset.variable,
+        true
+      );
     }
   }, [props.mountedDataset]);
 
@@ -66,7 +79,8 @@ function DatasetSelector(props) {
   const changeDataset = (
     newDataset,
     currentVariable,
-    updateParentOnSuccess = false
+    updateParentOnSuccess = false,
+    newQuiverVariable
   ) => {
     const currentDataset = availableDatasets.filter((d) => {
       return d.id === newDataset;
@@ -75,7 +89,6 @@ function DatasetSelector(props) {
     setLoading(true);
     setLoadingPercent(10);
     setLoadingTitle(currentDataset.value);
-
     const quantum = currentDataset.quantum;
     const model_class = currentDataset.model_class;
 
@@ -86,7 +99,8 @@ function DatasetSelector(props) {
         setLoadingPercent(33);
         let newVariable = currentVariable;
         let newVariableScale = props.mountedDataset.variable_scale;
-        let newQuiver = props.mountedDataset.quiverVariable;
+        let newQuiver =
+          newQuiverVariable ?? props.mountedDataset.quiverVariable;
         let newQuiverDensity = props.mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
@@ -152,7 +166,7 @@ function DatasetSelector(props) {
                   variable_range: variable_range,
                   quiverVariable: newQuiver,
                   quiverDensity: newQuiverDensity,
-                  default_location: currentDataset.default_location
+                  default_location: currentDataset.default_location,
                 });
                 setDatasetVariables(variableResult.data);
                 setDatasetTimestamps(timeData);
@@ -284,13 +298,13 @@ function DatasetSelector(props) {
     return key === "time";
   };
 
-  const updateDataset = (key, value) => {
+  const updateDataset = (key, value, quiverVariable = null) => {
     if (nothingChanged(key, value)) {
       return;
     }
 
     if (datasetChanged(key)) {
-      changeDataset(value, dataset.variable);
+      changeDataset(value, dataset.variable, quiverVariable);
       return;
     }
 
@@ -310,6 +324,10 @@ function DatasetSelector(props) {
 
   const handleGoButton = () => {
     props.onUpdate("dataset", dataset);
+  };
+
+  const toggleSearchDatasets = () => {
+    setShowDatasetSearch((prevState) => !prevState);
   };
 
   let datasetSelector = null;
@@ -404,8 +422,8 @@ function DatasetSelector(props) {
           max={1}
           marks={{
             "-1": "-",
-            "0": "",
-            "1": "+",
+            0: "",
+            1: "+",
           }}
           defaultValue={dataset.quiverDensity}
           onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
@@ -571,6 +589,18 @@ function DatasetSelector(props) {
     />
   ) : null;
 
+  const datasetSearchButton = (
+    <Button
+      variant="outline-primary"
+      size="sm"
+      onClick={toggleSearchDatasets}
+      title="Search Datasets"
+      className="dataset-search-btn"
+    >
+      Search Datasets 🔍
+    </Button>
+  );
+
   return (
     <>
       <div
@@ -590,18 +620,33 @@ function DatasetSelector(props) {
         {props.horizontalLayout ? null : timeSelector}
         {props.horizontalLayout ? goButton : null}
         {props.showCompare ? compareSwitch : null}
-          <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={() => props.action && props.action("showDatasetSearch")}
-          title="Search Datasets"
-          className="dataset-search-btn"
-        >
-           Search Datasets 🔍
-        </Button>
+        {datasetSearchButton}
       </div>
       {props.horizontalLayout ? timeSelector : null}
       {props.horizontalLayout ? null : goButton}
+
+      <Modal
+        show={showDatasetSearch}
+        size="xl"
+        dialogClassName="full-screen-modal"
+        onHide={toggleSearchDatasets}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Dataset Search</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <DatasetSearchWindow
+            datasets={availableDatasets}
+            updateDataset={changeDataset}
+            closeModal={toggleSearchDatasets}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleSearchDatasets}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
@@ -630,7 +675,7 @@ DatasetSelector.propTypes = {
   showDepthsAll: PropTypes.bool,
   mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
-  action:PropTypes.func,
+  action: PropTypes.func,
 };
 
 DatasetSelector.defaultProps = {

@@ -23,7 +23,6 @@ import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
-import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { withTranslation } from "react-i18next";
 import AnnotationButton from "./AnnotationButton.jsx";
 
@@ -296,16 +295,6 @@ function OceanNavigator(props) {
   let modalTitle = "";
   let modalSize = "lg";
   switch (uiSettings.modalType) {
-    case "datasetSearch":
-      modalBodyContent = (
-        <DatasetSearchWindow
-          updateDataset={updateDataset0}
-          closeModal={closeModal}
-        />
-      );
-      modalTitle = "Dataset Search";
-      modalSize = "xl";
-      break;
 
     case "Point":
       modalBodyContent = (

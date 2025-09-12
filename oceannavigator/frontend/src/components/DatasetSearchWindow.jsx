@@ -5,8 +5,6 @@ import DatePicker from "react-datepicker";
 import {
   GetAllVariablesPromise,
   GetAllQuiverVariablesPromise,
-  GetDatasetsPromise,
-  GetVariableScalePromise,
   FilterDatasetsByVariablePromise,
   FilterDatasetsByQuiverVariablePromise,
   FilterDatasetsByDepthPromise,
@@ -14,12 +12,12 @@ import {
   FilterDatasetsByLocationPromise,
 } from "../remote/OceanNavigator.js";
 
-const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
+const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const [data, setData] = useState({
     variables: [],
     quiverVariables: [],
-    allDatasets: [],
-    currentDatasets: [],
+    allDatasets: datasets,
+    visibleDatasetIds: [],
   });
 
   const [filters, setFilters] = useState({
@@ -38,17 +36,13 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
     { value: "no", label: "Surface variables only" },
   ];
 
-  // Loads initial data from back-end.
+  // Loads initial data from backend
   useEffect(() => {
-    // if (!show) return;
-
     const loadData = async () => {
-      const [variablesResult, quiverVarsResult, datasetsResult] =
-        await Promise.all([
-          GetAllVariablesPromise(),
-          GetAllQuiverVariablesPromise(),
-          GetDatasetsPromise(),
-        ]);
+      const [variablesResult, quiverVarsResult] = await Promise.all([
+        GetAllVariablesPromise(),
+        GetAllQuiverVariablesPromise(),
+      ]);
 
       const variables = [
         { value: "any", label: "Any" },
@@ -66,16 +60,13 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
         })),
       ];
 
-      const datasets = datasetsResult.data.map((d) => ({
-        ...d,
-        name: d.name ?? d.value ?? d.id,
-      }));
+      const allDatasetIds = datasets.map((d) => d.id);
 
       setData({
         variables,
         quiverVariables,
         allDatasets: datasets,
-        currentDatasets: datasets,
+        visibleDatasetIds: allDatasetIds,
       });
     };
 
@@ -101,32 +92,100 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
 
   // whenever users selects a filter, we sent the datasetId and the value and then get data from back-end and update the datasets with the filtered one
   const applyFilters = async (filtersToApply) => {
-    let datasets = [...data.allDatasets];
+    let currentVisibleIds = [...data.allDatasets.map((d) => d.id)];
+    let updatedDatasets = [...data.allDatasets];
 
     for (const filter of filtersToApply) {
-      const datasetIds = datasets.map((d) => d.id);
       let result;
 
-      const filterActions = {
-        variable: () =>
-          FilterDatasetsByVariablePromise(datasetIds, filter.value),
-        quiverVariable: () =>
-          FilterDatasetsByQuiverVariablePromise(datasetIds, filter.value),
-        depth: () => FilterDatasetsByDepthPromise(datasetIds, filter.value),
-        date: () => FilterDatasetsByDatePromise(datasetIds, filter.value),
-        location: () =>
-          FilterDatasetsByLocationPromise(
-            datasetIds,
+      switch (filter.type) {
+        case "variable":
+          result = await FilterDatasetsByVariablePromise(
+            currentVisibleIds,
+            filter.value
+          );
+          if (result.data.datasets) {
+            //stores the list of dataset from back-end
+            const updates = result.data.datasets;
+            currentVisibleIds = updates.map((u) => u.id);
+            //updates variable and variable_scale information for each dataset displayed
+            updatedDatasets = updatedDatasets.map((dataset) => {
+              const update = updates.find((u) => u.id === dataset.id);
+              if (update) {
+                return {
+                  ...dataset,
+                  variable: update.variable,
+                  variable_scale: update.variable_scale,
+                };
+              }
+              return dataset;
+            });
+          }
+          break;
+
+        case "quiverVariable":
+          result = await FilterDatasetsByQuiverVariablePromise(
+            currentVisibleIds,
+            filter.value
+          );
+          if (result.data.datasets) {
+            const updates = result.data.datasets;
+            currentVisibleIds = updates.map((u) => u.id);
+
+            updatedDatasets = updatedDatasets.map((dataset) => {
+              const update = updates.find((u) => u.id === dataset.id);
+              if (update) {
+                return {
+                  ...dataset,
+                  quiverVariable: update.quiverVariable,
+                };
+              }
+              return dataset;
+            });
+          }
+          break;
+
+        case "depth":
+          result = await FilterDatasetsByDepthPromise(
+            currentVisibleIds,
+            filter.value
+          );
+          if (result.data.dataset_ids) {
+            currentVisibleIds = result.data.dataset_ids;
+          }
+          break;
+
+        case "date":
+          result = await FilterDatasetsByDatePromise(
+            currentVisibleIds,
+            filter.value
+          );
+          if (result.data.dataset_ids) {
+            currentVisibleIds = result.data.dataset_ids;
+          }
+          break;
+
+        case "location":
+          result = await FilterDatasetsByLocationPromise(
+            currentVisibleIds,
             filter.latitude,
             filter.longitude
-          ),
-      };
+          );
+          if (result.data.dataset_ids) {
+            currentVisibleIds = result.data.dataset_ids;
+          }
+          break;
 
-      result = await filterActions[filter.type]();
-      datasets = result.data.datasets || [];
+        default:
+          break;
+      }
     }
 
-    setData((prev) => ({ ...prev, currentDatasets: datasets }));
+    setData((prev) => ({
+      ...prev,
+      allDatasets: updatedDatasets,
+      visibleDatasetIds: currentVisibleIds,
+    }));
   };
 
   // Handles all the filter change logic
@@ -244,50 +303,15 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
       longitude: "",
     });
     setActiveFilters([]);
-    setData((prev) => ({ ...prev, currentDatasets: prev.allDatasets }));
+    setData((prev) => ({
+      ...prev,
+      visibleDatasetIds: prev.allDatasets.map((d) => d.id),
+    }));
   };
 
-  async function createDatasetObjectProperties(dataset) {
-    const ds = dataset;
-    const filters = activeFilters;
-    const variable =
-      filters.find((f) => f.type === "variable")?.value ?? ds.sample_variable;
-    const quiverVariable =
-      filters.find((f) => f.type === "quiverVariable")?.value ?? "none";
-    const depth_val = filters.find((f) => f.type === "depth")?.value ?? "none";
-
-    // const tRes = await GetTimestampsPromise(ds.id, variable);
-    // const timeData = tRes?.data ?? [];
-    const time = -1; // timeData[timeData.length - 1].id;
-    const starttime = -1;
-    // let depth = 0;
-    // if (depth_val == "Yes" || depth_val == "none") {
-    //   const dRes = await GetDepthsPromise(ds.id, variable);
-    //   const depths = Array.isArray(dRes?.data) ? dRes.data : [];
-
-    //   const hasZero = depths.some((d) => String(d.id) === "0");
-    //   if (!hasZero && depths.length) depth = depths[0].id;
-    // }
-    const vres = await GetVariableScalePromise(ds.id, variable);
-    const var_scale_string = vres?.data ?? [];
-    const var_scale = var_scale_string.split(",").map(Number);
-
-    const datasetUpdate = {
-      id: ds.id,
-      model_class: ds.model_class,
-      quantum: ds.quantum,
-      quiverDensity: 0,
-      quiverVariable,
-      starttime,
-      time,
-      variable,
-      variable_scale: var_scale,
-    };
-    console.log("datasetUpdate:", datasetUpdate);
-
-    updateDataset("dataset", datasetUpdate);
-    closeModal();
-  }
+  const visibleDatasets = data.allDatasets.filter((dataset) =>
+    data.visibleDatasetIds.includes(dataset.id)
+  );
 
   return (
     <>
@@ -420,7 +444,7 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
 
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5>Available Datasets ({data.currentDatasets.length})</h5>
+            <h5>Available Datasets ({visibleDatasets.length})</h5>
           </div>
 
           <div
@@ -437,29 +461,35 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
               </div>
             )}
 
-            {activeFilters.length > 0 && data.currentDatasets.length === 0 && (
+            {activeFilters.length > 0 && visibleDatasets.length === 0 && (
               <div className="text-muted p-3 text-center">
                 <h6>No datasets match your filters</h6>
                 <p>Try removing some filters or adjusting your criteria.</p>
               </div>
             )}
 
-            {data.currentDatasets.map((dataset) => (
+            {visibleDatasets.map((dataset) => (
               <div key={dataset.id} className="card mb-2">
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-start">
                     <div className="flex-grow-1">
-                      <h6 className="card-title">{dataset.name}</h6>
+                      <h6 className="card-title">
+                        {dataset.name || dataset.value}
+                      </h6>
                       <small className="text-muted">
                         {dataset.group && `Group: ${dataset.group}`}
                         {dataset.subgroup && ` - ${dataset.subgroup}`}
                         <br />
-                        {dataset.type && `Type: ${dataset.type}`} | Quantum:{" "}
-                        {dataset.quantum}
-                        {dataset.matchingVariables?.length > 0 && (
+                        {dataset.model_class &&
+                          `Type: ${dataset.model_class}`}{" "}
+                        | Quantum: {dataset.quantum}
+                        <br />
+                        Variable: {dataset.variable} | Scale:{" "}
+                        {dataset.variable_scale}
+                        {dataset.quiverVariable !== "none" && (
                           <>
                             <br />
-                            Variables: {dataset.matchingVariables.join(", ")}
+                            Vector Variable: {dataset.quiverVariable}
                           </>
                         )}
                       </small>
@@ -473,7 +503,13 @@ const DatasetSearchWindow = ({ updateDataset, closeModal }) => {
                       variant="primary"
                       size="sm"
                       onClick={() => {
-                        createDatasetObjectProperties(dataset);
+                        updateDataset(
+                          dataset.id,
+                          dataset.variable,
+                          true,
+                          dataset.quiverVariable
+                        );
+                        closeModal();
                       }}
                       className="ms-2"
                     >
