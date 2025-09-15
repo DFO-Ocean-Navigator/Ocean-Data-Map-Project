@@ -86,10 +86,10 @@ export const getBasemap = (
       const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
         preload: 1,
-        maxZoom:7-1e-10,       
+        maxZoom: 7 - 1e-10,
         source: new XYZ({
           url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
-          projection: projection,           
+          projection: projection,
         }),
       });
     case "ocean":
@@ -127,7 +127,6 @@ export const createMap = (
   popupElement,
   mapView,
   layerData,
-  layerAnnotationVector,
   layerFeatureVector,
   obsDrawSource,
   maxZoom,
@@ -171,7 +170,7 @@ export const createMap = (
     }),
     opacity: mapSettings.mapBathymetryOpacity,
     visible: mapSettings.bathymetry,
-     preload: 1,
+    preload: 1,
   });
 
   const newLayerBathShapes = new VectorTileLayer({
@@ -225,7 +224,6 @@ export const createMap = (
       newLayerLandShapes,
       newLayerBath,
       newLayerBathShapes,
-      layerAnnotationVector,
       layerFeatureVector,
       newLayerObsDraw,
       newLayerQuiver,
@@ -246,15 +244,11 @@ export const createMap = (
         }),
       }),
     ]),
-
     overlays: [overlay],
   };
 
   let mapObject = new Map(options);
   mapObject.setTarget(mapRef.current);
-
-  const modify = new Modify({ source: layerAnnotationVector.getSource() });
-  mapObject.addInteraction(modify);
 
   mapObject.getInteractions().forEach((interaction) => {
     if (interaction instanceof DoubleClickZoom) {
@@ -274,7 +268,7 @@ export const createMap = (
         return feature;
       }
     );
-    if (feature && feature.get("name") && !feature.get("annotation")) {
+    if (feature && feature.get("name")) {
       overlay.setPosition(e.coordinate);
       if (feature.get("data")) {
         let bearing = feature.get("bearing");
@@ -304,23 +298,20 @@ export const createMap = (
         popupElement.current.innerHTML = feature.get("name");
       }
 
-      if (feature.get("type") == "area") {
+      if (feature.get("type") == "Polygon") {
         mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
           selected = f;
           f.setStyle([
             new Style({
               stroke: new Stroke({
                 color: "#ffffff",
-                width: 2,
-              }),
-              fill: new Fill({
-                color: "#ffffff80",
+                width: 5,
               }),
             }),
             new Style({
               stroke: new Stroke({
-                color: "#000000",
-                width: 1,
+                color: "#ff0000",
+                width: 3,
               }),
             }),
             new Style({
@@ -397,9 +388,8 @@ export const createMap = (
   newLayerLandShapes.setZIndex(2);
   newLayerBath.setZIndex(3);
   newLayerBathShapes.setZIndex(4);
-  layerAnnotationVector.setZIndex(5);
-  layerFeatureVector.setZIndex(6);
-  newLayerObsDraw.setZIndex(7);
+  layerFeatureVector.setZIndex(5);
+  newLayerObsDraw.setZIndex(6);
   newLayerQuiver.setZIndex(100);
 
   return mapObject;
@@ -424,35 +414,6 @@ const getText = function (feature, resolution, dom) {
   }
 
   return text;
-};
-
-export const createAnnotationVectorLayer = (source) => {
-  return new VectorLayer({
-    source: source,
-    style: function (feature, resolution) {
-      return new Style({
-        stroke: new Stroke({
-          color: "blue",
-          width: 1,
-        }),
-        fill: new Fill({
-          color: "rgba(0, 0, 255, 0.1)",
-        }),
-        text: new Text({
-          font: "20px sans-serif",
-          text: feature.get("name"),
-          backgroundFill: new Fill({ color: "rgba(255, 255, 255, 0.6)" }),
-          backgroundStroke: new Stroke({
-            color: "rgb(0, 0, 0)",
-            width: 1,
-          }),
-          placement: "Point",
-          overflow: "wrap",
-          padding: [2, 2, 2, 2],
-        }),
-      });
-    },
-  });
 };
 
 export const createFeatureVectorLayer = (source, mapSettings) => {
@@ -543,45 +504,35 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
         switch (feat.get("type")) {
           case "Polygon":
             if (feat.get("key")) {
-              return [
+              const styles = [
                 new Style({
                   stroke: new Stroke({
                     color: "#ffffff",
-                    width: 2,
+                    width: 5,
                   }),
                   fill: new Fill({
-                    color: "#ffffff00",
+                    color: "transparent",
                   }),
                 }),
                 new Style({
                   stroke: new Stroke({
-                    color: "#000000",
-                    width: 1,
-                  }),
-                }),
-                new Style({
-                  geometry: new olgeom.Point(
-                    olProj.transform(
-                      feat.get("centroid"),
-                      "EPSG:4326",
-                      mapSettings.projection
-                    )
-                  ),
-                  text: new Text({
-                    text: feat.get("name"),
-                    font: "14px sans-serif",
-                    fill: new Fill({
-                      color: "#000",
-                    }),
-                    stroke: new Stroke({
-                      color: "#ffffff",
-                      width: 2,
-                    }),
+                    color: "#ff0000",
+                    width: 3,
                   }),
                 }),
               ];
+
+              const textStyle = createFeatureTextStyle(
+                feat,
+                "#000",
+                "#ffffff",
+                mapSettings
+              );
+              if (textStyle) styles.push(textStyle);
+
+              return styles;
             } else {
-              return [
+              const styles = [
                 new Style({
                   stroke: new Stroke({
                     color: "#ffffff",
@@ -595,9 +546,17 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                   }),
                 }),
               ];
+              const textStyle = createFeatureTextStyle(
+                feat,
+                "#000",
+                "#ffffff",
+                mapSettings
+              );
+              if (textStyle) styles.push(textStyle);
+              return styles;
             }
           case "LineString":
-            return [
+            const styles = [
               new Style({
                 stroke: new Stroke({
                   color: "#ffffff",
@@ -611,6 +570,11 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
+            const textStyle = createFeatureTextStyle(feat,                "#000",
+                "#ffffff",
+                mapSettings);
+            if (textStyle) styles.push(textStyle);
+            return styles;
           case "Point":
             return new Style({
               image: new Circle({
@@ -715,6 +679,50 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
   });
 };
 
+export const createFeatureTextStyle = (
+  feature,
+  textColor = "#000",
+  strokeColor = "#ffffff",
+  mapSettings = null
+) => {
+  if (!feature.get("name")) return null;
+
+  const type = feature.get("type");
+  let geometry = undefined;
+  let textBaseline = "middle";
+  let offsetY = 0;
+
+  if (type === "LineString") {
+    // For LineString
+    textBaseline = "bottom";
+    offsetY = -8;
+  } else if (type === "Polygon") {
+    if (!feature.get("centroid")) {
+      let centroid = feature.getGeometry().getInteriorPoint().getCoordinates();
+      feature.set("centroid", olProj.toLonLat(centroid).slice(0, 2));
+    }
+    geometry = new olgeom.Point(
+      olProj.transform(
+        feature.get("centroid"),
+        "EPSG:4326",
+        mapSettings.projection
+      )
+    );
+  }
+
+  return new Style({
+    geometry: geometry,
+    text: new Text({
+      text: feature.get("name"),
+      font: "14px sans-serif",
+      fill: new Fill({ color: textColor }),
+      stroke: new Stroke({ color: strokeColor, width: 2 }),
+      textAlign: "center",
+      textBaseline: textBaseline,
+      offsetY: offsetY,
+    }),
+  });
+};
 export const getDataSource = (dataset, mapSettings) => {
   let scale = dataset.variable_scale;
   if (Array.isArray(scale)) {
