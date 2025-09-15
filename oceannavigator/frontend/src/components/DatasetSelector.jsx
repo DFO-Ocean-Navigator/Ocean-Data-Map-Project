@@ -22,6 +22,7 @@ import {
 import { withTranslation } from "react-i18next";
 
 import "rc-slider/assets/index.css";
+import { propTypes } from "react-bootstrap/esm/Image.js";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
@@ -110,7 +111,7 @@ function DatasetSelector({
         setLoadingPercent(33);
         let newVariable = currentVariable;
         let newVariableScale = mountedDataset.variable_scale;
-        let newQuiver = mountedDataset.quiverVariable;
+        let newQuiver = newQuiverVariable?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
@@ -583,6 +584,7 @@ function DatasetSelector({
         {variableSelector}
         {quiverSelector}
         {depthSelector}
+        {datasetSearchButton}
 
         {axisRange}
         {horizontalLayout ? null : timeSelector}
