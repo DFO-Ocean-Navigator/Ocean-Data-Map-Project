@@ -12,6 +12,8 @@ import {
   FilterDatasetsByLocationPromise,
 } from "../remote/OceanNavigator.js";
 
+const LOADING_IMAGE = require("../images/spinner.gif").default;
+
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const [data, setData] = useState({
     variables: [],
@@ -28,7 +30,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     latitude: "",
     longitude: "",
   });
-
+  const [loading, setLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
 
   const depthOptions = [
@@ -156,21 +158,25 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           break;
 
         case "date":
+          setLoading(true);
           result = await FilterDatasetsByDatePromise(
             currentVisibleIds,
             filter.value
           );
+          setLoading(false);
           if (result.data.dataset_ids) {
             currentVisibleIds = result.data.dataset_ids;
           }
           break;
 
         case "location":
+          setLoading(true);
           result = await FilterDatasetsByLocationPromise(
             currentVisibleIds,
             filter.latitude,
             filter.longitude
           );
+          setLoading(false);
           if (result.data.dataset_ids) {
             currentVisibleIds = result.data.dataset_ids;
           }
@@ -460,7 +466,11 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                 </p>
               </div>
             )}
-
+            {loading && (
+              <div className="d-flex justify-content-center my-3">
+                <img src={LOADING_IMAGE} alt="Loading..." height={100} />
+              </div>
+            )}
             {activeFilters.length > 0 && visibleDatasets.length === 0 && (
               <div className="text-muted p-3 text-center">
                 <h6>No datasets match your filters</h6>
