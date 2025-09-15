@@ -34,8 +34,8 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const [activeFilters, setActiveFilters] = useState([]);
 
   const depthOptions = [
-    { value: "yes", label: "Yes (variables with depth dimensions)" },
-    { value: "no", label: "Surface variables only" },
+    { value: true, label: "Yes (variables with depth dimensions)" },
+    { value: false, label: "Surface variables only" },
   ];
 
   // Loads initial data from backend
@@ -82,7 +82,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         data.variables.find((v) => v.value === value)?.label || value,
       quiverVariable: () =>
         data.quiverVariables.find((v) => v.value === value)?.label || value,
-      depth: () => (value === "yes" ? "Yes" : "No"),
+      depth: () => (value === true ? true : false),
       date: () => new Date(value).toLocaleDateString(),
       location: () => `${params.latitude}°, ${params.longitude}°`,
     };
