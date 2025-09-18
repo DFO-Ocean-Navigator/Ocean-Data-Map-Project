@@ -12,6 +12,8 @@ import {
   FilterDatasetsByLocationPromise,
 } from "../remote/OceanNavigator.js";
 
+import { DATASET_DEFAULTS } from "./Defaults.js";
+
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
@@ -41,33 +43,38 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   // Loads initial data from backend
   useEffect(() => {
     const loadData = async () => {
-      const [variablesResult, quiverVarsResult] = await Promise.all([
+      const [variablesResult] = await Promise.all([
         GetAllVariablesPromise(),
-        GetAllQuiverVariablesPromise(),
       ]);
-
+     console.log(variablesResult)
       const variables = [
         { value: "any", label: "Any" },
-        ...variablesResult.data.data.map((v) => ({
-          value: v.id,
-          label: v.name || v.id,
+        ...variablesResult.data.variable.map((name) => ({
+          value: name,
+          label: name,
         })),
       ];
 
       const quiverVariables = [
         { value: "none", label: "None" },
-        ...quiverVarsResult.data.data.map((v) => ({
-          value: v.id,
-          label: v.name || v.id,
+        ...variablesResult.data.vector_variable.map((name) => ({
+          value: name,
+          label: name,
         })),
       ];
+
+      const allDataset= datasets.map((d)=>
+      ({
+        ...DATASET_DEFAULTS,
+        ...d
+      }))
 
       const allDatasetIds = datasets.map((d) => d.id);
 
       setData({
         variables,
         quiverVariables,
-        allDatasets: datasets,
+        allDatasets: allDataset,
         visibleDatasetIds: allDatasetIds,
       });
     };
@@ -78,8 +85,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   // Get filter label
   const getFilterLabel = (type, value, params = {}) => {
     const labels = {
-      variable: () =>
-        data.variables.find((v) => v.value === value)?.label || value,
+      variable: () => value,
       quiverVariable: () =>
         data.quiverVariables.find((v) => v.value === value)?.label || value,
       depth: () => (value === true ? true : false),
