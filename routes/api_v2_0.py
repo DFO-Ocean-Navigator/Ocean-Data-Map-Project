@@ -1,5 +1,5 @@
 import base64
-import datetime
+from datetime import datetime, timezone
 import gzip
 import json
 import os
@@ -41,7 +41,7 @@ from data.observational import (
 )
 from data.sqlite_database import SQLiteDatabase
 from data.utils import get_data_vars_from_equation, time_index_to_datetime
-from oceannavigator.dataset_config import DatasetConfig, VariableConfig
+from oceannavigator.dataset_config import DatasetConfig
 from oceannavigator.log import log
 from oceannavigator.settings import get_settings
 from plotting.class4 import Class4Plotter
@@ -63,6 +63,7 @@ from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
 from typing import Optional
+import xarray as xr
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
@@ -129,7 +130,7 @@ def generate_script(
 @router.get("/datasets")
 def datasets():
     """
-    List of available datasets w/ complete metadata.
+    List of available datasets w/ some metadata.
     """
     data = []
     for key in DatasetConfig.get_datasets():
@@ -146,13 +147,6 @@ def datasets():
                 "subgroup": config.subgroup,
                 "time_dim_units": config.time_dim_units,
                 "default_location": config.default_location,
-                "depth": 0,
-                "time": -1,
-                "starttime": -1,
-                "variable": "none",
-                "quiverVariable": "none",
-                "quiverDensity": 0,
-                "variable_scale": "none",
             }
         )
     return data
@@ -458,26 +452,23 @@ def get_all_variables():
     """
     returns a list of unique variables available in the datasets
     """
-    all_variables = {}
+    variable_list = []
+    vector_variable_list = []
     dataset_keys = DatasetConfig.get_datasets()
 
     for dataset_key in dataset_keys:
         config = DatasetConfig(dataset_key)
 
-        if hasattr(config, "variables"):
-            for var_key in config.variables:
-                if not config.variable[var_key].is_hidden:
-                    var_name = config.variable[var_key].name
-                    if var_key not in all_variables:
-                        all_variables[var_key] = {
-                            "id": var_key,
-                            "name": var_name,
-                            "units": getattr(config.variable[var_key], "units", ""),
-                            "datasets": [dataset_key],
-                        }
-                    else:
-                        all_variables[var_key]["datasets"].append(dataset_key)
-    return {"data": list(all_variables.values())}
+        for var_key in config.vector_variables.keys():
+            var_data = config.vector_variables[var_key]
+            var_name = var_data.get("name", var_key)
+            vector_variable_list.append(var_name)
+        vector_variable_list = list(dict.fromkeys(vector_variable_list))
+
+        for variable in config.variables:
+            variable_list.append(config.variable[variable].name)
+        variable_list = list(dict.fromkeys(variable_list))
+    return {"variable": variable_list, "vector_variable": vector_variable_list}
 
 
 @router.get("/datasets/filter/variable")
@@ -495,77 +486,20 @@ def filter_datasets_by_variable(
     for dataset_id in dataset_id_list:
         try:
             config = DatasetConfig(dataset_id)
+            for var in config.variables:
 
-            # Check if variable exists in dataset
-            if variable in config.variables:
-                # Get variable scale
-                var_config = VariableConfig(config, variable)
-                scale = var_config.scale
-                if isinstance(scale, (list, tuple)) and len(scale) == 2:
+                # Check if variable exists in dataset
+                if variable == config.variable[var].name:
+                    # Get variable scale
+                    scale = config.variable[variable].scale
                     variable_scale = f"{scale[0]},{scale[1]}"
-                else:
-                    variable_scale = str(scale)
-
-                matching_datasets.append(
-                    {
-                        "id": dataset_id,
-                        "variable": variable,
-                        "variable_scale": variable_scale,
-                    }
-                )
-            else:
-                # Check common variable mappings
-                common_variable_mappings = {
-                    "votemper": [
-                        "votemper",
-                        "temperature",
-                        "tos",
-                        "thetao",
-                        "sea_water_temperature",
-                    ],
-                    "temperature": [
-                        "votemper",
-                        "temperature",
-                        "tos",
-                        "thetao",
-                        "sea_water_temperature",
-                    ],
-                    "vosaline": [
-                        "vosaline",
-                        "salinity",
-                        "sos",
-                        "so",
-                        "sea_water_salinity",
-                    ],
-                    "salinity": [
-                        "vosaline",
-                        "salinity",
-                        "sos",
-                        "so",
-                        "sea_water_salinity",
-                    ],
-                    "vozocrtx": ["vozocrtx", "uos", "uo", "uVelocity"],
-                    "vomecrty": ["vomecrty", "vos", "vo", "vVelocity"],
-                }
-
-                if variable in common_variable_mappings:
-                    for alt_var in common_variable_mappings[variable]:
-                        if alt_var in config.variables:
-                            var_config = VariableConfig(config, alt_var)
-                            scale = var_config.scale
-                            if isinstance(scale, (list, tuple)) and len(scale) == 2:
-                                variable_scale = f"{scale[0]},{scale[1]}"
-                            else:
-                                variable_scale = str(scale)
-
-                            matching_datasets.append(
-                                {
-                                    "id": dataset_id,
-                                    "variable": alt_var,
-                                    "variable_scale": variable_scale,
-                                }
-                            )
-                            break
+                    matching_datasets.append(
+                        {
+                            "id": dataset_id,
+                            "variable": variable,
+                            "variable_scale": variable_scale,
+                        }
+                    )
         except:
             continue
 
@@ -615,32 +549,27 @@ def filter_datasets_by_quiver_variable(
     matching_datasets = []
 
     for dataset_id in dataset_id_list:
-        try:
-            config = DatasetConfig(dataset_id)
-
+        config = DatasetConfig(dataset_id)
+        for var_key in config.vector_variables.keys():
+            var_data = config.vector_variables[var_key]
+            var_name = var_data.get("name", var_key)
             if (
-                quiver_variable in config.vector_variables
-                or (
-                    quiver_variable == "magwatervel"
-                    and "current_speed" in config.vector_variables
-                )
-            ) and getattr(config, "model_class", "") == "Mercator":
-
+                quiver_variable == var_name
+                and getattr(config, "model_class", "") == "Mercator"
+            ):
                 matching_datasets.append(
                     {
                         "id": dataset_id,
                         "quiverVariable": quiver_variable,
                     }
                 )
-        except:
-            continue
 
     return {"datasets": matching_datasets}
 
 
 @router.get("/datasets/filter/depth")
 def filter_datasets_by_depth(
-    has_depth: str = Query(description="Depth requirement: 'yes', 'no'"),
+    has_depth: bool = Query(description="Depth requirement: 'yes', 'no'"),
     dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
 ):
     """
@@ -651,15 +580,12 @@ def filter_datasets_by_depth(
     matching_dataset_ids = []
 
     for dataset_id in dataset_id_list:
-        try:
-            config = DatasetConfig(dataset_id)
-            with SQLiteDatabase(config.url) as db:
-                dims = db.get_all_dimensions()
-                has_depth_dims = "yes" if "depth" in dims else "no"
-                if has_depth == has_depth_dims:
-                    matching_dataset_ids.append(dataset_id)
-        except:
-            continue
+        config = DatasetConfig(dataset_id)
+        with SQLiteDatabase(config.url) as db:
+            dims = db.get_all_dimensions()
+            has_depth_dims = True if "depth" in dims else False
+            if has_depth == has_depth_dims:
+                matching_dataset_ids.append(dataset_id)
 
     return {"dataset_ids": matching_dataset_ids}
 
@@ -678,21 +604,34 @@ def filter_datasets_by_date(
     parsed_date = dateparse(target_date)
 
     for dataset_id in dataset_id_list:
-        try:
-            config = DatasetConfig(dataset_id)
+        config = DatasetConfig(dataset_id)
+        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
             with SQLiteDatabase(config.url) as db:
-                sample_var = config.variables[0]
-                vals = db.get_timestamps(sample_var)
-                if not vals:
-                    continue
+                for var in config.variables:
+                    vals = np.array(db.get_timestamps(var))
+                    if vals.size > 0:
+                        break
 
                 time_dim_units = config.time_dim_units
-                converted_times = time_index_to_datetime(vals, time_dim_units)
+                converted_times = time_index_to_datetime(vals[[0, -1]], time_dim_units)
 
-                if any(dt.date() == parsed_date.date() for dt in converted_times):
+                if (
+                    converted_times[0] <= parsed_date
+                    and converted_times[1] >= parsed_date
+                ):
                     matching_dataset_ids.append(dataset_id)
-        except:
-            continue
+        else:
+            if not isinstance(config.url, list):
+                data = xr.open_mfdataset([config.url])
+            else:
+                data = xr.open_mfdataset(config.url)
+            time_vals = data.time.values
+            first_timestamp = time_vals[0].astype("datetime64[s]").astype(int)
+            last_timestamp = time_vals[-1].astype("datetime64[s]").astype(int)
+            first_time = datetime.fromtimestamp(first_timestamp, tz=timezone.utc)
+            last_time = datetime.fromtimestamp(last_timestamp, tz=timezone.utc)
+            if first_time <= parsed_date and last_time >= parsed_date:
+                matching_dataset_ids.append(dataset_id)
 
     return {"dataset_ids": matching_dataset_ids}
 
@@ -709,14 +648,13 @@ def filter_datasets_by_location(
     dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
 
     point = Point([longitude, latitude])
-    shapes_dir = FilePath("data/misc/dataset_shapes")
+    shapes_dir = FilePath("/data/misc/dataset_shapes")
 
     matching_dataset_ids = []
 
     for dataset_id in dataset_id_list:
         try:
-            config = DatasetConfig(dataset_id)
-            name = config.name.strip().replace(" ", "_") + ".pkl"
+            name = dataset + ".pkl"
             path = shapes_dir / name
 
             if not path.exists():
@@ -806,7 +744,6 @@ def subset_query(
         timestamp=int(time_range[0]),
         endtime=int(time_range[1]),
     ) as dataset:
-
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(
