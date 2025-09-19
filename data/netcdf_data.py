@@ -1111,7 +1111,7 @@ class NetCDFData(Data):
         # to the same time units as the requested dataset. Otherwise
         # this won't work.
         if nearest_timestamp:
-            all_timestamps = db.get_timestamps(variable)
+            all_timestamps = db.get_variable_timestamps(variable)
 
             start = data.utils.find_le(all_timestamps, timestamp)
             if not endtime:
@@ -1127,7 +1127,7 @@ class NetCDFData(Data):
             return timestamp
 
         if timestamp < 0 and endtime is None:
-            all_timestamps = db.get_timestamps(variable)
+            all_timestamps = db.get_variable_timestamps(variable)
             return [all_timestamps[timestamp]]
 
         if timestamp > 0 and endtime > 0:
@@ -1136,7 +1136,7 @@ class NetCDFData(Data):
             return db.get_timestamp_range(timestamp, endtime, variable)
 
         # Otherwise assume negative values are indices into timestamp list
-        all_timestamps = db.get_timestamps(variable)
+        all_timestamps = db.get_variable_timestamps(variable)
         len_timestamps = len(all_timestamps)
         if timestamp < 0 and endtime > 0:
             idx = data.utils.roll_time(timestamp, len_timestamps)
