@@ -4,9 +4,6 @@ import Select from "react-select";
 import DatePicker from "react-datepicker";
 import {
   GetAllVariablesPromise,
-  FilterDatasetsByVariablePromise,
-  FilterDatasetsByQuiverVariablePromise,
-  FilterDatasetsByDepthPromise,
   FilterDatasetsByDatePromise,
   FilterDatasetsByLocationPromise,
 } from "../remote/OceanNavigator.js";
@@ -18,14 +15,15 @@ const LOADING_IMAGE = require("../images/spinner.gif").default;
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const [data, setData] = useState({
     variables: [],
-    quiverVariables: [],
+    vectorVariables: [],
     allDatasets: datasets,
     visibleDatasetIds: [],
+    variableDataMap: {}, // Store the complete variable data from API
   });
 
   const [filters, setFilters] = useState({
     variable: null,
-    quiverVariable: null,
+    vectorVariable: null,
     depth: null,
     date: null,
     latitude: "",
@@ -42,49 +40,65 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   // Loads initial data from backend
   useEffect(() => {
     const loadData = async () => {
-      const [variablesResult] = await Promise.all([GetAllVariablesPromise()]);
-      console.log(variablesResult);
-      const variables = [
-        { value: "any", label: "Any" },
-        ...variablesResult.data.variable.map((name) => ({
-          value: name,
-          label: name,
-        })),
-      ];
+      try {
+        const variablesResult = await GetAllVariablesPromise();
+        const variableDataMap = variablesResult.data; 
+        const variableNames = Object.keys(variableDataMap);
+        const variables = [
+          { value: "any", label: "Any" },
+          ...variableNames.map((name) => ({
+            value: name,
+            label: name,
+          })),
+        ];
 
-      const quiverVariables = [
-        { value: "none", label: "None" },
-        ...variablesResult.data.vector_variable.map((name) => ({
-          value: name,
-          label: name,
-        })),
-      ];
+        // Extract unique vector variables from all datasets
+        const allVectorVariables = new Set();
+        Object.values(variableDataMap).forEach(datasetEntries => {
+          datasetEntries.forEach(entry => {
+            entry.vector_variables.forEach(vectorVar => {
+              allVectorVariables.add(vectorVar);
+            });
+          });
+        });
 
-      const allDataset = datasets.map((d) => ({
-        ...DATASET_DEFAULTS,
-        ...d,
-      }));
+        const vectorVariables = [
+          { value: "none", label: "None" },
+          ...Array.from(allVectorVariables).map((name) => ({
+            value: name,
+            label: name,
+          })),
+        ];
 
-      const allDatasetIds = datasets.map((d) => d.id);
+        const allDataset = datasets.map((d) => ({
+          ...DATASET_DEFAULTS,
+          ...d,
+        }));
 
-      setData({
-        variables,
-        quiverVariables,
-        allDatasets: allDataset,
-        visibleDatasetIds: allDatasetIds,
-      });
+        const allDatasetIds = datasets.map((d) => d.id);
+
+        setData({
+          variables,
+          vectorVariables,
+          allDatasets: allDataset,
+          visibleDatasetIds: allDatasetIds,
+          variableDataMap,
+        });
+      } catch (error) {
+        console.error("Error loading variables:", error);
+      }
     };
 
     loadData();
-  }, []);
+  }, [datasets]);
 
   // Get filter label
   const getFilterLabel = (type, value, params = {}) => {
     const labels = {
       variable: () => value,
-      quiverVariable: () =>
-        data.quiverVariables.find((v) => v.value === value)?.label || value,
-      depth: () => (value === true ? true : false),
+      vectorVariable: () =>
+        data.vectorVariables.find((v) => v.value === value)?.label || value,
+      depth: () => (value === true ? "Yes" : "No"),
       date: () => new Date(value).toLocaleDateString(),
       location: () => `${params.latitude}°, ${params.longitude}°`,
     };
@@ -94,32 +108,32 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     }`;
   };
 
-  // whenever users selects a filter, we sent the datasetId and the value and then get data from back-end and update the datasets with the filtered one
+  // Client-side filtering logic
   const applyFilters = async (filtersToApply) => {
-    let currentVisibleIds = [...data.allDatasets.map((d) => d.id)];
+    let filteredDatasetIds = [...data.allDatasets.map((d) => d.id)];
     let updatedDatasets = [...data.allDatasets];
 
+    // Apply filters sequentially
     for (const filter of filtersToApply) {
-      let result;
-
       switch (filter.type) {
         case "variable":
-          result = await FilterDatasetsByVariablePromise(
-            currentVisibleIds,
-            filter.value
-          );
-          if (result.data.datasets) {
-            //stores the list of dataset from back-end
-            const updates = result.data.datasets;
-            currentVisibleIds = updates.map((u) => u.id);
-            //updates variable and variable_scale information for each dataset displayed
-            updatedDatasets = updatedDatasets.map((dataset) => {
-              const update = updates.find((u) => u.id === dataset.id);
-              if (update) {
+          if (filter.value !== "any") {
+            // Get datasets that have this variable
+            const variableData = data.variableDataMap[filter.value] || [];
+            const datasetIdsWithVariable = variableData.map(entry => entry.dataset_id);
+            filteredDatasetIds = filteredDatasetIds.filter(id => 
+              datasetIdsWithVariable.includes(id)
+            );
+            
+            // Update dataset info with variable details
+            updatedDatasets = updatedDatasets.map(dataset => {
+              const variableEntry = variableData.find(entry => entry.dataset_id === dataset.id);
+              if (variableEntry) {
                 return {
                   ...dataset,
-                  variable: update.variable,
-                  variable_scale: update.variable_scale,
+                  variable: filter.value,
+                  variable_scale: `${variableEntry.variable_scale[0]},${variableEntry.variable_scale[1]}`,
+                  variable_id: variableEntry.variable_id,
                 };
               }
               return dataset;
@@ -127,21 +141,28 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           }
           break;
 
-        case "quiverVariable":
-          result = await FilterDatasetsByQuiverVariablePromise(
-            currentVisibleIds,
-            filter.value
-          );
-          if (result.data.datasets) {
-            const updates = result.data.datasets;
-            currentVisibleIds = updates.map((u) => u.id);
-
-            updatedDatasets = updatedDatasets.map((dataset) => {
-              const update = updates.find((u) => u.id === dataset.id);
-              if (update) {
+        case "vectorVariable":
+          if (filter.value !== "none") {
+            // Get datasets that have this vector variable
+            const datasetsWithVector = [];
+            Object.values(data.variableDataMap).forEach(variableEntries => {
+              variableEntries.forEach(entry => {
+                if (entry.vector_variables.includes(filter.value)) {
+                  datasetsWithVector.push(entry.dataset_id);
+                }
+              });
+            });
+            
+            filteredDatasetIds = filteredDatasetIds.filter(id => 
+              datasetsWithVector.includes(id)
+            );
+            
+            // Update dataset info with vector variable details
+            updatedDatasets = updatedDatasets.map(dataset => {
+              if (datasetsWithVector.includes(dataset.id)) {
                 return {
                   ...dataset,
-                  quiverVariable: update.quiverVariable,
+                  vectorVariable: filter.value,
                 };
               }
               return dataset;
@@ -150,38 +171,52 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           break;
 
         case "depth":
-          result = await FilterDatasetsByDepthPromise(
-            currentVisibleIds,
-            filter.value
+          // Filter datasets based on depth requirement
+          const datasetsWithDepthRequirement = [];
+          Object.values(data.variableDataMap).forEach(variableEntries => {
+            variableEntries.forEach(entry => {
+              if (entry.depth === filter.value) {
+                datasetsWithDepthRequirement.push(entry.dataset_id);
+              }
+            });
+          });
+          
+          filteredDatasetIds = filteredDatasetIds.filter(id => 
+            datasetsWithDepthRequirement.includes(id)
           );
-          if (result.data.dataset_ids) {
-            currentVisibleIds = result.data.dataset_ids;
-          }
           break;
 
         case "date":
           setLoading(true);
-          result = await FilterDatasetsByDatePromise(
-            currentVisibleIds,
-            filter.value
-          );
-          setLoading(false);
-          if (result.data.dataset_ids) {
-            currentVisibleIds = result.data.dataset_ids;
+          try {
+            const result = await FilterDatasetsByDatePromise(
+              filteredDatasetIds,
+              filter.value
+            );
+            if (result.data.dataset_ids) {
+              filteredDatasetIds = result.data.dataset_ids;
+            }
+          } catch (error) {
+            console.error("Error filtering by date:", error);
           }
+          setLoading(false);
           break;
 
         case "location":
           setLoading(true);
-          result = await FilterDatasetsByLocationPromise(
-            currentVisibleIds,
-            filter.latitude,
-            filter.longitude
-          );
-          setLoading(false);
-          if (result.data.dataset_ids) {
-            currentVisibleIds = result.data.dataset_ids;
+          try {
+            const result = await FilterDatasetsByLocationPromise(
+              filteredDatasetIds,
+              filter.latitude,
+              filter.longitude
+            );
+            if (result.data.dataset_ids) {
+              filteredDatasetIds = result.data.dataset_ids;
+            }
+          } catch (error) {
+            console.error("Error filtering by location:", error);
           }
+          setLoading(false);
           break;
 
         default:
@@ -192,7 +227,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     setData((prev) => ({
       ...prev,
       allDatasets: updatedDatasets,
-      visibleDatasetIds: currentVisibleIds,
+      visibleDatasetIds: filteredDatasetIds,
     }));
   };
 
@@ -206,7 +241,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       value &&
       !(filterName === "variable" && value.value === "any") &&
       !(
-        filterName === "quiverVariable" && ["any", "none"].includes(value.value)
+        filterName === "vectorVariable" && ["any", "none"].includes(value.value)
       );
 
     if (shouldAdd) {
@@ -285,7 +320,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     const newFilters = { ...filters };
     const clearMap = {
       variable: () => (newFilters.variable = null),
-      quiverVariable: () => (newFilters.quiverVariable = null),
+      vectorVariable: () => (newFilters.vectorVariable = null),
       depth: () => (newFilters.depth = null),
       date: () => (newFilters.date = null),
       location: () => {
@@ -304,7 +339,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const clearAllFilters = () => {
     setFilters({
       variable: null,
-      quiverVariable: null,
+      vectorVariable: null,
       depth: null,
       date: null,
       latitude: "",
@@ -374,9 +409,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           <Form.Group className="mb-3">
             <Form.Label>Vector Variable</Form.Label>
             <Select
-              value={filters.quiverVariable}
-              onChange={(value) => handleFilterChange("quiverVariable", value)}
-              options={data.quiverVariables}
+              value={filters.vectorVariable}
+              onChange={(value) => handleFilterChange("vectorVariable", value)}
+              options={data.vectorVariables}
               placeholder="Select vector variable..."
               isClearable
             />
@@ -496,12 +531,17 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                           `Type: ${dataset.model_class}`}{" "}
                         | Quantum: {dataset.quantum}
                         <br />
-                        Variable: {dataset.variable} | Scale:{" "}
-                        {dataset.variable_scale}
-                        {dataset.quiverVariable !== "none" && (
+                        {dataset.variable && (
                           <>
+                            Variable: {dataset.variable} | Scale:{" "}
+                            {dataset.variable_scale}
                             <br />
-                            Vector Variable: {dataset.quiverVariable}
+                          </>
+                        )}
+                        {dataset.vectorVariable && dataset.vectorVariable !== "none" && (
+                          <>
+                            Vector Variable: {dataset.vectorVariable}
+                            <br />
                           </>
                         )}
                       </small>
@@ -517,9 +557,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                       onClick={() => {
                         updateDataset(
                           dataset.id,
-                          dataset.variable,
+                          dataset.variable || null,
                           true,
-                          dataset.quiverVariable
+                          dataset.vectorVariable || "none"
                         );
                         closeModal();
                       }}
