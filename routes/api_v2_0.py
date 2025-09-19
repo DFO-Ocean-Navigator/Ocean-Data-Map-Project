@@ -265,9 +265,9 @@ def timestamps(
                     config.calculated_variables[variable]["equation"],
                     [v.key for v in db.get_data_variables()],
                 )
-                vals = db.get_timestamps(data_vars[0])
+                vals = db.get_variable_timestamps(data_vars[0])
             else:
-                vals = db.get_timestamps(variable)
+                vals = db.get_variable_timestamps(variable)
             time_dim_units = config.time_dim_units
     else:
         with open_dataset(config, variable=variable) as ds:

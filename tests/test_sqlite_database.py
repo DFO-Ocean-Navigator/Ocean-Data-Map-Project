@@ -20,11 +20,11 @@ class TestSqliteDatabase(TestCase):
             ]
         )
 
-    def test_get_timestamps_returns_correct_timestamps_for_historical(self):
+    def test_get_variable_timestamps_returns_correct_timestamps_for_historical(self):
 
         with SQLiteDatabase(self.historical_db) as db:
 
-            timestamps = db.get_timestamps("vo")
+            timestamps = db.get_variable_timestamps("vo")
 
             self.assertTrue(self.historical_timestamps == timestamps)
 
@@ -121,7 +121,7 @@ class TestSqliteDatabase(TestCase):
         with SQLiteDatabase(self.historical_db) as db:
 
             ncfiles = db.get_netcdf_files(self.historical_timestamps, "fake_variable")
-            timestamps = db.get_timestamps("fake_variable")
+            timestamps = db.get_variable_timestamps("fake_variable")
             dims = db.get_variable_dims("fake_variable")
             units = db.get_variable_units("fake_variable")
 
