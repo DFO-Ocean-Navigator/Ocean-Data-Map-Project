@@ -452,143 +452,42 @@ def get_all_variables():
     """
     returns a list of unique variables available in the datasets
     """
-    variable_list = []
-    vector_variable_list = []
     dataset_keys = DatasetConfig.get_datasets()
-
+    variables={}
     for dataset_key in dataset_keys:
         config = DatasetConfig(dataset_key)
-
-        for var_key in config.vector_variables.keys():
-            var_data = config.vector_variables[var_key]
-            var_name = var_data.get("name", var_key)
-            vector_variable_list.append(var_name)
-        vector_variable_list = list(dict.fromkeys(vector_variable_list))
+        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
+                with SQLiteDatabase(config.url) as db:
+                        dims=db.get_all_dimensions()
+        else:
+                if not isinstance(config.url, list):
+                        data = xr.open_mfdataset([config.url])
+                else:
+                        data = xr.open_mfdataset(config.url)
+                dims=data.dims
+        has_depth="depth" in dims
+        if config.model_class != "Nemo":
+                vector_variables = list(config.vector_variables.keys())
+        else:
+            vector_variables=[]
 
         for variable in config.variables:
-            variable_list.append(config.variable[variable].name)
-        variable_list = list(dict.fromkeys(variable_list))
-    return {"variable": variable_list, "vector_variable": vector_variable_list}
+            variable_name=config.variable[variable].name
+            scale = config.variable[variable].scale
 
+            entry={
+                "dataset_id":dataset_key,
+                "variable_id":variable,
+                "variable_scale":scale,
+                "vector_variables":vector_variables,
+                "depth":has_depth
+            }
 
-@router.get("/datasets/filter/variable")
-def filter_datasets_by_variable(
-    variable: str = Query(description="Variable to filter by"),
-    dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
-):
-    """
-    Returns matching dataset IDs and their variable scales.
-    """
-    dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
-
-    matching_datasets = []
-
-    for dataset_id in dataset_id_list:
-        try:
-            config = DatasetConfig(dataset_id)
-            for var in config.variables:
-
-                # Check if variable exists in dataset
-                if variable == config.variable[var].name:
-                    # Get variable scale
-                    scale = config.variable[variable].scale
-                    variable_scale = f"{scale[0]},{scale[1]}"
-                    matching_datasets.append(
-                        {
-                            "id": dataset_id,
-                            "variable": variable,
-                            "variable_scale": variable_scale,
-                        }
-                    )
-        except:
-            continue
-
-    return {"datasets": matching_datasets}
-
-
-@router.get("/datasets/quiver-variables/all")
-def get_all_quiver_variables():
-    """
-    Returns all unique quiver/vector variables across all enabled datasets.
-    """
-    all_quiver_vars = {}
-    dataset_keys = DatasetConfig.get_datasets()
-    for dataset_key in dataset_keys:
-        config = DatasetConfig(dataset_key)
-
-        if hasattr(config, "vector_variables") and config.vector_variables:
-            for var_key in config.vector_variables.keys():
-                var_data = config.vector_variables[var_key]
-                var_name = var_data.get("name", var_key)
-                var_units = var_data.get("units", "")
-
-                if var_key not in all_quiver_vars:
-                    all_quiver_vars[var_key] = {
-                        "id": var_key,
-                        "name": var_name,
-                        "units": var_units,
-                        "datasets": [dataset_key],
-                    }
-                else:
-                    if dataset_key not in all_quiver_vars[var_key]["datasets"]:
-                        all_quiver_vars[var_key]["datasets"].append(dataset_key)
-
-    return {"data": list(all_quiver_vars.values())}
-
-
-@router.get("/datasets/filter/quiver_variable")
-def filter_datasets_by_quiver_variable(
-    quiver_variable: str = Query(description="Quiver variable to filter by"),
-    dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
-):
-    """
-    Returns matching dataset IDs and quiver variable info.
-    """
-    dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
-
-    matching_datasets = []
-
-    for dataset_id in dataset_id_list:
-        config = DatasetConfig(dataset_id)
-        for var_key in config.vector_variables.keys():
-            var_data = config.vector_variables[var_key]
-            var_name = var_data.get("name", var_key)
-            if (
-                quiver_variable == var_name
-                and getattr(config, "model_class", "") == "Mercator"
-            ):
-                matching_datasets.append(
-                    {
-                        "id": dataset_id,
-                        "quiverVariable": quiver_variable,
-                    }
-                )
-
-    return {"datasets": matching_datasets}
-
-
-@router.get("/datasets/filter/depth")
-def filter_datasets_by_depth(
-    has_depth: bool = Query(description="Depth requirement: 'yes', 'no'"),
-    dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
-):
-    """
-    Returns only matching dataset IDs for depth filter.
-    """
-    dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
-
-    matching_dataset_ids = []
-
-    for dataset_id in dataset_id_list:
-        config = DatasetConfig(dataset_id)
-        with SQLiteDatabase(config.url) as db:
-            dims = db.get_all_dimensions()
-            has_depth_dims = True if "depth" in dims else False
-            if has_depth == has_depth_dims:
-                matching_dataset_ids.append(dataset_id)
-
-    return {"dataset_ids": matching_dataset_ids}
-
+            if variable_name in variables:
+                variables[variable_name].append(entry)
+            else:
+                variables[variable_name]=[entry]
+    return variables
 
 @router.get("/datasets/filter/date")
 def filter_datasets_by_date(
@@ -607,14 +506,11 @@ def filter_datasets_by_date(
         config = DatasetConfig(dataset_id)
         if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
             with SQLiteDatabase(config.url) as db:
-                for var in config.variables:
-                    vals = np.array(db.get_timestamps(var))
-                    if vals.size > 0:
-                        break
-
+                vals = np.array(db.get_all_timestamps())
                 time_dim_units = config.time_dim_units
-                converted_times = time_index_to_datetime(vals[[0, -1]], time_dim_units)
-
+                lowest=np.min(vals)
+                highest=np.max(vals)
+                converted_times = time_index_to_datetime([lowest,highest], time_dim_units)
                 if (
                     converted_times[0] <= parsed_date
                     and converted_times[1] >= parsed_date
@@ -1729,3 +1625,8 @@ def _cache_and_send_img(bytesIOBuff: BytesIO, f: str):
         media_type="image/png",
         headers={"Content-Disposition": f"attachment; filename=#{os.path.basename(f)}"},
     )
+
+
+
+
+
