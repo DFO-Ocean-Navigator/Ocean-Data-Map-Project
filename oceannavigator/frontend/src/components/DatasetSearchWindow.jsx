@@ -13,7 +13,6 @@ import { DATASET_DEFAULTS } from "./Defaults.js";
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
-
   const [variables, setVariables] = useState([]);
   const [vectorVariables, setVectorVariables] = useState([]);
   const [allDatasets, setAllDatasets] = useState(datasets);
@@ -39,50 +38,49 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   // Loads initial data from backend
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
+      const variablesResult = await GetAllVariablesPromise();
+      const variableDataMapResult = variablesResult.data;
+      const variableNames = Object.keys(variableDataMapResult);
+      const variablesOptions = [
+        { value: "any", label: "Any" },
+        ...variableNames.map((name) => ({
+          value: name,
+          label: name,
+        })),
+      ];
 
-        setLoading(true);
-        const variablesResult = await GetAllVariablesPromise();
-        const variableDataMapResult = variablesResult.data; 
-        const variableNames = Object.keys(variableDataMapResult);
-        const variablesOptions = [
-          { value: "any", label: "Any" },
-          ...variableNames.map((name) => ({
-            value: name,
-            label: name,
-          })),
-        ];
-
-        // Extract unique vector variables from all datasets
-        const allVectorVariables = new Set();
-        Object.values(variableDataMapResult).forEach(datasetEntries => {
-          datasetEntries.forEach(entry => {
-            entry.vector_variables.forEach(vectorVar => {
-              allVectorVariables.add(vectorVar);
-            });
+      // Extract unique vector variables from all datasets
+      const allVectorVariables = new Set();
+      Object.values(variableDataMapResult).forEach((datasetEntries) => {
+        datasetEntries.forEach((entry) => {
+          entry.vector_variables.forEach((vectorVar) => {
+            allVectorVariables.add(vectorVar);
           });
         });
+      });
 
-        const vectorVariablesOptions = [
-          { value: "none", label: "None" },
-          ...Array.from(allVectorVariables).map((name) => ({
-            value: name,
-            label: name,
-          })),
-        ];
+      const vectorVariablesOptions = [
+        { value: "none", label: "None" },
+        ...Array.from(allVectorVariables).map((name) => ({
+          value: name,
+          label: name,
+        })),
+      ];
 
-        const allDatasetsWithDefaults = datasets.map((d) => ({
-          ...DATASET_DEFAULTS,
-          ...d,
-        }));
+      const allDatasetsWithDefaults = datasets.map((d) => ({
+        ...DATASET_DEFAULTS,
+        ...d,
+      }));
 
-        const allDatasetIds = datasets.map((d) => d.id);
+      const allDatasetIds = datasets.map((d) => d.id);
 
-        setVariables(variablesOptions);
-        setVectorVariables(vectorVariablesOptions);
-        setAllDatasets(allDatasetsWithDefaults);
-        setVisibleDatasetIds(allDatasetIds);
-        setVariableDataMap(variableDataMapResult);
-        setLoading(false)
+      setVariables(variablesOptions);
+      setVectorVariables(vectorVariablesOptions);
+      setAllDatasets(allDatasetsWithDefaults);
+      setVisibleDatasetIds(allDatasetIds);
+      setVariableDataMap(variableDataMapResult);
+      setLoading(false);
     };
 
     loadData();
@@ -108,21 +106,22 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     let filteredDatasetIds = [...allDatasets.map((d) => d.id)];
     let updatedDatasets = [...allDatasets];
 
-    // Apply filters sequentially
     for (const filter of filtersToApply) {
       switch (filter.type) {
         case "variable":
           if (filter.value !== "any") {
-            // Get datasets that have this variable
             const variableData = variableDataMap[filter.value] || [];
-            const datasetIdsWithVariable = variableData.map(entry => entry.dataset_id);
-            filteredDatasetIds = filteredDatasetIds.filter(id => 
+            const datasetIdsWithVariable = variableData.map(
+              (entry) => entry.dataset_id
+            );
+            filteredDatasetIds = filteredDatasetIds.filter((id) =>
               datasetIdsWithVariable.includes(id)
             );
-            
-            // Update dataset info with variable details
-            updatedDatasets = updatedDatasets.map(dataset => {
-              const variableEntry = variableData.find(entry => entry.dataset_id === dataset.id);
+
+            updatedDatasets = updatedDatasets.map((dataset) => {
+              const variableEntry = variableData.find(
+                (entry) => entry.dataset_id === dataset.id
+              );
               if (variableEntry) {
                 return {
                   ...dataset,
@@ -138,22 +137,20 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
         case "vectorVariable":
           if (filter.value !== "none") {
-            // Get datasets that have this vector variable
             const datasetsWithVector = [];
-            Object.values(variableDataMap).forEach(variableEntries => {
-              variableEntries.forEach(entry => {
+            Object.values(variableDataMap).forEach((variableEntries) => {
+              variableEntries.forEach((entry) => {
                 if (entry.vector_variables.includes(filter.value)) {
                   datasetsWithVector.push(entry.dataset_id);
                 }
               });
             });
-            
-            filteredDatasetIds = filteredDatasetIds.filter(id => 
+
+            filteredDatasetIds = filteredDatasetIds.filter((id) =>
               datasetsWithVector.includes(id)
             );
-            
-            // Update dataset info with vector variable details
-            updatedDatasets = updatedDatasets.map(dataset => {
+
+            updatedDatasets = updatedDatasets.map((dataset) => {
               if (datasetsWithVector.includes(dataset.id)) {
                 return {
                   ...dataset,
@@ -166,17 +163,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           break;
 
         case "depth":
-          // Filter datasets based on depth requirement
           const datasetsWithDepthRequirement = [];
-          Object.values(variableDataMap).forEach(variableEntries => {
-            variableEntries.forEach(entry => {
+          Object.values(variableDataMap).forEach((variableEntries) => {
+            variableEntries.forEach((entry) => {
               if (entry.depth === filter.value) {
                 datasetsWithDepthRequirement.push(entry.dataset_id);
               }
             });
           });
-          
-          filteredDatasetIds = filteredDatasetIds.filter(id => 
+
+          filteredDatasetIds = filteredDatasetIds.filter((id) =>
             datasetsWithDepthRequirement.includes(id)
           );
           break;
@@ -188,8 +184,8 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
               filteredDatasetIds,
               filter.value
             );
-            if (result.data.dataset_ids) {
-              filteredDatasetIds = result.data.dataset_ids;
+            if (Array.isArray(result.data)) {
+              filteredDatasetIds = result.data;
             }
           } catch (error) {
             console.error("Error filtering by date:", error);
@@ -199,18 +195,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
         case "location":
           setLoading(true);
-          try {
-            const result = await FilterDatasetsByLocationPromise(
-              filteredDatasetIds,
-              filter.latitude,
-              filter.longitude
-            );
-            if (result.data.dataset_ids) {
-              filteredDatasetIds = result.data.dataset_ids;
-            }
-          } catch (error) {
-            console.error("Error filtering by location:", error);
+
+          const result = await FilterDatasetsByLocationPromise(
+            filteredDatasetIds,
+            filter.latitude,
+            filter.longitude
+          );
+          if (Array.isArray(result.data)) {
+            filteredDatasetIds = result.data;
           }
+
           setLoading(false);
           break;
 
@@ -261,7 +255,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     await applyFilters(newActiveFilters);
   };
 
-  // Validate coordinates for location filter
+  // Validates coordinates for location filter
   const isValidCoordinate = (value, type) => {
     if (!value) return false;
     const num = parseFloat(value);
@@ -271,7 +265,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       : num >= -180 && num <= 360;
   };
 
-  // Handle location input with debouncing
+  // Handles location input
   const handleLocationChange = (field, value) => {
     const newFilters = { ...filters, [field]: value };
     setFilters(newFilters);
@@ -527,12 +521,13 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                             <br />
                           </>
                         )}
-                        {dataset.vectorVariable && dataset.vectorVariable !== "none" && (
-                          <>
-                            Vector Variable: {dataset.vectorVariable}
-                            <br />
-                          </>
-                        )}
+                        {dataset.vectorVariable &&
+                          dataset.vectorVariable !== "none" && (
+                            <>
+                              Vector Variable: {dataset.vectorVariable}
+                              <br />
+                            </>
+                          )}
                       </small>
                       {dataset.help && (
                         <small className="text-info d-block">
