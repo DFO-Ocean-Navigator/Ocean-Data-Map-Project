@@ -13,13 +13,12 @@ import { DATASET_DEFAULTS } from "./Defaults.js";
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
-  const [data, setData] = useState({
-    variables: [],
-    vectorVariables: [],
-    allDatasets: datasets,
-    visibleDatasetIds: [],
-    variableDataMap: {}, // Store the complete variable data from API
-  });
+
+  const [variables, setVariables] = useState([]);
+  const [vectorVariables, setVectorVariables] = useState([]);
+  const [allDatasets, setAllDatasets] = useState(datasets);
+  const [visibleDatasetIds, setVisibleDatasetIds] = useState([]);
+  const [variableDataMap, setVariableDataMap] = useState({});
 
   const [filters, setFilters] = useState({
     variable: null,
@@ -40,11 +39,12 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   // Loads initial data from backend
   useEffect(() => {
     const loadData = async () => {
-      try {
+
+        setLoading(true);
         const variablesResult = await GetAllVariablesPromise();
-        const variableDataMap = variablesResult.data; 
-        const variableNames = Object.keys(variableDataMap);
-        const variables = [
+        const variableDataMapResult = variablesResult.data; 
+        const variableNames = Object.keys(variableDataMapResult);
+        const variablesOptions = [
           { value: "any", label: "Any" },
           ...variableNames.map((name) => ({
             value: name,
@@ -54,7 +54,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
         // Extract unique vector variables from all datasets
         const allVectorVariables = new Set();
-        Object.values(variableDataMap).forEach(datasetEntries => {
+        Object.values(variableDataMapResult).forEach(datasetEntries => {
           datasetEntries.forEach(entry => {
             entry.vector_variables.forEach(vectorVar => {
               allVectorVariables.add(vectorVar);
@@ -62,7 +62,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           });
         });
 
-        const vectorVariables = [
+        const vectorVariablesOptions = [
           { value: "none", label: "None" },
           ...Array.from(allVectorVariables).map((name) => ({
             value: name,
@@ -70,23 +70,19 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           })),
         ];
 
-        const allDataset = datasets.map((d) => ({
+        const allDatasetsWithDefaults = datasets.map((d) => ({
           ...DATASET_DEFAULTS,
           ...d,
         }));
 
         const allDatasetIds = datasets.map((d) => d.id);
 
-        setData({
-          variables,
-          vectorVariables,
-          allDatasets: allDataset,
-          visibleDatasetIds: allDatasetIds,
-          variableDataMap,
-        });
-      } catch (error) {
-        console.error("Error loading variables:", error);
-      }
+        setVariables(variablesOptions);
+        setVectorVariables(vectorVariablesOptions);
+        setAllDatasets(allDatasetsWithDefaults);
+        setVisibleDatasetIds(allDatasetIds);
+        setVariableDataMap(variableDataMapResult);
+        setLoading(false)
     };
 
     loadData();
@@ -96,8 +92,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const getFilterLabel = (type, value, params = {}) => {
     const labels = {
       variable: () => value,
-      vectorVariable: () =>
-        data.vectorVariables.find((v) => v.value === value)?.label || value,
+      vectorVariable: () => value,
       depth: () => (value === true ? "Yes" : "No"),
       date: () => new Date(value).toLocaleDateString(),
       location: () => `${params.latitude}°, ${params.longitude}°`,
@@ -110,8 +105,8 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
   // Client-side filtering logic
   const applyFilters = async (filtersToApply) => {
-    let filteredDatasetIds = [...data.allDatasets.map((d) => d.id)];
-    let updatedDatasets = [...data.allDatasets];
+    let filteredDatasetIds = [...allDatasets.map((d) => d.id)];
+    let updatedDatasets = [...allDatasets];
 
     // Apply filters sequentially
     for (const filter of filtersToApply) {
@@ -119,7 +114,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         case "variable":
           if (filter.value !== "any") {
             // Get datasets that have this variable
-            const variableData = data.variableDataMap[filter.value] || [];
+            const variableData = variableDataMap[filter.value] || [];
             const datasetIdsWithVariable = variableData.map(entry => entry.dataset_id);
             filteredDatasetIds = filteredDatasetIds.filter(id => 
               datasetIdsWithVariable.includes(id)
@@ -145,7 +140,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           if (filter.value !== "none") {
             // Get datasets that have this vector variable
             const datasetsWithVector = [];
-            Object.values(data.variableDataMap).forEach(variableEntries => {
+            Object.values(variableDataMap).forEach(variableEntries => {
               variableEntries.forEach(entry => {
                 if (entry.vector_variables.includes(filter.value)) {
                   datasetsWithVector.push(entry.dataset_id);
@@ -173,7 +168,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         case "depth":
           // Filter datasets based on depth requirement
           const datasetsWithDepthRequirement = [];
-          Object.values(data.variableDataMap).forEach(variableEntries => {
+          Object.values(variableDataMap).forEach(variableEntries => {
             variableEntries.forEach(entry => {
               if (entry.depth === filter.value) {
                 datasetsWithDepthRequirement.push(entry.dataset_id);
@@ -224,11 +219,8 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       }
     }
 
-    setData((prev) => ({
-      ...prev,
-      allDatasets: updatedDatasets,
-      visibleDatasetIds: filteredDatasetIds,
-    }));
+    setAllDatasets(updatedDatasets);
+    setVisibleDatasetIds(filteredDatasetIds);
   };
 
   // Handles all the filter change logic
@@ -346,14 +338,11 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       longitude: "",
     });
     setActiveFilters([]);
-    setData((prev) => ({
-      ...prev,
-      visibleDatasetIds: prev.allDatasets.map((d) => d.id),
-    }));
+    setVisibleDatasetIds(allDatasets.map((d) => d.id));
   };
 
-  const visibleDatasets = data.allDatasets.filter((dataset) =>
-    data.visibleDatasetIds.includes(dataset.id)
+  const visibleDatasets = allDatasets.filter((dataset) =>
+    visibleDatasetIds.includes(dataset.id)
   );
 
   return (
@@ -399,7 +388,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
             <Select
               value={filters.variable}
               onChange={(value) => handleFilterChange("variable", value)}
-              options={data.variables}
+              options={variables}
               placeholder="Select variable..."
               isClearable
             />
@@ -411,7 +400,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
             <Select
               value={filters.vectorVariable}
               onChange={(value) => handleFilterChange("vectorVariable", value)}
-              options={data.vectorVariables}
+              options={vectorVariables}
               placeholder="Select vector variable..."
               isClearable
             />
@@ -498,7 +487,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
               <div className="text-muted p-3 text-center">
                 <h6>Welcome to Dataset Search</h6>
                 <p>
-                  Showing all {data.allDatasets.length} available datasets. Use
+                  Showing all {allDatasets.length} available datasets. Use
                   filters to narrow your search.
                 </p>
               </div>
