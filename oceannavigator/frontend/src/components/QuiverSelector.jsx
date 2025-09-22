@@ -1,106 +1,68 @@
 import React from "react";
 import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
-
 import { withTranslation } from "react-i18next";
 
-class QuiverSelector extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  onUpdate(key, value) {
-    if (!Array.isArray(key)) {
-      key = [key];
-      value = [value];
-    }
+const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+  // Mirror your old onUpdate method
+  const handleUpdate = (key, value) => {
+    const keys = Array.isArray(key) ? key : [key];
+    const vals = Array.isArray(value) ? value : [value];
+    const patch = {};
 
-    const state = {};
-    for (let i = 0; i < key.length; i++) {
-      if (!this.props.state.hasOwnProperty(key[i])) {
-        continue;
+    keys.forEach((k, i) => {
+      if (state.hasOwnProperty(k)) {
+        patch[k] = vals[i];
       }
-      state[key[i]] = value[i];
-    }
-    const newState = {...this.props.state, ...state};
-    this.props.onUpdate(this.props.id, newState);
-  }
+    });
 
-  render() {
-    _("Colourmap");
-    _("Show Magnitude");
-    _("No");
-    _("Length");
-    _("Colour");
-    return (
-      <div className="QuiverSelector input">
-        <ComboBox
-          id="variable"
-          state={this.props.state.variable}
-          def=""
-          onUpdate={this.onUpdate.bind(this)}
-          url={`/api/v2.0/dataset/${this.props.dataset}/variables?vectors_only=True`}
-          title={this.props.title}
-        >
-          {this.props.children}
-        </ComboBox>
+    onUpdate(id, { ...state, ...patch });
+  };
+
+  return (
+    <div className="QuiverSelector input">
+      <ComboBox
+        id="variable"
+        state={state.variable}
+        def=""
+        onUpdate={handleUpdate}
+        url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
+        title={title}
+      >
+        {children}
+      </ComboBox>
+
+      <div
+        className="sub"
+        style={{
+          display:
+            state.variable === "none" || state.variable === ""
+              ? "none"
+              : "block",
+        }}
+      >
         <div
-          className="sub"
           style={{
-            display:
-              this.props.state.variable == "none" ||
-              this.props.state.variable == ""
-                ? "none"
-                : "block",
+            display: state.magnitude === "color" ? "block" : "none",
           }}
-        >
-          {/* <ComboBox
-            key="magnitude"
-            id="magnitude"
-            state={this.props.state.magnitude}
-            onUpdate={this.onUpdate.bind(this)}
-            def="length"
-            title={_("Show Magnitude")}
-            data={[
-              { id: "none", value: _("No") },
-              { id: "length", value: _("Length") },
-              { id: "color", value: _("Colour") },
-            ]}
-          /> */}
-          <div
-            style={{
-              display: this.props.state.magnitude == "color" ? "block" : "none",
-            }}
-          >
-            {/* <ComboBox
-              key="colormap"
-              id="colormap"
-              state={this.props.state.colormap}
-              def="default"
-              onUpdate={this.onUpdate.bind(this)}
-              url="/api/v2.0/plot/colormaps"
-              title={_("Colourmap")}
-            >
-              There are several colourmaps available. This tool tries to pick an
-              appropriate default based on the variable type (Default For
-              Variable). If you want to use any of the others, they are all
-              selectable.
-              <img src="/plot/colormaps.png/" />
-            </ComboBox> */}
-          </div>
-        </div>
+        ></div>
       </div>
-    );
-  }
-}
-
+    </div>
+  );
+};
 //***********************************************************************
 QuiverSelector.propTypes = {
-  state: PropTypes.object,
-  colormap: PropTypes.string,
-  variable: PropTypes.string,
-  magnitude: PropTypes.string,
-  onUpdate: PropTypes.func,
-  id: PropTypes.string,
+  id: PropTypes.string.isRequired,
+  dataset: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  state: PropTypes.shape({
+    variable: PropTypes.string,
+    magnitude: PropTypes.string,
+    colormap: PropTypes.string,
+  }).isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  children: PropTypes.node,
+  t: PropTypes.func.isRequired,
 };
 
 export default withTranslation()(QuiverSelector);

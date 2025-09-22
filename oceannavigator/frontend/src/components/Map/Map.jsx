@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill } from "ol/style";
+import { Style, Circle, Stroke, Fill, Text } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -25,16 +25,17 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
+import { AnnotationOverlay } from "./AnnotationOverlay.js";
 
 import {
   createMapView,
   createMap,
-  createAnnotationVectorLayer,
   createFeatureVectorLayer,
   getBasemap,
   getDataSource,
   getQuiverSource,
   removeMapInteractions,
+  createFeatureTextStyle,
 } from "./utils";
 import {
   getDrawAction,
@@ -100,16 +101,16 @@ data tiles: 1
 land shapes (mbt tiles): 2
 bathy lines: 3
 bathy shapes: 4
-annotations: 5
-vector features: 6
-observation drawing: 7
-quivers: 8
+vector features: 5
+observation drawing: 6
+quivers: 7
 *****************/
 
 const Map = forwardRef((props, ref) => {
   const [map0, setMap0] = useState();
   const [map1, setMap1] = useState();
   const [mapView, setMapView] = useState();
+  const [annotationOverlays, setAnnotationOverlays] = useState([]);
   const [select0, setSelect0] = useState();
   const [select1, setSelect1] = useState();
   const [layerBasemap, setLayerBasemap] = useState();
@@ -124,7 +125,6 @@ const Map = forwardRef((props, ref) => {
       preload: 1,
     })
   );
-  const [annotationVectorSource, setAnnotationVectorSource] = useState();
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [drawAction, setDrawAction] = useState();
@@ -175,16 +175,6 @@ const Map = forwardRef((props, ref) => {
       MAX_ZOOM[projection]
     );
 
-    let newAnnotationVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-    });
-
-    let newLayerAnnotationVector = createAnnotationVectorLayer(
-      newAnnotationVectorSource
-    );
-
     let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
@@ -204,7 +194,6 @@ const Map = forwardRef((props, ref) => {
       popupElement0,
       newMapView,
       layerData0,
-      newLayerAnnotationVector,
       newLayerFeatureVector,
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
@@ -241,7 +230,6 @@ const Map = forwardRef((props, ref) => {
     setSelect0(newSelect);
     setHoverSelect0(newHoverSelect);
     setLayerBasemap(mapLayers[0]);
-    setAnnotationVectorSource(newAnnotationVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
   }, []);
@@ -257,9 +245,6 @@ const Map = forwardRef((props, ref) => {
         positioning: "bottom-center",
       });
 
-      let newLayerAnnotationVector = createAnnotationVectorLayer(
-        annotationVectorSource
-      );
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
         props.mapSettings
@@ -271,7 +256,6 @@ const Map = forwardRef((props, ref) => {
         popupElement1,
         mapView,
         layerData1,
-        newLayerAnnotationVector,
         newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
@@ -292,9 +276,21 @@ const Map = forwardRef((props, ref) => {
       addDblClickPlot(newMap, newSelect);
 
       setSelect1(newSelect);
+      setMap1(newMap);
+      setHoverSelect1(newHoverSelect);
+
+      let overlays = map0.getOverlays().getArray();
+
+      for (let overlay of overlays) {
+        if (overlay.getId() && overlay.getId().includes("annotation")) {
+          overlay.linkOverlay(newMap);
+        }
+      }
+    } else {
+      setMap1(null);
+      setSelect1(null);
+      setHoverSelect1(null);
     }
-    setMap1(newMap);
-    setHoverSelect1(newHoverSelect);
   }, [props.compareDatasets]);
 
   useEffect(() => {
@@ -369,7 +365,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0) {
-      let quiverLayer = map0.getLayers().getArray()[8];
+      let quiverLayer = map0.getLayers().getArray()[7];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
@@ -384,7 +380,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1) {
-      let quiverLayer = map1.getLayers().getArray()[8];
+      let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
@@ -399,7 +395,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (drawAction) {
-      let source = map0.getLayers().getArray()[6].getSource();
+      let source = map0.getLayers().getArray()[5].getSource();
       let newDrawAction = getDrawAction(source, props.featureType);
 
       removeMapInteractions(map0, "all");
@@ -456,26 +452,28 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
-
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
-        return new Style({
-          stroke: new Stroke({
-            color: "#0099ff",
-            width: 4,
-          }),
-          image: new Circle({
-            radius: 4,
-            fill: new Fill({
-              color: "#0099ff",
-            }),
-            stroke: new Stroke({
-              color: "#ffffff",
-              width: 1,
+        const styles = [
+          new Style({
+            stroke: new Stroke({ color: "#0099ff", width: 4 }),
+            image: new Circle({
+              radius: 4,
+              fill: new Fill({ color: "#0099ff" }),
+              stroke: new Stroke({ color: "#ffffff", width: 1 }),
             }),
           }),
-        });
+        ];
+        const textStyle = createFeatureTextStyle(
+          feat,
+          "#000",
+          "#ffffff",
+          props.mapSettings
+        );
+        if (textStyle) styles.push(textStyle);
+
+        return styles;
       },
     });
 
@@ -499,65 +497,55 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
-    const hoverSelect = new Select({
+    return new Select({
       condition: pointerMove,
-      style: function (feature, resolution) {
-        const selectedFeatures = selectInteraction.getFeatures().getArray();
-        let fillColor = selectedFeatures.includes(feature)
-          ? "#0099ff"
-          : "#ff0000";
+      layers: [layerFeatureVector],
+      filter: (feature) => !feature.get("annotation"),
+      style: (feature, resolution) => {
+        const isSelected = selectInteraction
+          .getFeatures()
+          .getArray()
+          .includes(feature);
+        const fillColor = isSelected ? "#0099ff" : "#ff0000";
+
+
+        const textStyle = createFeatureTextStyle(
+          feature, 
+          "#000", 
+          "#ffffff",
+          props.mapSettings
+        );
+
         if (feature.get("type") === "Point") {
-          return new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 16,
-            }),
+          const pointStyle = new Style({
+            stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
               radius: 6,
-              fill: new Fill({
-                color: fillColor,
-              }),
-              stroke: new Stroke({
-                color: "#ffffffff",
-                width: 3,
-              }),
+              fill: new Fill({ color: fillColor }),
+              stroke: new Stroke({ color: "#ffffffff", width: 3 }),
             }),
           });
+          return textStyle ? [pointStyle, textStyle] : [pointStyle];
         }
-        return [
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff22",
-              width: 16,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffff88",
-              width: 12,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: "#ffffffff",
-              width: 8,
-            }),
-          }),
-          new Style({
-            stroke: new Stroke({
-              color: fillColor,
-              width: 4,
-            }),
-          }),
-        ];
-      },
-      layers: [layerFeatureVector],
-      filter: function (feature, layer) {
-        return !feature.get("annotation");
+
+        const glow1 = new Style({
+          stroke: new Stroke({ color: "#ffffff22", width: 16 }),
+        });
+        const glow2 = new Style({
+          stroke: new Stroke({ color: "#ffffff88", width: 12 }),
+        });
+        const white = new Style({
+          stroke: new Stroke({ color: "#ffffffff", width: 8 }),
+        });
+        const color = new Style({
+          stroke: new Stroke({ color: fillColor, width: 4 }),
+        });
+
+        return textStyle
+          ? [glow1, glow2, white, color, textStyle]
+          : [glow1, glow2, white, color];
       },
     });
-
-    return hoverSelect;
   };
 
   const getFeatures = () => {
@@ -904,33 +892,26 @@ const Map = forwardRef((props, ref) => {
 
     let map0Layers = map0.getLayers().getArray();
 
-    let newAnnotationVectorSource = new VectorSource({
-      features: [],
-      strategy: olLoadingstrategy.bbox,
-      format: new GeoJSON(),
-    });
-    map0Layers[5].setSource(newAnnotationVectorSource);
-    setAnnotationVectorSource(newAnnotationVectorSource);
-
     let newFeatureVectorSource = new VectorSource({
       features: [],
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    map0Layers[6].setSource(newFeatureVectorSource);
+    map0Layers[5].setSource(newFeatureVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-    map0Layers[7].setSource(newObsDrawSource);
+    map0Layers[6].setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
 
     if (props.compareDatasets) {
       let map1layers = map1.getLayers().getArray();
-      map1layers[6].setSource(newFeatureVectorSource);
-      map1layers[7].setSource(newObsDrawSource);
+      map1layers[5].setSource(newFeatureVectorSource);
+      map1layers[6].setSource(newObsDrawSource);
     }
+    clearAnnotationLabels();
   };
 
   const drawObsPoint = () => {
@@ -940,7 +921,6 @@ const Map = forwardRef((props, ref) => {
     }
     hoverSelect0.setActive(false);
 
-    //Resets map (in case other plots have been drawn)
     resetMap();
     let newDrawAction = obsPointDrawAction(
       map0,
@@ -976,7 +956,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const startFeatureDraw = () => {
-    let source = map0.getLayers().getArray()[6].getSource();
+    let source = map0.getLayers().getArray()[5].getSource();
     let newDrawAction = getDrawAction(source, props.featureType);
     hoverSelect0.setActive(false);
     if (props.compareDatasets && hoverSelect1 && hoverSelect1.setActive) {
@@ -1002,23 +982,42 @@ const Map = forwardRef((props, ref) => {
   };
 
   const addAnnotationLabel = (text) => {
-    let feature = new Feature({
-      geometry: new Point(mapView.getCenter()),
-      name: text,
-      annotation: true,
-    });
-    annotationVectorSource.addFeature(feature);
+    const coord = mapView.getCenter();
+    let overlay = new AnnotationOverlay(text, coord);
+    map0.addOverlay(overlay);
+    setAnnotationOverlays((prev) => [...prev, overlay]);
+    if (props.compareDatasets && map1) {
+      overlay.linkOverlay(map1);
+    }
   };
 
   const undoAnnotationLabel = () => {
-    let features = annotationVectorSource.getFeatures();
-    if (features.length > 0) {
-      annotationVectorSource.removeFeatures([features[features.length - 1]]);
+    if (annotationOverlays.length > 0) {
+      const lastOverlay = annotationOverlays[annotationOverlays.length - 1];
+
+      if (map0) {
+        map0.removeOverlay(lastOverlay);
+      }
+
+      if (lastOverlay.linkedOverlay && map1) {
+        map1.removeOverlay(lastOverlay.linkedOverlay);
+      }
+
+      setAnnotationOverlays((prev) => prev.slice(0, -1));
     }
   };
 
   const clearAnnotationLabels = () => {
-    annotationVectorSource.clear();
+    annotationOverlays.forEach((overlay) => {
+      if (map0) {
+        map0.removeOverlay(overlay);
+      }
+      if (overlay.linkedOverlay && map1) {
+        map1.removeOverlay(overlay.linkedOverlay);
+      }
+    });
+
+    setAnnotationOverlays([]);
   };
 
   const updateProjection = (map, dataset) => {
@@ -1108,8 +1107,8 @@ const Map = forwardRef((props, ref) => {
 
     featureVectorSource.refresh();
 
-    if (mapLayers[8].getSource()) {
-      mapLayers[8].setSource(getQuiverSource(dataset, props.mapSettings));
+    if (mapLayers[7].getSource()) {
+      mapLayers[7].setSource(getQuiverSource(dataset, props.mapSettings));
     }
   };
 

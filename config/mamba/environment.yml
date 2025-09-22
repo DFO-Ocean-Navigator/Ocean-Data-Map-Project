@@ -218,6 +218,8 @@ dependencies:
   - lz4=4.4.4=py313h8756d67_0
   - lz4-c=1.10.0=h5888daf_1
   - lzo=2.10=hd590300_1001
+  - mariadb=1.1.12=py313h46c70d0_0
+  - mariadb-connector-c=3.4.6=h10329db_0
   - markdown-it-py=3.0.0=pyhd8ed1ab_1
   - markupsafe=3.0.2=py313h8060acc_1
   - matplotlib=3.10.3=py313h78bf25f_0

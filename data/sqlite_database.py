@@ -148,7 +148,18 @@ class SQLiteDatabase:
 
         return result[0] if result else ""
 
-    def get_timestamps(self, variable: str) -> List[int]:
+    def get_all_timestamps(self) -> List[int]:
+        """Retrieves all timestamps from the open database sorted in ascending order.
+
+        Returns:
+            * [list] -- List of all raw netCDF timestamps for this database.
+        """
+
+        self.c.execute("SELECT DISTINCT timestamp FROM Timestamps;")
+
+        return self.__flatten_list(self.c.fetchall())
+
+    def get_variable_timestamps(self, variable: str) -> List[int]:
         """Retrieves all timestamps for a given variable from the open database sorted in ascending order.
 
         Arguments:

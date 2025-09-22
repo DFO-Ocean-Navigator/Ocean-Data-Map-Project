@@ -4,6 +4,7 @@ import gzip
 import json
 import os
 import pathlib
+import pickle
 import shutil
 import sqlite3
 from io import BytesIO
@@ -11,6 +12,7 @@ from io import BytesIO
 import geojson
 import numpy as np
 import pandas as pd
+import xarray as xr
 from dateutil.parser import parse as dateparse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
@@ -265,9 +267,9 @@ def timestamps(
                     config.calculated_variables[variable]["equation"],
                     [v.key for v in db.get_data_variables()],
                 )
-                vals = db.get_timestamps(data_vars[0])
+                vals = db.get_variable_timestamps(data_vars[0])
             else:
-                vals = db.get_timestamps(variable)
+                vals = db.get_variable_timestamps(variable)
             time_dim_units = config.time_dim_units
     else:
         with open_dataset(config, variable=variable) as ds:
@@ -441,6 +443,127 @@ def class4_data(
     return JSONResponse(data, headers={"Cache-Control": f"max-age={MAX_CACHE}"})
 
 
+@router.get("/datasets/variables/all")
+def get_all_variables():
+    """
+    returns a list of unique variables available in the datasets
+    """
+    dataset_keys = DatasetConfig.get_datasets()
+    variables = {}
+    for dataset_key in dataset_keys:
+        config = DatasetConfig(dataset_key)
+        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
+            with SQLiteDatabase(config.url) as db:
+                dims = db.get_all_dimensions()
+        else:
+            if not isinstance(config.url, list):
+                data = xr.open_mfdataset([config.url])
+            else:
+                data = xr.open_mfdataset(config.url)
+            dims = data.dims
+        has_depth = "depth" in dims
+        if config.model_class != "Nemo":
+            vector_variables = list(config.vector_variables.keys())
+        else:
+            vector_variables = []
+
+        for variable in config.variables:
+            variable_name = config.variable[variable].name
+            scale = config.variable[variable].scale
+
+            entry = {
+                "dataset_id": dataset_key,
+                "variable_id": variable,
+                "variable_scale": scale,
+                "vector_variables": vector_variables,
+                "depth": has_depth,
+            }
+
+            if variable_name in variables:
+                variables[variable_name].append(entry)
+            else:
+                variables[variable_name] = [entry]
+    return variables
+
+
+@router.get("/datasets/filter/date")
+def filter_datasets_by_date(
+    target_date: str = Query(description="Target date in ISO format"),
+    dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
+):
+    """
+    Returns only matching dataset IDs for date filter.
+    """
+    dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
+
+    matching_dataset_ids = []
+    parsed_date = dateparse(target_date)
+
+    for dataset_id in dataset_id_list:
+        config = DatasetConfig(dataset_id)
+        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
+            with SQLiteDatabase(config.url) as db:
+                vals = np.array(db.get_all_timestamps())
+                time_dim_units = config.time_dim_units
+                lowest = np.min(vals)
+                highest = np.max(vals)
+                converted_times = time_index_to_datetime(
+                    [lowest, highest], time_dim_units
+                )
+                if (
+                    converted_times[0] <= parsed_date
+                    and converted_times[1] >= parsed_date
+                ):
+                    matching_dataset_ids.append(dataset_id)
+        else:
+            if not isinstance(config.url, list):
+                data = xr.open_mfdataset([config.url])
+            else:
+                data = xr.open_mfdataset(config.url)
+            time_vals = data.time.values
+            if time_vals.min() <= np.datetime64(
+                parsed_date
+            ) and time_vals.max() >= np.datetime64(parsed_date):
+                matching_dataset_ids.append(dataset_id)
+
+    return matching_dataset_ids
+
+
+@router.get("/datasets/filter/location")
+def filter_datasets_by_location(
+    latitude: float = Query(description="Latitude coordinate"),
+    longitude: float = Query(description="Longitude coordinate"),
+    dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
+):
+    """
+    Returns only matching dataset IDs for location filter.
+    """
+
+    settings = get_settings()
+
+    dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
+
+    point = Point([longitude, latitude])
+    shapes_dir = pathlib.Path(settings.dataset_shape_file_dir)
+
+    matching_dataset_ids = []
+
+    for dataset_id in dataset_id_list:
+        name = dataset_id + ".pkl"
+        path = shapes_dir / name
+
+        if not path.exists():
+            continue
+
+        with open(path, "rb") as f:
+            poly = pickle.load(f)
+
+        if poly.contains(point):
+            matching_dataset_ids.append(dataset_id)
+
+    return matching_dataset_ids
+
+
 @router.get("/class4/{class4_type}")
 def class4_file(
     class4_type: str = Path(
@@ -493,7 +616,7 @@ def subset_query(
     subset_filename = None
 
     args = {**request.path_params, **request.query_params}
-   
+
     if "area" in args.keys():
         # Predefined area selected
         area = args.get("area")
@@ -514,7 +637,6 @@ def subset_query(
         timestamp=int(time_range[0]),
         endtime=int(time_range[1]),
     ) as dataset:
-        
         working_dir, subset_filename = dataset.nc_data.subset(args)
 
     return FileResponse(

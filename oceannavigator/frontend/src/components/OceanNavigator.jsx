@@ -369,6 +369,12 @@ function OceanNavigator(props) {
       modalType: "",
     }));
   };
+const swapViews = () => {
+  // Swap dataset0 and dataset1
+  const tempDataset = dataset0;
+  setDataset0(dataset1);
+  setDataset1(tempDataset);
+};
 
   const updateMapSettings = (key, value) => {
     setMapSettings((prevMapSettings) => ({
@@ -528,14 +534,11 @@ function OceanNavigator(props) {
         action={action}
       />
       <LinkButton action={action} />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-
-      <ActivePlotsContainer
-        activePlots={activePlots}
-        onMinimize={(plotId) => action("minimizePlot", plotId)}
-        onClose={(plotId) => action("closePlot", plotId)}
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
       />
-
       <Modal
         show={isNonPlotModal}
         onHide={closeModal}
