@@ -2,21 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: FastAPI",
-      "type": "python",
+      "name": "Python Debugger: FastAPI",
+      "type": "debugpy",
       "request": "launch",
       "module": "hypercorn",
-      "args": ["runserver.sh:app"],
-      "jinja": true,
-      "justMyCode": true
+      "args": [
+        "runserver:app",
+        "--reload"
+      ],
+      "jinja": true
     },
     {
-      "name": "Python: Current File",
-      "type": "python",
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
-      "console": "integratedTerminal",
-      "justMyCode": true
+      "console": "integratedTerminal"
     }
   ]
 }
