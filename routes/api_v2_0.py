@@ -1,16 +1,19 @@
 import base64
-from datetime import datetime
+import datetime
 import gzip
 import json
 import os
 import pathlib
+import pickle
 import shutil
 import sqlite3
 from io import BytesIO
+from pathlib import Path as FilePath
 
 import geojson
 import numpy as np
 import pandas as pd
+import xarray as xr
 from dateutil.parser import parse as dateparse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.encoders import jsonable_encoder
@@ -19,8 +22,6 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
-from pathlib import Path as FilePath
-import pickle
 
 import data.class4 as class4
 import data.observational.queries as ob_queries
@@ -60,7 +61,6 @@ from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
-import xarray as xr
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
