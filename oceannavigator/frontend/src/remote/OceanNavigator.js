@@ -52,52 +52,6 @@ export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
 
-// Filter datasets by variable
-export function FilterDatasetsByVariablePromise(datasetIds, variable) {
-  const params = new URLSearchParams({
-    variable: variable,
-  });
-
-  if (datasetIds && datasetIds.length > 0) {
-    params.append("dataset_ids", datasetIds.join(","));
-  }
-
-  return instance.get(
-    `/api/v2.0/datasets/filter/variable?${params.toString()}`
-  );
-}
-
-// Filter datasets by quiver variable
-export function FilterDatasetsByQuiverVariablePromise(
-  datasetIds,
-  quiverVariable
-) {
-  const params = new URLSearchParams({
-    quiver_variable: quiverVariable,
-  });
-
-  if (datasetIds && datasetIds.length > 0) {
-    params.append("dataset_ids", datasetIds.join(","));
-  }
-
-  return instance.get(
-    `/api/v2.0/datasets/filter/quiver_variable?${params.toString()}`
-  );
-}
-
-// Filter datasets by depth
-export function FilterDatasetsByDepthPromise(datasetIds, hasDepth) {
-  const params = new URLSearchParams({
-    has_depth: hasDepth,
-  });
-
-  if (datasetIds && datasetIds.length > 0) {
-    params.append("dataset_ids", datasetIds.join(","));
-  }
-
-  return instance.get(`/api/v2.0/datasets/filter/depth?${params.toString()}`);
-}
-
 // Filter datasets by date
 export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   const params = new URLSearchParams({
@@ -135,13 +89,6 @@ export function FilterDatasetsByLocationPromise(
 export function GetAllVariablesPromise() {
   return instance.get("/api/v2.0/datasets/variables/all");
 }
-
-//returns a complete list of vector-variables for users to select
-export function GetAllQuiverVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/quiver-variables/all");
-}
-
-
 
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
