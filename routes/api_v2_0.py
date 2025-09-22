@@ -8,7 +8,6 @@ import pickle
 import shutil
 import sqlite3
 from io import BytesIO
-from pathlib import Path as FilePath
 
 import geojson
 import numpy as np
@@ -539,10 +538,13 @@ def filter_datasets_by_location(
     """
     Returns only matching dataset IDs for location filter.
     """
+
+    settings = get_settings()
+
     dataset_id_list = [id.strip() for id in dataset_ids.split(",") if id.strip()]
 
     point = Point([longitude, latitude])
-    shapes_dir = FilePath("/data/misc/dataset_shapes")
+    shapes_dir = pathlib.Path(settings.dataset_shape_file_dir)
 
     matching_dataset_ids = []
 

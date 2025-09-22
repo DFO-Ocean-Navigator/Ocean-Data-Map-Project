@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     dask_multiprocessing_context: str = ""
     dask_num_workers: int = 4
     dask_scheduler: str = ""
+    dataset_shape_file_dir: str = ""
     dataset_config_file: str = ""
     debug: bool = False
     drifter_agg_url: str = ""
