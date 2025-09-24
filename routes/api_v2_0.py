@@ -1,5 +1,5 @@
 import base64
-import datetime
+from datetime import datetime
 import gzip
 import json
 import os
@@ -21,7 +21,6 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
-
 import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
@@ -462,10 +461,6 @@ def get_all_variables():
                 data = xr.open_mfdataset(config.url)
             dims = data.dims
         has_depth = "depth" in dims
-        if config.model_class != "Nemo":
-            vector_variables = list(config.vector_variables.keys())
-        else:
-            vector_variables = []
 
         for variable in config.variables:
             variable_name = config.variable[variable].name
@@ -475,7 +470,7 @@ def get_all_variables():
                 "dataset_id": dataset_key,
                 "variable_id": variable,
                 "variable_scale": scale,
-                "vector_variables": vector_variables,
+                "vector_variables": variable in config.vector_variables,
                 "depth": has_depth,
             }
 
@@ -510,6 +505,7 @@ def filter_datasets_by_date(
                 converted_times = time_index_to_datetime(
                     [lowest, highest], time_dim_units
                 )
+
                 if (
                     converted_times[0] <= parsed_date
                     and converted_times[1] >= parsed_date
