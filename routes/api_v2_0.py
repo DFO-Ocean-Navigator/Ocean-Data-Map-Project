@@ -1,5 +1,5 @@
 import base64
-from datetime import datetime, timezone
+from datetime import datetime
 import gzip
 import json
 import os
@@ -21,11 +21,6 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
-import os
-from pathlib import Path as FilePath
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
-import pickle
-
 import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
@@ -64,8 +59,6 @@ from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
 from plotting.ts import TemperatureSalinityPlotter
 from utils.errors import ClientError
-from typing import Optional
-import xarray as xr
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
@@ -468,10 +461,6 @@ def get_all_variables():
                 data = xr.open_mfdataset(config.url)
             dims = data.dims
         has_depth = "depth" in dims
-        if config.model_class != "Nemo":
-            vector_variables = list(config.vector_variables.keys())
-        else:
-            vector_variables = []
 
         for variable in config.variables:
             variable_name = config.variable[variable].name
@@ -481,7 +470,7 @@ def get_all_variables():
                 "dataset_id": dataset_key,
                 "variable_id": variable,
                 "variable_scale": scale,
-                "vector_variables": vector_variables,
+                "vector_variables": variable in config.vector_variables,
                 "depth": has_depth,
             }
 

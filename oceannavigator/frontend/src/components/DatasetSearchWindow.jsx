@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Button, Row, Col, Form, Badge } from "react-bootstrap";
-import Select from "react-select";
 import DatePicker from "react-datepicker";
 import {
   GetAllVariablesPromise,
@@ -9,6 +8,7 @@ import {
 } from "../remote/OceanNavigator.js";
 
 import { DATASET_DEFAULTS } from "./Defaults.js";
+import { TRUE } from "ol/functions.js";
 
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
@@ -51,14 +51,17 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       ];
 
       // Extract unique vector variables from all datasets
+
       const allVectorVariables = new Set();
-      Object.values(variableDataMapResult).forEach((datasetEntries) => {
-        datasetEntries.forEach((entry) => {
-          entry.vector_variables.forEach((vectorVar) => {
-            allVectorVariables.add(vectorVar);
+      Object.entries(variableDataMapResult).forEach(
+        ([variableName, datasetEntries]) => {
+          datasetEntries.forEach((entry) => {
+            if (entry.vector_variables === true) {
+              allVectorVariables.add(variableName);
+            }
           });
-        });
-      });
+        }
+      );
 
       const vectorVariablesOptions = [
         { value: "none", label: "None" },
@@ -117,6 +120,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
             filteredDatasetIds = filteredDatasetIds.filter((id) =>
               datasetIdsWithVariable.includes(id)
             );
+            //updates dataset info for displaying
 
             updatedDatasets = updatedDatasets.map((dataset) => {
               const variableEntry = variableData.find(
@@ -137,19 +141,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
         case "vectorVariable":
           if (filter.value !== "none") {
-            const datasetsWithVector = [];
-            Object.values(variableDataMap).forEach((variableEntries) => {
-              variableEntries.forEach((entry) => {
-                if (entry.vector_variables.includes(filter.value)) {
-                  datasetsWithVector.push(entry.dataset_id);
-                }
-              });
-            });
+            const variableData = variableDataMap[filter.value] || [];
+            const datasetsWithVector = variableData.map(
+              (entry) => entry.dataset_id
+            );
 
             filteredDatasetIds = filteredDatasetIds.filter((id) =>
               datasetsWithVector.includes(id)
             );
-
+            
+             //updates dataset info for displaying
             updatedDatasets = updatedDatasets.map((dataset) => {
               if (datasetsWithVector.includes(dataset.id)) {
                 return {
@@ -223,22 +224,25 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     setFilters(newFilters);
     let newActiveFilters = activeFilters.filter((f) => f.type !== filterName);
 
-    const shouldAdd =
-      value &&
-      !(filterName === "variable" && value.value === "any") &&
-      !(
-        filterName === "vectorVariable" && ["any", "none"].includes(value.value)
-      );
+    let shouldAdd = false;
+    if (filterName === "depth") {
+      shouldAdd = value !== null && value !== undefined;
+    } else if (filterName === "variable") {
+      shouldAdd = value && value !== "any";
+    } else if (filterName === "vectorVariable") {
+      shouldAdd = value && !["any", "none"].includes(value);
+    } else {
+      shouldAdd = Boolean(value);
+    }
 
     if (shouldAdd) {
-      const filterValue =
-        filterName === "date" ? value.toISOString() : value.value;
+      const filterValue = filterName === "date" ? value.toISOString() : value;
       const additionalParams =
         filterName === "depth"
           ? {
               variable:
-                newFilters.variable?.value !== "any"
-                  ? newFilters.variable?.value
+                newFilters.variable !== null && newFilters.variable !== "any"
+                  ? newFilters.variable
                   : null,
             }
           : {};
@@ -379,37 +383,63 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           {/* Variable Filter */}
           <Form.Group className="mb-3">
             <Form.Label>Variable</Form.Label>
-            <Select
-              value={filters.variable}
-              onChange={(value) => handleFilterChange("variable", value)}
-              options={variables}
-              placeholder="Select variable..."
-              isClearable
-            />
+            <Form.Select
+              value={filters.variable ?? ""}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                handleFilterChange("variable", val);
+              }}
+            >
+              <option value="">Select variable...</option>
+              {variables.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
 
           {/* Vector Variable Filter */}
           <Form.Group className="mb-3">
             <Form.Label>Vector Variable</Form.Label>
-            <Select
-              value={filters.vectorVariable}
-              onChange={(value) => handleFilterChange("vectorVariable", value)}
-              options={vectorVariables}
-              placeholder="Select vector variable..."
-              isClearable
-            />
+            <Form.Select
+              value={filters.vectorVariable ?? ""}
+              onChange={(e) => {
+                const val = e.target.value || null;
+                handleFilterChange("vectorVariable", val);
+              }}
+            >
+              <option value="">Select vector variable...</option>
+              {vectorVariables.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
 
           {/* Depth Filter */}
           <Form.Group className="mb-3">
             <Form.Label>Variables with Depth Dimensions</Form.Label>
-            <Select
-              value={filters.depth}
-              onChange={(value) => handleFilterChange("depth", value)}
-              options={depthOptions}
-              placeholder="Select depth requirement..."
-              isClearable
-            />
+            <Form.Select
+              value={
+                filters.depth === null || filters.depth === undefined
+                  ? ""
+                  : filters.depth.toString()
+              }
+              onChange={(e) => {
+                const raw = e.target.value;
+                const val = raw === "" ? null : raw === "true" ? true : false;
+                handleFilterChange("depth", val);
+              }}
+            >
+              <option value="">Select depth requirement...</option>
+              {depthOptions.map((opt) => (
+                <option key={String(opt.value)} value={String(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
 
           {/* Date Filter */}
