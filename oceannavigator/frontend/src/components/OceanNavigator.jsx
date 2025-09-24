@@ -25,7 +25,46 @@ import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 import AnnotationButton from "./AnnotationButton.jsx";
 import { withTranslation } from "react-i18next";
-import { MinimizedPlotBar, ActivePlotsContainer } from "./PlotComponents.jsx";
+import ActivePlotsContainer from "./PlotComponents.jsx";
+import MinimizedPlotBar from "./MinimizedPlotComponents.jsx";
+
+export function formatLatLon(latitude, longitude) {
+  latitude = latitude > 90 ? 90 : latitude;
+  latitude = latitude < -90 ? -90 : latitude;
+  longitude = longitude > 180 ? longitude - 360 : longitude;
+  longitude = longitude < -180 ? 360 + longitude : longitude;
+  let formatted = "";
+  formatted += Math.abs(latitude).toFixed(4) + " ";
+  formatted += latitude >= 0 ? "N" : "S";
+  formatted += ", ";
+  formatted += Math.abs(longitude).toFixed(4) + " ";
+  formatted += longitude >= 0 ? "E" : "W";
+  return formatted;
+}
+
+export function getPlotTitle(plotData) {
+  if (!plotData) return "Plot";
+  const { type, coordinates, id, plotName } = plotData;
+
+  if (plotName) return plotName;
+
+  switch (type) {
+    case "Point":
+      return coordinates?.length
+        ? `Point Plot - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
+        : "Point Plot";
+    case "LineString":
+      return `Line Plot - ${coordinates?.length || 0} points`;
+    case "Polygon":
+      return `Area Plot - ${coordinates?.length || 0} vertices`;
+    case "track":
+      return id ? `Track Plot - ${id}` : "Track Plot";
+    case "class4":
+      return id ? `Class 4 Analysis - ${id}` : "Class 4 Analysis";
+    default:
+      return `${type} Plot`;
+  }
+}
 
 function OceanNavigator(props) {
   const mapRef = useRef();
@@ -108,63 +147,6 @@ function OceanNavigator(props) {
     }
   }, []);
 
-  const createPlotComponent = (plotData, plotId) => {
-    const { type } = plotData;
-    const commonProps = {
-      plotData,
-      dataset_0: dataset0,
-      dataset_1: dataset1,
-      mapSettings,
-      names,
-      updateDataset0,
-      updateDataset1,
-      init: subquery,
-      action,
-      dataset_compare: compareDatasets,
-      setCompareDatasets,
-      key: plotId,
-    };
-
-    switch (type) {
-      case "Point":
-        return <PointWindow {...commonProps} updateDataset={updateDataset0} />;
-      case "LineString":
-        const line_distance =
-          mapRef.current?.getLineDistance?.(plotData.coordinates) || 0;
-        return (
-          <LineWindow
-            {...commonProps}
-            line_distance={line_distance}
-            onUpdate={updateDataset0}
-          />
-        );
-      case "Polygon":
-        return <AreaWindow {...commonProps} />;
-      case "track":
-        return (
-          <TrackWindow
-            {...commonProps}
-            dataset={dataset0}
-            track={plotData.coordinates}
-            onUpdate={updateDataset0}
-          />
-        );
-      case "class4":
-        return (
-          <Class4Window
-            dataset={dataset0.id}
-            plotData={plotData}
-            class4type={plotData.class4type || class4Type}
-            init={subquery}
-            action={action}
-            key={plotId}
-          />
-        );
-      default:
-        return <div key={plotId}>Unknown plot type: {type}</div>;
-    }
-  };
-
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -204,7 +186,7 @@ function OceanNavigator(props) {
           const newActivePlot = {
             id: plotId,
             plotData: newPlotData,
-            component: createPlotComponent(newPlotData, plotId),
+            component: null,
           };
 
           setActivePlots((prev) => {
@@ -274,10 +256,7 @@ function OceanNavigator(props) {
           const restoredPlot = {
             id: plotToRestore.id,
             plotData: plotToRestore.plotData,
-            component: createPlotComponent(
-              plotToRestore.plotData,
-              plotToRestore.id
-            ),
+            component: null,
           };
 
           setActivePlots((prev) => {
@@ -369,12 +348,11 @@ function OceanNavigator(props) {
       modalType: "",
     }));
   };
-const swapViews = () => {
-  // Swap dataset0 and dataset1
-  const tempDataset = dataset0;
-  setDataset0(dataset1);
-  setDataset1(tempDataset);
-};
+  const swapViews = () => {
+    const tempDataset = dataset0;
+    setDataset0(dataset1);
+    setDataset1(tempDataset);
+  };
 
   const updateMapSettings = (key, value) => {
     setMapSettings((prevMapSettings) => ({
@@ -534,11 +512,26 @@ const swapViews = () => {
         action={action}
       />
       <LinkButton action={action} />
-      <MapTools
-        uiSettings={uiSettings}
-        updateUI={updateUI}
+      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+
+      <ActivePlotsContainer
+        activePlots={activePlots}
+        mapRef={mapRef}
+        dataset0={dataset0}
+        dataset1={dataset1}
+        mapSettings={mapSettings}
+        names={names}
+        updateDataset0={updateDataset0}
+        updateDataset1={updateDataset1}
+        subquery={subquery}
         action={action}
+        compareDatasets={compareDatasets}
+        setCompareDatasets={setCompareDatasets}
+        class4Type={class4Type}
+        onMinimize={(plotId) => action("minimizePlot", plotId)}
+        onClose={(plotId) => action("closePlot", plotId)}
       />
+
       <Modal
         show={isNonPlotModal}
         onHide={closeModal}

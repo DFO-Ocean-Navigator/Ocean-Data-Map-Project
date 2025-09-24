@@ -1,88 +1,123 @@
-// PlotComponents.jsx
 import React from "react";
 import Button from "react-bootstrap/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faExpand, faMinus } from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faMinus } from "@fortawesome/free-solid-svg-icons";
+import { withTranslation } from "react-i18next";
+import PointWindow from "./PointWindow.jsx";
+import LineWindow from "./LineWindow.jsx";
+import AreaWindow from "./AreaWindow.jsx";
+import TrackWindow from "./TrackWindow.jsx";
+import Class4Window from "./Class4Window.jsx";
 
-// format latitude and longitude
-const formatLatLon = (lat, lon) => {
-  lat = Math.max(-90, Math.min(90, lat));
-  lon = lon > 180 ? lon - 360 : lon < -180 ? lon + 360 : lon;
-  return `${Math.abs(lat).toFixed(4)} ${lat >= 0 ? "N" : "S"}, ${Math.abs(
-    lon
-  ).toFixed(4)} ${lon >= 0 ? "E" : "W"}`;
-};
+import { formatLatLon, getPlotTitle } from "./OceanNavigator.jsx";
 
-// Gets title of the window
-export const getPlotTitle = (plotData) => {
-  if (!plotData) return "Plot";
-  const { type, coordinates, id, plotName } = plotData;
+const createPlotComponent = (plotData, plotId, props) => {
+  const {
+    mapRef,
+    dataset0,
+    dataset1,
+    mapSettings,
+    names,
+    updateDataset0,
+    updateDataset1,
+    subquery,
+    action,
+    compareDatasets,
+    setCompareDatasets,
+    class4Type,
+  } = props;
 
-  if (plotName) return plotName;
+  const { type } = plotData;
+  const commonProps = {
+    plotData,
+    dataset_0: dataset0,
+    dataset_1: dataset1,
+    mapSettings,
+    names,
+    updateDataset0,
+    updateDataset1,
+    init: subquery,
+    action,
+    dataset_compare: compareDatasets,
+    setCompareDatasets,
+    key: plotId,
+  };
 
   switch (type) {
     case "Point":
-      return coordinates?.length
-        ? `Point Plot - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
-        : "Point Plot";
+      return <PointWindow {...commonProps} updateDataset={updateDataset0} />;
     case "LineString":
-      return `Line Plot - ${coordinates?.length || 0} points`;
+      const line_distance =
+        mapRef.current?.getLineDistance?.(plotData.coordinates) || 0;
+      return (
+        <LineWindow
+          {...commonProps}
+          line_distance={line_distance}
+          onUpdate={updateDataset0}
+        />
+      );
     case "Polygon":
-      return `Area Plot - ${coordinates?.length || 0} vertices`;
+      return <AreaWindow {...commonProps} />;
     case "track":
-      return id ? `Track Plot - ${id}` : "Track Plot";
+      return (
+        <TrackWindow
+          {...commonProps}
+          dataset={dataset0}
+          track={plotData.coordinates}
+          onUpdate={updateDataset0}
+        />
+      );
     case "class4":
-      return id ? `Class 4 Analysis - ${id}` : "Class 4 Analysis";
+      return (
+        <Class4Window
+          dataset={dataset0.id}
+          plotData={plotData}
+          class4type={plotData.class4type || class4Type}
+          init={subquery}
+          action={action}
+          key={plotId}
+        />
+      );
     default:
-      return `${type} Plot`;
+      return <div key={plotId}>Unknown plot type: {type}</div>;
   }
 };
 
-// MinimizedPlotBar component
-export const MinimizedPlotBar = ({ minimizedPlots, onRestore, onClose }) => {
-  if (!minimizedPlots?.length) return null;
-
-  return (
-    <div className="minimized-plots-container">
-      {minimizedPlots.map((plot) => (
-        <div key={plot.id} className="minimized-plot-bar">
-          <div className="minimized-plot-content">
-            <span
-              className="minimized-plot-title"
-              onClick={() => onRestore(plot.id)}
-              style={{ cursor: "pointer" }}
-              title="Click to restore"
-            >
-              {getPlotTitle(plot.plotData)}
-            </span>
-            <div className="minimized-plot-actions">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => onRestore(plot.id)}
-                title="Restore"
-              >
-                <FontAwesomeIcon icon={faExpand} />
-              </Button>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => onClose(plot.id)}
-                title="Close"
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// ActivePlotsContainer component
-export const ActivePlotsContainer = ({ activePlots, onMinimize, onClose }) => {
+const ActivePlotsContainer = ({
+  activePlots,
+  onMinimize,
+  onClose,
+  t,
+  // Props needed for createPlotComponent
+  mapRef,
+  dataset0,
+  dataset1,
+  mapSettings,
+  names,
+  updateDataset0,
+  updateDataset1,
+  subquery,
+  action,
+  compareDatasets,
+  setCompareDatasets,
+  class4Type,
+}) => {
   if (!activePlots?.length) return null;
+
+  const createComponentProps = {
+    mapRef,
+    dataset0,
+    dataset1,
+    mapSettings,
+    names,
+    updateDataset0,
+    updateDataset1,
+    subquery,
+    action,
+    compareDatasets,
+    setCompareDatasets,
+    class4Type,
+  };
 
   return (
     <div
@@ -104,7 +139,7 @@ export const ActivePlotsContainer = ({ activePlots, onMinimize, onClose }) => {
                 variant="outline-primary"
                 size="sm"
                 onClick={() => onMinimize(plot.id)}
-                title="Minimize"
+                title={t ? t("Minimize") : "Minimize"}
               >
                 <FontAwesomeIcon icon={faMinus} />
               </Button>
@@ -112,15 +147,19 @@ export const ActivePlotsContainer = ({ activePlots, onMinimize, onClose }) => {
                 variant="outline-primary"
                 size="sm"
                 onClick={() => onClose(plot.id)}
-                title="Close"
+                title={t ? t("Close") : "Close"}
               >
                 <FontAwesomeIcon icon={faXmark} />
               </Button>
             </div>
           </div>
-          <div className="plot-window-content">{plot.component}</div>
+          <div className="plot-window-content">
+            {createPlotComponent(plot.plotData, plot.id, createComponentProps)}
+          </div>
         </div>
       ))}
     </div>
   );
 };
+
+export default withTranslation()(ActivePlotsContainer);
