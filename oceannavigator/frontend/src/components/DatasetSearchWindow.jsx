@@ -18,6 +18,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const [allDatasets, setAllDatasets] = useState(datasets);
   const [visibleDatasetIds, setVisibleDatasetIds] = useState([]);
   const [variableDataMap, setVariableDataMap] = useState({});
+  const [vectorVariableMap, setVectorVariableMap] = useState({});
 
   const [filters, setFilters] = useState({
     variable: null,
@@ -53,10 +54,12 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       // Extract unique vector variables from all datasets
 
       const allVectorVariables = new Set();
+      const vector_VariableMap = {};
       Object.entries(variableDataMapResult).forEach(
         ([variableName, datasetEntries]) => {
           datasetEntries.forEach((entry) => {
             if (entry.vector_variables === true) {
+              vector_VariableMap[variableName] = entry.variable_id;
               allVectorVariables.add(variableName);
             }
           });
@@ -83,6 +86,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       setAllDatasets(allDatasetsWithDefaults);
       setVisibleDatasetIds(allDatasetIds);
       setVariableDataMap(variableDataMapResult);
+      setVectorVariableMap(vector_VariableMap);
       setLoading(false);
     };
 
@@ -142,20 +146,24 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         case "vectorVariable":
           if (filter.value !== "none") {
             const variableData = variableDataMap[filter.value] || [];
-            const datasetsWithVector = variableData.map(
-              (entry) => entry.dataset_id
-            );
+            //ensures that dataset with Nemo are filtered out
+            const datasetsWithVector = variableData
+              .map((entry) => {
+                const ds = allDatasets.find((d) => d.id === entry.dataset_id);
+                return ds && ds.model_class !== "Nemo" ? ds.id : null;
+              })
+              .filter(Boolean);
 
             filteredDatasetIds = filteredDatasetIds.filter((id) =>
               datasetsWithVector.includes(id)
             );
-            
-             //updates dataset info for displaying
+
+            //updates dataset info for displaying
             updatedDatasets = updatedDatasets.map((dataset) => {
               if (datasetsWithVector.includes(dataset.id)) {
                 return {
                   ...dataset,
-                  vectorVariable: filter.value,
+                  vectorVariable: vectorVariableMap[filter.value],
                 };
               }
               return dataset;
@@ -222,39 +230,27 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const handleFilterChange = async (filterName, value) => {
     const newFilters = { ...filters, [filterName]: value };
     setFilters(newFilters);
+
     let newActiveFilters = activeFilters.filter((f) => f.type !== filterName);
+    const filterValue =
+      filterName === "date" && value ? value.toISOString() : value;
 
-    let shouldAdd = false;
-    if (filterName === "depth") {
-      shouldAdd = value !== null && value !== undefined;
-    } else if (filterName === "variable") {
-      shouldAdd = value && value !== "any";
-    } else if (filterName === "vectorVariable") {
-      shouldAdd = value && !["any", "none"].includes(value);
-    } else {
-      shouldAdd = Boolean(value);
-    }
+    const additionalParams =
+      filterName === "depth"
+        ? {
+            variable:
+              newFilters.variable !== null && newFilters.variable !== "any"
+                ? newFilters.variable
+                : null,
+          }
+        : {};
 
-    if (shouldAdd) {
-      const filterValue = filterName === "date" ? value.toISOString() : value;
-      const additionalParams =
-        filterName === "depth"
-          ? {
-              variable:
-                newFilters.variable !== null && newFilters.variable !== "any"
-                  ? newFilters.variable
-                  : null,
-            }
-          : {};
-
-      newActiveFilters.push({
-        type: filterName,
-        value: filterValue,
-        label: getFilterLabel(filterName, filterValue, additionalParams),
-        ...additionalParams,
-      });
-    }
-
+    newActiveFilters.push({
+      type: filterName,
+      value: filterValue,
+      label: getFilterLabel(filterName, filterValue, additionalParams),
+      ...additionalParams,
+    });
     setActiveFilters(newActiveFilters);
     await applyFilters(newActiveFilters);
   };
@@ -390,7 +386,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                 handleFilterChange("variable", val);
               }}
             >
-              <option value="">Select variable...</option>
+              <option value="" disabled>
+                Select variable...
+              </option>
               {variables.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
@@ -409,7 +407,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                 handleFilterChange("vectorVariable", val);
               }}
             >
-              <option value="">Select vector variable...</option>
+              <option value="" disabled>
+                Select vector variable...
+              </option>
               {vectorVariables.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
@@ -433,7 +433,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                 handleFilterChange("depth", val);
               }}
             >
-              <option value="">Select depth requirement...</option>
+              <option value="" disabled>
+                Select depth requirement...
+              </option>
               {depthOptions.map((opt) => (
                 <option key={String(opt.value)} value={String(opt.value)}>
                   {opt.label}
