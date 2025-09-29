@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button, Row, Col, Form, Badge } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import {
@@ -10,15 +10,8 @@ import {
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
-  //store variables
-  const [variables, setVariables] = useState([]);
-  //store vectorVariables
-  const [vectorVariables, setVectorVariables] = useState([]);
-  //stores only dataset that needs to be displayed
   const [datasetDisplayed, setDatasetDisplayed] = useState(datasets);
-  //stores the response from api
   const [variableDataMap, setVariableDataMap] = useState({});
-
   const [locationInput, setLocationInput] = useState({
     latitude: "",
     longitude: "",
@@ -49,64 +42,115 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     { value: false, label: "Surface variables only" },
   ];
 
+  const variables = useMemo(() => {
+    if (Object.keys(variableDataMap).length === 0) return [];
+
+    return [
+      { value: "any", label: "Any", key: "any" },
+      ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
+        value: variableName,
+        label: variableName,
+        key: `${variableName}-${datasets[0]?.variable_id}`,
+      })),
+    ];
+  }, [variableDataMap]);
+
+  const vectorVariables = useMemo(() => {
+    if (Object.keys(variableDataMap).length === 0) return [];
+
+    const allVectorVariables = new Set();
+    const vectorVariableMap = {};
+
+    Object.entries(variableDataMap).forEach(
+      ([variableName, datasetEntries]) => {
+        datasetEntries.forEach((entry) => {
+          if (entry.vector_variables === true) {
+            vectorVariableMap[variableName] = entry.variable_id;
+            allVectorVariables.add(variableName);
+          }
+        });
+      }
+    );
+
+    return [
+      { value: "none", label: "None", id: "none" },
+      ...Array.from(allVectorVariables).map((name) => {
+        const variableData = variableDataMap[name] || [];
+        const vectorEntry = variableData.find(
+          (entry) => entry.vector_variables === true
+        );
+        return {
+          value: name,
+          label: name,
+          id: vectorEntry?.variable_id || name,
+        };
+      }),
+    ];
+  }, [variableDataMap]);
+
   // Loads initial data from backend
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       const variablesResult = await GetAllVariablesPromise();
-      const variableDataMapResult = variablesResult.data;
-      const variablesOptions = [
-        { value: "any", label: "Any", key: "any" },
-        ...Object.entries(variableDataMapResult).map(
-          ([variableName, datasets]) => {
-            const variableId = datasets[0]?.variable_id;
-            return {
-              value: variableName,
-              label: variableName,
-              key: `${variableName}-${variableId}`,
-            };
-          }
-        ),
-      ];
-
-      // Extract unique vector variables from all datasets
-
-      const allVectorVariables = new Set();
-      const vector_VariableMap = {};
-      Object.entries(variableDataMapResult).forEach(
-        ([variableName, datasetEntries]) => {
-          datasetEntries.forEach((entry) => {
-            if (entry.vector_variables === true) {
-              vector_VariableMap[variableName] = entry.variable_id;
-              allVectorVariables.add(variableName);
-            }
-          });
-        }
-      );
-
-      const vectorVariablesOptions = [
-        { value: "none", label: "None", id: "none" },
-        ...Array.from(allVectorVariables).map((name) => {
-          const variableData = variableDataMapResult[name] || [];
-          const vectorEntry = variableData.find(
-            (entry) => entry.vector_variables === true
-          );
-          return {
-            value: name,
-            label: name,
-            id: vectorEntry?.variable_id || name,
-          };
-        }),
-      ];
-
-      setVariables(variablesOptions);
-      setVectorVariables(vectorVariablesOptions);
-      setVariableDataMap(variableDataMapResult);
+      setVariableDataMap(variablesResult.data);
       setLoading(false);
     };
 
     loadData();
-  }, [datasets]);
+  }, []);
+
+  const getActiveFilters = () => {
+    const active = [];
+    if (filters.latitude !== "" && filters.longitude !== "") {
+      active.push({
+        key: "location",
+        label: `Location: ${filters.latitude}°, ${filters.longitude}°`,
+        removeKey: "location",
+      });
+    }
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        key === "latitude" ||
+        key === "longitude" ||
+        value === FILTER_DEFAULTS[key]
+      ) {
+        return;
+      }
+
+      let label = "";
+      switch (key) {
+        case "variable":
+          label = `Variable: ${variables.find((v) => v.value)}`;
+          break;
+        case "vectorVariable":
+          label = `Vector: ${vectorVariables.find((v) => v.value)}`;
+          break;
+        case "depth":
+          label =
+            value === true
+              ? "Has depth"
+              : value === false
+              ? "Surface only"
+              : "Both 2D/3D";
+          break;
+        case "date":
+          try {
+            label = `Date: ${new Date(value).toLocaleDateString()}`;
+          } catch {
+            label = `Date: ${String(value)}`;
+          }
+          break;
+        default:
+          label = `${key}: ${String(value)}`;
+      }
+
+      active.push({ key, label, removeKey: key });
+    });
+
+    return active;
+  };
 
   // Client-side filtering logic
   const applyFilters = async (newFilters) => {
@@ -153,7 +197,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       );
     }
 
-    //  Filter by date
+    // Filter by date
     if (newFilters.date !== null) {
       const result = await FilterDatasetsByDatePromise(
         temp_dataset.map((obj) => obj.id),
@@ -165,6 +209,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         );
       }
     }
+
     // Filter by Location
     if (newFilters.latitude !== "" && newFilters.longitude !== "") {
       const result = await FilterDatasetsByLocationPromise(
@@ -184,7 +229,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     setLoading(false);
   };
 
-  // Handles all the filter change logic
   const handleFilterChange = (filterName, value) => {
     const newFilters = { ...filters, [filterName]: value };
     applyFilters(newFilters);
@@ -216,7 +260,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     applyFilters(newFilters);
   };
 
-  // Clear all filters
   const clearAllFilters = () => {
     setFilters({ ...FILTER_DEFAULTS });
     setLocationInput({
@@ -226,69 +269,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     setDatasetDisplayed(datasets);
   };
 
+  const activeFilters = getActiveFilters();
+
   return (
     <>
       {/* Active Filters */}
       <div className="mb-3">
         <h6>Active Filters:</h6>
-
         <div className="d-flex flex-wrap gap-2 align-items-center">
-          {Object.entries(filters).map(([key, value]) => {
-            if (key === "latitude") {
-              if (!(filters.latitude !== "" && filters.longitude !== ""))
-                return null;
-              const label = `Location: ${filters.latitude}°, ${filters.longitude}°`;
-              return (
-                <Badge
-                  key="location"
-                  bg="primary"
-                  className="d-flex align-items-center"
-                >
-                  {label}
-                  <button
-                    type="button"
-                    className="btn-close btn-close-white ms-2"
-                    style={{ fontSize: "0.7em" }}
-                    onClick={() => removeFilter("location")}
-                  />
-                </Badge>
-              );
-            }
-            if (key === "longitude") {
-              // skip longitude entry because we handle location on latitude
-              return null;
-            }
-
-            // Skip defaults
-            if (value === FILTER_DEFAULTS[key]) return null;
-
-            let label = "";
-            if (key === "variable") {
-              const friendly =
-                variables.find((v) => v.value === value)?.label ?? value;
-              label = `Variable: ${friendly}`;
-            } else if (key === "vectorVariable") {
-              const friendly =
-                vectorVariables.find((v) => v.value === value)?.label ?? value;
-              label = `Vector: ${friendly}`;
-            } else if (key === "depth") {
-              label =
-                value === true
-                  ? "Has depth"
-                  : value === false
-                  ? "Surface only"
-                  : "Both 2D/3D";
-            } else if (key === "date") {
-              try {
-                label = `Date: ${new Date(value).toLocaleDateString()}`;
-              } catch {
-                label = `Date: ${String(value)}`;
-              }
-            } else {
-              label = `${key}: ${String(value)}`;
-            }
-
-            return (
+          {activeFilters.length > 0 ? (
+            activeFilters.map(({ key, label, removeKey }) => (
               <Badge
                 key={key}
                 bg="primary"
@@ -299,20 +289,13 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   type="button"
                   className="btn-close btn-close-white ms-2"
                   style={{ fontSize: "0.7em" }}
-                  onClick={() => removeFilter(key)}
+                  onClick={() => removeFilter(removeKey)}
                 />
               </Badge>
-            );
-          })}
-
-          {/* placeholde If there are no active filters */}
-          {Object.entries(filters).every(([k, v]) => {
-            if (k === "latitude" || k === "longitude") {
-              return !(filters.latitude !== "" && filters.longitude !== "");
-            }
-            return v === FILTER_DEFAULTS[k];
-          }) && <div className="text-muted me-2">No active filters</div>}
-
+            ))
+          ) : (
+            <div className="text-muted me-2">No active filters</div>
+          )}
           <Button
             variant="outline-secondary"
             size="sm"
