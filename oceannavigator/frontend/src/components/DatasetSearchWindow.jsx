@@ -49,7 +49,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       { value: "any", label: "Any", key: "any" },
       ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
         value: variableName,
-        label: variableName,
         key: `${variableName}-${datasets[0]?.variable_id}`,
       })),
     ];
@@ -81,7 +80,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         );
         return {
           value: name,
-          label: name,
           id: vectorEntry?.variable_id || name,
         };
       }),
@@ -122,11 +120,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       let label = "";
       switch (key) {
         case "variable":
-          label = `Variable: ${variables.find((v) => v.value)}`;
+          label = `Variable: ${
+            variables.find((v) => v.value === value)?.value ?? value
+          }`;
           break;
         case "vectorVariable":
-          label = `Vector: ${vectorVariables.find((v) => v.value)}`;
+          label = `Vector: ${
+            vectorVariables.find((v) => v.value === value)?.value ?? value
+          }`;
           break;
+
         case "depth":
           label =
             value === true
@@ -322,7 +325,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
             >
               {variables.map((opt) => (
                 <option key={opt.key || opt.value} value={opt.value}>
-                  {opt.label}
+                  {opt.value}
                 </option>
               ))}
             </Form.Select>
@@ -340,7 +343,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
             >
               {vectorVariables.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {opt.value}
                 </option>
               ))}
             </Form.Select>
