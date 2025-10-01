@@ -22,7 +22,8 @@ import {
 import { withTranslation } from "react-i18next";
 
 import "rc-slider/assets/index.css";
-import { propTypes } from "react-bootstrap/esm/Image.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
@@ -38,6 +39,7 @@ function DatasetSelector({
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
+  showSearchBtn = true,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -555,18 +557,26 @@ function DatasetSelector({
       }}
     />
   ) : null;
-
-  const datasetSearchButton = (
-    <Button
-      variant="outline-primary"
-      size="sm"
-      onClick={toggleSearchDatasets}
-      title="Search Datasets"
-      className="dataset-search-btn"
-    >
-      Search Datasets 🔍
-    </Button>
-  );
+  let datasetSearchButton = null;
+  if (showSearchBtn) {
+    datasetSearchButton = (
+      <OverlayTrigger
+        key="draw-search-btn"
+        placement="top"
+        overlay={<Tooltip id={"draw-tooltip"}>{t("Search Datasets")}</Tooltip>}
+      >
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={toggleSearchDatasets}
+          title="Search Datasets"
+          className="ms-2"
+        >
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </Button>
+      </OverlayTrigger>
+    );
+  }
 
   return (
     <>
@@ -580,12 +590,12 @@ function DatasetSelector({
         {variableSelector}
         {quiverSelector}
         {depthSelector}
-        {datasetSearchButton}
 
         {axisRange}
         {horizontalLayout ? null : timeSelector}
         {horizontalLayout ? goButton : null}
         {showCompare ? compareSwitch : null}
+        {datasetSearchButton}
       </div>
       {horizontalLayout ? timeSelector : null}
       {horizontalLayout ? null : goButton}
@@ -641,6 +651,7 @@ DatasetSelector.propTypes = {
   horizontalLayout: PropTypes.bool,
   showTimeSlider: PropTypes.bool,
   compareDatasets: PropTypes.bool,
+  showSearchBtn: PropTypes.bool,
   showCompare: PropTypes.bool,
   action: PropTypes.func,
   t: PropTypes.func.isRequired,

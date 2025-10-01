@@ -144,7 +144,7 @@ const AreaWindow = (props) => {
           state={scale.split(",")}
           onUpdate={handleScaleUpdate}
         />
-          {/* End of Compare Datasets options */}
+        {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
           checked={bathymetry}
@@ -204,6 +204,7 @@ const AreaWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_0}
+          showSearchBtn={false}
         />
         <ComboBox
           id="leftColormap"
@@ -230,6 +231,7 @@ const AreaWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_1}
+          showSearchBtn={false}
         />
         <ComboBox
           id="rightColormap"

@@ -147,6 +147,7 @@ const PointWindow = ({
           showDepthsAll={showDepthSelector}
           multipleVariables={multiVar}
           mountedDataset={ds0}
+          showSearchBtn={false}
         />
         <CheckBox
           id="showmap"
