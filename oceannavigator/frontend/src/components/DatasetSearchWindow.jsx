@@ -185,7 +185,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
     // Filter by Location
     if (newFilters.latitude !== "" && newFilters.longitude !== "") {
-      let longitude=(newFilters.longitude+360)%360
+      let longitude = (newFilters.longitude + 360) % 360;
       const result = await FilterDatasetsByLocationPromise(
         temp_dataset.map((obj) => obj.id),
         newFilters.latitude,
@@ -415,7 +415,14 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
               variant="primary"
               size="sm"
               className="mt-2 w-100"
-              disabled={!locationInput.latitude || !locationInput.longitude}
+              disabled={
+                !locationInput.latitude ||
+                !locationInput.longitude ||
+                parseFloat(locationInput.latitude) < -90 ||
+                parseFloat(locationInput.latitude) > 90 ||
+                parseFloat(locationInput.longitude) < -360 ||
+                parseFloat(locationInput.longitude) > 360
+              }
               onClick={() => {
                 if (locationInput.latitude && locationInput.longitude) {
                   const newFilters = {
