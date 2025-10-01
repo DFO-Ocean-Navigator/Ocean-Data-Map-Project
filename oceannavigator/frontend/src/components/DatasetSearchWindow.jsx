@@ -39,7 +39,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     if (Object.keys(variableDataMap).length === 0) return [];
 
     return [
-      { value: "any", label: "Any", key: "any" },
+      { value: "any", key: "any" },
       ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
         value: variableName,
         key: `${variableName}-${datasets[0]?.variable_id}`,
@@ -50,7 +50,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
   const vectorVariables = useMemo(() => {
     if (Object.keys(variableDataMap).length === 0) return [];
 
-    const allVectorVariables = new Set();
     const vectorVariableMap = {};
 
     Object.entries(variableDataMap).forEach(
@@ -58,24 +57,17 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         datasetEntries.forEach((entry) => {
           if (entry.vector_variables === true) {
             vectorVariableMap[variableName] = entry.variable_id;
-            allVectorVariables.add(variableName);
           }
         });
       }
     );
 
     return [
-      { value: "none", label: "None", id: "none" },
-      ...Array.from(allVectorVariables).map((name) => {
-        const variableData = variableDataMap[name] || [];
-        const vectorEntry = variableData.find(
-          (entry) => entry.vector_variables === true
-        );
-        return {
-          value: name,
-          id: vectorEntry?.variable_id || name,
-        };
-      }),
+      { value: "none", id: "none" },
+      ...Object.entries(vectorVariableMap).map(([name, id]) => ({
+        value: name,
+        id,
+      })),
     ];
   }, [variableDataMap]);
 

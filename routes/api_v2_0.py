@@ -527,8 +527,8 @@ def filter_datasets_by_date(
 
 @router.get("/datasets/filter/location")
 def filter_datasets_by_location(
-    latitude: float = Query(description="Latitude coordinate"),
-    longitude: float = Query(description="Longitude coordinate"),
+    latitude: int | float = Query(description="Latitude coordinate"),
+    longitude: int | float = Query(description="Longitude coordinate"),
     dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
 ):
     """
@@ -554,7 +554,7 @@ def filter_datasets_by_location(
         with open(path, "rb") as f:
             poly = pickle.load(f)
 
-        if poly.contains(point):
+        if poly.intersects(point):
             matching_dataset_ids.append(dataset_id)
 
     return matching_dataset_ids
