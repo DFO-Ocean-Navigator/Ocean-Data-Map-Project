@@ -219,6 +219,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       case "location":
         newFilters.latitude = FILTER_DEFAULTS.latitude;
         newFilters.longitude = FILTER_DEFAULTS.longitude;
+        setLocationInput({ latitude: "", longitude: "" });
         break;
     }
 
@@ -364,7 +365,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   min={-90}
                   max={+90}
                   placeholder="Latitude"
-                  value={locationInput.latitude}
+                  value={locationInput.latitude|| ""}
                   onChange={(e) =>
                     setLocationInput({
                       ...locationInput,
@@ -386,7 +387,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   min={-360}
                   max={360}
                   placeholder="Longitude"
-                  value={locationInput.longitude}
+                  value={locationInput.longitude||""}
                   onChange={(e) =>
                     setLocationInput({
                       ...locationInput,
