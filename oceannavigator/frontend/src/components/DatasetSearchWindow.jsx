@@ -41,9 +41,10 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     if (Object.keys(variableDataMap).length === 0) return [];
 
     return [
-      { value: "any", key: "any" },
+      { value: "any", id:null, key: "any" },
       ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
         value: variableName,
+        id: `${datasets[0].variable_id}`,
         key: `${variableName}-${datasets[0]?.variable_id}`,
       })),
     ];
@@ -466,16 +467,15 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                       variant="primary"
                       size="sm"
                       onClick={() => {
-                        const selectedVariable =
-                          filters.variable && filters.variable !== "any"
-                            ? filters.variable
-                            : null;
+                        const selectedVariableobj =variables.find(
+                          (v) => v.value === filters.variable);
+                          const selectedVariable=selectedVariableobj.id;
 
                         const selectedVectorVariableObj = vectorVariables.find(
                           (v) => v.value === filters.vectorVariable
                         );
                         const selectedVectorVariable =
-                          selectedVectorVariableObj?.id || "none";
+                          selectedVectorVariableObj.id;
 
                         updateDataset(
                           dataset.id,
