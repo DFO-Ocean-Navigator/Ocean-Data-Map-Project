@@ -185,10 +185,11 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
     // Filter by Location
     if (newFilters.latitude !== "" && newFilters.longitude !== "") {
+      let longitude=(newFilters.longitude+360)%360
       const result = await FilterDatasetsByLocationPromise(
         temp_dataset.map((obj) => obj.id),
         newFilters.latitude,
-        newFilters.longitude
+        longitude
       );
       if (Array.isArray(result.data)) {
         temp_dataset = temp_dataset.filter((obj) =>
