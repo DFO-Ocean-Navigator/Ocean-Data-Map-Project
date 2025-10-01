@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Button, Row, Col, Form, Badge } from "react-bootstrap";
 import DatePicker from "react-datepicker";
+import { useTranslation } from "react-i18next";
 import {
   GetAllVariablesPromise,
   FilterDatasetsByDatePromise,
@@ -10,6 +11,7 @@ import {
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
+  const { t } = useTranslation();
   const [datasetDisplayed, setDatasetDisplayed] = useState(datasets);
   const [variableDataMap, setVariableDataMap] = useState({});
   const [locationInput, setLocationInput] = useState({
@@ -103,6 +105,10 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
       let label = "";
       switch (key) {
+        case "vectorVariable":
+        label = `${t("Quiver")}: ${value}`;
+
+          break;
         case "date":
           label = `Date: ${new Date(value).toLocaleDateString()}`;
 
@@ -242,7 +248,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     <>
       {/* Active Filters */}
       <div className="mb-3">
-        <h6>Active Filters:</h6>
+        <h6>{t("Active Filters")}</h6>
         <div className="d-flex flex-wrap gap-2 align-items-center">
           {activeFilters.length > 0 ? (
             activeFilters.map(({ key, label }) => (
@@ -261,25 +267,25 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
               </Badge>
             ))
           ) : (
-            <div className="text-muted me-2">No active filters</div>
+            <div className="text-muted me-2">{t("No active filters")}</div>
           )}
           <Button
             variant="outline-secondary"
             size="sm"
             onClick={clearAllFilters}
           >
-            Clear All
+            {t("Clear All")}
           </Button>
         </div>
       </div>
 
       <Row>
         <Col md={4}>
-          <h5>Filters</h5>
+          <h5>{t("Filters")}</h5>
 
           {/* Variable Filter */}
           <Form.Group className="mb-3">
-            <Form.Label>Variable</Form.Label>
+            <Form.Label>{t("Variable")}</Form.Label>
             <Form.Select
               value={filters.variable ?? ""}
               onChange={(e) => {
@@ -297,7 +303,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
           {/* Vector Variable Filter */}
           <Form.Group className="mb-3">
-            <Form.Label>Vector Variable</Form.Label>
+            <Form.Label>{t("Quiver")}</Form.Label>
             <Form.Select
               value={filters.vectorVariable ?? ""}
               onChange={(e) => {
@@ -315,7 +321,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
           {/* Depth Filter */}
           <Form.Group className="mb-3">
-            <Form.Label>Variables with Depth Dimensions</Form.Label>
+            <Form.Label>{t("With Depth Dimension")}</Form.Label>
             <Form.Select
               value={
                 filters.depth === null || filters.depth === undefined
@@ -357,7 +363,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
           {/* Location Filter */}
           <Form.Group className="mb-3">
-            <Form.Label>Geographic Location</Form.Label>
+            <Form.Label>{t("Location")}</Form.Label>
             <Row>
               <Col>
                 <Form.Control
@@ -427,7 +433,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                 }
               }}
             >
-              Apply Location Filter
+              {t("Search Location")}
             </Button>
           </Form.Group>
         </Col>
@@ -435,7 +441,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5>
-              Showing Datasets ({datasetDisplayed.length}) / ({datasets.length})
+              ({datasetDisplayed.length}) / ({datasets.length}) {t("Datasets")}
             </h5>
           </div>
 
@@ -481,7 +487,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                       }}
                       className="ms-2"
                     >
-                      Apply
+                      {t("Apply")}
                     </Button>
                   </div>
                 </div>
