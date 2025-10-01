@@ -26,14 +26,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     longitude: "",
   };
 
-  const [filters, setFilters] = useState({
-    variable: "any",
-    vectorVariable: "none",
-    depth: null,
-    date: null,
-    latitude: "",
-    longitude: "",
-  });
+  const [filters, setFilters] = useState(FILTER_DEFAULTS);
   const [loading, setLoading] = useState(false);
 
   const depthOptions = [
@@ -104,7 +97,6 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       active.push({
         key: "location",
         label: `Location: ${filters.latitude}°, ${filters.longitude}°`,
-        removeKey: "location",
       });
     }
 
@@ -119,37 +111,15 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
       let label = "";
       switch (key) {
-        case "variable":
-          label = `Variable: ${
-            variables.find((v) => v.value === value)?.value ?? value
-          }`;
-          break;
-        case "vectorVariable":
-          label = `Vector: ${
-            vectorVariables.find((v) => v.value === value)?.value ?? value
-          }`;
-          break;
-
-        case "depth":
-          label =
-            value === true
-              ? "Has depth"
-              : value === false
-              ? "Surface only"
-              : "Both 2D/3D";
-          break;
         case "date":
-          try {
-            label = `Date: ${new Date(value).toLocaleDateString()}`;
-          } catch {
-            label = `Date: ${String(value)}`;
-          }
+          label = `Date: ${new Date(value).toLocaleDateString()}`;
+
           break;
         default:
           label = `${key}: ${String(value)}`;
       }
 
-      active.push({ key, label, removeKey: key });
+      active.push({ key, label });
     });
 
     return active;
@@ -281,7 +251,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
         <h6>Active Filters:</h6>
         <div className="d-flex flex-wrap gap-2 align-items-center">
           {activeFilters.length > 0 ? (
-            activeFilters.map(({ key, label, removeKey }) => (
+            activeFilters.map(({ key, label }) => (
               <Badge
                 key={key}
                 bg="primary"
@@ -292,7 +262,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   type="button"
                   className="btn-close btn-close-white ms-2"
                   style={{ fontSize: "0.7em" }}
-                  onClick={() => removeFilter(removeKey)}
+                  onClick={() => removeFilter(key)}
                 />
               </Badge>
             ))
