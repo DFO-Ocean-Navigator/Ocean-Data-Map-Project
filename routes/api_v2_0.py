@@ -1,5 +1,5 @@
 import base64
-from datetime import datetime
+import datetime
 import gzip
 import json
 import os
@@ -21,6 +21,7 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
+
 import data.class4 as class4
 import data.observational.queries as ob_queries
 import plotting.colormap
