@@ -145,8 +145,8 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       const variableData = variableDataMap[newFilters.vectorVariable] || [];
       const datasetsWithVector = variableData
         .map((entry) => {
-          const ds = datasets.find((d) => d.id === entry.dataset_id);
-          return ds && ds.model_class !== "Nemo" ? ds.id : null;
+            const ds = datasets.find((d) => d.id === entry.dataset_id);
+          return entry.vector_variables === true && ds && ds.model_class !== "Nemo" ? ds.id : null;
         })
         .filter(Boolean);
       temp_dataset = temp_dataset.filter((obj) =>
@@ -479,19 +479,17 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                           selectedVectorVariableObj.id;
 
                         let selectedVariableScale = null;
-                        if (filters.variable!="any"){
-                          selectedVariableScale=variableDataMap[filters.variable][0].variable_scale
-
+                        if (filters.variable != "any") {
+                          selectedVariableScale =
+                            variableDataMap[filters.variable][0].variable_scale;
                         }
 
                         updateDataset(
                           dataset.id,
                           selectedVariable || null,
                           true,
-                          selectedVectorVariable ||
-                            "none",
-                            selectedVariableScale ||
-                            null
+                          selectedVectorVariable || "none",
+                          selectedVariableScale || null
                         );
                         closeModal();
                       }}
