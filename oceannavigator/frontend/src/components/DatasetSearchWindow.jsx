@@ -41,7 +41,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
     if (Object.keys(variableDataMap).length === 0) return [];
 
     return [
-      { value: "any", id:null, key: "any" },
+      { value: "any", id: null, key: "any" },
       ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
         value: variableName,
         id: `${datasets[0].variable_id}`,
@@ -107,7 +107,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
       let label = "";
       switch (key) {
         case "vectorVariable":
-        label = `${t("Quiver")}: ${value}`;
+          label = `${t("Quiver")}: ${value}`;
 
           break;
         case "date":
@@ -372,7 +372,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   min={-90}
                   max={+90}
                   placeholder="Latitude"
-                  value={locationInput.latitude|| ""}
+                  value={locationInput.latitude || ""}
                   onChange={(e) =>
                     setLocationInput({
                       ...locationInput,
@@ -394,7 +394,7 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                   min={-360}
                   max={360}
                   placeholder="Longitude"
-                  value={locationInput.longitude||""}
+                  value={locationInput.longitude || ""}
                   onChange={(e) =>
                     setLocationInput({
                       ...locationInput,
@@ -467,9 +467,10 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                       variant="primary"
                       size="sm"
                       onClick={() => {
-                        const selectedVariableobj =variables.find(
-                          (v) => v.value === filters.variable);
-                          const selectedVariable=selectedVariableobj.id;
+                        const selectedVariableobj = variables.find(
+                          (v) => v.value === filters.variable
+                        );
+                        const selectedVariable = selectedVariableobj.id;
 
                         const selectedVectorVariableObj = vectorVariables.find(
                           (v) => v.value === filters.vectorVariable
@@ -477,11 +478,20 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
                         const selectedVectorVariable =
                           selectedVectorVariableObj.id;
 
+                        let selectedVariableScale = null;
+                        if (filters.variable!="any"){
+                          selectedVariableScale=variableDataMap[filters.variable][0].variable_scale
+
+                        }
+
                         updateDataset(
                           dataset.id,
                           selectedVariable || null,
                           true,
-                          selectedVectorVariable || "none"
+                          selectedVectorVariable ||
+                            "none",
+                            selectedVariableScale ||
+                            null
                         );
                         closeModal();
                       }}

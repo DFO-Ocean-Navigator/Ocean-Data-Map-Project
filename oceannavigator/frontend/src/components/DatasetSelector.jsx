@@ -90,7 +90,8 @@ function DatasetSelector({
     newDataset,
     currentVariable,
     updateParentOnSuccess = false,
-    newQuiverVariable
+    newQuiverVariable,
+    newVarScale = null
   ) => {
     const currentDataset = availableDatasets.filter((d) => {
       return d.id === newDataset;
@@ -108,7 +109,7 @@ function DatasetSelector({
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
         let newVariable = currentVariable;
-        let newVariableScale = mountedDataset.variable_scale;
+        let newVariableScale = newVarScale ?? mountedDataset.variable_scale;
         let newQuiver = newQuiverVariable ?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
@@ -119,7 +120,9 @@ function DatasetSelector({
 
         if (!variableIds.includes(currentVariable)) {
           newVariable = variableResult.data[0].id;
-          newVariableScale = variableResult.data[0].scale;
+          if (newVarScale == null) {
+            newVariableScale = variableResult.data[0].scale;
+          }
           variable_range[newVariable] = null;
         }
 
