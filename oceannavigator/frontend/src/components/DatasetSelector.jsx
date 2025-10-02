@@ -39,7 +39,7 @@ function DatasetSelector({
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
-  showSearchBtn = true,
+  showSearchBtn = false,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -569,11 +569,11 @@ function DatasetSelector({
         overlay={<Tooltip id={"draw-tooltip"}>{t("Search Datasets")}</Tooltip>}
       >
         <Button
-          variant="outline-primary"
+          className="go-button"
+          variant="primary"
           size="sm"
           onClick={toggleSearchDatasets}
           title="Search Datasets"
-          className="ms-2"
         >
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </Button>

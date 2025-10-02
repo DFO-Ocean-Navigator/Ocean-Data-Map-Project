@@ -247,7 +247,6 @@ const LineWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_0}
-          showSearchBtn={false}
         />
         <ComboBox
           id="colormap"
@@ -277,7 +276,6 @@ const LineWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_1}
-          showSearchBtn={false}
         />
         <ComboBox
           id="colormap_right"

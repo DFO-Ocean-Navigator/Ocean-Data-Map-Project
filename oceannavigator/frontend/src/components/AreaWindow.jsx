@@ -204,7 +204,6 @@ const AreaWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_0}
-          showSearchBtn={false}
         />
         <ComboBox
           id="leftColormap"
@@ -231,7 +230,6 @@ const AreaWindow = (props) => {
           showVariableRange={false}
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_1}
-          showSearchBtn={false}
         />
         <ComboBox
           id="rightColormap"
