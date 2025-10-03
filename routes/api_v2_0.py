@@ -1050,6 +1050,8 @@ def topography_tiles(
     Generates topographical tiles
     """
 
+    return
+
     settings = get_settings()
 
     if zoom > 7:
@@ -1164,10 +1166,10 @@ def mbt(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    if (zoom < 7) or (projection != "EPSG:3857"):
-        return blank_response
+    # if (zoom < 7) or (projection != "EPSG:3857"):
+    #     return blank_response
 
-    if (zoom > 11) and (tiletype == "bath"):
+    if (tiletype == "bath"):
         return blank_response
 
     # Send file if cached or select data in SQLite file
@@ -1179,7 +1181,7 @@ def mbt(
         )
 
     y = (2**zoom - 1) - y
-    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
+    connection = sqlite3.connect("/data/misc/shapes/onav_tiles.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
     selector.execute(sqlite)
