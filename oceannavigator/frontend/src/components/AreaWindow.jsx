@@ -144,7 +144,7 @@ const AreaWindow = (props) => {
           state={scale.split(",")}
           onUpdate={handleScaleUpdate}
         />
-          {/* End of Compare Datasets options */}
+        {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
           checked={bathymetry}

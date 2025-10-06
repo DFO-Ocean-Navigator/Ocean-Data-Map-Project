@@ -462,10 +462,6 @@ def get_all_variables():
                 data = xr.open_mfdataset(config.url)
             dims = data.dims
         has_depth = "depth" in dims
-        if config.model_class != "Nemo":
-            vector_variables = list(config.vector_variables.keys())
-        else:
-            vector_variables = []
 
         for variable in config.variables:
             variable_name = config.variable[variable].name
@@ -475,7 +471,7 @@ def get_all_variables():
                 "dataset_id": dataset_key,
                 "variable_id": variable,
                 "variable_scale": scale,
-                "vector_variables": vector_variables,
+                "vector_variables": variable in config.vector_variables,
                 "depth": has_depth,
             }
 
@@ -510,6 +506,7 @@ def filter_datasets_by_date(
                 converted_times = time_index_to_datetime(
                     [lowest, highest], time_dim_units
                 )
+
                 if (
                     converted_times[0] <= parsed_date
                     and converted_times[1] >= parsed_date
@@ -531,8 +528,8 @@ def filter_datasets_by_date(
 
 @router.get("/datasets/filter/location")
 def filter_datasets_by_location(
-    latitude: float = Query(description="Latitude coordinate"),
-    longitude: float = Query(description="Longitude coordinate"),
+    latitude: int | float = Query(description="Latitude coordinate"),
+    longitude: int | float = Query(description="Longitude coordinate"),
     dataset_ids: str = Query(description="Comma-separated dataset IDs to filter from"),
 ):
     """
@@ -558,7 +555,7 @@ def filter_datasets_by_location(
         with open(path, "rb") as f:
             poly = pickle.load(f)
 
-        if poly.contains(point):
+        if poly.intersects(point):
             matching_dataset_ids.append(dataset_id)
 
     return matching_dataset_ids
