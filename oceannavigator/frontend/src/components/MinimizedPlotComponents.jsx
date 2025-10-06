@@ -1,13 +1,52 @@
-import React from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import Button from "react-bootstrap/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faExpand } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
 
-import { getPlotTitle } from "./OceanNavigator.jsx";
+const MinimizedPlotBar = forwardRef(({ activePlotsRef }, ref) => {
+  const [minimizedPlots, setMinimizedPlots] = useState([]);
 
-const MinimizedPlotBar = ({ minimizedPlots, onRestore, onClose, t }) => {
+  useImperativeHandle(ref, () => ({
+    addPlot: (plot) => {
+      setMinimizedPlots((prev) => {
+        if (prev.some(p => p.id === plot.id)) {
+          return prev;
+        }
+        return [...prev, plot];
+      });
+    },
+    
+    removePlot: (plotId) => {
+      setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== plotId));
+    },
+    
+    clearAll: () => {
+      setMinimizedPlots([]);
+    },
+    
+    checkAndRestoreIfExists: (plotId) => {
+      const exists = minimizedPlots.some(plot => plot.id === plotId);
+      if (exists) {
+        handleRestore(plotId);
+        return true;
+      }
+      return false;
+    }
+  }), [minimizedPlots]);
+
+  const handleRestore = (plotId) => {
+    const plotToRestore = minimizedPlots.find((plot) => plot.id === plotId);
+    if (plotToRestore) {
+      setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== plotId));
+      activePlotsRef.current?.restorePlot(plotToRestore);
+    }
+  };
+
+  const handleClose = (plotId) => {
+    setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== plotId));
+  };
+
   if (!minimizedPlots?.length) return null;
 
   return (
@@ -17,26 +56,26 @@ const MinimizedPlotBar = ({ minimizedPlots, onRestore, onClose, t }) => {
           <div className="minimized-plot-content">
             <span
               className="minimized-plot-title"
-              onClick={() => onRestore(plot.id)}
+              onClick={() => handleRestore(plot.id)}
               style={{ cursor: "pointer" }}
-              title={t ? t("Click to restore") : "Click to restore"}
+              title="Click to restore"
             >
-              {getPlotTitle(plot.plotData)}
+              {plot.title}
             </span>
             <div className="minimized-plot-actions">
               <Button
                 variant="outline-primary"
                 size="sm"
-                onClick={() => onRestore(plot.id)}
-                title={t ? t("Restore") : "Restore"}
+                onClick={() => handleRestore(plot.id)}
+                title="Restore"
               >
                 <FontAwesomeIcon icon={faExpand} />
               </Button>
               <Button
                 variant="outline-danger"
                 size="sm"
-                onClick={() => onClose(plot.id)}
-                title={t ? t("Close") : "Close"}
+                onClick={() => handleClose(plot.id)}
+                title="Close"
               >
                 <FontAwesomeIcon icon={faXmark} />
               </Button>
@@ -46,13 +85,10 @@ const MinimizedPlotBar = ({ minimizedPlots, onRestore, onClose, t }) => {
       ))}
     </div>
   );
-};
+});
 
 MinimizedPlotBar.propTypes = {
-  minimizedPlots: PropTypes.array,
-  onRestore: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
+  activePlotsRef: PropTypes.object.isRequired,
 };
 
-export default withTranslation()(MinimizedPlotBar);
+export default MinimizedPlotBar;

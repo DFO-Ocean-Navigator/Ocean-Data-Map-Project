@@ -42,30 +42,6 @@ export function formatLatLon(latitude, longitude) {
   return formatted;
 }
 
-export function getPlotTitle(plotData) {
-  if (!plotData) return "Plot";
-  const { type, coordinates, id, plotName } = plotData;
-
-  if (plotName) return plotName;
-
-  switch (type) {
-    case "Point":
-      return coordinates?.length
-        ? `Point Plot - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
-        : "Point Plot";
-    case "LineString":
-      return `Line Plot - ${coordinates?.length || 0} points`;
-    case "Polygon":
-      return `Area Plot - ${coordinates?.length || 0} vertices`;
-    case "track":
-      return id ? `Track Plot - ${id}` : "Track Plot";
-    case "class4":
-      return id ? `Class 4 Analysis - ${id}` : "Class 4 Analysis";
-    default:
-      return `${type} Plot`;
-  }
-}
-
 function OceanNavigator(props) {
   const mapRef = useRef();
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
@@ -85,8 +61,8 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
-  const [minimizedPlots, setMinimizedPlots] = useState([]);
-  const [activePlots, setActivePlots] = useState([]);
+  const activePlotsRef = useRef();
+  const minimizedPlotsRef = useRef();
   const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState({});
   const [class4Type, setClass4Type] = useState("ocean_predict");
@@ -147,6 +123,19 @@ function OceanNavigator(props) {
     }
   }, []);
 
+const handleMinimizedPlotsChange = (data) => {
+  if (data.action === "add") {
+    minimizedPlotsRef.current?.addPlot(data.plot);
+  } else if (data.action === "remove") {
+    minimizedPlotsRef.current?.removePlot(data.plotId);
+  } else if (data.action === "clearAll") {
+    minimizedPlotsRef.current?.clearAll();
+  } else if (data.action === "checkExists") {
+    // Check if plot exists in minimized and restore it
+    return minimizedPlotsRef.current?.checkAndRestoreIfExists(data.plotId);
+  }
+};
+
   const action = (name, arg, arg2) => {
     switch (name) {
       case "startFeatureDraw":
@@ -166,6 +155,10 @@ function OceanNavigator(props) {
         break;
       case "resetMap":
         mapRef.current.resetMap();
+        setPlotData({});
+        setSelectedFeatureIds([]);
+        activePlotsRef.current?.clearAllPlots();
+        minimizedPlotsRef.current?.clearAll();
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
@@ -173,33 +166,8 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (newPlotData.type) {
-          const plotId = newPlotData.id;
-
-          const existingMinimized = minimizedPlots.find(
-            (plot) => plot.id === plotId
-          );
-          if (existingMinimized) {
-            action("restorePlot", plotId);
-            return;
-          }
-
-          const newActivePlot = {
-            id: plotId,
-            plotData: newPlotData,
-            component: null,
-          };
-
-          setActivePlots((prev) => {
-            const newActivePlots = [...prev];
-            if (newActivePlots.length >= 2) {
-              const oldestPlot = newActivePlots.shift();
-              setMinimizedPlots((prevMin) => [...prevMin, oldestPlot]);
-            }
-            return [...newActivePlots, newActivePlot];
-          });
-
-          updateUI({ showModal: true });
           setPlotData(newPlotData);
+          updateUI({ modalType: newPlotData.type, showModal: true });
         }
         break;
       case "selectedFeatureIds":
@@ -230,73 +198,6 @@ function OceanNavigator(props) {
       case "permalink":
         setSubquery(null);
         setShowPermalink(true);
-        break;
-      case "minimizePlot":
-        const plotToMinimize = activePlots.find((plot) => plot.id === arg);
-        if (plotToMinimize) {
-          setMinimizedPlots((prev) => [
-            ...prev,
-            {
-              id: plotToMinimize.id,
-              plotData: plotToMinimize.plotData,
-            },
-          ]);
-
-          setActivePlots((prev) => prev.filter((plot) => plot.id !== arg));
-
-          if (activePlots.length === 1) {
-            updateUI({ showModal: false, modalType: "" });
-            setPlotData({});
-          }
-        }
-        break;
-      case "restorePlot":
-        const plotToRestore = minimizedPlots.find((plot) => plot.id === arg);
-        if (plotToRestore) {
-          const restoredPlot = {
-            id: plotToRestore.id,
-            plotData: plotToRestore.plotData,
-            component: null,
-          };
-
-          setActivePlots((prev) => {
-            const newActivePlots = [...prev];
-
-            if (newActivePlots.length >= 2) {
-              const oldestPlot = newActivePlots.shift();
-              setMinimizedPlots((prevMin) => [
-                ...prevMin.filter((p) => p.id !== arg),
-                {
-                  id: oldestPlot.id,
-                  plotData: oldestPlot.plotData,
-                },
-              ]);
-            }
-
-            return [...newActivePlots, restoredPlot];
-          });
-
-          setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== arg));
-          updateUI({ showModal: true });
-          setPlotData(plotToRestore.plotData);
-        }
-        break;
-      case "closePlot":
-        if (arg) {
-          setActivePlots((prev) => {
-            const filtered = prev.filter((plot) => plot.id !== arg);
-            if (filtered.length === 0) {
-              updateUI({ showModal: false, modalType: "" });
-              setPlotData({});
-            }
-            return filtered;
-          });
-          setMinimizedPlots((prev) => prev.filter((plot) => plot.id !== arg));
-        } else {
-          setActivePlots([]);
-          updateUI({ showModal: false, modalType: "" });
-          setPlotData({});
-        }
         break;
     }
   };
@@ -392,7 +293,7 @@ function OceanNavigator(props) {
     );
   };
 
-  const isNonPlotModal = uiSettings.showModal && activePlots.length === 0;
+  const isNonPlotModal = uiSettings.showModal && uiSettings.modalType!="LineString" && uiSettings.modalType!="Point" && uiSettings.modalType!="Polygon" && uiSettings.modalType!="track" && uiSettings.modalType!= "class4";
 
   let modalBodyContent = null;
   let modalTitle = "";
@@ -474,9 +375,8 @@ function OceanNavigator(props) {
       ) : null}
 
       <MinimizedPlotBar
-        minimizedPlots={minimizedPlots}
-        onRestore={(plotId) => action("restorePlot", plotId)}
-        onClose={(plotId) => action("closePlot", plotId)}
+        ref={minimizedPlotsRef}
+        activePlotsRef={activePlotsRef}
       />
       <Map
         ref={mapRef}
@@ -515,7 +415,9 @@ function OceanNavigator(props) {
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
 
       <ActivePlotsContainer
-        activePlots={activePlots}
+        newPlotData={plotData}
+        ref={activePlotsRef}
+        onMinimizedPlotsChange={handleMinimizedPlotsChange}
         mapRef={mapRef}
         dataset0={dataset0}
         dataset1={dataset1}
@@ -528,8 +430,7 @@ function OceanNavigator(props) {
         compareDatasets={compareDatasets}
         setCompareDatasets={setCompareDatasets}
         class4Type={class4Type}
-        onMinimize={(plotId) => action("minimizePlot", plotId)}
-        onClose={(plotId) => action("closePlot", plotId)}
+        swapViews={swapViews}
       />
 
       <Modal
