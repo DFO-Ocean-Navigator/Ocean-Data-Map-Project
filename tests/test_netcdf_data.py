@@ -195,6 +195,7 @@ class TestNetCDFData(unittest.TestCase):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_time_index([2031436800, 2034072000])
             numpy.testing.assert_array_equal(result, numpy.array([0, 1]))
+            
 
     def test_timestamp_to_iso_8601_int_timestamp(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:

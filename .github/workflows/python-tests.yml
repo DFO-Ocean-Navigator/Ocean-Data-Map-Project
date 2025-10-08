@@ -47,8 +47,15 @@ jobs:
         use-only-tar-bz2: true
     - name: Update environment
       run: mamba env update -f config/mamba/environment.yml --name test --quiet
-    - name: Run tests
+    - name: Run tests (activate)
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
-        mamba run -n test -- ./run_python_tests.sh
+        # initialize mamba for the current bash shell
+        eval "$(mamba shell hook --shell bash)"
+        mamba activate test
+        # optional sanity checks
+        which python
+        python --version
+        ./run_python_tests.sh
       shell: bash -l {0}
+
