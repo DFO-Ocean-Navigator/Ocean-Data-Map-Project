@@ -1,4 +1,4 @@
-name: navigator
+name: test
 channels:
   - conda-forge
 dependencies:
@@ -282,6 +282,9 @@ dependencies:
   - python-multipart=0.0.20=pyhff2d567_0
   - python-tzdata=2025.2=pyhd8ed1ab_0
   - python_abi=3.13=8_cp313
+  - pytest       
+  - pytest-cov       
+  - pytest-mock
   - pytz=2025.2=pyhd8ed1ab_0
   - pywavelets=1.8.0=py313ha014f3b_0
   - pyyaml=6.0.2=py313h8060acc_2
@@ -373,4 +376,4 @@ dependencies:
   - pip:
     - visvalingamwyatt==0.3.0
 
-prefix: "/home/ubuntu/miniforge3/envs/navigator"
+# prefix: "/home/ubuntu/miniforge3/envs/navigator"
