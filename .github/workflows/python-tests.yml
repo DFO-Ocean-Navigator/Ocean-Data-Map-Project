@@ -50,5 +50,5 @@ jobs:
     - name: Run tests
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
-        mamba activate test
-        ./run_python_tests.sh
+        mamba run -n test -- ./run_python_tests.sh
+      shell: bash -l {0}
