@@ -215,7 +215,6 @@ class TestNetCDFData(unittest.TestCase):
             date_formatted = nc_data.convert_to_timestamp("2014-06-16T12:00:00Z")
             self.assertEqual(date_formatted, 1)
 
-    @unittest.skip("TypeError: cant subtract offset-naive and offset-aware datetimes")
     def test_convert_to_timestamp_list(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             date_formatted = nc_data.convert_to_timestamp(
