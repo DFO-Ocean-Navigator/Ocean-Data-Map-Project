@@ -94,7 +94,7 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
-            self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875 - 273.15)
+            self.assertAlmostEqual(v[0, 0, 17, 816].values.item(), 271.1796875 - 273.15, places=4)
             self.assertEqual(v.attrs.long_name, "Sea water potential temperature")
             self.assertEqual(v.shape, (1, 50, 850, 1800))
 

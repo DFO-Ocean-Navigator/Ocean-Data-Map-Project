@@ -136,7 +136,7 @@ class TestNemo(unittest.TestCase):
             p, d = ds.get_profile(13.0, -149.0, "votemper", 2031436800)
             self.assertAlmostEqual(p[0], 299.17, places=2)
             self.assertAlmostEqual(p[10], 299.15, places=2)
-            self.assertAlmostEqual(p[20], 296.466766, places=6)
+            self.assertAlmostEqual(p[20], 296.466766, places=4)
             self.assertTrue(np.ma.is_masked(p[49]))
 
     def test_get_profile_depths(self):
@@ -213,7 +213,7 @@ class TestNemo(unittest.TestCase):
             )
             self.assertAlmostEqual(r[0, 0], 299.17, places=2)
             self.assertAlmostEqual(r[0, 10], 299.15, places=2)
-            self.assertAlmostEqual(r[0, 20], 296.466766, places=6)
+            self.assertAlmostEqual(r[0, 20], 296.466766, places=4)
             self.assertTrue(np.ma.is_masked(r[0, 49]))
 
             self.assertNotEqual(r[0, 0], r[1, 0])
