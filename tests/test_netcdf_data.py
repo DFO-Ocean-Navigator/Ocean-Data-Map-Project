@@ -196,13 +196,11 @@ class TestNetCDFData(unittest.TestCase):
             result = nc_data.timestamp_to_time_index([2031436800, 2034072000])
             numpy.testing.assert_array_equal(result, numpy.array([0, 1]))
 
-    @unittest.skip("AttributeError: module cftime has no attribute real_datetime")
     def test_timestamp_to_iso_8601_int_timestamp(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_iso_8601(2031436800)
             self.assertEqual(result, cftime.real_datetime(2014, 5, 17, tzinfo=pytz.UTC))
 
-    @unittest.skip("AttributeError: module cftime has no attribute real_datetime")
     def test_timestamp_to_iso_8601_timestamp_list(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_iso_8601([2031436800, 2034072000])
