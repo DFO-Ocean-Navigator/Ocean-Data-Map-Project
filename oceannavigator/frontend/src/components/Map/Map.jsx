@@ -487,12 +487,15 @@ const Map = forwardRef((props, ref) => {
     let selected = e.selected;
     let features0 = [...s0?.getFeatures().getArray()];
     let features1 = [...s1?.getFeatures().getArray()];
+    
     if (selected.length === 0) {
+      // feature has been deselected
       let allFeatures = [...features0, ...features1];
       selected = allFeatures.filter(
         (feature) => feature.getId() !== e.deselected[0].getId()
       );
     } else if (selected[0].get("type") === "Point") {
+      // point has been selected so allow multiple
       selected = [...selected, ...features0, ...features1];
       selected = [...new Set(selected)];
       selected = selected.filter((feature) => {
@@ -500,6 +503,7 @@ const Map = forwardRef((props, ref) => {
       });
     }
 
+    // add resulting features to select interactions
     s0?.getFeatures().clear();
     s1?.getFeatures().clear();
 
