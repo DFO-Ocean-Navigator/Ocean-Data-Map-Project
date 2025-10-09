@@ -618,7 +618,9 @@ const Map = forwardRef((props, ref) => {
   const getPlotData = () => {
     let selected = select0.getFeatures().getArray();
     let type, id, coordinates, observation;
+    let plotName = selected[0].get("name");
     if (selected.length > 0) {
+     
       if (selected[0].get("class") === "observation") {
         type = selected[0].getGeometry().constructor.name;
         type = type === "LineString" ? "track" : type;
@@ -633,9 +635,11 @@ const Map = forwardRef((props, ref) => {
           coordinates: coordinates,
           id: id,
           observation: observation,
+          plotName: plotName,
         };
       } else {
         type = selected[0].get("type");
+        id= selected[0].getId();
       }
       if (type === "class4") {
         id = selected[0].get("id").replace("/", "_");
@@ -663,6 +667,7 @@ const Map = forwardRef((props, ref) => {
       coordinates: coordinates,
       id: id,
       observation: observation,
+      plotName: plotName,
     };
   };
 
