@@ -8,39 +8,21 @@ import Map from "./Map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
+import ActivePlotsContainer from "./PlotComponents.jsx";
+import MinimizedPlotBar from "./MinimizedPlotComponents.jsx";
 import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
 import ModifyFeaturesWindow from "./ModifyFeaturesWindow/ModifyFeaturesWindow.jsx";
-import PointWindow from "./PointWindow.jsx";
-import LineWindow from "./LineWindow.jsx";
-import AreaWindow from "./AreaWindow.jsx";
+import AnnotationButton from "./AnnotationButton.jsx";
 import AnnotationTextWindow from "./AnnotationTextWindow.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
 import Class4Selector from "./Class4Selector.jsx";
-import Class4Window from "./Class4Window.jsx";
-import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
-import AnnotationButton from "./AnnotationButton.jsx";
-import { withTranslation } from "react-i18next";
-import ActivePlotsContainer from "./PlotComponents.jsx";
-import MinimizedPlotBar from "./MinimizedPlotComponents.jsx";
 
-export function formatLatLon(latitude, longitude) {
-  latitude = latitude > 90 ? 90 : latitude;
-  latitude = latitude < -90 ? -90 : latitude;
-  longitude = longitude > 180 ? longitude - 360 : longitude;
-  longitude = longitude < -180 ? 360 + longitude : longitude;
-  let formatted = "";
-  formatted += Math.abs(latitude).toFixed(4) + " ";
-  formatted += latitude >= 0 ? "N" : "S";
-  formatted += ", ";
-  formatted += Math.abs(longitude).toFixed(4) + " ";
-  formatted += longitude >= 0 ? "E" : "W";
-  return formatted;
-}
+import { withTranslation } from "react-i18next";
 
 function OceanNavigator(props) {
   const mapRef = useRef();
@@ -61,10 +43,8 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
-  const activePlotsRef = useRef();
-  const minimizedPlotsRef = useRef();
   const [mapState, setMapState] = useState({});
-  const [plotData, setPlotData] = useState({});
+  const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState([]);
@@ -111,8 +91,8 @@ function OceanNavigator(props) {
           }
           mapRef.current.selectFeatures(selectedIds);
           if (query.showModal) {
-            let plotData = mapRef.current.getPlotData();
-            setPlotData(plotData);
+            let newPlotData = mapRef.current.getPlotData();
+            setPlotData(newPlotData);
           }
           updateUI({ modalType: query.modalType, showModal: query.showModal });
           setSubquery(query.subquery);
@@ -122,19 +102,6 @@ function OceanNavigator(props) {
       }
     }
   }, []);
-
-const handleMinimizedPlotsChange = (data) => {
-  if (data.action === "add") {
-    minimizedPlotsRef.current?.addPlot(data.plot);
-  } else if (data.action === "remove") {
-    minimizedPlotsRef.current?.removePlot(data.plotId);
-  } else if (data.action === "clearAll") {
-    minimizedPlotsRef.current?.clearAll();
-  } else if (data.action === "checkExists") {
-    // Check if plot exists in minimized and restore it
-    return minimizedPlotsRef.current?.checkAndRestoreIfExists(data.plotId);
-  }
-};
 
   const action = (name, arg, arg2) => {
     switch (name) {
@@ -155,20 +122,41 @@ const handleMinimizedPlotsChange = (data) => {
         break;
       case "resetMap":
         mapRef.current.resetMap();
-        setPlotData({});
+        setPlotData([]);
         setSelectedFeatureIds([]);
-        activePlotsRef.current?.clearAllPlots();
-        minimizedPlotsRef.current?.clearAll();
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
         break;
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
-        if (newPlotData.type) {
-          setPlotData(newPlotData);
-          updateUI({ modalType: newPlotData.type, showModal: true });
+        if (!newPlotData) break;
+        
+        // check if selected plot is minimized
+        let prevPlotData = [...plotData];
+        let minimizedIdx = prevPlotData.findIndex(
+          (data) => data.id === newPlotData.id
+        );
+
+        if (minimizedIdx > -1) {
+          prevPlotData[minimizedIdx] = {
+            ...prevPlotData[minimizedIdx],
+            active: true,
+          };
+          setPlotData(prevPlotData); // set minimized plot to active
+        } else {
+          setPlotData([...prevPlotData, newPlotData]); //plot new feature
         }
+        break;
+      case "updatePlot":
+        let plotsToUpdate = [...plotData];
+        const idx = plotsToUpdate.findIndex((data) => data.id === arg.id);
+        plotsToUpdate[idx] = arg;
+        setPlotData(plotsToUpdate);
+        break;
+      case "closePlot":
+        let plotsToKeep = [...plotData];
+        setPlotData(plotsToKeep.filter((data) => data.id !== arg.id));
         break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
@@ -264,11 +252,14 @@ const handleMinimizedPlotsChange = (data) => {
 
   const generatePermLink = (permalinkSettings) => {
     let query = {};
+    // We have a request from Point/Line/AreaWindow component.
+
     query.subquery = subquery;
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.features = mapRef.current.getFeatures();
 
+    // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
         switch (setting) {
@@ -292,68 +283,63 @@ const handleMinimizedPlotsChange = (data) => {
       `?query=${encodeURIComponent(JSON.stringify(query))}`
     );
   };
-
-  const isNonPlotModal = uiSettings.showModal && uiSettings.modalType!="LineString" && uiSettings.modalType!="Point" && uiSettings.modalType!="Polygon" && uiSettings.modalType!="track" && uiSettings.modalType!= "class4";
-
   let modalBodyContent = null;
   let modalTitle = "";
   let modalSize = "lg";
 
-  if (isNonPlotModal) {
-    switch (uiSettings.modalType) {
-      case "presetFeatures":
-        modalBodyContent = <PresetFeaturesWindow action={action} />;
-        modalTitle = "Preset Features";
-        break;
-      case "editFeatures":
-        modalBodyContent = (
-          <ModifyFeaturesWindow
-            selectedFeatureIds={selectedFeatureIds}
-            action={action}
-            updateUI={updateUI}
-            mapRef={mapRef}
-          />
-        );
-        modalTitle = __("Edit Map Features");
-        break;
-      case "annotation":
-        modalBodyContent = (
-          <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
-        );
-        modalTitle = __("Add Annotation Label");
-        modalSize = "md";
-        break;
-      case "observationSelect":
-        modalBodyContent = (
-          <ObservationSelector area={observationArea} action={action} />
-        );
-        modalTitle = "Select Observations";
-        break;
-      case "class4Selector":
-        modalBodyContent = (
-          <Class4Selector
-            class4Type={class4Type}
-            action={action}
-            updateUI={updateUI}
-          />
-        );
-        modalTitle = "Select Class4";
-        modalSize = "sm";
-        break;
-      case "settings":
-        modalBodyContent = (
-          <SettingsWindow
-            mapSettings={mapSettings}
-            updateMapSettings={updateMapSettings}
-          />
-        );
-        modalTitle = __("Settings");
-        break;
-      case "info-help":
-        modalBodyContent = <InfoHelpWindow />;
-        modalTitle = __("Info/Help");
-        break;
-    }
+  switch (uiSettings.modalType) {
+    case "presetFeatures":
+      modalBodyContent = <PresetFeaturesWindow action={action} />;
+      modalTitle = "Preset Features";
+      break;
+    case "editFeatures":
+      modalBodyContent = (
+        <ModifyFeaturesWindow
+          selectedFeatureIds={selectedFeatureIds}
+          action={action}
+          updateUI={updateUI}
+          mapRef={mapRef}
+        />
+      );
+      modalTitle = __("Edit Map Features");
+      break;
+    case "annotation":
+      modalBodyContent = (
+        <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
+      );
+      modalTitle = __("Add Annotation Label");
+      modalSize = "md";
+      break;
+    case "observationSelect":
+      modalBodyContent = (
+        <ObservationSelector area={observationArea} action={action} />
+      );
+      modalTitle = "Select Observations";
+      break;
+    case "class4Selector":
+      modalBodyContent = (
+        <Class4Selector
+          class4Type={class4Type}
+          action={action}
+          updateUI={updateUI}
+        />
+      );
+      modalTitle = "Select Class4";
+      modalSize = "sm";
+      break;
+    case "settings":
+      modalBodyContent = (
+        <SettingsWindow
+          mapSettings={mapSettings}
+          updateMapSettings={updateMapSettings}
+        />
+      );
+      modalTitle = __("Settings");
+      break;
+    case "info-help":
+      modalBodyContent = <InfoHelpWindow />;
+      modalTitle = __("Info/Help");
+      break;
   }
 
   return (
@@ -373,11 +359,7 @@ const handleMinimizedPlotsChange = (data) => {
           right={true}
         />
       ) : null}
-
-      <MinimizedPlotBar
-        ref={minimizedPlotsRef}
-        activePlotsRef={activePlotsRef}
-      />
+      <MinimizedPlotBar plotData={plotData} action={action} />
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -413,12 +395,8 @@ const handleMinimizedPlotsChange = (data) => {
       />
       <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
-
       <ActivePlotsContainer
-        newPlotData={plotData}
-        ref={activePlotsRef}
-        onMinimizedPlotsChange={handleMinimizedPlotsChange}
-        mapRef={mapRef}
+        plotData={plotData}
         dataset0={dataset0}
         dataset1={dataset1}
         mapSettings={mapSettings}
@@ -432,9 +410,8 @@ const handleMinimizedPlotsChange = (data) => {
         class4Type={class4Type}
         swapViews={swapViews}
       />
-
       <Modal
-        show={isNonPlotModal}
+        show={uiSettings.showModal}
         onHide={closeModal}
         dialogClassName="full-screen-modal"
         size={modalSize}
