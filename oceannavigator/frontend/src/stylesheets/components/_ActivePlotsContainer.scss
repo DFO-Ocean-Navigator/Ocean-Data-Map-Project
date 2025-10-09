@@ -1,6 +1,12 @@
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .active-plots-container {
   position: fixed;
-  top: 50px;
+  top: 70px;
   left: 20px;
   right: 20px;
   bottom: 20px;
@@ -24,4 +30,57 @@
   &.side-by-side {
     justify-content: space-between;
   }
+}
+
+.active-plot-window {
+  background: #fff;
+  border: 0 solid #077da5;
+  border-radius: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &.full-width {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  &.half-width {
+    width: calc(50% - 5px);
+  }
+}
+
+.plot-window-content {
+  flex: 1;
+  overflow: auto;
+  > * {
+    height: 100%;
+    overflow: auto;
+  }
+}
+
+.plot-window-header {
+  background: #008cba;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 21px;
+}
+
+.plot-window-title {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: var(--bs-modal-header-border-width) solid
+    var(--bs-modal-header-border-color);
+  border-top-left-radius: var(--bs-modal-inner-border-radius);
+  border-top-right-radius: var(--bs-modal-inner-border-radius);
+  margin-bottom: 0;
+  color: #fff;
 }

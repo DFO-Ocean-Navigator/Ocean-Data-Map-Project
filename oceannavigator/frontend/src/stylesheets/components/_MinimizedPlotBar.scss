@@ -1,14 +1,14 @@
 .minimized-plot-bar {
   position: fixed;
   top: 4px;
-  left: 14%;
+  left: 125px;
   transform: none;
   z-index: 1050;
   display: flex;
   gap: 8px;
-  max-width: min(1040px, calc(100vw - 40px));
+  max-width: 70vw;
   overflow-x: auto;
-  padding: 4px 8px 12px;
+  padding: 4px 8px 4px;
   justify-content: flex-start;
   animation: fadeIn 0.2s ease-out;
 }
