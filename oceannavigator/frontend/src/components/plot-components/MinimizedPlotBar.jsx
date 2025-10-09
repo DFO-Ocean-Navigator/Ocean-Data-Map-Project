@@ -58,7 +58,7 @@ const MinimizedPlotBar = ({ plotData, action }) => {
   )});
 
   return plotData.length > 0 ? (
-    <div className="plot-tabs-container">{plotTabs}</div>
+    <div className="minimized-plot-bar">{plotTabs}</div>
   ) : null;
 };
 
