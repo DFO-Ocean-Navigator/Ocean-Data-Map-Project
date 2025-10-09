@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faMinus } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
+
 import PointWindow from "./PointWindow.jsx";
 import LineWindow from "./LineWindow.jsx";
 import AreaWindow from "./AreaWindow.jsx";

@@ -1,0 +1,29 @@
+.ActivePlotsContainer {
+  .active-plots-container {
+    position: fixed;
+    top: 50px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1040;
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.3s ease-out;
+
+    &::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: -1;
+    }
+
+    &.single-plot {
+      justify-content: center;
+    }
+
+    &.side-by-side {
+      justify-content: space-between;
+    }
+  }
+}

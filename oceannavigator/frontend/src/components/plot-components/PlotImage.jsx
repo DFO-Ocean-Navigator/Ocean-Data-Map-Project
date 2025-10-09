@@ -8,11 +8,11 @@ import {
   Dropdown,
   DropdownButton,
 } from "react-bootstrap";
-import Icon from "./lib/Icon.jsx";
+import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const FAIL_IMAGE = require("./fail.js");
+const FAIL_IMAGE = require("../fail.js");
 const LOADING_IMAGE = require("../images/spinner.gif").default;
 
 const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {

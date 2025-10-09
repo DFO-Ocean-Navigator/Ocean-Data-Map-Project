@@ -3,19 +3,19 @@ import Accordion from "react-bootstrap/Accordion";
 import { Card, Col, Row } from "react-bootstrap";
 
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "./ComboBox.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ImageSize from "./ImageSize.jsx";
+import ComboBox from "../ComboBox.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ImageSize from "../ImageSize.jsx";
 import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
-import DatasetDropdown from "./DatasetDropdown.jsx";
-import SelectBox from "./lib/SelectBox.jsx";
+import DatasetDropdown from "../DatasetDropdown.jsx";
+import SelectBox from "../lib/SelectBox.jsx";
 
 import {
   GetDatasetsPromise,
   GetVariablesPromise,
   GetTrackTimeRangePromise
-} from "../remote/OceanNavigator.js";
+} from "../../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
 

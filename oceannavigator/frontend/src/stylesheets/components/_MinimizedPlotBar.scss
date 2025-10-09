@@ -1,0 +1,129 @@
+.MinimizedPlotBar {
+  .plot-tabs-container {
+    position: fixed;
+    top: 4px;
+    left: 14%;
+    transform: none;
+    z-index: 1050;
+    display: flex;
+    gap: 8px;
+    max-width: min(1040px, calc(100vw - 40px));
+    overflow-x: auto;
+    padding: 4px 8px 12px;
+    justify-content: flex-start;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .plot-tab {
+    border-radius: 6px;
+    padding: 2px 8px;
+    width: 200px;
+    min-width: 200px;
+    transition: background 0.2s ease;
+    animation: slideDown 0.3s ease-out;
+
+    &.active {
+      background: #fff;
+      border: solid 1px #008cba;
+    }
+
+    &.minimized {
+      background: #008cba;
+      border: solid 1px #fff;
+
+      &:hover {
+        background: #077da5;
+      }
+    }
+  }
+
+  .plot-tab-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .plot-title {
+    font: 500 13px/1 sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    max-width: 140px;
+
+    &.active {
+      color: #008cba;
+    }
+
+    &.minimized {
+      color: #fff;
+    }
+  }
+
+  .plot-actions {
+    display: flex;
+    gap: 4px;
+
+    &.active {
+      color: #008cba;
+    }
+
+    &.minimized {
+      color: #fff;
+    }
+
+    .btn {
+      padding: 4px 6px;
+      font-size: 16px;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+  }
+
+  .plot-window-title {
+    flex: 1;
+  }
+
+  .plot-window-controls {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+  }
+
+  .plot-window-controls {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+
+    .btn {
+      padding: 4px 6px;
+      font-size: 16px;
+      color: #fff;
+      border: none;
+      background: none;
+    }
+  }
+
+  /* Animations */
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}

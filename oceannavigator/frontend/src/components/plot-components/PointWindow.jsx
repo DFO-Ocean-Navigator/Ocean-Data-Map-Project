@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ComboBox from "./ComboBox.jsx";
-import LocationInput from "./LocationInput.jsx";
-import ImageSize from "./ImageSize.jsx";
-import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ComboBox from "../ComboBox.jsx";
+import LocationInput from "../LocationInput.jsx";
+import ImageSize from "../ImageSize.jsx";
+import CustomPlotLabels from "../CustomPlotLabels.jsx";
+import DatasetSelector from "../DatasetSelector.jsx";
 import PropTypes from "prop-types";
-import { GetVariablesPromise } from "../remote/OceanNavigator.js";
+import { GetVariablesPromise } from "../../remote/OceanNavigator.js";
 import { withTranslation } from "react-i18next";
 
 const TabEnum = {
