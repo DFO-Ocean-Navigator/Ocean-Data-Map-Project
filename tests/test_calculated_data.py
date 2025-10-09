@@ -28,7 +28,7 @@ class TestCalculatedData(unittest.TestCase):
 
             v = data.get_dataset_variable("votemper")
             self.assertEqual(xr.DataArray, type(v))
-            self.assertAlmostEqual(v[0, 0, 17, 816].values, 271.1796875)
+            self.assertAlmostEqual(v[0, 0, 17, 150].values, 293.59375)
 
     @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
     @patch("data.sqlite_database.SQLiteDatabase.get_variable_dims")
@@ -63,9 +63,9 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(len(data.variables), 2)
 
             v = data.get_dataset_variable("votemper_new")
-            self.assertAlmostEqual(v[0, 0, 17, 816].values, 2.0 * 271.1796875)
+            self.assertAlmostEqual(v[0, 0, 17, 150].values, 2.0 * 293.59375)
             self.assertEqual(v.attrs.long_name, "Temperature")
-            self.assertEqual(v.shape, (1, 50, 850, 1800))
+            self.assertEqual(v.shape, (2, 50, 276, 300))
 
     @patch("data.sqlite_database.SQLiteDatabase.get_data_variables")
     def test_override(self, mock_query_func):
@@ -94,9 +94,11 @@ class TestCalculatedData(unittest.TestCase):
             self.assertEqual(len(data.variables), 1)
 
             v = data.get_dataset_variable("votemper")
-            self.assertAlmostEqual(v[0, 0, 17, 816].values.item(), 271.1796875 - 273.15, places=4)
+            self.assertAlmostEqual(
+                v[0, 0, 17, 150].values.item(), 293.59375 - 273.15, places=4
+            )
             self.assertEqual(v.attrs.long_name, "Sea water potential temperature")
-            self.assertEqual(v.shape, (1, 50, 850, 1800))
+            self.assertEqual(v.shape, (2, 50, 276, 300))
 
     def test_calculated_var_wo_dims_raises(self):
         calculated = {

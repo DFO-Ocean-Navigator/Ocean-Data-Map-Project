@@ -119,113 +119,108 @@ class TestMercator(unittest.TestCase):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.0, -149.0, 0, "votemper", 2119651200), 298.426, places=3
+                ds.get_point(50.0, -45.0, 0, "votemper", 2119651200), 280.118, places=3
             )
             self.assertAlmostEqual(
                 ds.get_point(47.0, -47.0, 0, "votemper", 2119651200), 273.66, places=2
             )
 
-            p = ds.get_point([13.0, 47.0], [-149.0, -47.0], 0, "votemper", 2119651200)
-            self.assertAlmostEqual(p[0], 298.426, places=3)
+            p = ds.get_point([50.0, 47.0], [-45.0, -47.0], 0, "votemper", 2119651200)
+            self.assertAlmostEqual(p[0], 280.118, places=3)
             self.assertAlmostEqual(p[1], 273.66, places=2)
 
     def test_get_raw_point(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
-            lat, lon, data = ds.get_raw_point(13.0, -149.0, 0, 2119651200, "votemper")
+            lat, lon, data = ds.get_raw_point(50.0, -45.0, 0, 2119651200, "votemper")
 
         self.assertEqual(len(lat.ravel()), 156)
         self.assertEqual(len(lon.ravel()), 156)
         self.assertEqual(len(data.values.ravel()), 156)
-        self.assertAlmostEqual(data.values[4, 4], 298.8, places=1)
+        self.assertAlmostEqual(data.values[4, 4], 278.2, places=1)
 
     def test_get_profile(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
-            p, d = ds.get_profile(13.0, -149.0, "votemper", 2119651200)
-            self.assertAlmostEqual(p[0], 298.426, places=3)
-            self.assertAlmostEqual(p[10], 298.426, places=3)
+            p, d = ds.get_profile(50.0, -45.0, "votemper", 2119651200)
+            self.assertAlmostEqual(p[0], 280.118, places=3)
+            self.assertAlmostEqual(p[10], 280.118, places=3)
             self.assertTrue(np.ma.is_masked(p[49]))
 
     def test_bottom_point(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             self.assertAlmostEqual(
-                ds.get_point(13.01, -149.0, "bottom", "votemper", 2119651200),
-                273.95,
+                ds.get_point(50.0, -45.0, "bottom", "votemper", 2119651200),
+                274.909,
                 places=2,
             )
 
     def test_get_area(self):
-        nc_data = NetCDFData("tests/testdata/mercator_test.nc")
+        nc_data = NetCDFData("tests/mercator_test.nc")
         with Mercator(nc_data) as ds:
             a = np.array(
-                np.meshgrid(np.linspace(5, 10, 10), np.linspace(-150, -160, 10))
+                np.meshgrid(np.linspace(30, 40, 10), np.linspace(-50, -40, 10))
             )
 
             r = ds.get_area(a, 0, 2119651200, "votemper", "gaussian", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 300.619, places=3)
+            self.assertAlmostEqual(r[5, 5], 291.873, places=3)
 
             r = ds.get_area(a, 0, 2119651200, "votemper", "bilinear", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 300.621, places=3)
+            self.assertAlmostEqual(r[5, 5], 291.879, places=3)
 
             r = ds.get_area(a, 0, 2119651200, "votemper", "nearest", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 300.6172, places=4)
+            self.assertAlmostEqual(r[5, 5], 291.8906, places=4)
 
             r = ds.get_area(a, 0, 2119651200, "votemper", "inverse", 25000, 10)
-            self.assertAlmostEqual(r[5, 5], 300.6188, places=4)
+            self.assertAlmostEqual(r[5, 5], 291.8811, places=4)
 
-    @unittest.skip("IndexError: index 0 is out of bounds for axis 0 with size 0")
     def test_get_path_profile(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             p, d, r, dep = ds.get_path_profile(
-                [[13, -149], [14, -140], [15, -130]], "votemper", 2119651200, 10
+                [[30, -55], [40, -50], [50, -45]], "votemper", 2119651200, 2382480000
             )
 
-            self.assertEqual(r.shape[0], 50)
+            self.assertEqual(r.shape[1], 50)
             self.assertGreater(r.shape[1], 10)
-            self.assertEqual(r.shape[1], p.shape[1])
-            self.assertEqual(r.shape[1], len(d))
+            self.assertEqual(r.shape[0], p.shape[1])
+            self.assertEqual(r.shape[0], len(d))
             self.assertEqual(d[0], 0)
 
     def test_get_profile_depths(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             p = ds.get_profile_depths(
-                13.0,
-                -149.0,
+                50.0,
+                -45.0,
                 2119651200,
                 "votemper",
                 [0, 10, 25, 50, 100, 200, 500, 1000],
             )
             self.assertTrue(np.ma.is_masked(p[0]))
-            self.assertAlmostEqual(p[1], 298.43, places=2)
-            self.assertAlmostEqual(p[4], 294.37, places=2)
-            self.assertAlmostEqual(p[7], 277.46, places=2)
+            self.assertAlmostEqual(p[1], 280.12, places=2)
+            self.assertAlmostEqual(p[4], 280.02, places=2)
+            self.assertAlmostEqual(p[7], 276.65, places=2)
 
-    ## TODO: Need testdata/mercator_test.nc to have more than 1 time value
-    @unittest.skip("IndexError: index 0 is out of bounds for axis 0 with size 0")
     def test_get_timeseries_point(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             r = ds.get_timeseries_point(
-                13.0, -149.0, 0, 2119651200, 2122286400, "votemper"
+                50.0, -45.0, 0, 2119651200, 2382480000, "votemper"
             )
-            self.assertAlmostEqual(r[0], 299.17, places=2)
-            self.assertAlmostEqual(r[1], 299.72, places=2)
+            self.assertAlmostEqual(r[0], 280.12, places=2)
+            self.assertAlmostEqual(r[1], 283.63, places=2)
 
-    ## TODO: Need testdata/mercator_test.nc to have more than 1 time value
-    @unittest.skip("IndexError: index 0 is out of bounds for axis 0 with size 0")
     def test_get_timeseries_profile(self):
         nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             r, d = ds.get_timeseries_profile(
-                13.0, -149.0, 2119651200, 2122286400, "votemper"
+                50.0, -45.0, 2119651200, 2382480000, "votemper"
             )
-            self.assertAlmostEqual(r[0, 0], 299.17, places=2)
-            self.assertAlmostEqual(r[0, 10], 299.15, places=2)
-            self.assertAlmostEqual(r[0, 20], 296.466766, places=6)
+            self.assertAlmostEqual(r[0, 0], 280.12, places=2)
+            self.assertAlmostEqual(r[0, 10], 280.12, places=2)
+            self.assertAlmostEqual(r[0, 20], 280.099447, places=6)
             self.assertTrue(np.ma.is_masked(r[0, 49]))
 
             self.assertNotEqual(r[0, 0], r[1, 0])

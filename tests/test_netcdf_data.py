@@ -195,7 +195,7 @@ class TestNetCDFData(unittest.TestCase):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_time_index([2031436800, 2034072000])
             numpy.testing.assert_array_equal(result, numpy.array([0, 1]))
-            
+
     def test_timestamp_to_iso_8601_int_timestamp(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_iso_8601(2031436800)
@@ -241,8 +241,8 @@ class TestNetCDFData(unittest.TestCase):
                     ("output_format", "NETCDF3_NC"),
                     ("dataset", "mercator_test"),
                     ("variables", "votemper"),
-                    ("min_range", "-79.0,2.0"),
-                    ("max_range", "-78.0,3.0"),
+                    ("min_range", "30.0,-50.0"),
+                    ("max_range", "35.0,-45.0"),
                     ("time", "2119651200,2119651200"),
                     ("should_zip", "0"),
                 ]
@@ -309,8 +309,7 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].name, "Sea water potential temperature")
             self.assertEqual(variables[0].unit, "Kelvin")
             self.assertEqual(
-                set(variables[0].dimensions),
-                {"depth", "time", "latitude", "longitude"}
+                set(variables[0].dimensions), {"depth", "time", "latitude", "longitude"}
             )
 
             self.assertEqual(variables[0].valid_min, 173.0)
