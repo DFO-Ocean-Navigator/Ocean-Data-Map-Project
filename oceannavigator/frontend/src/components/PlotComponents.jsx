@@ -26,7 +26,10 @@ const ActivePlotsContainer = ({
 }) => {
 
   const handleMinimize = (plot) => {
-    action("updatePlot", { ...plot, active: false });
+    let plots = [...plotData];
+    const idx = plots.findIndex((prevPlot) => plot.id === prevPlot.id);
+    plots[idx] = { ...plots[idx], active: false };
+    action("updatePlots", plots);
   };
 
   const handleClose = (plot) => {

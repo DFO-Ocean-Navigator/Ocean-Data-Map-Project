@@ -131,7 +131,7 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
-        
+
         // check if selected plot is minimized
         let prevPlotData = [...plotData];
         let minimizedIdx = prevPlotData.findIndex(
@@ -148,11 +148,8 @@ function OceanNavigator(props) {
           setPlotData([...prevPlotData, newPlotData]); //plot new feature
         }
         break;
-      case "updatePlot":
-        let plotsToUpdate = [...plotData];
-        const idx = plotsToUpdate.findIndex((data) => data.id === arg.id);
-        plotsToUpdate[idx] = arg;
-        setPlotData(plotsToUpdate);
+      case "updatePlots":
+        setPlotData(arg);
         break;
       case "closePlot":
         let plotsToKeep = [...plotData];

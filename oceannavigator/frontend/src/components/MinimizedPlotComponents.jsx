@@ -5,52 +5,60 @@ import { faXmark, faExpand } from "@fortawesome/free-solid-svg-icons";
 import PropTypes from "prop-types";
 
 const MinimizedPlotBar = ({ plotData, action }) => {
-
   const handleRestore = (plot) => {
-    action("updatePlot", { ...plot, active: true });
+    let plots = [...plotData];
+
+    const activeIdxs = plots.flatMap((plt, idx) => (plt.active ? [idx] : []));
+    if (activeIdxs.length > 1) {
+      plots[activeIdxs[0]] = { ...plots[activeIdxs[0]], active: false };
+    }
+
+    let pltIdx = plots.findIndex((prevPlot) => prevPlot.id === plot.id)
+    plots[pltIdx] = { ...plots[pltIdx], active: true };
+
+    action("updatePlots", plots);
   };
 
   const handleClose = (plot) => {
     action("closePlot", plot);
   };
 
-  let minimizedPlots = plotData?.filter((plot) => !plot.active);
-
-  return minimizedPlots.length > 0 ? (
-    <div className="minimized-plots-container">
-      {minimizedPlots.map((plot) => (
-        <div key={plot.id} className="minimized-plot-bar">
-          <div className="minimized-plot-content">
-            <span
-              className="minimized-plot-title"
-              onClick={() => handleRestore(plot)}
-              style={{ cursor: "pointer" }}
-              title="Click to restore"
-            >
-              {plot.title}
-            </span>
-            <div className="minimized-plot-actions">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => handleRestore(plot)}
-                title="Restore"
-              >
-                <FontAwesomeIcon icon={faExpand} />
-              </Button>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => handleClose(plot)}
-                title="Close"
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </Button>
-            </div>
-          </div>
+  let plotTabs = plotData.map((plot) => {
+    let active = plot.active ? "active" : "minimized"
+    return (
+    <div key={plot.id} className={`plot-tab ${active}`}>
+      <div className="plot-tab-content">
+        <span
+          className={`plot-title ${active}`}
+          onClick={() => handleRestore(plot)}
+          style={{ cursor: "pointer" }}
+          title="Click to restore"
+        >
+          {plot.title}
+        </span>
+        <div className={`plot-actions ${active}`}>
+          <Button
+            size="sm"
+            onClick={() => handleRestore(plot)}
+            title="Restore"
+            disabled={plot.active}
+          >
+            <FontAwesomeIcon icon={faExpand} />
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleClose(plot)}
+            title="Close"
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </Button>
         </div>
-      ))}
+      </div>
     </div>
+  )});
+
+  return plotData.length > 0 ? (
+    <div className="plot-tabs-container">{plotTabs}</div>
   ) : null;
 };
 
