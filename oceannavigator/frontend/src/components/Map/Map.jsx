@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill, Text } from "ol/style";
+import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -28,6 +28,7 @@ import * as olTilegrid from "ol/tilegrid";
 
 import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
 import {
+  createPlotData,
   createMapView,
   createMap,
   createFeatureVectorLayer,
@@ -487,7 +488,7 @@ const Map = forwardRef((props, ref) => {
     let selected = e.selected;
     let features0 = [...s0?.getFeatures().getArray()];
     let features1 = [...s1?.getFeatures().getArray()];
-    
+
     if (selected.length === 0) {
       // feature has been deselected
       let allFeatures = [...features0, ...features1];
@@ -617,58 +618,9 @@ const Map = forwardRef((props, ref) => {
 
   const getPlotData = () => {
     let selected = select0.getFeatures().getArray();
-    let type, id, coordinates, observation;
-    let plotName = selected[0].get("name");
     if (selected.length > 0) {
-     
-      if (selected[0].get("class") === "observation") {
-        type = selected[0].getGeometry().constructor.name;
-        type = type === "LineString" ? "track" : type;
-        id = selected[0].get("id");
-        observation = true;
-      } else if (selected[0].get("class") === "predefined") {
-        id = selected[0].get("key");
-        type = selected[0].get("type");
-        coordinates = [id];
-        return {
-          type: type,
-          coordinates: coordinates,
-          id: id,
-          observation: observation,
-          plotName: plotName,
-        };
-      } else {
-        type = selected[0].get("type");
-        id= selected[0].getId();
-      }
-      if (type === "class4") {
-        id = selected[0].get("id").replace("/", "_");
-      }
-      coordinates = selected.map((feature) =>
-        feature.getGeometry().getCoordinates()
-      );
-      if (type === "LineString") {
-        coordinates = coordinates[0];
-      } else if (type === "Polygon") {
-        coordinates = coordinates[0][0];
-      }
-      coordinates = coordinates.map((coordinate) => {
-        coordinate = olProj.transform(
-          coordinate,
-          props.mapSettings.projection,
-          "EPSG:4326"
-        );
-        // switch to lat lon order
-        return [coordinate[1], coordinate[0]];
-      });
+      return createPlotData(selected, props.mapSettings.projection)
     }
-    return {
-      type: type,
-      coordinates: coordinates,
-      id: id,
-      observation: observation,
-      plotName: plotName,
-    };
   };
 
   const selectFeatures = (selectedIds) => {
