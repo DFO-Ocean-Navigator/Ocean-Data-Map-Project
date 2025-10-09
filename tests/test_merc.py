@@ -157,7 +157,7 @@ class TestMercator(unittest.TestCase):
             )
 
     def test_get_area(self):
-        nc_data = NetCDFData("tests/mercator_test.nc")
+        nc_data = NetCDFData("tests/testdata/mercator_test.nc")
         with Mercator(nc_data) as ds:
             a = np.array(
                 np.meshgrid(np.linspace(30, 40, 10), np.linspace(-50, -40, 10))
