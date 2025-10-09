@@ -13,7 +13,7 @@ import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
 const FAIL_IMAGE = require("../fail.js");
-const LOADING_IMAGE = require("../images/spinner.gif").default;
+const LOADING_IMAGE = require("../../images/spinner.gif").default;
 
 const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const imagelinkRef = useRef(null);
