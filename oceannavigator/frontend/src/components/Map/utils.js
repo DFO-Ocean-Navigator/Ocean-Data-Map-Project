@@ -834,7 +834,7 @@ export const createPlotData = (selected, projection) => {
     let type = selected[0].getGeometry().constructor.name;
     type = type === "LineString" ? "track" : type;
     observation = true;
-    title = id ? `Track Plot - ${id}` : "Track Plot";
+    title = id ? `Track - ${id}` : "Track";
   } else if (selected[0].get("class") === "predefined") {
     id = selected[0].get("key");
     type = selected[0].get("type");
@@ -844,7 +844,7 @@ export const createPlotData = (selected, projection) => {
   }
   // Class4
   if (type === "class4") {
-    title = id ? `Class 4 Analysis - ${id.trim()}` : "Class 4 Analysis";
+    title = id ? `Class4 - ${id.trim()}` : "Class4";
     id = selected[0].get("id").replace("/", "_").trim();
   }
   // Drawn features
@@ -853,14 +853,14 @@ export const createPlotData = (selected, projection) => {
   );
   if (type === "Point") {
     coordinates = convertCoords(coordinates, projection);
-    title = name ? name : `Point Plot - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
+    title = name ? name : `Point - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
   } else if (type === "LineString") {
     coordinates = convertCoords(coordinates[0], projection);
-    title = name ? name :`Line Plot - ${coordinates.length} points`;
+    title = name ? name :`Line - ${coordinates.length} vertices`;
     distance = getLineDistance(coordinates, projection);
   } else if (type === "Polygon") {
     coordinates = convertCoords(coordinates[0][0], projection);
-    title = name ? name : `Area Plot - ${coordinates.length} vertices`;
+    title = name ? name : `Area - ${coordinates.length} vertices`;
   }
 
   return {
