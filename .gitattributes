@@ -1,1 +1,2 @@
 kml/area/SAR_Areas.kml filter=lfs diff=lfs merge=lfs -text
+tests/testdata/misc/etopo_EPSG:3857_z6.nc filter=lfs diff=lfs merge=lfs -text
