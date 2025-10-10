@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>AZMP Transects.kml</name>
+	<open>1</open>
+	<Folder>
+		<name>AZMP Transects</name>
+		<open>1</open>
+		<Placemark>
+			<name>AR7W</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -55.500,53.666,0 -48.250,60.500,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Bonavista</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -52.967,48.800,0 -52.750,48.800,0 -52.650,48.833,0 -52.400,48.917,0 -52.067,49.025,0 -51.830,49.100,0 -51.542,49.190,0 -51.280,49.280,0 -51.017,49.367,0 -50.533,49.517,0 -50.017,49.683,0 -49.500,49.850,0 -49.000,50.000,0 -48.472,50.177,0 -47.947,50.332,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Browns Bank</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -65.480,43.250,0 -65.480,43.000,0 -65.483,42.760,0 -65.483,42.450,0 -65.500,42.133,0 -65.510,42.000,0 -65.350,41.867,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Flemish Cap</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -52.832,47.000,0 -52.705,47.000,0 -52.580,47.000,0 -52.322,47.000,0 -52.033,47.000,0 -51.485,47.000,0 -51.000,47.000,0 -50.667,47.000,0 -50.000,47.000,0 -49.117,47.000,0 -48.617,47.000,0 -48.117,47.000,0 -47.817,47.000,0 -47.500,47.000,0 -47.250,47.000,0 -47.168,47.000,0 -47.017,47.000,0 -46.833,47.000,0 -46.670,47.000,0 -46.483,47.000,0 -46.017,47.000,0 -45.730,47.000,0 -45.500,47.000,0 -45.213,47.000,0 -44.988,47.000,0 -44.772,47.000,0 -44.578,47.000,0 -44.433,47.000,0 -44.232,47.000,0 -44.083,47.000,0 -43.833,47.000,0 -43.750,47.000,0 -43.400,47.000,0 -43.250,47.000,0 -43.000,47.000,0 -42.750,47.000,0 -42.500,47.000,0 -42.000,47.000,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Halifax</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -63.450,44.400,0 -63.317,44.267,0 -62.883,43.883,0 -62.451,43.479,0 -62.098,43.183,0 -61.733,42.850,0 -61.400,42.533,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Louisbourg</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -59.850,45.825,0 -59.702,45.658,0 -59.517,45.492,0 -59.175,45.158,0 -58.850,44.817,0 -58.508,44.475,0 -58.175,44.133,0 -57.833,43.783,0 -57.527,43.473,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Southeast Grand Bank</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -52.933,46.583,0 -52.850,46.500,0 -52.733,46.350,0 -52.608,46.208,0 -52.500,46.070,0 -52.267,45.788,0 -52.000,45.458,0 -51.700,45.095,0 -51.395,44.725,0 -51.103,44.363,0 -50.808,44.000,0 -50.517,43.633,0 -50.167,43.200,0 -49.942,42.920,0 -49.887,42.850,0 -49.828,42.775,0 -49.683,42.588,0 -49.518,42.395,0 -49.270,42.082,0 -48.950,41.700,0 -48.667,41.333,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Seal Island</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -55.650,53.233,0 -55.500,53.333,0 -55.357,53.410,0 -55.145,53.533,0 -55.000,53.617,0 -54.777,53.757,0 -54.500,53.917,0 -54.217,54.082,0 -54.000,54.200,0 -53.733,54.355,0 -53.500,54.500,0 -53.250,54.633,0 -53.000,54.783,0 -52.500,55.067,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Southwest Anticosti</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -64.800,49.217,0 -64.717,49.317,0 -64.617,49.433,0 -64.517,49.550,0 -64.417,49.667,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Bonne Bay</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -58.500,49.343,0 -58.717,49.483,0 -58.967,49.600,0 -59.217,49.725,0 -59.450,49.850,0 -59.683,49.983,0 -59.917,50.100,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Central Gulf of St. Lawrence</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -61.610,48.210,0 -61.450,48.355,0 -61.300,48.500,0 -61.133,48.647,0 -60.973,48.792,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Cabot Strait</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -60.217,46.958,0 -60.117,47.023,0 -59.992,47.100,0 -59.783,47.272,0 -59.558,47.433,0 -59.342,47.583,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>St. Lawrence Estuary</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -68.488,48.575,0 -68.547,48.625,0 -68.583,48.667,0 -68.630,48.708,0 -68.667,48.750,0 -68.708,48.788,0 -68.750,48.825,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>&#x00ce;les de la Madeleine</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -61.000,46.745,0 -61.250,46.830,0 -61.500,46.902,0 -61.750,47.000,0 -62.250,47.170,0 -62.750,47.330,0 -63.250,47.500,0 -63.750,47.660,0 -64.000,47.740,0 -64.250,47.830,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<name>Sept &#x00ce;les</name>
+			<LineString>
+				<tessellate>1</tessellate>
+				<coordinates>
+                    -66.200,49.242,0 -66.217,49.400,0 -66.233,49.550,0 -66.250,49.717,0 -66.267,49.882,0 -66.283,50.050,0
+				</coordinates>
+			</LineString>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>
