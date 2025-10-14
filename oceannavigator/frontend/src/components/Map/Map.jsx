@@ -487,20 +487,15 @@ const Map = forwardRef((props, ref) => {
     let selected = e.selected;
     let features0 = [...s0?.getFeatures().getArray()];
     let features1 = [...s1?.getFeatures().getArray()];
-    
-    if (selected.length === 0) {
-      // feature has been deselected
-      let allFeatures = [...features0, ...features1];
-      selected = allFeatures.filter(
-        (feature) => feature.getId() !== e.deselected[0].getId()
+
+    if (e.selected.length === 0 || e.selected[0]?.get("type") === "Point") {
+      selected = Array.from(
+        new Set([...e.selected, ...features0, ...features1])
+      ).filter(
+        (feature) =>
+          feature.get("type") === "Point" &&
+          feature.getId() !== e.deselected[0]?.getId()
       );
-    } else if (selected[0].get("type") === "Point") {
-      // point has been selected so allow multiple
-      selected = [...selected, ...features0, ...features1];
-      selected = [...new Set(selected)];
-      selected = selected.filter((feature) => {
-        return feature.get("type") === "Point";
-      });
     }
 
     // add resulting features to select interactions
@@ -620,7 +615,6 @@ const Map = forwardRef((props, ref) => {
     let type, id, coordinates, observation;
     let plotName = selected[0].get("name");
     if (selected.length > 0) {
-     
       if (selected[0].get("class") === "observation") {
         type = selected[0].getGeometry().constructor.name;
         type = type === "LineString" ? "track" : type;
@@ -639,7 +633,7 @@ const Map = forwardRef((props, ref) => {
         };
       } else {
         type = selected[0].get("type");
-        id= selected[0].getId();
+        id = selected[0].getId();
       }
       if (type === "class4") {
         id = selected[0].get("id").replace("/", "_");
