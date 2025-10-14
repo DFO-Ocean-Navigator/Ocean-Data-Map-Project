@@ -530,8 +530,13 @@ const Map = forwardRef((props, ref) => {
           props.mapSettings
         );
 
-        if (feature.get("type") === "Point") {
-          const pointStyle = new Style({
+        if (
+          feature.get("type") === "class4" ||
+          feature.get("class") === "observation"
+        ) {
+          return;
+        } else if (feature.get("type") === "Point") {
+          return new Style({
             stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
               radius: 6,
@@ -539,7 +544,6 @@ const Map = forwardRef((props, ref) => {
               stroke: new Stroke({ color: "#ffffffff", width: 3 }),
             }),
           });
-          return textStyle ? [pointStyle, textStyle] : [pointStyle];
         }
 
         const glow1 = new Style({
