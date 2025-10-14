@@ -152,8 +152,9 @@ function OceanNavigator(props) {
         setPlotData(arg);
         break;
       case "closePlot":
-        let plotsToKeep = [...plotData];
-        setPlotData(plotsToKeep.filter((data) => data.id !== arg.id));
+        setPlotData((prevPlotData) =>
+          prevPlotData.filter((plot) => plot.id !== arg.id)
+        );
         break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
