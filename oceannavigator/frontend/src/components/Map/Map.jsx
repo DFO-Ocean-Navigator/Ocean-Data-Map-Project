@@ -576,7 +576,9 @@ const Map = forwardRef((props, ref) => {
 
     let features = featureVectorSource.getFeatures();
     features = features.filter(
-      (feature) => feature.get("class") !== "observation"
+      (feature) =>
+        feature.get("type") !== "class4" &&
+        feature.get("class") !== "observation"
     );
     features.sort((a, b) => a.ol_uid.localeCompare(b.ol_uid));
     features = features.map((feature) => {
