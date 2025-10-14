@@ -474,7 +474,7 @@ const Map = forwardRef((props, ref) => {
           "#ffffff",
           props.mapSettings
         );
-        if (textStyle) styles.push(textStyle);
+        if (textStyle && feat.get("type") !== "class4") styles.push(textStyle);
 
         return styles;
       },
