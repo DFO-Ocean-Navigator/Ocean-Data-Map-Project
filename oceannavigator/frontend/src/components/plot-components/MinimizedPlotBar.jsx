@@ -6,9 +6,28 @@ import PropTypes from "prop-types";
 
 const MinimizedPlotBar = ({ plotData, action }) => {
   const handleRestore = (plot) => {
-    let plots = plotData.map((p) =>
-      p.id === plot.id ? { ...p, active: true } : { ...p, active: false }
-    );
+    // Count how many plots are currently active
+    const activePlots = plotData.filter(p => p.active);
+    
+    let plots;
+    if (activePlots.length < 2) {
+      // If less than 2 plots are active, just activate this one
+      plots = plotData.map((p) =>
+        p.id === plot.id ? { ...p, active: true } : p
+      );
+    } else {
+      // If 2 plots are already active, close the first active one and open this one
+      const firstActivePlot = activePlots[0];
+      plots = plotData.map((p) => {
+        if (p.id === plot.id) {
+          return { ...p, active: true };
+        } else if (p.id === firstActivePlot.id) {
+          return { ...p, active: false };
+        }
+        return p;
+      });
+    }
+    
     action("updatePlots", plots);
   };
 
@@ -54,6 +73,7 @@ const MinimizedPlotBar = ({ plotData, action }) => {
 
 MinimizedPlotBar.propTypes = {
   plotData: PropTypes.array.isRequired,
+  action: PropTypes.func.isRequired,
 };
 
 export default MinimizedPlotBar;
