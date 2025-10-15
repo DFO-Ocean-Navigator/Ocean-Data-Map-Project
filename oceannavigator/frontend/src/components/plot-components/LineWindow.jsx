@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "./ComboBox.jsx";
-import Range from "./ColormapRange.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ImageSize from "./ImageSize.jsx";
-import TransectLimiter from "./TransectLimiter.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
-import CustomPlotLabels from "./CustomPlotLabels.jsx";
+import ComboBox from "../ComboBox.jsx";
+import Range from "../ColormapRange.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ImageSize from "../ImageSize.jsx";
+import TransectLimiter from "../TransectLimiter.jsx";
+import DatasetSelector from "../DatasetSelector.jsx";
+import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -90,7 +90,7 @@ const LineWindow = (props) => {
   };
 
   const handleSliderChange = (x) => {
-    setProfileDistance((x / 100) * props.line_distance);
+    setProfileDistance((x / 100) * props.plotData.distance);
   };
 
   // UI segments
@@ -205,10 +205,10 @@ const LineWindow = (props) => {
               max={100}
               marks={{
                 0: "0km",
-                25: (props.line_distance / 1000 / 4).toFixed(1),
-                50: (props.line_distance / 1000 / 2).toFixed(1),
-                75: (((props.line_distance / 1000) * 3) / 4).toFixed(1),
-                100: (props.line_distance / 1000).toFixed(1),
+                25: (props.plotData.distance / 1000 / 4).toFixed(1),
+                50: (props.plotData.distance / 1000 / 2).toFixed(1),
+                75: (((props.plotData.distance / 1000) * 3) / 4).toFixed(1),
+                100: (props.plotData.distance / 1000).toFixed(1),
               }}
               onAfterChange={handleSliderChange}
             />
@@ -413,7 +413,6 @@ LineWindow.propTypes = {
   swapViews: PropTypes.func.isRequired,
   updateDataset0: PropTypes.func.isRequired,
   updateDataset1: PropTypes.func.isRequired,
-  line_distance: PropTypes.number,
   names: PropTypes.array,
   plotData: PropTypes.object,
   action: PropTypes.func,
