@@ -227,6 +227,7 @@ export const createMap = (
       newLayerQuiver,
     ],
     controls: defaultControls({
+      rotate: false,
       zoom: true,
     }).extend([
       new Graticule({
@@ -562,9 +563,12 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 }),
               }),
             ];
-            const textStyle = createFeatureTextStyle(feat,                "#000",
-                "#ffffff",
-                mapSettings);
+            const textStyle = createFeatureTextStyle(
+              feat,
+              "#000",
+              "#ffffff",
+              mapSettings
+            );
             if (textStyle) styles.push(textStyle);
             return styles;
           case "Point":

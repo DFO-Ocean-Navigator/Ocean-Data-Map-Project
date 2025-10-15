@@ -1,9 +1,7 @@
-import MousePosition from "ol/control/MousePosition.js";
-
-import MapEventType from "ol/MapEventType.js";
-import { listen, unlistenByKey } from "ol/events.js";
-import { VOID } from "ol/functions.js";
 import EventType from "ol/pointer/EventType.js";
+import { listen } from "ol/events.js";
+import MousePosition from "ol/control/MousePosition.js";
+import MapEventType from "ol/MapEventType.js";
 
 class MultiMapMousePosition extends MousePosition {
   constructor() {

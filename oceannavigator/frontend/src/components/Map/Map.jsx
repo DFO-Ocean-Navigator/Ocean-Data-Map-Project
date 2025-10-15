@@ -207,9 +207,7 @@ const Map = forwardRef((props, ref) => {
     newMap.addInteraction(newSelect0);
     newMap.addInteraction(newHoverSelect);
 
-    newMap.addControl(
-      new MultiMapMousePosition()
-    );
+    newMap.addControl(new MultiMapMousePosition());
 
     newMap.on("moveend", function () {
       const c = olProj
@@ -268,7 +266,8 @@ const Map = forwardRef((props, ref) => {
         mapRef1
       );
 
-      map0.getControls().item(4).setMap1(newMap);
+      map0.getControls().item(0).setMap(newMap); // change zoom control target
+      map0.getControls().item(3).setMap1(newMap);
 
       newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
       newMap.addInteraction(select1);
@@ -287,7 +286,8 @@ const Map = forwardRef((props, ref) => {
         }
       }
     } else if (map0) {
-      map0.getControls().item(4).setMap(map0);
+      map0.getControls().item(0).setMap(map0); // change zoom control target
+      map0.getControls().item(3).setMap(map0);
     }
     setMap1(newMap);
     setHoverSelect1(newHoverSelect);
