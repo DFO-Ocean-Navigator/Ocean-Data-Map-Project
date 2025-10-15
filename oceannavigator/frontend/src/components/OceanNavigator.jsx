@@ -144,6 +144,7 @@ function OceanNavigator(props) {
             return [...prevPlotData, newPlotData];
           }
         });
+        closeModal();
         break;
       case "updatePlots":
         setPlotData(arg);
