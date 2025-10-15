@@ -340,22 +340,33 @@ function OceanNavigator(props) {
 
   return (
     <div className="OceanNavigator">
-      <ScaleViewer
-        dataset={dataset0}
-        mapSettings={mapSettings}
-        onUpdate={updateDataset0}
-        mapState={mapState}
-      />
-      {compareDatasets ? (
+      <div className="top-panel-components">
         <ScaleViewer
-          dataset={dataset1}
+          dataset={dataset0}
           mapSettings={mapSettings}
           onUpdate={updateDataset0}
           mapState={mapState}
-          right={true}
         />
-      ) : null}
-      <MinimizedPlotBar plotData={plotData} action={action} />
+        {compareDatasets ? (
+          <ScaleViewer
+            dataset={dataset1}
+            mapSettings={mapSettings}
+            onUpdate={updateDataset0}
+            mapState={mapState}
+            right={true}
+          />
+        ) : null}
+        <MinimizedPlotBar plotData={plotData} action={action} />
+        <AnnotationButton
+          uiSettings={uiSettings}
+          updateUI={updateUI}
+          action={action}
+        />
+
+        <LinkButton action={action} />
+        <ToggleLanguage />
+      </div>
+
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -383,13 +394,6 @@ function OceanNavigator(props) {
         showCompare={true}
         featureType={featureType}
       />
-      <ToggleLanguage />
-      <AnnotationButton
-        uiSettings={uiSettings}
-        updateUI={updateUI}
-        action={action}
-      />
-      <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <ActivePlotsContainer
         plotData={plotData}

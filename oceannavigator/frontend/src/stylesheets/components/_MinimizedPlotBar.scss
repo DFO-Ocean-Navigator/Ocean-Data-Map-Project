@@ -1,14 +1,13 @@
 .minimized-plot-bar {
-  position: fixed;
-  top: 4px;
-  left: 125px;
+  position: relative;
   transform: none;
-  z-index: 1050;
+  z-index: 999;
   display: flex;
   gap: 8px;
-  max-width: 70vw;
+  flex:1;
+  width:auto;
   overflow-x: auto;
-  padding: 4px 8px 4px;
+  padding: 4px 8px;
   justify-content: flex-start;
   animation: fadeIn 0.2s ease-out;
 }
@@ -17,7 +16,8 @@
   border-radius: 6px;
   padding: 2px 8px;
   width: 200px;
-  min-width: 200px;
+  min-width: 150px;
+  flex-shrink: 1;
   transition: background 0.2s ease;
   animation: slideDown 0.3s ease-out;
 
