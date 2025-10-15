@@ -9,7 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
-import { Style, Circle, Stroke, Fill, Text } from "ol/style";
+import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON.js";
@@ -25,9 +25,10 @@ import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
-import { AnnotationOverlay } from "./AnnotationOverlay.js";
 
+import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
 import {
+  createPlotData,
   createMapView,
   createMap,
   createFeatureVectorLayer,
@@ -200,9 +201,10 @@ const Map = forwardRef((props, ref) => {
       mapRef0
     );
 
-    const newSelect = createSelect();
-    const newHoverSelect = createHoverSelect(newSelect, newLayerFeatureVector);
-    newMap.addInteraction(newSelect);
+    const newSelect0 = createSelect();
+    const newSelect1 = createSelect();
+    const newHoverSelect = createHoverSelect(newSelect0, newLayerFeatureVector);
+    newMap.addInteraction(newSelect0);
     newMap.addInteraction(newHoverSelect);
 
     newMap.on("moveend", function () {
@@ -221,13 +223,14 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("extent", extent);
     });
 
-    addDblClickPlot(newMap, newSelect);
+    addDblClickPlot(newMap, newSelect0);
 
     let mapLayers = newMap.getLayers().getArray();
 
     setMap0(newMap);
     setMapView(newMapView);
-    setSelect0(newSelect);
+    setSelect0(newSelect0);
+    setSelect1(newSelect1);
     setHoverSelect0(newHoverSelect);
     setLayerBasemap(mapLayers[0]);
     setFeatureVectorSource(newFeatureVectorSource);
@@ -235,8 +238,7 @@ const Map = forwardRef((props, ref) => {
   }, []);
 
   useEffect(() => {
-    let newMap = null;
-    let newHoverSelect = null;
+    let newMap, newHoverSelect;
     if (props.compareDatasets) {
       let overlay = new Overlay({
         element: popupElement1.current,
@@ -250,7 +252,7 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings
       );
 
-      const newMap = createMap(
+      newMap = createMap(
         props.mapSettings,
         overlay,
         popupElement1,
@@ -262,22 +264,14 @@ const Map = forwardRef((props, ref) => {
         mapRef1
       );
 
-      const newSelect = createSelect();
-      const newHoverSelect = createHoverSelect(
-        newSelect,
-        newLayerFeatureVector
-      );
-      newMap.addInteraction(newSelect);
+      newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
+      newMap.addInteraction(select1);
       newMap.addInteraction(newHoverSelect);
       if (newHoverSelect && newHoverSelect.addSelectInteraction) {
-        newHoverSelect.addSelectInteraction(newSelect);
+        newHoverSelect.addSelectInteraction(select1);
       }
 
-      addDblClickPlot(newMap, newSelect);
-
-      setSelect1(newSelect);
-      setMap1(newMap);
-      setHoverSelect1(newHoverSelect);
+      addDblClickPlot(newMap, select1);
 
       let overlays = map0.getOverlays().getArray();
 
@@ -286,12 +280,21 @@ const Map = forwardRef((props, ref) => {
           overlay.linkOverlay(newMap);
         }
       }
-    } else {
-      setMap1(null);
-      setSelect1(null);
-      setHoverSelect1(null);
     }
+    setMap1(newMap);
+    setHoverSelect1(newHoverSelect);
   }, [props.compareDatasets]);
+
+  useEffect(() => {
+    if (select0 || select1) {
+      select0.on("select", (e) => {
+        updateSelects(e, select0, select1);
+      });
+      select1.on("select", (e) => {
+        updateSelects(e, select0, select1);
+      });
+    }
+  }, [select0, select1]);
 
   useEffect(() => {
     if (props.dataset0.default_location) {
@@ -452,6 +455,7 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.bathyContour,
     props.mapSettings.topoShadedRelief,
   ]);
+
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
@@ -477,23 +481,35 @@ const Map = forwardRef((props, ref) => {
       },
     });
 
-    newSelect.on("select", function (e) {
-      let selectedFeatures = this.getFeatures();
-      if (selectedFeatures.getLength() > 1) {
-        let newSelectedFeatures = [...selectedFeatures.getArray()];
-        newSelectedFeatures = newSelectedFeatures.filter((feature) => {
-          return feature.get("type") === "Point";
-        });
-        selectedFeatures.clear();
-        for (let feature of newSelectedFeatures) {
-          selectedFeatures.push(feature);
-        }
-      }
-      let ids = selectedFeatures.getArray().map((feature) => feature.getId());
-      props.action("selectedFeatureIds", ids);
-    });
-
     return newSelect;
+  };
+
+  const updateSelects = (e, s0 = null, s1 = null) => {
+    let selected = e.selected;
+    let features0 = [...s0?.getFeatures().getArray()];
+    let features1 = [...s1?.getFeatures().getArray()];
+
+    if (e.selected.length === 0 || e.selected[0]?.get("type") === "Point") {
+      selected = Array.from(
+        new Set([...e.selected, ...features0, ...features1])
+      ).filter(
+        (feature) =>
+          feature.get("type") === "Point" &&
+          feature.getId() !== e.deselected[0]?.getId()
+      );
+    }
+
+    // add resulting features to select interactions
+    s0?.getFeatures().clear();
+    s1?.getFeatures().clear();
+
+    for (let feature of selected) {
+      s0?.getFeatures().push(feature);
+      s1?.getFeatures().push(feature);
+    }
+
+    let ids = selected.map((feature) => feature.getId());
+    props.action("selectedFeatureIds", ids);
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
@@ -508,10 +524,9 @@ const Map = forwardRef((props, ref) => {
           .includes(feature);
         const fillColor = isSelected ? "#0099ff" : "#ff0000";
 
-
         const textStyle = createFeatureTextStyle(
-          feature, 
-          "#000", 
+          feature,
+          "#000",
           "#ffffff",
           props.mapSettings
         );
@@ -598,53 +613,9 @@ const Map = forwardRef((props, ref) => {
 
   const getPlotData = () => {
     let selected = select0.getFeatures().getArray();
-    let type, id, coordinates, observation;
     if (selected.length > 0) {
-      if (selected[0].get("class") === "observation") {
-        type = selected[0].getGeometry().constructor.name;
-        type = type === "LineString" ? "track" : type;
-        id = selected[0].get("id");
-        observation = true;
-      } else if (selected[0].get("class") === "predefined") {
-        id = selected[0].get("key");
-        type = selected[0].get("type");
-        coordinates = [id];
-        return {
-          type: type,
-          coordinates: coordinates,
-          id: id,
-          observation: observation,
-        };
-      } else {
-        type = selected[0].get("type");
-      }
-      if (type === "class4") {
-        id = selected[0].get("id").replace("/", "_");
-      }
-      coordinates = selected.map((feature) =>
-        feature.getGeometry().getCoordinates()
-      );
-      if (type === "LineString") {
-        coordinates = coordinates[0];
-      } else if (type === "Polygon") {
-        coordinates = coordinates[0][0];
-      }
-      coordinates = coordinates.map((coordinate) => {
-        coordinate = olProj.transform(
-          coordinate,
-          props.mapSettings.projection,
-          "EPSG:4326"
-        );
-        // switch to lat lon order
-        return [coordinate[1], coordinate[0]];
-      });
+      return createPlotData(selected, props.mapSettings.projection)
     }
-    return {
-      type: type,
-      coordinates: coordinates,
-      id: id,
-      observation: observation,
-    };
   };
 
   const selectFeatures = (selectedIds) => {

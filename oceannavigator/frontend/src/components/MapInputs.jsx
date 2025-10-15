@@ -65,6 +65,7 @@ function MapInputs(props) {
             showTimeSlider={!props.compareDatasets}
             showCompare={props.showCompare}
             compareDatasets={props.compareDatasets}
+            showSearchBtn={true}
           />
           {props.showCompare ? hideDataSwitch : null}
         </div>
@@ -79,6 +80,7 @@ function MapInputs(props) {
               action={props.action}
               horizontalLayout={true}
               showTimeSlider={!props.compareDatasets}
+              showSearchBtn={true}
             />
           </div>
         ) : null}
