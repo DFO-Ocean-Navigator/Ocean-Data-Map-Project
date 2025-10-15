@@ -857,11 +857,11 @@ export const createPlotData = (selected, projection) => {
     title = "Point - " + title.join(", ")
   } else if (type === "LineString") {
     coordinates = convertCoords(coordinates[0], projection);
-    title = `Line -  ${name ? name : coordinates.length + "vertices"}`;
+    title = `Line -  ${name ? name : coordinates.length + " Vertices"}`;
     distance = getLineDistance(coordinates, projection);
   } else if (type === "Polygon") {
     coordinates = convertCoords(coordinates[0][0], projection);
-    title = `Area -  ${name ? name : coordinates.length + "vertices"}`;
+    title = `Area -  ${name ? name : coordinates.length + " Vertices"}`;
   }
 
   return {

@@ -131,22 +131,19 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
-
-        // check if selected plot is minimized
-        let prevPlotData = [...plotData];
-        let minimizedIdx = prevPlotData.findIndex(
-          (data) => data.id === newPlotData.id
-        );
-
-        if (minimizedIdx > -1) {
-          prevPlotData[minimizedIdx] = {
-            ...prevPlotData[minimizedIdx],
-            active: true,
-          };
-          setPlotData(prevPlotData); // set minimized plot to active
-        } else {
-          setPlotData([...prevPlotData, newPlotData]); //plot new feature
-        }
+        setPlotData((prevPlotData) => {
+          const existingIdx = prevPlotData.findIndex(
+            (data) => data.id === newPlotData.id
+          );
+          if (existingIdx > -1) {
+            return prevPlotData.map((p, idx) => ({
+              ...p,
+              active: idx === existingIdx,
+            }));
+          } else {
+            return [...prevPlotData, newPlotData];
+          }
+        });
         break;
       case "updatePlots":
         setPlotData(arg);
