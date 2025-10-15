@@ -27,7 +27,7 @@
   position: relative;
 }
 
-.hide-data-button {
+.hide-data-button,.hide-data-button-compare {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -39,6 +39,3 @@
   z-index: 20;
 }
 
-.hide-data-button-compare {
-  right: calc(50.5%) !important;
-}
