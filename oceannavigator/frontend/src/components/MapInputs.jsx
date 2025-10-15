@@ -35,9 +35,7 @@ function MapInputs(props) {
       overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
     >
       <Button
-        className={`hide-data-button ${
-          props.compareDatasets ? "hide-data-button-compare" : ""
-        }`}
+        className="hide-data-button"
         onClick={() => {
           props.updateMapSettings(
             "hideDataLayer",
