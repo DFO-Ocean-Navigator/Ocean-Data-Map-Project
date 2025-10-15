@@ -489,19 +489,14 @@ const Map = forwardRef((props, ref) => {
     let features0 = [...s0?.getFeatures().getArray()];
     let features1 = [...s1?.getFeatures().getArray()];
 
-    if (selected.length === 0) {
-      // feature has been deselected
-      let allFeatures = [...features0, ...features1];
-      selected = allFeatures.filter(
-        (feature) => feature.getId() !== e.deselected[0].getId()
+    if (e.selected.length === 0 || e.selected[0]?.get("type") === "Point") {
+      selected = Array.from(
+        new Set([...e.selected, ...features0, ...features1])
+      ).filter(
+        (feature) =>
+          feature.get("type") === "Point" &&
+          feature.getId() !== e.deselected[0]?.getId()
       );
-    } else if (selected[0].get("type") === "Point") {
-      // point has been selected so allow multiple
-      selected = [...selected, ...features0, ...features1];
-      selected = [...new Set(selected)];
-      selected = selected.filter((feature) => {
-        return feature.get("type") === "Point";
-      });
     }
 
     // add resulting features to select interactions
