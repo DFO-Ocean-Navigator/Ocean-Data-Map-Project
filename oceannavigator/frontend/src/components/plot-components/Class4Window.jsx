@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Accordion, Card, Row, Col } from "react-bootstrap";
-import ComboBox from "./ComboBox.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ImageSize from "./ImageSize.jsx";
+import ComboBox from "../ComboBox.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ImageSize from "../ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";

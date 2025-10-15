@@ -8,38 +8,21 @@ import Map from "./Map/Map.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
+import ActivePlotsContainer from "./plot-components/ActivePlotsContainer.jsx";
+import MinimizedPlotBar from "./plot-components/MinimizedPlotBar.jsx";
 import PresetFeaturesWindow from "./PresetFeaturesWindow.jsx";
 import ModifyFeaturesWindow from "./ModifyFeaturesWindow/ModifyFeaturesWindow.jsx";
-import PointWindow from "./PointWindow.jsx";
-import LineWindow from "./LineWindow.jsx";
-import AreaWindow from "./AreaWindow.jsx";
+import AnnotationButton from "./AnnotationButton.jsx";
 import AnnotationTextWindow from "./AnnotationTextWindow.jsx";
 import ObservationSelector from "./ObservationSelector.jsx";
 import SettingsWindow from "./SettingsWindow.jsx";
 import InfoHelpWindow from "./InfoHelpWindow.jsx";
 import Class4Selector from "./Class4Selector.jsx";
-import Class4Window from "./Class4Window.jsx";
-import TrackWindow from "./TrackWindow.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 
 import { withTranslation } from "react-i18next";
-import AnnotationButton from "./AnnotationButton.jsx";
-
-function formatLatLon(latitude, longitude) {
-  latitude = latitude > 90 ? 90 : latitude;
-  latitude = latitude < -90 ? -90 : latitude;
-  longitude = longitude > 180 ? longitude - 360 : longitude;
-  longitude = longitude < -180 ? 360 + longitude : longitude;
-  let formatted = "";
-  formatted += Math.abs(latitude).toFixed(4) + " ";
-  formatted += latitude >= 0 ? "N" : "S";
-  formatted += ", ";
-  formatted += Math.abs(longitude).toFixed(4) + " ";
-  formatted += longitude >= 0 ? "E" : "W";
-  return formatted;
-}
 
 function OceanNavigator(props) {
   const mapRef = useRef();
@@ -48,7 +31,7 @@ function OceanNavigator(props) {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState([]);
   const [compareDatasets, setCompareDatasets] = useState(false);
   const [mapSettings, setMapSettings] = useState({
-    projection: "EPSG:3857", // Map projection
+    projection: "EPSG:3857",
     basemap: "topo",
     extent: [],
     hideDataLayer: false,
@@ -61,7 +44,7 @@ function OceanNavigator(props) {
     showObservationTools: false,
   });
   const [mapState, setMapState] = useState({});
-  const [plotData, setPlotData] = useState({});
+  const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState([]);
@@ -108,8 +91,8 @@ function OceanNavigator(props) {
           }
           mapRef.current.selectFeatures(selectedIds);
           if (query.showModal) {
-            let plotData = mapRef.current.getPlotData();
-            setPlotData(plotData);
+            let newPlotData = mapRef.current.getPlotData();
+            setPlotData(newPlotData);
           }
           updateUI({ modalType: query.modalType, showModal: query.showModal });
           setSubquery(query.subquery);
@@ -139,16 +122,37 @@ function OceanNavigator(props) {
         break;
       case "resetMap":
         mapRef.current.resetMap();
+        setPlotData([]);
+        setSelectedFeatureIds([]);
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
         break;
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
-        if (newPlotData.type) {
-          setPlotData(newPlotData);
-          updateUI({ modalType: newPlotData.type, showModal: true });
-        }
+        if (!newPlotData) break;
+        setPlotData((prevPlotData) => {
+          const existingIdx = prevPlotData.findIndex(
+            (data) => data.id === newPlotData.id
+          );
+          if (existingIdx > -1) {
+            return prevPlotData.map((p, idx) => ({
+              ...p,
+              active: idx === existingIdx,
+            }));
+          } else {
+            return [...prevPlotData, newPlotData];
+          }
+        });
+        closeModal();
+        break;
+      case "updatePlots":
+        setPlotData(arg);
+        break;
+      case "closePlot":
+        setPlotData((prevPlotData) =>
+          prevPlotData.filter((plot) => plot.id !== arg.id)
+        );
         break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
@@ -158,7 +162,6 @@ function OceanNavigator(props) {
         mapRef.current.loadFeatures(arg, arg2);
         break;
       case "drawObsPoint":
-        // Enable point selection in both maps
         mapRef.current.drawObsPoint();
         break;
       case "drawObsArea":
@@ -174,9 +177,7 @@ function OceanNavigator(props) {
         setClass4Type(arg);
         break;
       case "toggleCompare":
-        setCompareDatasets((prevCompare) => {
-          return !prevCompare;
-        });
+        setCompareDatasets((prevCompare) => !prevCompare);
         break;
       case "permalink":
         setSubquery(null);
@@ -186,12 +187,10 @@ function OceanNavigator(props) {
   };
 
   const updateMapState = (key, value) => {
-    setMapState((prevMapState) => {
-      return {
-        ...prevMapState,
-        [key]: value,
-      };
-    });
+    setMapState((prevMapState) => ({
+      ...prevMapState,
+      [key]: value,
+    }));
   };
 
   const updateDataset0 = (key, value) => {
@@ -200,12 +199,10 @@ function OceanNavigator(props) {
         setDataset0(value);
         break;
       default:
-        setDataset0((prevDataset) => {
-          return {
-            ...prevDataset,
-            [key]: value,
-          };
-        });
+        setDataset0((prevDataset) => ({
+          ...prevDataset,
+          [key]: value,
+        }));
     }
   };
 
@@ -215,45 +212,38 @@ function OceanNavigator(props) {
         setDataset1(value);
         break;
       default:
-        setDataset1((prevDataset) => {
-          return {
-            ...prevDataset,
-            [key]: value,
-          };
-        });
+        setDataset1((prevDataset) => ({
+          ...prevDataset,
+          [key]: value,
+        }));
     }
   };
 
   const updateUI = (newSettings) => {
-    setUiSettings((prevUISettings) => {
-      return { ...prevUISettings, ...newSettings };
-    });
+    setUiSettings((prevUISettings) => ({
+      ...prevUISettings,
+      ...newSettings,
+    }));
   };
 
   const closeModal = () => {
-    setUiSettings((prevUiSettings) => {
-      return {
-        ...prevUiSettings,
-        showModal: false,
-        modalType: "",
-      };
-    });
+    setUiSettings((prevUiSettings) => ({
+      ...prevUiSettings,
+      showModal: false,
+      modalType: "",
+    }));
   };
-const swapViews = () => {
-  // Swap dataset0 and dataset1
-  const tempDataset = dataset0;
-  setDataset0(dataset1);
-  setDataset1(tempDataset);
-};
+  const swapViews = () => {
+    const tempDataset = dataset0;
+    setDataset0(dataset1);
+    setDataset1(tempDataset);
+  };
 
   const updateMapSettings = (key, value) => {
-    setMapSettings((prevMapSettings) => {
-      let newMapSettings = {
-        ...prevMapSettings,
-        [key]: value,
-      };
-      return newMapSettings;
-    });
+    setMapSettings((prevMapSettings) => ({
+      ...prevMapSettings,
+      [key]: value,
+    }));
   };
 
   const generatePermLink = (permalinkSettings) => {
@@ -289,91 +279,11 @@ const swapViews = () => {
       `?query=${encodeURIComponent(JSON.stringify(query))}`
     );
   };
-
   let modalBodyContent = null;
   let modalTitle = "";
   let modalSize = "lg";
+
   switch (uiSettings.modalType) {
-    case "Point":
-      modalBodyContent = (
-        <PointWindow
-          dataset_0={dataset0}
-          plotData={plotData}
-          mapSettings={mapSettings}
-          updateDataset={updateDataset0}
-          init={subquery}
-          action={action}
-        />
-      );
-      modalTitle = plotData.coordinates.map((p) => formatLatLon(p[0], p[1]));
-      modalTitle = modalTitle.join(", ");
-      break;
-    case "LineString":
-      const line_distance = mapRef.current.getLineDistance(
-        plotData.coordinates
-      );
-      modalBodyContent = (
-        <LineWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          plotData={plotData}
-          line_distance={line_distance}
-          mapSettings={mapSettings}
-          names={names}
-          onUpdate={updateDataset0}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset1}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-          swapViews={swapViews}
-        />
-      );
-
-      modalTitle =
-        "(" +
-        plotData.coordinates
-          .map(function (ll) {
-            return formatLatLon(ll[0], ll[1]);
-          })
-          .join("), (") +
-        ")";
-      break;
-    case "Polygon":
-      modalBodyContent = (
-        <AreaWindow
-          dataset_0={dataset0}
-          dataset_1={dataset1}
-          plotData={plotData}
-          mapSettings={mapSettings}
-          names={names}
-          updateDataset0={updateDataset0}
-          updateDataset1={updateDataset1}
-          init={subquery}
-          action={action}
-          dataset_compare={compareDatasets}
-          setCompareDatasets={setCompareDatasets}
-          swapViews={swapViews}
-        />
-      );
-
-      modalTitle = "";
-      break;
-    case "track":
-      modalBodyContent = (
-        <TrackWindow
-          dataset={dataset0}
-          track={coordinates}
-          names={names}
-          onUpdate={updateDataset0}
-          init={subquery}
-          action={action}
-        />
-      );
-
-      modalTitle = "";
-      break;
     case "presetFeatures":
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
@@ -413,18 +323,6 @@ const swapViews = () => {
       modalTitle = "Select Class4";
       modalSize = "sm";
       break;
-    case "class4":
-      modalBodyContent = (
-        <Class4Window
-          dataset={dataset0.id}
-          plotData={plotData}
-          class4type={class4Type}
-          init={subquery}
-          action={action}
-        />
-      );
-      modalTitle = "Class4";
-      break;
     case "settings":
       modalBodyContent = (
         <SettingsWindow
@@ -457,6 +355,7 @@ const swapViews = () => {
           right={true}
         />
       ) : null}
+      <MinimizedPlotBar plotData={plotData} action={action} />
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -491,10 +390,21 @@ const swapViews = () => {
         action={action}
       />
       <LinkButton action={action} />
-      <MapTools
-        uiSettings={uiSettings}
-        updateUI={updateUI}
+      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+      <ActivePlotsContainer
+        plotData={plotData}
+        dataset0={dataset0}
+        dataset1={dataset1}
+        mapSettings={mapSettings}
+        names={names}
+        updateDataset0={updateDataset0}
+        updateDataset1={updateDataset1}
+        subquery={subquery}
         action={action}
+        compareDatasets={compareDatasets}
+        setCompareDatasets={setCompareDatasets}
+        class4Type={class4Type}
+        swapViews={swapViews}
       />
       <Modal
         show={uiSettings.showModal}

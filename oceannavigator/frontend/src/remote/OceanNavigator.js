@@ -24,7 +24,6 @@ export function GetTimestampsPromise(dataset, variable) {
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps"
   );
 }
-
 export function GetDepthsPromise(dataset, variable) {
   return instance.get(
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/depths",
@@ -35,6 +34,12 @@ export function GetDepthsPromise(dataset, variable) {
     }
   );
 }
+
+//returns a complete list of variables for users to select
+export function GetAllVariablesPromise() {
+  return instance.get("/api/v2.0/datasets/variables/all");
+}
+
 
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
@@ -85,10 +90,6 @@ export function FilterDatasetsByLocationPromise(
   );
 }
 
-//returns a complete list of variables for users to select
-export function GetAllVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/variables/all");
-}
 
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);

@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Accordion, Card, Col, Row, Nav } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "./ComboBox.jsx";
-import ColormapRange from "./ColormapRange.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ContourSelector from "./ContourSelector.jsx";
-import QuiverSelector from "./QuiverSelector.jsx";
-import ImageSize from "./ImageSize.jsx";
-import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
-import SubsetPanel from "./SubsetPanel.jsx";
+import ComboBox from "../ComboBox.jsx";
+import ColormapRange from "../ColormapRange.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ContourSelector from "../ContourSelector.jsx";
+import QuiverSelector from "../QuiverSelector.jsx";
+import ImageSize from "../ImageSize.jsx";
+import CustomPlotLabels from "../CustomPlotLabels.jsx";
+import DatasetSelector from "../DatasetSelector.jsx";
+import SubsetPanel from "../SubsetPanel.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
@@ -144,7 +144,7 @@ const AreaWindow = (props) => {
           state={scale.split(",")}
           onUpdate={handleScaleUpdate}
         />
-          {/* End of Compare Datasets options */}
+        {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
           checked={bathymetry}
