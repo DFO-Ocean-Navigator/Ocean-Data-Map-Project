@@ -1,6 +1,5 @@
 import Draw from "ol/interaction/Draw";
 import { transform } from "ol/proj";
-import { getDistance } from "ol/sphere";
 
 export const getDrawAction = (vectorSource, featureType) => {
   const drawAction = new Draw({
@@ -15,17 +14,6 @@ export const getDrawAction = (vectorSource, featureType) => {
     e.feature.setProperties({ type: featureType });
   });
   return drawAction;
-};
-
-export const getLineDistance = (line) => {
-  var dist = 0;
-  for (let i = 1; i < line.length; i++) {
-    let start = [line[i - 1][1], line[i - 1][0]];
-    let end = [line[i][1], line[i][0]];
-    dist += getDistance(start, end);
-  }
-
-  return dist;
 };
 
 export const obsPointDrawAction = (map, obsDrawSource, projection, action) => {

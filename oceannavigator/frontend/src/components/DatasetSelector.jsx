@@ -10,6 +10,7 @@ import DatasetDropdown from "./DatasetDropdown.jsx";
 import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
+import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 
 import {
   GetDatasetsPromise,
@@ -21,6 +22,8 @@ import {
 import { withTranslation } from "react-i18next";
 
 import "rc-slider/assets/index.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
@@ -36,6 +39,7 @@ function DatasetSelector({
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
+  showSearchBtn = false,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -52,6 +56,7 @@ function DatasetSelector({
   const [dataset, setDataset] = useState(mountedDataset);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
+  const [showDatasetSearch, setShowDatasetSearch] = useState(false);
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -66,6 +71,15 @@ function DatasetSelector({
   }, [availableDatasets]);
 
   useEffect(() => {
+    if (
+      mountedDataset.id !== dataset.id ||
+      mountedDataset.variable !== dataset.variable
+    ) {
+      changeDataset(mountedDataset.id, mountedDataset.variable, true);
+    }
+  }, [mountedDataset]);
+
+  useEffect(() => {
     if (updateParent) {
       onUpdate("dataset", dataset);
       setUpdateParent(false);
@@ -75,7 +89,9 @@ function DatasetSelector({
   const changeDataset = (
     newDataset,
     currentVariable,
-    updateParentOnSuccess = false
+    updateParentOnSuccess = false,
+    newQuiverVariable,
+    newVarScale = null
   ) => {
     const currentDataset = availableDatasets.filter((d) => {
       return d.id === newDataset;
@@ -84,7 +100,6 @@ function DatasetSelector({
     setLoading(true);
     setLoadingPercent(10);
     setLoadingTitle(currentDataset.value);
-
     const quantum = currentDataset.quantum;
     const model_class = currentDataset.model_class;
 
@@ -94,8 +109,8 @@ function DatasetSelector({
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
         let newVariable = currentVariable;
-        let newVariableScale = mountedDataset.variable_scale;
-        let newQuiver = mountedDataset.quiverVariable;
+        let newVariableScale = newVarScale ?? mountedDataset.variable_scale;
+        let newQuiver = newQuiverVariable ?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
@@ -105,7 +120,9 @@ function DatasetSelector({
 
         if (!variableIds.includes(currentVariable)) {
           newVariable = variableResult.data[0].id;
-          newVariableScale = variableResult.data[0].scale;
+          if (newVarScale == null) {
+            newVariableScale = variableResult.data[0].scale;
+          }
           variable_range[newVariable] = null;
         }
 
@@ -257,13 +274,13 @@ function DatasetSelector({
     return key === "time";
   };
 
-  const updateDataset = (key, value) => {
+  const updateDataset = (key, value, quiverVariable = null) => {
     if (nothingChanged(key, value)) {
       return;
     }
 
     if (datasetChanged(key)) {
-      changeDataset(value, dataset.variable);
+      changeDataset(value, dataset.variable, quiverVariable);
       return;
     }
 
@@ -283,6 +300,10 @@ function DatasetSelector({
 
   const handleGoButton = () => {
     onUpdate("dataset", dataset);
+  };
+
+  const toggleSearchDatasets = () => {
+    setShowDatasetSearch((prevState) => !prevState);
   };
 
   let datasetSelector = null;
@@ -373,8 +394,8 @@ function DatasetSelector({
           max={1}
           marks={{
             "-1": "-",
-            "0": "",
-            "1": "+",
+            0: "",
+            1: "+",
           }}
           defaultValue={dataset.quiverDensity}
           onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
@@ -539,6 +560,26 @@ function DatasetSelector({
       }}
     />
   ) : null;
+  let datasetSearchButton = null;
+  if (showSearchBtn) {
+    datasetSearchButton = (
+      <OverlayTrigger
+        key="draw-search-btn"
+        placement="top"
+        overlay={<Tooltip id={"draw-tooltip"}>{t("Search Datasets")}</Tooltip>}
+      >
+        <Button
+          className="go-button"
+          variant="primary"
+          size="sm"
+          onClick={toggleSearchDatasets}
+          title="Search Datasets"
+        >
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </Button>
+      </OverlayTrigger>
+    );
+  }
 
   return (
     <>
@@ -557,9 +598,33 @@ function DatasetSelector({
         {horizontalLayout ? null : timeSelector}
         {horizontalLayout ? goButton : null}
         {showCompare ? compareSwitch : null}
+        {datasetSearchButton}
       </div>
       {horizontalLayout ? timeSelector : null}
       {horizontalLayout ? null : goButton}
+
+      <Modal
+        show={showDatasetSearch}
+        size="xl"
+        dialogClassName="full-screen-modal"
+        onHide={toggleSearchDatasets}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Dataset Search</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <DatasetSearchWindow
+            datasets={availableDatasets}
+            updateDataset={changeDataset}
+            closeModal={toggleSearchDatasets}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleSearchDatasets}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
@@ -589,6 +654,7 @@ DatasetSelector.propTypes = {
   horizontalLayout: PropTypes.bool,
   showTimeSlider: PropTypes.bool,
   compareDatasets: PropTypes.bool,
+  showSearchBtn: PropTypes.bool,
   showCompare: PropTypes.bool,
   action: PropTypes.func,
   t: PropTypes.func.isRequired,
