@@ -804,11 +804,7 @@ const formatLatLon = (latitude, longitude) => {
 
 const convertCoords = (coordinates, projection) => {
   return coordinates.map((coordinate) => {
-    coordinate = olProj.transform(
-      coordinate,
-      projection,
-      "EPSG:4326"
-    );
+    coordinate = olProj.transform(coordinate, projection, "EPSG:4326");
     // switch to lat lon order
     return [coordinate[1], coordinate[0]];
   });
@@ -853,14 +849,19 @@ export const createPlotData = (selected, projection) => {
   );
   if (type === "Point") {
     coordinates = convertCoords(coordinates, projection);
-    title = name ? name : `Point - ${formatLatLon(coordinates[0][0], coordinates[0][1])}`
+    title = selected.map((feature, idx) =>
+        feature.get("name")
+          ? feature.get("name")
+          : `${formatLatLon(coordinates[idx][0], coordinates[idx][1])}`
+      );
+    title = "Point - " + title.join(", ")
   } else if (type === "LineString") {
     coordinates = convertCoords(coordinates[0], projection);
-    title = name ? name :`Line - ${coordinates.length} vertices`;
+    title = `Line -  ${name ? name : coordinates.length + "vertices"}`;
     distance = getLineDistance(coordinates, projection);
   } else if (type === "Polygon") {
     coordinates = convertCoords(coordinates[0][0], projection);
-    title = name ? name : `Area - ${coordinates.length} vertices`;
+    title = `Area -  ${name ? name : coordinates.length + "vertices"}`;
   }
 
   return {
