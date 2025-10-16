@@ -50,6 +50,9 @@
     overflow: hidden;
     padding: 0.375rem 1.5rem 0rem 0.5rem;
     -moz-padding-start: calc(0.5rem - 3px);
+    white-space: nowrap;
+    display: block;
+    text-overflow: ellipsis;
   }
 
   .dd-toggle-caret {
