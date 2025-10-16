@@ -13,17 +13,22 @@ body {
 }
 .top-panel-components {
   position: absolute;
-  top: 2.2px;
-  right: 12px;
-  left:10px;
+  top: 8px;
+  right: 230px;
+  left: 10px;
   z-index: 999;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap:8px
+  gap: 6px;
 }
 
+.button-container {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
 
 .OceanNavigator {
   display: flex;

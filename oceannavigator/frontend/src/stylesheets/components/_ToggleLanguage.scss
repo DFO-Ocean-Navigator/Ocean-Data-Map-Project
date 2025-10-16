@@ -1,7 +1,6 @@
 .toggle-group {
-  position: absolute;
-  right: 218px;
-  top: 8px;
+  position: relative;
+  flex-shrink: 0;
 
   .toggle-btn {
     font-size: small;

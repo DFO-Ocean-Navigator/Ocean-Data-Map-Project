@@ -4,8 +4,9 @@
   z-index: 999;
   display: flex;
   gap: 8px;
-  flex:1;
-  width:auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 400px); 
   overflow-x: auto;
   padding: 4px 8px;
   justify-content: flex-start;
