@@ -40,7 +40,6 @@ import {
 } from "./utils";
 import {
   getDrawAction,
-  getLineDistance,
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
@@ -156,7 +155,6 @@ const Map = forwardRef((props, ref) => {
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
-    getLineDistance: getLineDistance,
   }));
 
   useEffect(() => {
@@ -475,7 +473,7 @@ const Map = forwardRef((props, ref) => {
           "#ffffff",
           props.mapSettings
         );
-        if (textStyle) styles.push(textStyle);
+        if (textStyle && feat.get("type") !== "class4") styles.push(textStyle);
 
         return styles;
       },
@@ -516,7 +514,9 @@ const Map = forwardRef((props, ref) => {
     return new Select({
       condition: pointerMove,
       layers: [layerFeatureVector],
-      filter: (feature) => !feature.get("annotation"),
+      filter: (feature) =>
+        feature.get("type") !== "class4" &&
+        feature.get("class") !== "observation",
       style: (feature, resolution) => {
         const isSelected = selectInteraction
           .getFeatures()
@@ -532,7 +532,7 @@ const Map = forwardRef((props, ref) => {
         );
 
         if (feature.get("type") === "Point") {
-          const pointStyle = new Style({
+          return new Style({
             stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
               radius: 6,
@@ -540,7 +540,6 @@ const Map = forwardRef((props, ref) => {
               stroke: new Stroke({ color: "#ffffffff", width: 3 }),
             }),
           });
-          return textStyle ? [pointStyle, textStyle] : [pointStyle];
         }
 
         const glow1 = new Style({
@@ -573,7 +572,9 @@ const Map = forwardRef((props, ref) => {
 
     let features = featureVectorSource.getFeatures();
     features = features.filter(
-      (feature) => feature.get("class") !== "observation"
+      (feature) =>
+        feature.get("type") !== "class4" &&
+        feature.get("class") !== "observation"
     );
     features.sort((a, b) => a.ol_uid.localeCompare(b.ol_uid));
     features = features.map((feature) => {
@@ -614,7 +615,7 @@ const Map = forwardRef((props, ref) => {
   const getPlotData = () => {
     let selected = select0.getFeatures().getArray();
     if (selected.length > 0) {
-      return createPlotData(selected, props.mapSettings.projection)
+      return createPlotData(selected, props.mapSettings.projection);
     }
   };
 
