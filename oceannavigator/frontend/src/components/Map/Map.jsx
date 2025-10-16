@@ -128,7 +128,7 @@ const Map = forwardRef((props, ref) => {
   );
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
-  const [drawAction, setDrawAction] = useState();
+  const [drawActions, setDrawActions] = useState({ map0: null, map1: null });
   const mapRef0 = useRef();
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
@@ -404,17 +404,24 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (drawAction) {
+    if (drawActions.map0 || drawActions.map1) {
       let source = map0.getLayers().getArray()[5].getSource();
-      let newDrawAction = getDrawAction(source, props.featureType);
-
-      removeMapInteractions(map0, "all");
-      map0.addInteraction(newDrawAction);
-      if (props.compareDatasets) {
-        removeMapInteractions(map1, "all");
-        map1.addInteraction(drawAction);
+      if (drawActions.map0) {
+        map0.removeInteraction(drawActions.map0);
       }
-      setDrawAction(newDrawAction);
+      if (drawActions.map1) {
+        map1.removeInteraction(drawActions.map1);
+      }
+      let newDrawAction0 = getDrawAction(source, props.featureType);
+      map0.addInteraction(newDrawAction0);
+      let newActions = { map0: newDrawAction0, map1: null };
+
+      if (props.compareDatasets && map1) {
+        let newDrawAction1 = getDrawAction(source, props.featureType);
+        map1.addInteraction(newDrawAction1);
+        newActions.map1 = newDrawAction1;
+      }
+      setDrawActions(newActions);
     }
   }, [props.featureType]);
 
@@ -861,11 +868,21 @@ const Map = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
+ if (drawActions.map0) {
+      map0.removeInteraction(drawActions.map0);
+    }
+    if (drawActions.map1) {
+      map1.removeInteraction(drawActions.map1);
+    }
+    
+    // Clear draw actions state
+    setDrawActions({ map0: null, map1: null });
+    
+    // Remove other interactions
     removeMapInteractions(map0, "all");
     if (props.compareDatasets) {
       removeMapInteractions(map1, "all");
     }
-
     let map0Layers = map0.getLayers().getArray();
 
     let newFeatureVectorSource = new VectorSource({
@@ -933,17 +950,21 @@ const Map = forwardRef((props, ref) => {
 
   const startFeatureDraw = () => {
     let source = map0.getLayers().getArray()[5].getSource();
-    let newDrawAction = getDrawAction(source, props.featureType);
+    let newDrawAction0 = getDrawAction(source, props.featureType);
     hoverSelect0.setActive(false);
-    if (props.compareDatasets && hoverSelect1 && hoverSelect1.setActive) {
-      hoverSelect1.setActive(false);
+    map0.addInteraction(newDrawAction0);
+    let newActions = { map0: newDrawAction0, map1: null };
+    if (props.compareDatasets && map1) {
+      let newDrawAction1 = getDrawAction(source, props.featureType);
+
+      if (hoverSelect1 && hoverSelect1.setActive) {
+        hoverSelect1.setActive(false);
+      }
+      map1.addInteraction(newDrawAction1);
+      newActions.map1 = newDrawAction1;
     }
 
-    map0.addInteraction(newDrawAction);
-    if (props.compareDatasets) {
-      map1.addInteraction(newDrawAction);
-    }
-    setDrawAction(newDrawAction);
+    setDrawActions(newActions);
   };
 
   const stopFeatureDraw = () => {

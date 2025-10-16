@@ -771,14 +771,19 @@ export const removeMapInteractions = (map, type) => {
     coll: interactions,
     ret: false,
   };
+  const toRemove = [];
   interactions.forEach(function (e, i, a) {
     if (e instanceof Draw) {
-      stat.coll.remove(e);
+      toRemove.push(e);
       if (e.get("type") === type) {
         stat.ret = true;
       }
     }
   }, stat);
+  toRemove.forEach((interaction) => {
+    stat.coll.remove(interaction);
+  });
+  
   return stat.ret;
 };
 
