@@ -11,6 +11,25 @@ body {
     font-size: 0.8em;
   }
 }
+.top-panel-components {
+  position: absolute;
+  top: 8px;
+  right: 230px;
+  left: 10px;
+  z-index: 999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.button-container {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
 .OceanNavigator {
   display: flex;
   flex-direction: row;

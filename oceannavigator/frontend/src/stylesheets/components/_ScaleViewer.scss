@@ -19,6 +19,16 @@ Div.ScaleViewer {
   .expand-icon {
     cursor: pointer;
   }
+
+  .top-panel-components & {
+    position: relative;
+    top: auto;
+    left: auto;
+
+    &.right {
+      left: auto !important;
+    }
+  }
 }
 
 .right {
