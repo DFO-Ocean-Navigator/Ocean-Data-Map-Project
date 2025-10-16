@@ -40,7 +40,6 @@ import {
 } from "./utils";
 import {
   getDrawAction,
-  getLineDistance,
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
@@ -156,7 +155,6 @@ const Map = forwardRef((props, ref) => {
     drawObsPoint: drawObsPoint,
     drawObsArea: drawObsArea,
     resetMap: resetMap,
-    getLineDistance: getLineDistance,
   }));
 
   useEffect(() => {
@@ -516,7 +514,9 @@ const Map = forwardRef((props, ref) => {
     return new Select({
       condition: pointerMove,
       layers: [layerFeatureVector],
-      filter: (feature) => !feature.get("annotation"),
+      filter: (feature) =>
+        feature.get("type") !== "class4" &&
+        feature.get("class") !== "observation",
       style: (feature, resolution) => {
         const isSelected = selectInteraction
           .getFeatures()
@@ -531,12 +531,7 @@ const Map = forwardRef((props, ref) => {
           props.mapSettings
         );
 
-        if (
-          feature.get("type") === "class4" ||
-          feature.get("class") === "observation"
-        ) {
-          return;
-        } else if (feature.get("type") === "Point") {
+        if (feature.get("type") === "Point") {
           return new Style({
             stroke: new Stroke({ color: "#ffffff88", width: 16 }),
             image: new Circle({
@@ -620,7 +615,7 @@ const Map = forwardRef((props, ref) => {
   const getPlotData = () => {
     let selected = select0.getFeatures().getArray();
     if (selected.length > 0) {
-      return createPlotData(selected, props.mapSettings.projection)
+      return createPlotData(selected, props.mapSettings.projection);
     }
   };
 
