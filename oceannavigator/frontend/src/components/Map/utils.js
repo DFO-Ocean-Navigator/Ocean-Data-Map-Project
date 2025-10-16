@@ -21,7 +21,6 @@ import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
 import DoubleClickZoom from "ol/interaction/DoubleClickZoom.js";
-import MousePosition from "ol/control/MousePosition.js";
 import Graticule from "ol/layer/Graticule.js";
 import Draw from "ol/interaction/Draw.js";
 import DragBox from "ol/interaction/DragBox.js";
@@ -229,14 +228,9 @@ export const createMap = (
       newLayerQuiver,
     ],
     controls: defaultControls({
+      rotate: false,
       zoom: true,
     }).extend([
-      new MousePosition({
-        projection: "EPSG:4326",
-        coordinateFormat: function (c) {
-          return "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>";
-        },
-      }),
       new Graticule({
         strokeStyle: new Stroke({
           color: "rgba(128, 128, 128, 0.9)",

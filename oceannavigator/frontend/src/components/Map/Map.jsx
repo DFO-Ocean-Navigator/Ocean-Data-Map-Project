@@ -27,6 +27,7 @@ import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
 
 import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
+import MultiMapMousePosition from "./MultiMapMousePosition.js";
 import {
   createPlotData,
   createMapView,
@@ -205,6 +206,8 @@ const Map = forwardRef((props, ref) => {
     newMap.addInteraction(newSelect0);
     newMap.addInteraction(newHoverSelect);
 
+    newMap.addControl(new MultiMapMousePosition());
+
     newMap.on("moveend", function () {
       const c = olProj
         .transform(
@@ -262,6 +265,9 @@ const Map = forwardRef((props, ref) => {
         mapRef1
       );
 
+      map0.getControls().item(0).setMap(newMap); // change zoom control target
+      map0.getControls().item(3).setMap1(newMap);
+
       newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
       newMap.addInteraction(select1);
       newMap.addInteraction(newHoverSelect);
@@ -278,6 +284,9 @@ const Map = forwardRef((props, ref) => {
           overlay.linkOverlay(newMap);
         }
       }
+    } else if (map0) {
+      map0.getControls().item(0).setMap(map0); // change zoom control target
+      map0.getControls().item(3).setMap(map0);
     }
     setMap1(newMap);
     setHoverSelect1(newHoverSelect);
