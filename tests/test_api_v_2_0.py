@@ -278,7 +278,7 @@ class TestAPIv2:
         response = self.client.get(self.api_links["plot_hovmoller_bottom"])
         assert response.status_code == 200
 
-    # @unittest.skip("Dependent on local resources - fails in GitHub actions.")
+    @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_plot_observation_endpoint(self):
         response = self.client.get(self.api_links["plot_observation"])
         assert response.status_code == 200
