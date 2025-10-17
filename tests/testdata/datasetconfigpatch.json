@@ -8,6 +8,8 @@
         "name": "GIOPS",
         "help": "help",
         "attribution": "attrib",
+        "lat_var_key": "nav_lat",
+        "lon_var_key": "nav_lon",
         "variables": {
             "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
         }
