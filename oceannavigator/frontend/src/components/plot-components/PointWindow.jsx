@@ -32,7 +32,11 @@ const PointWindow = ({
   t: _,
 }) => {
   // UI state
-  const [selected, setSelected] = useState(init?.selected || TabEnum.PROFILE);
+  const [selected, setSelected] = useState(
+    init?.selected || plotData.observation
+      ? TabEnum.OBSERVATION
+      : TabEnum.PROFILE
+  );
 
   // Display settings
   const [showMap, setShowMap] = useState(init?.showmap || false);
@@ -65,12 +69,6 @@ const PointWindow = ({
       options: ds0.options,
     }
   );
-
-  useEffect(() => {
-    if (plotData.observation) {
-      setSelected(TabEnum.OBSERVATION);
-    }
-  }, []);
 
   // Fetch dataset variables when dataset ID changes
   useEffect(() => {
