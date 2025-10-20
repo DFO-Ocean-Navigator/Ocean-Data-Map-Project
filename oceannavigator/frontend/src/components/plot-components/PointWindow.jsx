@@ -66,6 +66,12 @@ const PointWindow = ({
     }
   );
 
+  useEffect(() => {
+    if (plotData.observation) {
+      setSelected(TabEnum.OBSERVATION);
+    }
+  }, []);
+
   // Fetch dataset variables when dataset ID changes
   useEffect(() => {
     GetVariablesPromise(dataset_0.id).then(
@@ -207,7 +213,7 @@ const PointWindow = ({
     if (typeof plotData.id === "number") {
       observationVariableElem = (
         <ComboBox
-          key="obsVarNumeric"
+          key="observation_variable"
           id="observation_variable"
           multiple
           state={observationVariable}
@@ -223,7 +229,7 @@ const PointWindow = ({
       }));
       observationVariableElem = (
         <ComboBox
-          key="obsVarNumeric"
+          key="observation_variable"
           id="observation_variable"
           multiple
           state={observationVariable}
@@ -369,7 +375,7 @@ const PointWindow = ({
         <Nav.Item>
           <Nav.Link
             eventKey={TabEnum.OBSERVATION}
-            disabled={plotData.coordinates[0][2] === undefined}
+            disabled={!plotData.observation}
           >
             {_("Observation")}
           </Nav.Link>
