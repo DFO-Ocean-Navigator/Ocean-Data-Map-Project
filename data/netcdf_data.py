@@ -1,4 +1,5 @@
 import datetime
+import os
 import uuid
 import warnings
 import zipfile
@@ -7,6 +8,7 @@ from typing import Dict, List, Set, Tuple, Union
 
 import dateutil.parser
 import geopy
+import icechunk
 import netCDF4
 import numpy as np
 import pint
@@ -52,6 +54,8 @@ class NetCDFData(Data):
         self.radius: int = kwargs.get("radius", 25000)
         self.neighbours: int = kwargs.get("neighbours", 10)
 
+        self.ic_repo: icechunk.Repository = None
+
     def __enter__(self):
         # Don't decode times since we do it anyways.
         decode_times = False
@@ -76,9 +80,12 @@ class NetCDFData(Data):
             else:
                 self.dataset = xarray.Dataset()
 
-        elif self.url.endswith(".zarr") if not isinstance(self.url, list) else False:
-            ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
-            self.dataset = ds_zarr
+        elif os.path.isdir(self.url):
+            if not self.ic_repo:
+                storage_config = icechunk.local_filesystem_storage(self.url)
+                self.ic_repo = icechunk.Repository.open(storage_config)
+            session = self.ic_repo.readonly_session("main")
+            self.dataset = xarray.open_zarr(session.store, consolidated=False)
 
         else:
             try:
@@ -907,44 +914,23 @@ class NetCDFData(Data):
                     db.get_data_variables()
                 )  # Cache the list for later
 
-        elif url.endswith(".zarr"):
-            ds_zarr = xarray.open_zarr(url)
-            var_list = []
-            for var in list(ds_zarr.data_vars):
-                name = var
-                units = (
-                    ds_zarr.variables[var].attrs["units"]
-                    if ds_zarr.variables[var].attrs["units"]
-                    else None
-                )
-                long_name = (
-                    ds_zarr.variables[var].attrs["long_name"]
-                    if ds_zarr.variables[var].attrs["long_name"]
-                    else name
-                )
-                valid_min = (
-                    ds_zarr.variables[var].attrs["valid_min"]
-                    if ds_zarr.variables[var].attrs["valid_min"]
-                    else None
-                )
-                valid_max = (
-                    ds_zarr.variables[var].attrs["valid_max"]
-                    if ds_zarr.variables[var].attrs["valid_max"]
-                    else None
-                )
+        elif os.path.isdir(self.url):
+            if not self.ic_repo:
+                storage_config = icechunk.local_filesystem_storage(self.url)
+                self.ic_repo = icechunk.Repository.open(storage_config)
+            session = self.ic_repo.readonly_session("main")
+            ic_data = xarray.open_zarr(session.store, consolidated=False)
+            variable_list = []
+            for name, variable in ic_data.data_vars.items():
+                units = variable.units if variable.units else None
+                long_name = variable.long_name if variable.long_name else name
+                valid_min = variable.valid_min if variable.valid_min != 1.17549e-38 else None
+                valid_max = variable.valid_max if variable.valid_max != 3.40282e38 else None
 
-                var_list.append(
-                    Variable(
-                        name,
-                        long_name,
-                        units,
-                        list(ds_zarr[name].dims),
-                        valid_min,
-                        valid_max,
-                    )
-                )
-
-            self._variable_list = var_list
+                variable_list.append(Variable(
+                    name, long_name, units, variable.dims, valid_min, valid_max
+                ))
+            self._variable_list = VariableList(variable_list)
 
         else:
             try:
