@@ -272,7 +272,7 @@ def timestamps(
                 vals = db.get_variable_timestamps(variable)
             time_dim_units = config.time_dim_units
     else:
-        with open_dataset(config, variable=variable) as ds:
+        with open_dataset(config, variable=variable, decode_times=False) as ds:
             vals = list(map(int, ds.nc_data.time_variable.values))
             time_dim_units = (
                 config.time_dim_units or ds.nc_data.time_variable.attrs["units"]

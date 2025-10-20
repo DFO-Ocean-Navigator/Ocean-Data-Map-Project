@@ -85,7 +85,7 @@ class NetCDFData(Data):
                 storage_config = icechunk.local_filesystem_storage(self.url)
                 self.ic_repo = icechunk.Repository.open(storage_config)
             session = self.ic_repo.readonly_session("main")
-            self.dataset = xarray.open_zarr(session.store, consolidated=False)
+            self.dataset = xarray.open_zarr(session.store, consolidated=False, decode_times=False)
 
         else:
             try:
