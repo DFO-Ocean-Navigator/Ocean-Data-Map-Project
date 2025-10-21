@@ -43,7 +43,7 @@ class ONav_Profiling_Driver:
         self.prof_path = prof_path
         self.max_attempts = max_attempts
         self.max_time = max_time
-        self.git_hash = self.get_git_hash()
+        self.git_hash = "999", # self.get_git_hash()
         self.start_time = time.time()
         self.log_filename = f"/dev/shm/{self.user_id}_{self.base_url}_api_profiling_{self.format_time(self.start_time)}.log"
         self.results = []
@@ -566,7 +566,7 @@ if __name__ == "__main__":
     """
 
     # default options
-    url = "https://oceannavigator.ca"
+    url = "https://0.0.0.0:8443/" # "https://oceannavigator.ca"
     config = "scripts/profiling_scripts/api_profiling_config.json"
     csv_file = None
     prof_path = None
