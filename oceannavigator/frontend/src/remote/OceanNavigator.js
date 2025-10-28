@@ -24,14 +24,22 @@ export function GetTimestampsPromise(dataset, variable) {
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps"
   );
 }
-
 export function GetDepthsPromise(dataset, variable) {
-  return instance.get("/api/v2.0/dataset/" + dataset + "/" + variable + "/depths", {
-    params: {
-      include_all_key: true,
-    },
-  });
+  return instance.get(
+    "/api/v2.0/dataset/" + dataset + "/" + variable + "/depths",
+    {
+      params: {
+        include_all_key: true,
+      },
+    }
+  );
 }
+
+//returns a complete list of variables for users to select
+export function GetAllVariablesPromise() {
+  return instance.get("/api/v2.0/datasets/variables/all");
+}
+
 
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
@@ -48,6 +56,40 @@ export function GetPresetAreasPromise() {
 export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
+
+// Filter datasets by date
+export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
+  const params = new URLSearchParams({
+    target_date: targetDate,
+  });
+
+  if (datasetIds && datasetIds.length > 0) {
+    params.append("dataset_ids", datasetIds.join(","));
+  }
+
+  return instance.get(`/api/v2.0/datasets/filter/date?${params.toString()}`);
+}
+
+// Filter datasets by location
+export function FilterDatasetsByLocationPromise(
+  datasetIds,
+  latitude,
+  longitude
+) {
+  const params = new URLSearchParams({
+    latitude: latitude.toString(),
+    longitude: longitude.toString(),
+  });
+
+  if (datasetIds && datasetIds.length > 0) {
+    params.append("dataset_ids", datasetIds.join(","));
+  }
+
+  return instance.get(
+    `/api/v2.0/datasets/filter/location?${params.toString()}`
+  );
+}
+
 
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);

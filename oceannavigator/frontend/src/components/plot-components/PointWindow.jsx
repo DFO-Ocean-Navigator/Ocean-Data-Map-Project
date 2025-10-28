@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ComboBox from "./ComboBox.jsx";
-import LocationInput from "./LocationInput.jsx";
-import ImageSize from "./ImageSize.jsx";
-import CustomPlotLabels from "./CustomPlotLabels.jsx";
-import DatasetSelector from "./DatasetSelector.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ComboBox from "../ComboBox.jsx";
+import LocationInput from "../LocationInput.jsx";
+import ImageSize from "../ImageSize.jsx";
+import CustomPlotLabels from "../CustomPlotLabels.jsx";
+import DatasetSelector from "../DatasetSelector.jsx";
 import PropTypes from "prop-types";
-import { GetVariablesPromise } from "../remote/OceanNavigator.js";
+import { GetVariablesPromise } from "../../remote/OceanNavigator.js";
 import { withTranslation } from "react-i18next";
 
 const TabEnum = {
@@ -32,7 +32,11 @@ const PointWindow = ({
   t: _,
 }) => {
   // UI state
-  const [selected, setSelected] = useState(init?.selected || TabEnum.PROFILE);
+  const [selected, setSelected] = useState(
+    init?.selected || plotData.observation
+      ? TabEnum.OBSERVATION
+      : TabEnum.PROFILE
+  );
 
   // Display settings
   const [showMap, setShowMap] = useState(init?.showmap || false);
@@ -207,7 +211,7 @@ const PointWindow = ({
     if (typeof plotData.id === "number") {
       observationVariableElem = (
         <ComboBox
-          key="obsVarNumeric"
+          key="observation_variable"
           id="observation_variable"
           multiple
           state={observationVariable}
@@ -223,7 +227,7 @@ const PointWindow = ({
       }));
       observationVariableElem = (
         <ComboBox
-          key="obsVarNumeric"
+          key="observation_variable"
           id="observation_variable"
           multiple
           state={observationVariable}
@@ -369,7 +373,7 @@ const PointWindow = ({
         <Nav.Item>
           <Nav.Link
             eventKey={TabEnum.OBSERVATION}
-            disabled={plotData.coordinates[0][2] === undefined}
+            disabled={!plotData.observation}
           >
             {_("Observation")}
           </Nav.Link>

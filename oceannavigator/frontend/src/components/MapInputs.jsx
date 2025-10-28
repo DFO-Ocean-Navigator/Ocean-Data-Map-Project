@@ -35,9 +35,7 @@ function MapInputs(props) {
       overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
     >
       <Button
-        className={`hide-data-button ${
-          props.compareDatasets ? "hide-data-button-compare" : ""
-        }`}
+        className="hide-data-button"
         onClick={() => {
           props.updateMapSettings(
             "hideDataLayer",
@@ -67,6 +65,7 @@ function MapInputs(props) {
             showTimeSlider={!props.compareDatasets}
             showCompare={props.showCompare}
             compareDatasets={props.compareDatasets}
+            showSearchBtn={true}
           />
           {props.showCompare ? hideDataSwitch : null}
         </div>
@@ -81,6 +80,7 @@ function MapInputs(props) {
               action={props.action}
               horizontalLayout={true}
               showTimeSlider={!props.compareDatasets}
+              showSearchBtn={true}
             />
           </div>
         ) : null}
