@@ -80,12 +80,14 @@ class NetCDFData(Data):
             else:
                 self.dataset = xarray.Dataset()
 
-        elif os.path.isdir(self.url):
+        elif self.url == "icechunk":
             if not self.ic_repo:
-                storage_config = icechunk.local_filesystem_storage(self.url)
+                storage_config = self.__get_icechunk_storage()
                 self.ic_repo = icechunk.Repository.open(storage_config)
             session = self.ic_repo.readonly_session("main")
-            self.dataset = xarray.open_zarr(session.store, consolidated=False, decode_times=False)
+            self.dataset = xarray.open_zarr(
+                session.store, consolidated=False, decode_times=False
+            )
 
         else:
             try:
@@ -149,6 +151,17 @@ class NetCDFData(Data):
             except KeyError:
                 continue
         raise KeyError(f"None of {candidates} were found in {self.dataset}")
+
+    def __get_icechunk_storage(self) -> icechunk.s3_storage:
+        return icechunk.s3_storage(
+            bucket="icechunk",
+            prefix=self._dataset_key,
+            access_key_id="admin",
+            secret_access_key="password",
+            endpoint_url="http://142.130.249.35:9000",
+            allow_http=True,
+            force_path_style=True,
+        )
 
     def make_time_slice(
         self, starttime: int, endtime: Union[int, None] = None
@@ -914,9 +927,9 @@ class NetCDFData(Data):
                     db.get_data_variables()
                 )  # Cache the list for later
 
-        elif os.path.isdir(self.url):
+        elif self.url == "icechunk":
             if not self.ic_repo:
-                storage_config = icechunk.local_filesystem_storage(self.url)
+                storage_config = self.__get_icechunk_storage()
                 self.ic_repo = icechunk.Repository.open(storage_config)
             session = self.ic_repo.readonly_session("main")
             ic_data = xarray.open_zarr(session.store, consolidated=False)
@@ -924,12 +937,18 @@ class NetCDFData(Data):
             for name, variable in ic_data.data_vars.items():
                 units = variable.units if variable.units else None
                 long_name = variable.long_name if variable.long_name else name
-                valid_min = variable.valid_min if variable.valid_min != 1.17549e-38 else None
-                valid_max = variable.valid_max if variable.valid_max != 3.40282e38 else None
+                valid_min = (
+                    variable.valid_min if variable.valid_min != 1.17549e-38 else None
+                )
+                valid_max = (
+                    variable.valid_max if variable.valid_max != 3.40282e38 else None
+                )
 
-                variable_list.append(Variable(
-                    name, long_name, units, variable.dims, valid_min, valid_max
-                ))
+                variable_list.append(
+                    Variable(
+                        name, long_name, units, variable.dims, valid_min, valid_max
+                    )
+                )
             self._variable_list = VariableList(variable_list)
 
         else:
