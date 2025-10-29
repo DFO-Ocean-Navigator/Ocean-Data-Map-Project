@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
+import argparse
 import glob
 import os
 import sys
 
-import defopt
 import numpy as np
 import xarray as xr
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -46,13 +46,14 @@ def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
 
     return ds
 
-def main(uri: str, filename: str):
 
+def main(uri: str, filename: str):
     """Import Glider NetCDF
 
     :param str uri: Database URI
     :param str filename: Glider Filename, or directory of NetCDF files
     """
+
     engine = create_engine(
         uri,
         connect_args={"connect_timeout": 10},
@@ -79,7 +80,7 @@ def main(uri: str, filename: str):
                     ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
                     .to_dataframe()
                     .reset_index()
-                    .dropna(axis=1, how='all')
+                    .dropna(axis=1, how="all")
                     .dropna()
                 )
 
@@ -122,66 +123,82 @@ def main(uri: str, filename: str):
                 except IntegrityError:
                     print("Error committing platform.")
                     session.rollback()
-                    stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
+                    stmt = select(Platform.id).where(
+                        Platform.unique_id == ds.attrs["platform_code"]
+                    )
                     p.id = session.execute(stmt).first()[0]
 
-                n_chunks = np.ceil(len(df)/1e4)
+                df["STATION_ID"] = 0
+
+                stations = [
+                    dict(
+                        platform_id=p.id,
+                        time=row.TIME,
+                        latitude=row.LATITUDE,
+                        longitude=row.LONGITUDE,
+                    )
+                    for idx, row in df[["TIME", "LATITUDE", "LONGITUDE"]]
+                    .drop_duplicates()
+                    .iterrows()
+                ]
+
+                # Using return_defaults=True here so that the stations will get
+                # updated with id's. It's slower, but it means that we can just
+                # put all the station ids into a pandas series to use when
+                # constructing the samples.
+                try:
+                    stmt = insert(Station).values(stations).prefix_with("IGNORE")
+                    session.execute(stmt)
+                    session.commit()
+                except IntegrityError as e:
+                    print("Error committing station.")
+                    print(e)
+                    session.rollback()
+                stmt = select(Station).where(Station.platform_id == p.id)
+                station_data = session.execute(stmt).all()
+
+                for station in station_data:
+                    df.loc[
+                        df["TIME"].dt.floor("s") == station[0].time, "STATION_ID"
+                    ] = station[0].id
+
+                n_chunks = np.ceil(len(df) / 1e3)
 
                 if n_chunks < 1:
                     continue
 
                 for chunk in np.array_split(df, n_chunks):
-                    chunk["STATION_ID"] = 0
-
-                    stations = [
-                        Station(
-                            platform_id=p.id,
-                            time=row.TIME,
-                            latitude=row.LATITUDE,
-                            longitude=row.LONGITUDE,
-                        )
-                        for idx, row in chunk[["TIME","LATITUDE", "LONGITUDE"]].drop_duplicates().iterrows()
-                    ]
-
-                    # Using return_defaults=True here so that the stations will get
-                    # updated with id's. It's slower, but it means that we can just
-                    # put all the station ids into a pandas series to use when
-                    # constructing the samples.
-                    try:
-                        session.bulk_save_objects(stations, return_defaults=True)
-                        session.commit()
-                    except IntegrityError:
-                        print("Error committing station.")
-                        session.rollback()
-
-                    stmt = select(Station).where(Station.platform_id==p.id)
-                    station_data = session.execute(stmt).all()
-
-                    for station in station_data:
-                        chunk.loc[chunk["TIME"]==station[0].time,"STATION_ID"] = station[0].id
-
-                    samples = [
-                        [
-                            Sample(
-                                station_id=row.STATION_ID,
-                                depth=row.DEPTH,
-                                value=row[variable],
-                                datatype_key=datatype_map[variable].key,
+                    samples = []
+                    for _, row in chunk.iterrows():
+                        for variable in variables:
+                            samples.append(
+                                dict(
+                                    station_id=row.STATION_ID,
+                                    depth=row.DEPTH,
+                                    value=row[variable],
+                                    datatype_key=datatype_map[variable].key,
+                                )
                             )
-                            for variable in variables
-                        ]
-                        for idx, row in chunk.iterrows()
-                    ]
+
                     try:
-                        session.bulk_save_objects(
-                            [item for sublist in samples for item in sublist]
-                        )
-                    except IntegrityError:
+                        stmt = insert(Sample).values(samples).prefix_with("IGNORE")
+                        session.execute(stmt)
+                        session.commit()
+                    except IntegrityError as e:
                         print("Error committing samples.")
+                        print(e)
                         session.rollback()
 
                     session.commit()
 
 
 if __name__ == "__main__":
-    defopt.run(main)
+    parser = argparse.ArgumentParser(
+        prog="CMEMS Glider script",
+        description="Add CMEMS Glider data to ONAV Obs database.",
+    )
+    parser.add_argument("uri", type=str)
+    parser.add_argument("filename", type=str)
+    args = parser.parse_args()
+
+    main(args.uri, args.filename)
