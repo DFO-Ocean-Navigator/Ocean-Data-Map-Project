@@ -142,10 +142,6 @@ def main(uri: str, filename: str):
                     .iterrows()
                 ]
 
-                # Using return_defaults=True here so that the stations will get
-                # updated with id's. It's slower, but it means that we can just
-                # put all the station ids into a pandas series to use when
-                # constructing the samples.
                 try:
                     stmt = insert(Station).values(stations).prefix_with("IGNORE")
                     session.execute(stmt)
