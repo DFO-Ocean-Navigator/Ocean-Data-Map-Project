@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
+import argparse
 import glob
 import os
 import sys
-import defopt
 
 import numpy as np
 import xarray as xr
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -18,11 +18,8 @@ sys.path.append(parent)
 from data.observational import DataType, Platform, Sample, Station
 
 # Mapping of variable names to their attributes
-VARIABLE_MAPPING = {
-    "TEMP": ("sea_water_temperature", "Sea Temperature", "degrees_C"),
-    "ATMS": ("air_pressure_at_sea_level", "Atmospheric Pressure", "hPa"),
-    # Add more variables here if necessary
-}
+VARIABLES = ["TEMP", "ATMS"]
+
 
 def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
     """
@@ -50,6 +47,7 @@ def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
 
     return ds
 
+
 def main(uri: str, filename: str):
     """Import data from NetCDF file(s) into the database.
 
@@ -72,86 +70,115 @@ def main(uri: str, filename: str):
         else:
             filenames = filename
 
+        datatype_map = {}
         for fname in filenames:
             print(fname)
             with xr.open_dataset(fname) as ds:
-
+                variables = [v for v in VARIABLES if v in ds.variables]
                 if ds.LATITUDE.size > 1:
                     ds = reformat_coordinates(ds)
-                
+
                 df = ds.to_dataframe().reset_index().dropna(axis=1, how="all").dropna()
 
-                # Iterate over variables defined in the mapping
-                for var_name, (key, name, unit) in VARIABLE_MAPPING.items():
-                    if var_name not in df.columns:
-                        continue  # Skip if the variable is not present in the dataset
+                # remove missing variables from variables list
+                variables = [v for v in VARIABLES if v in df.columns]
 
-                    # Create or retrieve DataType object
-                    statement = select(DataType).where(DataType.key == key)
-                    data_type = session.execute(statement).first()
-                    if data_type is None:
-                        data_type = DataType(
-                            key=key,
-                            name=name,
-                            unit=unit,
+                for variable in variables:
+                    if variable not in datatype_map:
+                        statement = select(DataType).where(
+                            DataType.key == ds[variable].standard_name
                         )
-                        session.add(data_type)
-                        session.commit()
-                    else:
-                        data_type = data_type[0]
+                        dt = session.execute(statement).all()
+                        if not dt:
+                            dt = DataType(
+                                key=ds[variable].standard_name,
+                                name=ds[variable].long_name,
+                                unit=ds[variable].units,
+                            )
+                            session.add(dt)
+                        else:
+                            dt = dt[0][0]
 
-                    # Create Platform object
+                        datatype_map[variable] = dt
 
-                    platform = Platform(type=Platform.Type.drifter, unique_id=f"{ds.attrs["platform_code"]}")
-                    try:
-                        session.add(platform)
-                        session.commit()
-                    except IntegrityError:
-                        print("Error committing platform.")
-                        session.rollback()
-                        stmt = select(Platform.id).where(Platform.unique_id == ds.attrs["platform_code"])
-                        platform.id = session.execute(stmt).first()[0]
+                session.commit()
 
-                    # Iterate over rows in the DataFrame
-                    for index, row in df.iterrows():
-                        time = row["TIME"]
-                        latitude = row["LATITUDE"]
-                        longitude = row["LONGITUDE"]
-                        depth = row["DEPH"]
-                        value = row[var_name]
+                # Create Platform object
 
-                        # Create Station object
-                        station = Station(
-                            time=time,
-                            latitude=latitude,
-                            longitude=longitude,
-                            platform_id=platform.id,
-                        )
-
-                        try:
-                            session.add(station)
-                            session.commit()
-                        except IntegrityError:
-                            print("Error committing station.")
-                            session.rollback()
-
-                        # Create Sample object
-                        sample = Sample(
-                            depth=depth,
-                            value=value,
-                            datatype_key=data_type.key,
-                            station_id=station.id,
-                        )
-
-                        try:
-                            session.add(sample)
-                            session.commit()
-                        except IntegrityError:
-                            print("Error committing sample.")
-                            session.rollback()
-
+                platform = Platform(
+                    type=Platform.Type.drifter,
+                    unique_id=f"{ds.attrs["platform_code"]}",
+                )
+                try:
+                    session.add(platform)
                     session.commit()
+                except IntegrityError:
+                    print("Error committing platform.")
+                    session.rollback()
+                    stmt = select(Platform.id).where(
+                        Platform.unique_id == ds.attrs["platform_code"]
+                    )
+                    platform.id = session.execute(stmt).first()[0]
+
+                stations = [
+                    dict(
+                        platform_id=platform.id,
+                        time=row.TIME,
+                        latitude=row.LATITUDE,
+                        longitude=row.LONGITUDE,
+                    )
+                    for idx, row in df[["TIME", "LATITUDE", "LONGITUDE"]]
+                    .drop_duplicates()
+                    .iterrows()
+                ]
+
+                try:
+                    stmt = insert(Station).values(stations).prefix_with("IGNORE")
+                    session.execute(stmt)
+                    session.commit()
+                except IntegrityError as e:
+                    print("Error committing station.")
+                    print(e)
+                    session.rollback()
+                stmt = select(Station).where(Station.platform_id == platform.id)
+                station_data = session.execute(stmt).all()
+
+                for station in station_data:
+                    df.loc[
+                        df["TIME"].dt.floor("s") == station[0].time, "STATION_ID"
+                    ] = station[0].id
+
+                samples = []
+                for _, row in df.iterrows():
+                    for variable in variables:
+                        samples.append(
+                            dict(
+                                station_id=row.STATION_ID,
+                                depth=row.DEPTH,
+                                value=row[variable],
+                                datatype_key=datatype_map[variable].key,
+                            )
+                        )
+
+                try:
+                    stmt = insert(Sample).values(samples).prefix_with("IGNORE")
+                    session.execute(stmt)
+                    session.commit()
+                except IntegrityError as e:
+                    print("Error committing samples.")
+                    print(e)
+                    session.rollback()
+
+                session.commit()
 
 
 if __name__ == "__main__":
-    defopt.run(main)
+    parser = argparse.ArgumentParser(
+        prog="CMEMS Drifter script",
+        description="Add CMEMS drifting buoy data to ONAV Obs database.",
+    )
+    parser.add_argument("uri", type=str)
+    parser.add_argument("filename", type=str)
+    args = parser.parse_args()
+
+    main(args.uri, args.filename)
