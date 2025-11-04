@@ -30,6 +30,8 @@ function ScaleViewer(props) {
     setExpanded(!expanded);
   };
 
+  const mapViewInfo = props.mapRef.current?.getViewInfo()
+
   const rangeControl = expanded ? (
     <ColormapRange
       id="variable_scale"
@@ -51,7 +53,7 @@ function ScaleViewer(props) {
         "/" +
         props.mapSettings.projection +
         "/" +
-        props.mapState.extent.join(",") +
+        mapViewInfo.extent.join(",") +
         "/" +
         props.dataset.depth +
         "/" +
