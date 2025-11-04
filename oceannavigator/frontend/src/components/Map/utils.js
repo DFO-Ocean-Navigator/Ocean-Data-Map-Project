@@ -21,7 +21,6 @@ import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
 import { defaults as defaultControls } from "ol/control/defaults";
 import DoubleClickZoom from "ol/interaction/DoubleClickZoom.js";
-import MousePosition from "ol/control/MousePosition.js";
 import Graticule from "ol/layer/Graticule.js";
 import Draw from "ol/interaction/Draw.js";
 import DragBox from "ol/interaction/DragBox.js";
@@ -229,14 +228,9 @@ export const createMap = (
       newLayerQuiver,
     ],
     controls: defaultControls({
+      rotate: false,
       zoom: true,
     }).extend([
-      new MousePosition({
-        projection: "EPSG:4326",
-        coordinateFormat: function (c) {
-          return "<div>" + c[1].toFixed(4) + ", " + c[0].toFixed(4) + "</div>";
-        },
-      }),
       new Graticule({
         strokeStyle: new Stroke({
           color: "rgba(128, 128, 128, 0.9)",
@@ -822,46 +816,53 @@ const getLineDistance = (line) => {
 };
 
 export const createPlotData = (selected, projection) => {
-  let title, type, coordinates, observation, distance;
+  let title, type, observation, distance;
   let id = selected[0].getId();
   let name = selected[0].get("name");
+  let coordinates = selected.map((feature) =>
+    feature.getGeometry().getCoordinates()
+  );
   // Observations
   if (selected[0].get("class") === "observation") {
-    let type = selected[0].getGeometry().constructor.name;
-    type = type === "LineString" ? "track" : type;
+    type = selected[0].getGeometry().constructor.name;
+    id = selected[0].get("id");
+    type = type === "LineString" ? "Track" : type;
     observation = true;
-    title = id ? `Track - ${id}` : "Track";
+    title = id ? `${type} - ${id}` : type;
+    if (type === "Point") {
+      coordinates = convertCoords(coordinates, projection);
+    } else if (type === "LineString") {
+      coordinates = convertCoords(coordinates[0], projection);
+    }
   } else if (selected[0].get("class") === "predefined") {
     id = selected[0].get("key");
     type = selected[0].get("type");
     coordinates = [id];
+    title = name
   } else {
     type = selected[0].get("type");
-  }
-  // Class4
-  if (type === "class4") {
-    title = id ? `Class4 - ${id.trim()}` : "Class4";
-    id = selected[0].get("id").replace("/", "_").trim();
-  }
-  // Drawn features
-  coordinates = selected.map((feature) =>
-    feature.getGeometry().getCoordinates()
-  );
-  if (type === "Point") {
-    coordinates = convertCoords(coordinates, projection);
-    title = selected.map((feature, idx) =>
+    // Class4
+    if (type === "class4") {
+      title = id ? `Class4 - ${id.trim()}` : "Class4";
+      id = selected[0].get("id").replace("/", "_").trim();
+    }
+    // Drawn features
+    if (type === "Point") {
+      coordinates = convertCoords(coordinates, projection);
+      title = selected.map((feature, idx) =>
         feature.get("name")
           ? feature.get("name")
           : `${formatLatLon(coordinates[idx][0], coordinates[idx][1])}`
       );
-    title = "Point - " + title.join(", ")
-  } else if (type === "LineString") {
-    coordinates = convertCoords(coordinates[0], projection);
-    title = `Line -  ${name ? name : coordinates.length + " Vertices"}`;
-    distance = getLineDistance(coordinates, projection);
-  } else if (type === "Polygon") {
-    coordinates = convertCoords(coordinates[0][0], projection);
-    title = `Area -  ${name ? name : coordinates.length + " Vertices"}`;
+      title = "Point - " + title.join(", ");
+    } else if (type === "LineString") {
+      coordinates = convertCoords(coordinates[0], projection);
+      title = `Line -  ${name ? name : coordinates.length + " Vertices"}`;
+      distance = getLineDistance(coordinates, projection);
+    } else if (type === "Polygon") {
+      coordinates = convertCoords(coordinates[0][0], projection);
+      title = `Area -  ${name ? name : coordinates.length + " Vertices"}`;
+    }
   }
 
   return {
