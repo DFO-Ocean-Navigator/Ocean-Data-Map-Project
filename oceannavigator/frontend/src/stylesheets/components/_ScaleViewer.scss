@@ -20,17 +20,29 @@ Div.ScaleViewer {
     cursor: pointer;
   }
 
-  .top-panel-components & {
-    position: relative;
-    top: auto;
-    left: auto;
+.top-panel-components & {
+  position: relative;
+  top: auto;
+  left: auto;
 
-    &.right {
-      left: auto !important;
-    }
+  &.right {
+    left: auto !important;
   }
 }
-
-.right {
-  left: calc(50% + 8px) !important;
+}
+.scale-viewer-container {
+  display: flex;
+  flex-direction: column; 
+  gap: 8px;
+  align-items: flex-start;
+  
+  .ScaleViewer {
+    position: relative; 
+    flex: 0 0 auto; 
+    width: auto; 
+    
+    &.expanded {
+      flex: 0 0 auto; 
+    }
+  }
 }

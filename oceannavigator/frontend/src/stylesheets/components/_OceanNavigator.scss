@@ -22,11 +22,14 @@ body {
   justify-content: flex-start;
   flex-wrap: wrap;
   gap: 6px;
+  pointer-events: none;
+> * {
+    pointer-events: auto;
+  }
 }
-
 .button-container {
   display: flex;
-  gap: 2px;
+  gap: 12px;
   margin-left: auto;
 }
 
