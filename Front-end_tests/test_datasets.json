@@ -1,0 +1,126 @@
+
+[
+  {
+    "name": "GIOPS 10 Day Daily Mean",
+    "steps": ["Giops 10 Day Daily Mean"],
+    "compare_dataset":"RIOPS Forecast 3D - Polar",
+    "compare_steps":[ "RIOPS Forecast", "RIOPS Forecast 3D - Polar"],
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
+    "subset_var": "Potential Temperature",
+    "arrows": "Water Velocity",
+    "contour": "none",
+    "arrow_box_position": "3",
+    "contour_box_position":"4",
+    "line_transect":"yes",
+    "line_coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "RIOPS Forecast 3D - Polar",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "RIOPS Forecast",
+      "RIOPS Forecast 3D - Polar"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
+    "subset_var": "Speed of Sound",
+    "arrows": "Water Velocity",
+    "contour": "none",
+    "arrow_box_position": "3",
+    "contour_box_position":"4",
+    "line_transect":"yes",
+    "line_Coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "CCG RIOPS Forecast Surface -",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "RIOPS Forecast",
+      "CCG RIOPS Forecast Surface -"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
+    "subset_var": "Potential Temperature",
+    "arrows": "Water Velocity",
+    "contour": "none",
+    "arrow_box_position": "2",
+    "contour_box_position":"3",
+    "line_transect":"no",
+    "line_Coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "WCPS-GLS Great Lakes Coupled",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "WCPS Forecast",
+      "WCPS-GLS Great Lakes Coupled"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area Great Lakes 3.csv",
+    "subset_var": "Potential Temperature",
+    "arrows": "Water Velocity",
+    "contour": "none",
+    "arrow_box_position": "2",
+    "contour_box_position":"3",
+    "line_transect":"yes",
+    "line_Coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "CIOPS Forecast East 3D -",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "CIOPS Forecast",
+      "CIOPS Forecast East 3D -"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
+    "subset_var": "Potential Temperature",
+    "arrows": "none",
+    "contour": "Water Velocity",
+    "arrow_box_position": "3",
+    "contour_box_position": "4",
+    "line_transect":"yes",
+    "line_Coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "CMEMS",
+      "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
+    "subset_var": "Potential Temperature",
+    "arrows": "none",
+    "contour": "none",
+    "arrow_box_position": "2",
+    "contour_box_position": "3",
+    "line_transect":"yes",
+    "line_Coordinates":"flemish_cap",
+    "point_coordinates":["44.9855", "-50.9582"]
+  },
+  {
+    "name": "SalishSeaCast 3D Currents",
+    "steps": [
+      "GIOPS 10 Day Daily Mean",
+      "SalishSeaCast",
+      "SalishSeaCast 3D Currents"
+    ],
+    "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area Salish 3.csv",
+    "subset_var": "Speed of Current",
+    "arrows": "none",
+    "contour": "Eastward Current",
+    "arrow_box_position": "2",
+    "contour_box_position": "3",
+    "line_transect":"yes",
+    "line_Coordinates":["-123.6","48.2","-123","48.3"],
+    "point_coordinates":["44.9855", "-50.9582"]
+  }
+]
