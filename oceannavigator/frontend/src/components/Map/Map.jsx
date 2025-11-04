@@ -868,13 +868,6 @@ const Map = forwardRef((props, ref) => {
   };
 
   const resetMap = () => {
-    if (drawActions.map0) {
-      map0.removeInteraction(drawActions.map0);
-    }
-    if (drawActions.map1) {
-      map1.removeInteraction(drawActions.map1);
-    }
-    setDrawActions({ map0: null, map1: null });
     removeMapInteractions(map0, "all");
     if (props.compareDatasets) {
       removeMapInteractions(map1, "all");
