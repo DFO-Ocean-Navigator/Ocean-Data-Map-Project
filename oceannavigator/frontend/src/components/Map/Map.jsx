@@ -567,14 +567,12 @@ const Map = forwardRef((props, ref) => {
         return c.toFixed(4);
       });
 
-    const extent = map0.getView().calculateExtent(map0.getSize())
-    const ell = olProj.transformExtent(extent, props.mapSettings.projection, "EPSG:4326")
+    const extent = map0.getView().calculateExtent(map0.getSize());
 
     return {
       center: c,
       zoom: map0.getView().getZoom(),
       extent: extent,
-      ell:ell,
     };
   };
 
