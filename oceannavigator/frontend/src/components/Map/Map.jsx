@@ -221,6 +221,8 @@ const Map = forwardRef((props, ref) => {
       props.updateMapState("center", c);
       props.updateMapState("zoom", newMapView.getZoom());
       const extent = newMapView.calculateExtent(newMap.getSize());
+      console.log(extent)
+      console.log(olProj.transformExtent(extent, props.mapSettings.projection, "EPSG:4326"))
       props.updateMapState("extent", extent);
     });
 
