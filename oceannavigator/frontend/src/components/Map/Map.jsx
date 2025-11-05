@@ -384,6 +384,7 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset0.id,
+    props.dataset0.time,
     props.dataset0.quiverVariable,
     props.dataset0.quiverDensity,
   ]);
@@ -399,6 +400,7 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset1.id,
+    props.dataset1.time,
     props.dataset1.quiverVariable,
     props.dataset1.quiverDensity,
   ]);
