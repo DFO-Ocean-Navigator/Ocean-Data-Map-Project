@@ -277,6 +277,14 @@ const Map = forwardRef((props, ref) => {
 
       addDblClickPlot(newMap, select1);
 
+ 
+      if (drawActions && drawActions.map0) {
+        const source = map0.getLayers().getArray()[5].getSource();
+        const mirroredDraw = getDrawAction(source, props.featureType);
+        newMap.addInteraction(mirroredDraw);
+        setDrawActions((prev) => ({ ...(prev || {}), map1: mirroredDraw }));
+      }
+
       let overlays = map0.getOverlays().getArray();
 
       for (let overlay of overlays) {
