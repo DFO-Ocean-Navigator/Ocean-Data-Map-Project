@@ -11,6 +11,7 @@ import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
 import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
+import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
 
 import {
   GetDatasetsPromise,
@@ -39,7 +40,7 @@ function DatasetSelector({
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
-  showSearchBtn = false,
+  datasetSearch = false,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -57,6 +58,9 @@ function DatasetSelector({
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
+  const [datasetSearchFilters, setDatasetSearchFilters] = useState({
+    DATASET_FILTER_DEFAULTS,
+  });
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -304,6 +308,10 @@ function DatasetSelector({
 
   const toggleSearchDatasets = () => {
     setShowDatasetSearch((prevState) => !prevState);
+  };
+
+  const updateSearchFilters = (key, value) => {
+    setDatasetSearchFilters((prevFilters) => ({ ...prevFilters, key: value }));
   };
 
   let datasetSelector = null;
@@ -561,7 +569,7 @@ function DatasetSelector({
     />
   ) : null;
   let datasetSearchButton = null;
-  if (showSearchBtn) {
+  if (datasetSearch) {
     datasetSearchButton = (
       <OverlayTrigger
         key="draw-search-btn"
@@ -615,6 +623,8 @@ function DatasetSelector({
         <Modal.Body>
           <DatasetSearchWindow
             datasets={availableDatasets}
+            filters={datasetSearchFilters}
+            updateFilters={updateSearchFilters}
             updateDataset={changeDataset}
             closeModal={toggleSearchDatasets}
           />
