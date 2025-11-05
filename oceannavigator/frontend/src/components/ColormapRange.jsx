@@ -52,19 +52,41 @@ function ColormapRange(props) {
   };
 
   const getAutoScale = () => {
+    const mapViewInfo = props.mapRef.current?.getViewInfo();
+
+    const autourl =
+      "/api/v2.0/range/" +
+      props.dataset.id +
+      "/" +
+      props.dataset.variable +
+      "/" +
+      props.mapSettings.interpType +
+      "/" +
+      props.mapSettings.interpRadius +
+      "/" +
+      props.mapSettings.interpNeighbours +
+      "/" +
+      props.mapSettings.projection +
+      "/" +
+      mapViewInfo.extent.join(",") +
+      "/" +
+      props.dataset.depth +
+      "/" +
+      props.dataset.time;
+
     axios
-      .get(props.autourl)
+      .get(autourl)
       .then(function (data) {
         setMin(parseFloat(data.data.min).toFixed(4));
         setMax(parseFloat(data.data.max).toFixed(4));
       })
       .catch(function (r, status, err) {
-        console.error(props.autourl, status, err.toString());
+        console.error(autourl, status, err.toString());
       });
   };
 
   let autobuttons = null;
-  if (props.autourl) {
+  if (props.showAuto) {
     autobuttons = (
       <ButtonToolbar style={{ display: "inline-block", float: "right" }}>
         <Button name="default" onClick={handleDefaultButton}>
@@ -87,7 +109,7 @@ function ColormapRange(props) {
         <tbody>
           <tr>
             <td>
-              <label htmlFor={props.id + "_min"}>{"Min:"}</label>
+              <label key={props.id + "_min"}>{"Min:"}</label>
             </td>
             <td>
               <input
@@ -101,7 +123,7 @@ function ColormapRange(props) {
           </tr>
           <tr>
             <td>
-              <label htmlFor={props.id + "_max"}>{"Max:"}</label>
+              <label key={props.id + "_max"}>{"Max:"}</label>
             </td>
             <td>
               <input
@@ -127,7 +149,10 @@ ColormapRange.propTypes = {
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
-  autourl: PropTypes.string,
+  showAuto: PropTypes.bool,
+  dataset: PropTypes.object,
+  mapSettings: PropTypes.object,
+  mapRef: PropTypes.object
 };
 
 export default withTranslation()(ColormapRange);
