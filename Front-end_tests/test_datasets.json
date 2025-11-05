@@ -4,6 +4,7 @@
     "name": "GIOPS 10 Day Daily Mean",
     "steps": ["Giops 10 Day Daily Mean"],
     "compare_dataset":"RIOPS Forecast 3D - Polar",
+    "type":"3D",
     "compare_steps":[ "RIOPS Forecast", "RIOPS Forecast 3D - Polar"],
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
     "subset_var": "Potential Temperature",
@@ -23,6 +24,7 @@
       "RIOPS Forecast 3D - Polar"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"3D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
     "subset_var": "Speed of Sound",
     "arrows": "Water Velocity",
@@ -31,7 +33,7 @@
     "contour_box_position":"4",
     "line_transect":"yes",
     "line_Coordinates":"flemish_cap",
-    "point_coordinates":["44.9855", "-50.9582"]
+    "point_coordinates":["-50.9582","44.9855"]
   },
   {
     "name": "CCG RIOPS Forecast Surface -",
@@ -41,6 +43,7 @@
       "CCG RIOPS Forecast Surface -"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"2D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
     "subset_var": "Potential Temperature",
     "arrows": "Water Velocity",
@@ -49,7 +52,7 @@
     "contour_box_position":"3",
     "line_transect":"no",
     "line_Coordinates":"flemish_cap",
-    "point_coordinates":["44.9855", "-50.9582"]
+    "point_coordinates":["-50.9582","44.9855"]
   },
   {
     "name": "WCPS-GLS Great Lakes Coupled",
@@ -59,6 +62,7 @@
       "WCPS-GLS Great Lakes Coupled"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"2D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area Great Lakes 3.csv",
     "subset_var": "Potential Temperature",
     "arrows": "Water Velocity",
@@ -67,7 +71,7 @@
     "contour_box_position":"3",
     "line_transect":"yes",
     "line_Coordinates":"flemish_cap",
-    "point_coordinates":["44.9855", "-50.9582"]
+    "point_coordinates":["-50.9582","44.9855"]
   },
   {
     "name": "CIOPS Forecast East 3D -",
@@ -77,6 +81,7 @@
       "CIOPS Forecast East 3D -"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"3D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
     "subset_var": "Potential Temperature",
     "arrows": "none",
@@ -85,7 +90,7 @@
     "contour_box_position": "4",
     "line_transect":"yes",
     "line_Coordinates":"flemish_cap",
-    "point_coordinates":["44.9855", "-50.9582"]
+    "point_coordinates":["-50.9582","44.9855"]
   },
   {
     "name": "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)",
@@ -95,6 +100,7 @@
       "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"2D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area NA 3.csv",
     "subset_var": "Potential Temperature",
     "arrows": "none",
@@ -113,6 +119,7 @@
       "SalishSeaCast 3D Currents"
     ],
     "compare_dataset":"GIOPS 10 Day Daily Mean",
+    "type":"3D",
     "csvPath": "/home/ubuntu/onav-cloud/Ocean-Data-Map-Project/Front-end_tests/Total Area Salish 3.csv",
     "subset_var": "Speed of Current",
     "arrows": "none",
