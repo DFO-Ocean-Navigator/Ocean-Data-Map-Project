@@ -20,29 +20,26 @@ Div.ScaleViewer {
     cursor: pointer;
   }
 
-.top-panel-components & {
-  position: relative;
-  top: auto;
-  left: auto;
+  .top-panel-components & {
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: 500;
 
-  &.right {
-    left: auto !important;
+    &.right {
+      left: auto !important;
+    }
   }
 }
-}
+
 .scale-viewer-container {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   gap: 8px;
   align-items: flex-start;
-  
+
   .ScaleViewer {
-    position: relative; 
-    flex: 0 0 auto; 
-    width: auto; 
-    
-    &.expanded {
-      flex: 0 0 auto; 
-    }
+    flex: 0 0 auto;
+    width: auto;
   }
 }

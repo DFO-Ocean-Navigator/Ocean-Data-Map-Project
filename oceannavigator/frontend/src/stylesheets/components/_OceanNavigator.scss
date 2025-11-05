@@ -16,23 +16,19 @@ body {
   top: 8px;
   right: 230px;
   left: 10px;
-  z-index: 999;
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   flex-wrap: wrap;
   gap: 6px;
   pointer-events: none;
-> * {
+  > * {
     pointer-events: auto;
   }
+  .annotation-button {
+    margin-left: auto;
+  }
 }
-.button-container {
-  display: flex;
-  gap: 12px;
-  margin-left: auto;
-}
-
 .OceanNavigator {
   display: flex;
   flex-direction: row;
