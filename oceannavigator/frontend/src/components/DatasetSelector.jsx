@@ -143,14 +143,12 @@ function DatasetSelector({
                 return diff <= prev[0] ? [diff, idx] : prev;
               }, [Infinity, 0]);
               newTime = timeData[timeIdx].id;
-              newStarttime =
-                timeData[timeIdx] > 20
+              newStarttime = timeIdx > 20
                   ? timeData[timeData[timeIdx] - 20].id
                   : timeData[0].id;
             } else {
               newTime = timeData[timeData.length - 1].id;
-              newStarttime =
-                timeData.length > 20
+              newStarttime = timeData.length > 20
                   ? timeData[timeData.length - 20].id
                   : timeData[0].id;
               if (mountedDataset && mountedDataset.id === newDataset) {
