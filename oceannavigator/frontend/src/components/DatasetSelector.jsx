@@ -92,10 +92,11 @@ function DatasetSelector({
 
   const changeDataset = (
     newDataset,
-    currentVariable,
+    newVariable,
     updateParentOnSuccess = false,
     newQuiverVariable,
-    newVarScale = null
+    newVariableScale,
+    date
   ) => {
     const currentDataset = availableDatasets.filter((d) => {
       return d.id === newDataset;
@@ -112,9 +113,9 @@ function DatasetSelector({
         // Carry the currently selected variable to the new
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
-        let newVariable = currentVariable;
-        let newVariableScale = newVarScale ?? mountedDataset.variable_scale;
-        let newQuiver = newQuiverVariable ?? mountedDataset.quiverVariable;
+        newVariable = newVariable ?? mountedDataset.variable
+        newVariableScale = newVariableScale ?? mountedDataset.variable_scale;
+        newQuiverVariable = newQuiverVariable ?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
@@ -122,9 +123,9 @@ function DatasetSelector({
           return v.id;
         });
 
-        if (!variableIds.includes(currentVariable)) {
+        if (!variableIds.includes(newVariable)) {
           newVariable = variableResult.data[0].id;
-          if (newVarScale == null) {
+          if (newVariableScale == null) {
             newVariableScale = variableResult.data[0].scale;
           }
           variable_range[newVariable] = null;
@@ -134,21 +135,33 @@ function DatasetSelector({
           (timeResult) => {
             setLoadingPercent(66);
             const timeData = timeResult.data;
-
-            let newTime = timeData[timeData.length - 1].id;
-            let newStarttime =
-              timeData.length > 20
-                ? timeData[timeData.length - 20].id
-                : timeData[0].id;
-
-            if (mountedDataset && mountedDataset.id === newDataset) {
-              newTime = mountedDataset.time > 0 ? mountedDataset.time : newTime;
+            let newTime, newStarttime;
+            if (date) {
+              let dates = timeData.map((t) => new Date(t.value));
+              let [, timeIdx] = dates.reduce((prev, curr, idx) => {
+                let diff = Math.abs(curr - date)
+                return diff <= prev[0] ? [diff, idx] : prev;
+              }, [Infinity, 0]);
+              newTime = timeData[timeIdx].id;
               newStarttime =
-                mountedDataset.starttime > 0
-                  ? mountedDataset.starttime
-                  : newStarttime;
+                timeData[timeIdx] > 20
+                  ? timeData[timeData[timeIdx] - 20].id
+                  : timeData[0].id;
+            } else {
+              newTime = timeData[timeData.length - 1].id;
+              newStarttime =
+                timeData.length > 20
+                  ? timeData[timeData.length - 20].id
+                  : timeData[0].id;
+              if (mountedDataset && mountedDataset.id === newDataset) {
+                newTime =
+                  mountedDataset.time > 0 ? mountedDataset.time : newTime;
+                newStarttime =
+                  mountedDataset.starttime > 0
+                    ? mountedDataset.starttime
+                    : newStarttime;
+              }
             }
-
             GetDepthsPromise(newDataset, newVariable).then(
               (depthResult) => {
                 setLoadingPercent(90);
@@ -162,7 +175,7 @@ function DatasetSelector({
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
-                  quiverVariable: newQuiver,
+                  quiverVariable: newQuiverVariable,
                   quiverDensity: newQuiverDensity,
                   default_location: currentDataset.default_location,
                 });

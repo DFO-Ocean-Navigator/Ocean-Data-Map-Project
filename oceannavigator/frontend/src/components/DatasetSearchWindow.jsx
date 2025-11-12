@@ -56,23 +56,19 @@ const DatasetSearchWindow = ({
   }, [latitude, longitude]);
 
   const applyDataset = (id) => {
-    let variable,
-      variableScale = null;
-    let variableData = variableDataMap[filters.variable].filter(
+    let variableId, variableScale = null;
+    let variable = variableDataMap[filters.variable]?.filter(
       (ds) => ds.dataset_id === id
     )[0];
-    if (variableData) {
-      variable = variable.filter((ds) => ds.dataset_id === id)[0];
+    if (variable) {
+      variableId = variable.variable_id;
       variableScale = variable.variable_scale;
-      variable = variable.variable_id;
     }
-    let vectorVariable = variableDataMap[filters.vectorVariable].filter(
+    let vectorVariable = variableDataMap[filters.vectorVariable]?.filter(
       (ds) => ds.dataset_id === id
-    )[0];
+    )[0].variable_id ?? "none";
 
-    vectorVariable = vectorVariable ? vectorVariable.variable_id : "none";
-
-    updateDataset(id, variable, true, vectorVariable, variableScale);
+    updateDataset(id, variableId, true, vectorVariable, variableScale, filters.date);
     closeModal();
   };
 
