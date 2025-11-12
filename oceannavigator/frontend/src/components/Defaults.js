@@ -23,12 +23,11 @@ const MAP_DEFAULTS = Object.freeze({
 });
 
 const DATASET_FILTER_DEFAULTS = {
-    variable: "any",
-    vectorVariable: "none",
-    depth: null,
-    date: null,
-    latitude: "",
-    longitude: "",
-  };
+  variable: "any",
+  vectorVariable: "none",
+  depth: "all",
+  date: null,
+  location: [null, null],
+};
 
 export { DATASET_DEFAULTS, MAP_DEFAULTS, DATASET_FILTER_DEFAULTS };

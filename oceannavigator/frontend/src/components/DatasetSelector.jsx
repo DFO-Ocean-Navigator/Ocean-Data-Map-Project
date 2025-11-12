@@ -58,9 +58,9 @@ function DatasetSelector({
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
-  const [datasetSearchFilters, setDatasetSearchFilters] = useState({
-    DATASET_FILTER_DEFAULTS,
-  });
+  const [datasetSearchFilters, setDatasetSearchFilters] = useState(
+    DATASET_FILTER_DEFAULTS
+  );
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -311,7 +311,14 @@ function DatasetSelector({
   };
 
   const updateSearchFilters = (key, value) => {
-    setDatasetSearchFilters((prevFilters) => ({ ...prevFilters, key: value }));
+    if (key === "reset") {
+      setDatasetSearchFilters(DATASET_FILTER_DEFAULTS);
+    } else {
+      setDatasetSearchFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+    }
   };
 
   let datasetSelector = null;
@@ -618,7 +625,7 @@ function DatasetSelector({
         onHide={toggleSearchDatasets}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Dataset Search</Modal.Title>
+          <Modal.Title>Search Datasets</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <DatasetSearchWindow
