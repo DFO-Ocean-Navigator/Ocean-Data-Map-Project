@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import datasets from './test_datasets.json';
 
 async function runPlotTest(page, dataset) {
-  console.log(`Running test for dataset: ${dataset.name}`);
+  console.log(`Running Line test for dataset: ${dataset.name}`);
 
   const consoleErrors = [];
   const consoleListener = (msg) => {
@@ -28,10 +28,10 @@ async function runPlotTest(page, dataset) {
     // Wait for data to load
     await page.locator('img').first().waitFor({ state: 'visible', timeout: 30000 });
 
-    //applying dataset to the main map
+    //apply dataset to the main map
     await page.getByRole("button", { name: "Go" }).click();
 
-    //waiting for dataset to be loaded fully
+    //wait for dataset to be loaded fully
    await page.locator('img').first().waitFor({ state: 'visible', timeout: 30000 });
 
     // check if there is any console errors after loading the dataset
@@ -45,6 +45,7 @@ async function runPlotTest(page, dataset) {
     //For dataset that don't have data for flemish cap line
     if (dataset.line_coordinates!="flemish_cap")
     {
+      //manually add coordinates
         await page.locator('.MapTools > button:nth-child(2)').click();
         await page.getByRole('button', { name: 'Add New Feature' }).click();
         await page.getByRole('combobox').nth(3).selectOption({label:'Line'});
@@ -54,6 +55,7 @@ async function runPlotTest(page, dataset) {
         await page.locator('[id="0"]').nth(1).fill(dataset.line_coordinates[1]);
         await page.locator('[id="1"]').nth(1).fill(dataset.line_coordinates[3]);
         await page.getByRole('dialog').getByRole('checkbox').click();
+
       //listen for plot request
     const plotRequestPromise = page.waitForResponse(
         (response)=>{
@@ -76,6 +78,7 @@ async function runPlotTest(page, dataset) {
     else{
     //click on preset features
     await page.locator('.MapTools > button:nth-child(3)').click();
+
     //wait for it to be visible
     await page.getByRole('button', { name: 'AZMP Transects', exact: true }).waitFor({ state: "visible", timeout: 120000 });
     
@@ -154,9 +157,15 @@ async function runPlotTest(page, dataset) {
       { timeout: 120000 }
     );
 
+    //click on Hovmoller Diagram
     await page.getByRole('button', { name: 'Hovmöller Diagram' }).click();
+
+    //wait for response
     const hovmollerPlotResponse = await hovmollerPlotRequestPromise;
-    expect(hovmollerPlotResponse.status()).toBe(200)
+
+    //check status of response
+    expect(hovmollerPlotResponse.status()).toBe(200);
+
     console.log(`Test passed for: ${dataset.name}`);
 
   }

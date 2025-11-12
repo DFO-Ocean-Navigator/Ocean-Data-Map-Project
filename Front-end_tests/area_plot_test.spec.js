@@ -4,7 +4,7 @@ import datasets from './test_datasets.json';
 
 // Helper function that handles the entire plotting and download process
 async function runPlotTest(page, dataset) {
-  console.log(`Running test for dataset: ${dataset.name}`);
+  console.log(`Running Area test for dataset: ${dataset.name}`);
 
   const consoleErrors = [];
   const consoleListener = (msg) => {
@@ -146,7 +146,7 @@ async function runPlotTest(page, dataset) {
      //checking if plot rendered properly with additional_contours
       expect(contourResponse.status()).toBe(200);
     }
-    console.log(`✅ Completed dataset: ${dataset.name}`);
+    console.log(`Test passed for: ${dataset.name}`);
 
     //**********************************************************************************//
   } 
@@ -159,8 +159,8 @@ async function runPlotTest(page, dataset) {
 for (const dataset of datasets) {
 
   test(`dataset: ${dataset.name}`, async ({ page }) => {
-    // 4 minutes allocated per dataset
-    test.setTimeout(240000); 
+    // 2 minutes allocated per dataset
+    test.setTimeout(120000); 
     try {
       await runPlotTest(page, dataset);
     } catch (err) {

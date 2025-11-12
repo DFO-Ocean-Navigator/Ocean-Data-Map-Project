@@ -3,7 +3,7 @@ import datasets from './test_datasets.json';
 
 // handles subset download
 async function runPlotTest(page, dataset) {
-  console.log(`Running test for dataset: ${dataset.name}`);
+  console.log(`Running subset download test for dataset: ${dataset.name}`);
     const consoleErrors = [];
   const consoleListener = (msg) => {
     if (msg.type() === "error") {
@@ -108,8 +108,8 @@ async function runPlotTest(page, dataset) {
 for (const dataset of datasets) {
 
   test(`dataset: ${dataset.name}`, async ({ page }) => {
-    // 4 minutes allocated per dataset
-    test.setTimeout(240000); 
+    // 2 minutes allocated per dataset
+    test.setTimeout(120000); 
     try {
       await runPlotTest(page, dataset);
     } catch (err) {
