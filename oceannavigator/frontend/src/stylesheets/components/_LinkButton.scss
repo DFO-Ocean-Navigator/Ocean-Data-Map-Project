@@ -1,7 +1,6 @@
 .link-button {
-  position: absolute;
-  right: 298px;
-  top: 8px;
+  position: relative;
+  z-index: 500;
 
   font-size: small;
   background-color: #fff;
