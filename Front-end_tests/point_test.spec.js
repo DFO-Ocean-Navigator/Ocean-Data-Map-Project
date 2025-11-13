@@ -23,10 +23,10 @@ async function runPlotTest(page, dataset) {
     .first()
     .waitFor({ state: "visible", timeout: 30000 });
 
-  //applying dataset to the main map
+  //apply dataset to the main map
   await page.getByRole("button", { name: "Go" }).click();
 
-  //waiting for dataset to be loaded fully
+  //wait for dataset to be loaded fully
   await page
     .locator("img")
     .first()
