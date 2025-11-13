@@ -338,14 +338,14 @@ function OceanNavigator(props) {
             dataset={dataset0}
             mapSettings={mapSettings}
             onUpdate={updateDataset0}
-            mapState={mapState}
+            mapRef={mapRef}
           />
           {compareDatasets && (
             <ScaleViewer
               dataset={dataset1}
               mapSettings={mapSettings}
               onUpdate={updateDataset0}
-              mapState={mapState}
+              mapRef={mapRef}
               className="right"
             />
           )}
