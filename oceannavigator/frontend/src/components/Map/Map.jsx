@@ -277,8 +277,10 @@ const Map = forwardRef((props, ref) => {
 
       addDblClickPlot(newMap, select1);
 
- 
       if (drawActions && drawActions.map0) {
+        if (drawActions.map1 && newMap) {
+          newMap.removeInteraction(drawActions.map1);
+        }
         const source = map0.getLayers().getArray()[5].getSource();
         const mirroredDraw = getDrawAction(source, props.featureType);
         newMap.addInteraction(mirroredDraw);
@@ -293,6 +295,14 @@ const Map = forwardRef((props, ref) => {
         }
       }
     } else if (map0) {
+      if (drawActions && drawActions.map1) {
+        if (map1) {
+          map1.removeInteraction(drawActions.map1);
+        }
+
+        setDrawActions((prev) => ({ ...(prev || {}), map1: null }));
+      }
+
       map0.getControls().item(0).setMap(map0); // change zoom control target
       map0.getControls().item(3).setMap(map0);
     }
@@ -417,7 +427,7 @@ const Map = forwardRef((props, ref) => {
       if (drawActions.map0) {
         map0.removeInteraction(drawActions.map0);
       }
-      if (drawActions.map1) {
+      if (drawActions.map1 && map1) {
         map1.removeInteraction(drawActions.map1);
       }
       let newDrawAction0 = getDrawAction(source, props.featureType);
