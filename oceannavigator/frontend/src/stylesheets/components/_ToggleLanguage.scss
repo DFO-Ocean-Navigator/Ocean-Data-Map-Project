@@ -1,11 +1,11 @@
 .toggle-group {
-  position: absolute;
-  right: 218px;
-  top: 8px;
+  position: relative;
+  flex-shrink: 0;
 
   .toggle-btn {
     font-size: small;
     background-color: #fff;
+    z-index: 500;
     color: #008cba;
     border: 2px solid #008cba;
     border-radius: 5px;

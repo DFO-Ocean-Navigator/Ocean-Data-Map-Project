@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
-import Range from "../ColormapRange.jsx";
+import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import TransectLimiter from "../TransectLimiter.jsx";
@@ -20,14 +20,8 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
-  const [scale, setScale] = useState(
-    props.init?.scale || props.dataset_0.variable_scale + ",auto"
-  );
-  const [scale1, setScale1] = useState(
-    props.init?.scale_1 || props.dataset_1.variable_scale + ",auto"
-  );
   const [scaleDiff, setScaleDiff] = useState(
-    props.init?.scale_diff || "-10,10,auto"
+    props.init?.scale_diff || [-10,10]
   );
 
   // Colormap settings
@@ -117,20 +111,20 @@ const LineWindow = (props) => {
       <Card.Body>
         <CheckBox
           id="dataset_compare"
-          checked={props.dataset_compare}
+          checked={props.compareDatasets}
           onUpdate={(_, checked) => props.setCompareDatasets(checked)}
           title={_("Compare Datasets")}
         />
         <Button
           id="swap_views"
-          style={{ display: props.dataset_compare ? "block" : "none" }}
+          style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
         </Button>
-        {props.dataset_compare &&
+        {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
-            <Range
+            <ColormapRange
               id="scale_diff"
               state={scaleDiff}
               onUpdate={(_, value) => setScaleDiff(value)}
@@ -214,7 +208,7 @@ const LineWindow = (props) => {
             />
           </div>
         )}
-        {props.dataset_compare &&
+        {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
             <ComboBox
               id="colormap_diff"
@@ -234,7 +228,7 @@ const LineWindow = (props) => {
   const leftDataset = (
     <Card id="left_map" variant="primary">
       <Card.Header>
-        {props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
       <Card.Body>
         <DatasetSelector
@@ -262,7 +256,7 @@ const LineWindow = (props) => {
     </Card>
   );
 
-  const rightDataset = props.dataset_compare && (
+  const rightDataset = props.compareDatasets && (
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
       <Card.Body>
@@ -310,7 +304,6 @@ const LineWindow = (props) => {
       type: "transect",
       variable: props.dataset_0.variable,
       path: props.plotData.coordinates,
-      scale: scale,
       colormap: mainColormap,
       showmap: showMap,
       time: props.dataset_0.time,
@@ -319,12 +312,11 @@ const LineWindow = (props) => {
       depth_limit: depthLimit,
       profile_distance: profileDistance,
       selectedPlots: selectedPlots.toString(),
-      ...(props.dataset_compare && {
+      ...(props.compareDatasets && {
         compare_to: {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
-          scale: scale1,
-          scale_diff: scaleDiff,
+          scale_diff: scaleDiff.toString(),
           colormap: rightColormap,
           colormap_diff: diffColormap,
         },
@@ -337,13 +329,12 @@ const LineWindow = (props) => {
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
       depth: props.dataset_0.depth,
-      ...(props.dataset_compare &&
+      ...(props.compareDatasets &&
         props.dataset_0.variable === props.dataset_1.variable && {
           compare_to: {
             ...props.dataset_1,
             dataset: props.dataset_1.id,
-            scale: scale1,
-            scale_diff: scaleDiff,
+            scale_diff: scaleDiff.toString(),
             colormap: rightColormap,
             colormap_diff: diffColormap,
           },
@@ -354,9 +345,7 @@ const LineWindow = (props) => {
   // Create permlink_subquery from current state
   const permlink_subquery = {
     selected,
-    scale,
-    scale_1: scale1,
-    scale_diff: scaleDiff,
+    scale_diff: scaleDiff.toString(),
     colormap: mainColormap,
     colormap_right: rightColormap,
     colormap_diff: diffColormap,
@@ -405,7 +394,7 @@ const LineWindow = (props) => {
 };
 
 LineWindow.propTypes = {
-  dataset_compare: PropTypes.bool,
+  compareDatasets: PropTypes.bool,
   dataset_0: PropTypes.object.isRequired,
   dataset_1: PropTypes.object.isRequired,
   mapSettings: PropTypes.object.isRequired,
