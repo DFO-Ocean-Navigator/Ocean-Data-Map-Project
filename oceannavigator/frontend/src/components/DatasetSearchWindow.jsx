@@ -21,8 +21,8 @@ const DatasetSearchWindow = ({
     datasets.map((ds) => ds.id)
   );
   const [variableDataMap, setVariableDataMap] = useState({});
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [latitude, setLatitude] = useState(filters.location[0]);
+  const [longitude, setLongitude] = useState(filters.location[1]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
