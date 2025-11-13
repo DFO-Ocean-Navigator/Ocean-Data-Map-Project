@@ -46,8 +46,10 @@ const DatasetSearchWindow = ({
       let newLat = parseFloat(latitude);
       let newLon = parseFloat(longitude);
 
-      newLat = !isNaN(newLat) && Math.abs(newLat) <= 90 ? newLat.toFixed(4) : "";
-      newLon = !isNaN(newLon) && Math.abs(newLon) <= 360? newLon.toFixed(4) : "";
+      newLat =
+        !isNaN(newLat) && Math.abs(newLat) <= 90 ? newLat.toFixed(4) : "";
+      newLon =
+        !isNaN(newLon) && Math.abs(newLon) <= 360 ? newLon.toFixed(4) : "";
 
       updateFilters("location", [newLat, newLon]);
     }, 500);
@@ -139,21 +141,25 @@ const DatasetSearchWindow = ({
         key: "date",
         label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
       });
-      let dateFilter = await FilterDatasetsByDatePromise(
-        newFilteredIds,
-        filters.date.toISOString()
-      );
-      newFilteredIds = await dateFilter.data;
+      if (newFilteredIds.length > 0) {
+        let dateFilter = await FilterDatasetsByDatePromise(
+          newFilteredIds,
+          filters.date.toISOString()
+        );
+        newFilteredIds = await dateFilter.data;
+      }
     }
 
     // Filter by Location
     if (filters.location[0] && filters.location[1]) {
-      let locFiltered = await FilterDatasetsByLocationPromise(
-        newFilteredIds,
-        filters.location[0],
-        (parseFloat(filters.location[1]) + 360) % 360
-      );
-      newFilteredIds = await locFiltered.data;
+      if (newFilteredIds.length > 0) {
+        let locFiltered = await FilterDatasetsByLocationPromise(
+          newFilteredIds,
+          filters.location[0],
+          (parseFloat(filters.location[1]) + 360) % 360
+        );
+        newFilteredIds = await locFiltered.data;
+      }
       newFilterLabels.push({
         key: "location",
         label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
