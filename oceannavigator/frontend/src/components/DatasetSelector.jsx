@@ -330,9 +330,10 @@ function DatasetSelector({
   };
 
   const updateSearchFilters = (key, value) => {
-    if (key === "reset") {
+    if (!key) {
       setDatasetSearchFilters(DATASET_FILTER_DEFAULTS);
     } else {
+      value = value ? value : DATASET_FILTER_DEFAULTS[key];
       setDatasetSearchFilters((prevFilters) => ({
         ...prevFilters,
         [key]: value,

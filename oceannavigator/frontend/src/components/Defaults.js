@@ -27,7 +27,7 @@ const DATASET_FILTER_DEFAULTS = {
   vectorVariable: "none",
   depth: "all",
   date: null,
-  location: [null, null],
+  location: ["", ""]
 };
 
 export { DATASET_DEFAULTS, MAP_DEFAULTS, DATASET_FILTER_DEFAULTS };

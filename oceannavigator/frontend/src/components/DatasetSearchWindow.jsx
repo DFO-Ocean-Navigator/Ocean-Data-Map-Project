@@ -21,8 +21,8 @@ const DatasetSearchWindow = ({
     datasets.map((ds) => ds.id)
   );
   const [variableDataMap, setVariableDataMap] = useState({});
-  const [latitude, setLatitude] = useState();
-  const [longitude, setLongitude] = useState();
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,21 +42,22 @@ const DatasetSearchWindow = ({
   }, [filters]);
 
   useEffect(() => {
-    let newLat = parseFloat(latitude).toFixed(4);
-    let newLon = parseFloat(longitude).toFixed(4);
-
     const timer = setTimeout(() => {
-      if (!isNaN(newLat) && !isNaN(newLon)) {
-        updateFilters("location", [newLat, newLon]);
-      } else if (filters.location[0] || filters.location[1]) {
-        updateFilters("location", [null, null]);
-      }
-    }, 1000);
+      let newLat = parseFloat(latitude);
+      let newLon = parseFloat(longitude);
+
+      newLat = !isNaN(newLat) && Math.abs(newLat) <= 90 ? newLat.toFixed(4) : "";
+      newLon = !isNaN(newLon) && Math.abs(newLon) <= 360? newLon.toFixed(4) : "";
+
+      updateFilters("location", [newLat, newLon]);
+    }, 500);
+
     return () => clearTimeout(timer);
   }, [latitude, longitude]);
 
   const applyDataset = (id) => {
-    let variableId, variableScale = null;
+    let variableId,
+      variableScale = null;
     let variable = variableDataMap[filters.variable]?.filter(
       (ds) => ds.dataset_id === id
     )[0];
@@ -64,11 +65,19 @@ const DatasetSearchWindow = ({
       variableId = variable.variable_id;
       variableScale = variable.variable_scale;
     }
-    let vectorVariable = variableDataMap[filters.vectorVariable]?.filter(
-      (ds) => ds.dataset_id === id
-    )[0].variable_id ?? "none";
+    let vectorVariable =
+      variableDataMap[filters.vectorVariable]?.filter(
+        (ds) => ds.dataset_id === id
+      )[0].variable_id ?? "none";
 
-    updateDataset(id, variableId, true, vectorVariable, variableScale, filters.date);
+    updateDataset(
+      id,
+      variableId,
+      true,
+      vectorVariable,
+      variableScale,
+      filters.date
+    );
     closeModal();
   };
 
@@ -138,12 +147,7 @@ const DatasetSearchWindow = ({
     }
 
     // Filter by Location
-    if (
-      filters.location[0] &&
-      filters.location[1] &&
-      Math.abs(filters.location[0]) < 90 &&
-      Math.abs(filters.location[1]) < 360
-    ) {
+    if (filters.location[0] && filters.location[1]) {
       let locFiltered = await FilterDatasetsByLocationPromise(
         newFilteredIds,
         filters.location[0],
@@ -163,7 +167,7 @@ const DatasetSearchWindow = ({
           type="button"
           className="btn-close btn-close-white ms-2"
           style={{ fontSize: "0.7em" }}
-          onClick={() => removeFilter(key)}
+          onClick={() => updateFilters(key)}
         />
       </Badge>
     ));
@@ -258,7 +262,7 @@ const DatasetSearchWindow = ({
           <Button
             variant="outline-secondary"
             size="sm"
-            onClick={() => updateFilters("reset")}
+            onClick={() => updateFilters()}
           >
             {t("Clear All")}
           </Button>
@@ -333,9 +337,8 @@ const DatasetSearchWindow = ({
                   min={-90}
                   max={90}
                   placeholder="Latitude"
-                  isInvalid={
-                    filters.location[0] < -90 || filters.location[0] > 90
-                  }
+                  isInvalid={latitude < -90 || latitude > 90}
+                  value={latitude}
                   onChange={(e) => setLatitude(e.target.value)}
                 />
               </Col>
@@ -347,9 +350,8 @@ const DatasetSearchWindow = ({
                   min={-360}
                   max={360}
                   placeholder="Longitude"
-                  isInvalid={
-                    filters.location[1] < -360 || filters.location[1] > 360
-                  }
+                  isInvalid={longitude < -360 || longitude > 360}
+                  value={longitude}
                   onChange={(e) => setLongitude(e.target.value)}
                 />
               </Col>
