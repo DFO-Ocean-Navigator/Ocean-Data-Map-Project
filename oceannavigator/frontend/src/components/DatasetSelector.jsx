@@ -239,20 +239,28 @@ function DatasetSelector({
   };
 
   const changeTime = (newTime) => {
-    let newDataset = {};
+    let newStarttime = dataset.starttime;
     if (dataset.starttime > newTime) {
-      const timeIdx = datasetTimestamps.findIndex((timestamp) => {
-        return timestamp.id === newTime;
-      });
-
-      const newStarttime =
+      const timeIdx = datasetTimestamps.findIndex(
+        (timestamp) => timestamp.id === newTime
+      );
+      newStarttime =
         timeIdx > 20
           ? datasetTimestamps[timeIdx - 20].id
           : datasetTimestamps[0].id;
+    }
 
-      newDataset = { ...dataset, time: newTime, starttime: newStarttime };
-    } else {
-      newDataset = { ...dataset, time: newTime };
+    const newDataset = { ...dataset, time: newTime };
+
+    if (newStarttime !== dataset.starttime) {
+      newDataset.starttime = newStarttime;
+    }
+
+    if (
+      mountedDataset.dataset === dataset.dataset &&
+      mountedDataset.variable === dataset.variable
+    ) {
+      newDataset.variable_scale = mountedDataset.variable_scale;
     }
 
     setDataset(newDataset);

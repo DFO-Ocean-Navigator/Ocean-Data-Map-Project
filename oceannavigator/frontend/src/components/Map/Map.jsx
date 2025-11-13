@@ -137,6 +137,7 @@ const Map = forwardRef((props, ref) => {
   const [hoverSelect1, setHoverSelect1] = useState();
 
   useImperativeHandle(ref, () => ({
+    getViewInfo: getViewInfo,
     startFeatureDraw: startFeatureDraw,
     stopFeatureDraw: stopFeatureDraw,
     addAnnotationLabel: addAnnotationLabel,
@@ -207,22 +208,6 @@ const Map = forwardRef((props, ref) => {
     newMap.addInteraction(newHoverSelect);
 
     newMap.addControl(new MultiMapMousePosition());
-
-    newMap.on("moveend", function () {
-      const c = olProj
-        .transform(
-          newMapView.getCenter(),
-          props.mapSettings.projection,
-          "EPSG:4326"
-        )
-        .map(function (c) {
-          return c.toFixed(4);
-        });
-      props.updateMapState("center", c);
-      props.updateMapState("zoom", newMapView.getZoom());
-      const extent = newMapView.calculateExtent(newMap.getSize());
-      props.updateMapState("extent", extent);
-    });
 
     addDblClickPlot(newMap, newSelect0);
 
@@ -402,6 +387,7 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset0.id,
+    props.dataset0.time,
     props.dataset0.quiverVariable,
     props.dataset0.quiverDensity,
   ]);
@@ -417,6 +403,7 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset1.id,
+    props.dataset1.time,
     props.dataset1.quiverVariable,
     props.dataset1.quiverDensity,
   ]);
@@ -594,6 +581,26 @@ const Map = forwardRef((props, ref) => {
           : [glow1, glow2, white, color];
       },
     });
+  };
+
+  const getViewInfo = () => {
+    const c = olProj
+      .transform(
+        map0.getView().getCenter(),
+        props.mapSettings.projection,
+        "EPSG:4326"
+      )
+      .map(function (c) {
+        return c.toFixed(4);
+      });
+
+    const extent = map0.getView().calculateExtent(map0.getSize());
+
+    return {
+      center: c,
+      zoom: map0.getView().getZoom(),
+      extent: extent,
+    };
   };
 
   const getFeatures = () => {
