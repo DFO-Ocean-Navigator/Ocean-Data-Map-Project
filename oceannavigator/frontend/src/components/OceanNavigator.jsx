@@ -340,22 +340,35 @@ function OceanNavigator(props) {
 
   return (
     <div className="OceanNavigator">
-      <ScaleViewer
-        dataset={dataset0}
-        mapSettings={mapSettings}
-        onUpdate={updateDataset0}
-        mapState={mapState}
-      />
-      {compareDatasets ? (
-        <ScaleViewer
-          dataset={dataset1}
-          mapSettings={mapSettings}
-          onUpdate={updateDataset0}
-          mapState={mapState}
-          right={true}
+      <div className="top-panel-components">
+        <div className="scale-viewer-container">
+          <ScaleViewer
+            dataset={dataset0}
+            mapSettings={mapSettings}
+            onUpdate={updateDataset0}
+            mapState={mapState}
+          />
+          {compareDatasets && (
+            <ScaleViewer
+              dataset={dataset1}
+              mapSettings={mapSettings}
+              onUpdate={updateDataset0}
+              mapState={mapState}
+              className="right"
+            />
+          )}
+        </div>
+
+        <MinimizedPlotBar plotData={plotData} action={action} />
+        <AnnotationButton
+          uiSettings={uiSettings}
+          updateUI={updateUI}
+          action={action}
         />
-      ) : null}
-      <MinimizedPlotBar plotData={plotData} action={action} />
+        <LinkButton action={action} />
+        <ToggleLanguage />
+      </div>
+
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -383,13 +396,6 @@ function OceanNavigator(props) {
         showCompare={true}
         featureType={featureType}
       />
-      <ToggleLanguage />
-      <AnnotationButton
-        uiSettings={uiSettings}
-        updateUI={updateUI}
-        action={action}
-      />
-      <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <ActivePlotsContainer
         plotData={plotData}
