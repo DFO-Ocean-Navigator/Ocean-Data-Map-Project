@@ -144,7 +144,7 @@ function DatasetSelector({
               }, [Infinity, 0]);
               newTime = timeData[timeIdx].id;
               newStarttime = timeIdx > 20
-                  ? timeData[timeData[timeIdx] - 20].id
+                  ? timeData[timeIdx - 20].id
                   : timeData[0].id;
             } else {
               newTime = timeData[timeData.length - 1].id;
