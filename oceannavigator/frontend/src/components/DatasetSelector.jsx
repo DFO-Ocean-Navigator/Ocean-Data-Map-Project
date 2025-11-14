@@ -125,9 +125,7 @@ function DatasetSelector({
 
         if (!variableIds.includes(newVariable)) {
           newVariable = variableResult.data[0].id;
-          if (newVariableScale == null) {
-            newVariableScale = variableResult.data[0].scale;
-          }
+          newVariableScale = variableResult.data[0].scale;
           variable_range[newVariable] = null;
         }
 
