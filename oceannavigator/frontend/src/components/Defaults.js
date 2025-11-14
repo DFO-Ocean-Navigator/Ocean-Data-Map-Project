@@ -22,4 +22,12 @@ const MAP_DEFAULTS = Object.freeze({
   bathyContour: "etopo1",
 });
 
-export { DATASET_DEFAULTS, MAP_DEFAULTS };
+const DATASET_FILTER_DEFAULTS = {
+  variable: "any",
+  vectorVariable: "none",
+  depth: "all",
+  date: null,
+  location: ["", ""]
+};
+
+export { DATASET_DEFAULTS, MAP_DEFAULTS, DATASET_FILTER_DEFAULTS };

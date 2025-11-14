@@ -11,6 +11,7 @@ import SelectBox from "./lib/SelectBox.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
 import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
+import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
 
 import {
   GetDatasetsPromise,
@@ -39,7 +40,7 @@ function DatasetSelector({
   showVariableSelector = true,
   showDepthsAll = false,
   horizontalLayout = false,
-  showSearchBtn = false,
+  datasetSearch = false,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -57,6 +58,9 @@ function DatasetSelector({
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [updateParent, setUpdateParent] = useState(false);
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
+  const [datasetSearchFilters, setDatasetSearchFilters] = useState(
+    DATASET_FILTER_DEFAULTS
+  );
 
   useEffect(() => {
     GetDatasetsPromise().then((result) => {
@@ -88,10 +92,11 @@ function DatasetSelector({
 
   const changeDataset = (
     newDataset,
-    currentVariable,
+    newVariable,
     updateParentOnSuccess = false,
     newQuiverVariable,
-    newVarScale = null
+    newVariableScale,
+    date
   ) => {
     const currentDataset = availableDatasets.filter((d) => {
       return d.id === newDataset;
@@ -108,9 +113,9 @@ function DatasetSelector({
         // Carry the currently selected variable to the new
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
-        let newVariable = currentVariable;
-        let newVariableScale = newVarScale ?? mountedDataset.variable_scale;
-        let newQuiver = newQuiverVariable ?? mountedDataset.quiverVariable;
+        newVariable = newVariable ?? mountedDataset.variable
+        newVariableScale = newVariableScale ?? mountedDataset.variable_scale;
+        newQuiverVariable = newQuiverVariable ?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
         let variable_range = {};
         variable_range[newVariable] = null;
@@ -118,11 +123,9 @@ function DatasetSelector({
           return v.id;
         });
 
-        if (!variableIds.includes(currentVariable)) {
+        if (!variableIds.includes(newVariable)) {
           newVariable = variableResult.data[0].id;
-          if (newVarScale == null) {
-            newVariableScale = variableResult.data[0].scale;
-          }
+          newVariableScale = variableResult.data[0].scale;
           variable_range[newVariable] = null;
         }
 
@@ -130,21 +133,31 @@ function DatasetSelector({
           (timeResult) => {
             setLoadingPercent(66);
             const timeData = timeResult.data;
-
-            let newTime = timeData[timeData.length - 1].id;
-            let newStarttime =
-              timeData.length > 20
-                ? timeData[timeData.length - 20].id
-                : timeData[0].id;
-
-            if (mountedDataset && mountedDataset.id === newDataset) {
-              newTime = mountedDataset.time > 0 ? mountedDataset.time : newTime;
-              newStarttime =
-                mountedDataset.starttime > 0
-                  ? mountedDataset.starttime
-                  : newStarttime;
+            let newTime, newStarttime;
+            if (date) {
+              let dates = timeData.map((t) => new Date(t.value));
+              let [, timeIdx] = dates.reduce((prev, curr, idx) => {
+                let diff = Math.abs(curr - date)
+                return diff <= prev[0] ? [diff, idx] : prev;
+              }, [Infinity, 0]);
+              newTime = timeData[timeIdx].id;
+              newStarttime = timeIdx > 20
+                  ? timeData[timeIdx - 20].id
+                  : timeData[0].id;
+            } else {
+              newTime = timeData[timeData.length - 1].id;
+              newStarttime = timeData.length > 20
+                  ? timeData[timeData.length - 20].id
+                  : timeData[0].id;
+              if (mountedDataset && mountedDataset.id === newDataset) {
+                newTime =
+                  mountedDataset.time > 0 ? mountedDataset.time : newTime;
+                newStarttime =
+                  mountedDataset.starttime > 0
+                    ? mountedDataset.starttime
+                    : newStarttime;
+              }
             }
-
             GetDepthsPromise(newDataset, newVariable).then(
               (depthResult) => {
                 setLoadingPercent(90);
@@ -158,7 +171,7 @@ function DatasetSelector({
                   variable: newVariable,
                   variable_scale: newVariableScale,
                   variable_range: variable_range,
-                  quiverVariable: newQuiver,
+                  quiverVariable: newQuiverVariable,
                   quiverDensity: newQuiverDensity,
                   default_location: currentDataset.default_location,
                 });
@@ -312,6 +325,18 @@ function DatasetSelector({
 
   const toggleSearchDatasets = () => {
     setShowDatasetSearch((prevState) => !prevState);
+  };
+
+  const updateSearchFilters = (key, value) => {
+    if (!key) {
+      setDatasetSearchFilters(DATASET_FILTER_DEFAULTS);
+    } else {
+      value = value ? value : DATASET_FILTER_DEFAULTS[key];
+      setDatasetSearchFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+    }
   };
 
   let datasetSelector = null;
@@ -569,7 +594,7 @@ function DatasetSelector({
     />
   ) : null;
   let datasetSearchButton = null;
-  if (showSearchBtn) {
+  if (datasetSearch) {
     datasetSearchButton = (
       <OverlayTrigger
         key="draw-search-btn"
@@ -617,12 +642,14 @@ function DatasetSelector({
         dialogClassName="full-screen-modal"
         onHide={toggleSearchDatasets}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Dataset Search</Modal.Title>
+        <Modal.Header closeButton closeVariant="white">
+          <Modal.Title>Search Datasets</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <DatasetSearchWindow
             datasets={availableDatasets}
+            filters={datasetSearchFilters}
+            updateFilters={updateSearchFilters}
             updateDataset={changeDataset}
             closeModal={toggleSearchDatasets}
           />

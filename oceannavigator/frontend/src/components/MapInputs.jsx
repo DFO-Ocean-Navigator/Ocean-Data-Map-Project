@@ -65,7 +65,7 @@ function MapInputs(props) {
             showTimeSlider={!props.compareDatasets}
             showCompare={props.showCompare}
             compareDatasets={props.compareDatasets}
-            showSearchBtn={true}
+            datasetSearch={true}
           />
           {props.showCompare ? hideDataSwitch : null}
         </div>
