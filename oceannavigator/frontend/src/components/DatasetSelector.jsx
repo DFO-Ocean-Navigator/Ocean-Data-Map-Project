@@ -642,7 +642,7 @@ function DatasetSelector({
         dialogClassName="full-screen-modal"
         onHide={toggleSearchDatasets}
       >
-        <Modal.Header closeButton>
+        <Modal.Header closeButton closeVariant="white">
           <Modal.Title>Search Datasets</Modal.Title>
         </Modal.Header>
         <Modal.Body>
