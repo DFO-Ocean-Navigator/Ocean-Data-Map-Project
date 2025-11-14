@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 import datasets from "./test_datasets.json";
 
+test.use({
+  viewport: { width: 1920, height: 1080 },
+});
+
 async function runPlotTest(page, dataset) {
   console.log(`Running Point test for dataset: ${dataset.name}`);
 
@@ -41,8 +45,7 @@ async function runPlotTest(page, dataset) {
       (response) => {
         const url = response.url();
         return (
-          url.includes("/api/v2.0/tiles") &&
-          url.includes("sspeed") &&
+          url.includes(`/api/v2.0/tiles/${dataset.id}`) &&
           url.includes(
             `${dataset.tile_coordinates[0]}/${dataset.tile_coordinates[1]}/${dataset.tile_coordinates[2]}`
           ) &&
@@ -59,7 +62,6 @@ async function runPlotTest(page, dataset) {
     //click on go
     await page.getByRole("button", { name: "Go" }).click();
 
-    await page.waitForTimeout(10000); // Waits for 2 seconds
 
     const tileresponse = await tileResponsePromise;
 

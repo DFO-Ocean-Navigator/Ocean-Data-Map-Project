@@ -2,6 +2,7 @@
 [
   {
     "name": "GIOPS 10 Day Daily Mean",
+    "id":"giops_day",
     "steps": ["Giops 10 Day Daily Mean"],
     "compare_dataset":"RIOPS Forecast 3D - Polar",
     "type":"3D",
@@ -20,6 +21,7 @@
   },
   {
     "name": "RIOPS Forecast 3D - Polar",
+    "id":"riops_fc_3dps",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "RIOPS Forecast",
@@ -41,6 +43,7 @@
   },
   {
     "name": "CCG RIOPS Forecast Surface -",
+    "id":"riops_fc_2dll",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "RIOPS Forecast",
@@ -62,6 +65,7 @@
   },
   {
     "name": "WCPS-GLS Great Lakes Coupled",
+    "id":"wcps_2d11",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "WCPS Forecast",
@@ -83,6 +87,7 @@
   },
   {
     "name": "CIOPS Forecast East 3D -",
+    "id":"ciops-east_fc_3dll",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "CIOPS Forecast",
@@ -105,6 +110,7 @@
   },
   {
     "name": "Copernicus Marine Service Global Ocean 1/12 deg Physics Reanalysis (Monthly)",
+    "id":"cmems_monthly",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "CMEMS",
@@ -126,6 +132,7 @@
   },
   {
     "name": "SalishSeaCast 3D Currents",
+    "id":"salishseacast_3d_currents",
     "steps": [
       "GIOPS 10 Day Daily Mean",
       "SalishSeaCast",
@@ -142,7 +149,7 @@
     "line_transect":"yes",
     "line_coordinates":["-123.6","48.2","-123","48.3"],
     "point_coordinates":["44.9855", "-50.9582"],
-    "tile_coordinates":["4","7","5"],
+    "tile_coordinates":["7","20","44"],
     "variables_to_test":["Northward Current","Speed of Current"]
   }
 ]
