@@ -17,7 +17,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["44.9855", "-50.9582"],
     "tile_coordinates":["4","6","4"],
-    "variables_to_test":["Speed of Sound","Potential Sub Surface Channel"]
+    "variables_to_test":{"sspeed":"Speed of Sound","psubsurfacechannel":"Potential Sub Surface Channel"}
   },
   {
     "name": "RIOPS Forecast 3D - Polar",
@@ -39,7 +39,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["-50.9582","44.9855"],
     "tile_coordinates":["4","6","4"],
-    "variables_to_test":["Speed of Sound","Potential Sub Surface Channel"]
+    "variables_to_test":{"sspeed":"Speed of Sound","psubsurfacechannel":"Potential Sub Surface Channel"}
   },
   {
     "name": "CCG RIOPS Forecast Surface -",
@@ -61,7 +61,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["-50.9582","44.9855"],
     "tile_coordinates":["4","5","6"],
-    "variables_to_test":["Water East Velocity","Sea Surface Height"]
+    "variables_to_test":{"vozocrtx":"Water East Velocity","sossheig":"Sea Surface Height"}
   },
   {
     "name": "WCPS-GLS Great Lakes Coupled",
@@ -83,7 +83,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["-50.9582","44.9855"],
     "tile_coordinates":["4","5","5"],
-    "variables_to_test":["Sea Ice Velocity","Sea Surface Height"]
+    "variables_to_test":{"icevelocity":"Sea Ice Velocity","sossheig":"Sea Surface Height"}
   },
   {
     "name": "CIOPS Forecast East 3D -",
@@ -105,7 +105,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["-50.9582","44.9855"],
     "tile_coordinates":["4","5","5"],
-    "variables_to_test":["Speed of Sound","Potential Sub Surface Channel"]
+    "variables_to_test":{"sspeed":"Speed of Sound","psubsurfacechannel":"Potential Sub Surface Channel"}
 
   },
   {
@@ -128,7 +128,7 @@
     "line_coordinates":"flemish_cap",
     "point_coordinates":["44.9855", "-50.9582"],
     "tile_coordinates":["4","6","6"],
-    "variables_to_test":["Sea Ice Velocity","Sea Surface Height"]
+    "variables_to_test":{"icevelocity":"Sea Ice Velocity","zos":"Sea Surface Height"}
   },
   {
     "name": "SalishSeaCast 3D Currents",
@@ -150,6 +150,6 @@
     "line_coordinates":["-123.6","48.2","-123","48.3"],
     "point_coordinates":["44.9855", "-50.9582"],
     "tile_coordinates":["7","20","44"],
-    "variables_to_test":["Northward Current","Speed of Current"]
+    "variables_to_test":{"vVelocity":"Northward Current","current_speed":"Speed of Current"}
   }
 ]

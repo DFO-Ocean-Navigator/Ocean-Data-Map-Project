@@ -1,16 +1,18 @@
 import { test, expect } from "@playwright/test";
 import datasets from "./test_datasets.json";
 
+
 async function runPlotTest(page, dataset) {
   console.log(`Running Point test for dataset: ${dataset.name}`);
 
   // Go to main page
-  await page.goto("http://0.0.0.0:8443/public/");
+  await page.goto("https://142.130.125.45:8443/public/");
+  // await page.goto("https://staging.oceannavigator.ca/public/");
   // Wait for data to load
-  await page
-    .locator("img")
-    .first()
-    .waitFor({ state: "visible", timeout: 30000 });
+  // await page
+  //   .locator("img")
+  //   .first()
+  //   .waitFor({ state: "visible", timeout: 30000 });
 
   // Steps to select dataset on dataset selector
   for (const step of dataset.steps) {
@@ -72,7 +74,11 @@ async function runPlotTest(page, dataset) {
     //wait for the response
     const profilePlotResponse = await profileRequestPromise;
     //verify if plot is rendered
-    expect(profilePlotResponse.status()).toBe(200);
+    try {
+      expect(profilePlotResponse.status()).toBe(200);
+    } catch (err) {
+      throw new Error(`profile plot didn't get generated: ${err.message}`);
+    }
   }
 
   //listen for hovmoller plot request
@@ -89,16 +95,24 @@ async function runPlotTest(page, dataset) {
   );
 
   //verify id dataset changed properly
-  await expect(
-    page.getByRole("button", { name: dataset.name }).nth(1)
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: dataset.name }).nth(1))
+    .toBeVisible()
+    .catch((err) => {
+      throw new Error(`Dataset didn't get changed correctly: ${err.message}`);
+    });
 
   //click on Virtual Mooring button
   await page.getByRole("button", { name: "Virtual Mooring" }).click();
   //wait for response
   const virtualMooringplotResponse = await timeseriesRequestPromise;
   //verify if plot is rendered
-  expect(virtualMooringplotResponse.status()).toBe(200);
+  try {
+    expect(virtualMooringplotResponse.status()).toBe(200);
+  } catch (err) {
+    throw new Error(
+      `Virtual Mooring plot didn't get generated: ${err.message}`
+    );
+  }
 
   await page.getByRole("button", { name: "Save Image" }).click();
 
@@ -126,13 +140,21 @@ async function runPlotTest(page, dataset) {
     downloadEventPromise,
   ]);
   //check if back-end sends data
-  expect(downloadResponse.status()).toBe(200);
+  try {
+    expect(downloadResponse.status()).toBe(200);
+  } catch (err) {
+    throw new Error(`Back-end didn't send csv file: ${err.message}`);
+  }
 
   // download object created, if browser begins downloading
   //giving a name to the file and ensuring download has started
   //Note: file created will not be stored in the system and automatically cleaned up after test finishes
   const suggestedFilename = download.suggestedFilename();
-  expect(suggestedFilename).toBeTruthy();
+  try {
+    expect(suggestedFilename).toBeTruthy();
+  } catch (err) {
+    throw new Error(`file didn't start downloading: ${err.message}`);
+  }
 
   //*********************************************************************************************************
   //                                   API Script Download Test
@@ -168,26 +190,55 @@ async function runPlotTest(page, dataset) {
   ]);
 
   //confirm if api responded with 200 status
-  expect(apiResponse.status()).toBe(200);
+  try {
+    expect(apiResponse.status()).toBe(200);
+  } catch (err) {
+    throw new Error(`api file not recieved : ${err.message}`);
+  }
 
   //giving a name to the file and ensuring download has started
   //Note: file created will not be stored in the system and automatically cleaned up after test finishes
   const suggestedApiFilename = apidownload.suggestedFilename();
-  expect(suggestedApiFilename).toBeTruthy();
-  console.log(`Test passed for: ${dataset.name}`);
+  try {
+    expect(suggestedApiFilename).toBeTruthy();
+  } catch (err) {
+    throw new Error(`api file didn't start downloading: ${err.message}`);
+  }
 }
 
 //****************************************************************END OF TEST**********************************************************************//
 
-for (const dataset of datasets) {
-  test(`dataset: ${dataset.name}`, async ({ page }) => {
-    // 2 minutes allocated per dataset
-    test.setTimeout(120000);
-    try {
-      await runPlotTest(page, dataset);
-    } catch (err) {
-      console.error(`Error in dataset "${dataset.name}": ${err.message}`);
-      throw err;
-    }
-  });
-}
+test("All datasets sequential test", async ({ page }) => {
+  test.setTimeout(120000);
+
+  const results = [];
+
+  for (const dataset of datasets) {
+    await test.step(`Testing dataset: ${dataset.name}`, async () => {
+      try {
+        await runPlotTest(page, dataset);
+        results.push({ dataset: dataset.name, status: "passed" });
+      } catch (err) {
+        results.push({
+          dataset: dataset.name,
+          status: "failed",
+          error: err.message,
+        });
+        console.error(`Error in dataset "${dataset.name}": ${err.message}`);
+      }
+    });
+  }
+
+  // Report summary at the end
+  const failed = results.filter((r) => r.status === "failed");
+  if (failed.length > 0) {
+    console.log("\nTest Summary:");
+    results.forEach((r) => {
+      console.log(`${r.dataset}: ${r.status}`);
+      if (r.error) console.log(`  Error: ${r.error}`);
+    });
+    throw new Error(
+      `${failed.length} datasets failed out of ${results.length}`
+    );
+  }
+});
