@@ -1,11 +1,11 @@
-📘 Dataset Configuration (test_datasets.json)
+# Dataset Configuration (test_datasets.json)
 
 The test_datasets.json file contains the full configuration for every dataset used in automated Playwright tests.
 Each dataset entry defines how tests should behave for variable testing, area plots, line plots, subset exports, map tiles, and compare-mode testing.
 
 This configuration ensures that tests adapt to differences between datasets, such as UI variations, available variables, plot types, and tile coordinates.
 
-🔹 What Each Dataset Entry Contains
+- What Each Dataset Entry Contains
 
 Each dataset object includes the following fields:
 
@@ -63,114 +63,114 @@ tile_coordinates — Zoom level + tile X + tile Y.
 Used during tile API validation to ensure the map renders correct data.
 
 
-Area Test Overview
+# Area Test Overview
 
-🔹 Opens the Edit Map Features window and verifies that it appears correctly.
+- Opens the Edit Map Features window and verifies that it appears correctly.
 
-🔹 Changes the upload type to Area and confirms the label updates to Polygon.
+- Changes the upload type to Area and confirms the label updates to Polygon.
 
-🔹 Uploads the dataset CSV file and verifies that the CSV content is displayed correctly.
+- Uploads the dataset CSV file and verifies that the CSV content is displayed correctly.
 
-🔹Listens for the backend area map plot request and verifies that the response status is 200.
+-Listens for the backend area map plot request and verifies that the response status is 200.
 
-🔹 Checks that the dataset in the selector updates correctly after plotting.
+- Checks that the dataset in the selector updates correctly after plotting.
 
-🔹 If a quiver variable is defined, selects it, listens for the backend quiver plot request, and verifies the response status.
+- If a quiver variable is defined, selects it, listens for the backend quiver plot request, and verifies the response status.
 
-🔹 If additional contours are defined, selects the contour option, listens for the contour plot request, and verifies the response status.
+- If additional contours are defined, selects the contour option, listens for the contour plot request, and verifies the response status.
 
-🔹 Enables dataset comparison, and if comparing with a non-default dataset, switches to the specified dataset.
+- Enables dataset comparison, and if comparing with a non-default dataset, switches to the specified dataset.
 
-🔹 vListens for the backend compare plot request and verifies that the final successful response returns 200.
+- vListens for the backend compare plot request and verifies that the final successful response returns 200.
 
-Point Plot Test Overview
+# Point Plot Test Overview
 
 This test suite performs automated validation for each dataset by running a Point Plot Test.
 The checks include:
 
-🔹 3D Dataset Validation
+- 3D Dataset Validation
 
 Confirms the profile plot appears by verifying the backend’s /plot/profile response.
 
-🔹 Virtual Mooring Plot
+- Virtual Mooring Plot
 
 Ensures the Virtual Mooring timeseries plot loads successfully by checking the /plot/timeseries API response.
 
-🔹 Dataset Switching
+- Dataset Switching
 
 Verifies that the selected dataset actually changed by checking the visible dataset button name.
 
-🔹 CSV Download Test
+- CSV Download Test
 
 Confirms the backend returns a successful CSV download response.
 
 Ensures the browser starts the file download and receives a valid filename.
 
-🔹 API Script Download Test
+- API Script Download Test
 
 Validates the backend’s /generate_script response for the API script.
 
 Ensures the browser receives a downloadable file with a valid name.
 
 
-  Line Test Overview
+# Line Test Overview
 
 This test suite performs automated validation for each dataset by running a Line Plot Test.
 The checks include:
 
-🔹 Line Coordinates Handling
+- Line Coordinates Handling
 
 If the dataset does NOT include the preset Flemish Cap line, the test manually enters coordinates using the dataset’s line_coordinates values.
 
 If the dataset does include the preset line, it uses the built-in option.
 
-🔹 Line Plot Request
+- Line Plot Request
 
 Listens for the backend line plot request and verifies the response status.
 
-🔹 AZMP Line Validation (When Available)
+- AZMP Line Validation (When Available)
 
 For datasets supporting line transects, the test listens for the AZMP line request and validates the backend response.
 
 For datasets without line transect support, this check is skipped.
 
-🔹 Hovmöller Plot Verification
+- Hovmöller Plot Verification
 
 Ensures the Hovmöller plot request completes successfully by validating the backend response.
 
-🔹 Dataset Switch Confirmation
+- Dataset Switch Confirmation
 
 Confirms that the selected dataset changed correctly by verifying the displayed dataset name.
 
 
-Subset Download Test Overview
+# Subset Download Test Overview
 
-🔹Verifies the dataset switched correctly by checking the visible dataset button.
+-Verifies the dataset switched correctly by checking the visible dataset button.
 
-🔹Opens Edit Map Features and sets upload type to Area (handles the SalishSeaCast special-case combobox index).
+-Opens Edit Map Features and sets upload type to Area (handles the SalishSeaCast special-case combobox index).
 
-🔹Uploads the dataset CSV and selects the uploaded feature.
+-Uploads the dataset CSV and selects the uploaded feature.
 
-🔹Clicks Plot Selected Features and selects the dataset’s subset variable.
+-Clicks Plot Selected Features and selects the dataset’s subset variable.
 
-🔹Enables Compress as *.zip (if required) and clicks Save.
+-Enables Compress as *.zip (if required) and clicks Save.
 
-🔹Listens for the backend /api/v2.0/subset request and verifies the response status is 200.
+-Listens for the backend /api/v2.0/subset request and verifies the response status is 200.
 
-🔹Waits for the browser download event and confirms the downloaded file has a suggested filename.
-
-
-Variable Test Overview
+-Waits for the browser download event and confirms the downloaded file has a suggested filename.
 
 
-🔹Verifies the dataset switched correctly by checking the visible dataset button.
+# Variable Test Overview
 
-🔹 For each variable in variables_to_test:
 
-🔹 Selects the variable from the Variable control.
+-Verifies the dataset switched correctly by checking the visible dataset button.
 
-🔹 Clicks Go and listens for the backend tile request for that dataset/variable + tile coordinates, and verifies the response is 200.
+- For each variable in variables_to_test:
 
-🔹 Listens for the backend scale request for that dataset/variable and verifies the response is 200.
+- Selects the variable from the Variable control.
 
-🔹 Confirms the Variable control shows the selected variable label.
+- Clicks Go and listens for the backend tile request for that dataset/variable + tile coordinates, and verifies the response is 200.
+
+- Listens for the backend scale request for that dataset/variable and verifies the response is 200.
+
+- Confirms the Variable control shows the selected variable label.
