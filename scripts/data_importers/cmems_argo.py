@@ -1,14 +1,13 @@
 #!/usr/bin/env python
+
+import argparse
 import glob
 import os
 import sys
 
-import defopt
-import pandas as pd
-import gsw
 import numpy as np
 import xarray as xr
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -29,8 +28,6 @@ META_FIELDS = {
     "WMO_INST_TYPE": "wmo_instrument_type",
 }
 
-datatype_map = {}
-
 
 def extract_metadata(ds, metadata):
     platform_number = ds.attrs.get(metadata["PLATFORM_NUMBER"])
@@ -39,6 +36,9 @@ def extract_metadata(ds, metadata):
     data_centre = ds[metadata["DATA_CENTRE"]].values[0]
     platform_type = ds.attrs.get(metadata["PLATFORM_TYPE"])
     wmo_inst_type = ds.attrs.get(metadata["WMO_INST_TYPE"])
+
+    if isinstance(data_centre, bytes):
+        data_centre = data_centre.decode("utf-8")
 
     return {
         "PLATFORM_NUMBER": platform_number,
@@ -78,10 +78,10 @@ def reformat_coordinates(ds: xr.Dataset) -> xr.Dataset:
 
 
 def main(uri: str, filename: str):
-    """Import Argo Profiles
+    """Import Glider NetCDF
 
     :param str uri: Database URI
-    :param str filename: Argo NetCDF Filename, or directory of files
+    :param str filename: Glider Filename, or directory of NetCDF files
     """
 
     engine = create_engine(
@@ -100,119 +100,130 @@ def main(uri: str, filename: str):
         else:
             filenames = filename
 
+        datatype_map = {}
         for fname in filenames:
-            with xr.open_dataset(fname) as ds:
-                print(fname)
-                if ds.LATITUDE.size == 1:
-                    print("Moored instrument: skipping file.")
-                    continue
-
+            print(fname)
+            with xr.open_dataset(fname).drop_duplicates("TIME") as ds:
                 ds = reformat_coordinates(ds)
-
-                times = pd.to_datetime(ds.TIME.values)
-
                 meta_data = extract_metadata(ds, META_FIELDS)
-
                 variables = [v for v in VARIABLES if v in ds.variables]
-
-                platform_number = meta_data["PLATFORM_NUMBER"]
-                unique_id = f"argo_{platform_number}"
-
-                platform = (
-                    session.query(Platform)
-                    .filter(
-                        Platform.unique_id == unique_id,
-                        Platform.type == Platform.Type.argo,
-                    )
-                    .first()
+                df = (
+                    ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
+                    .to_dataframe()
+                    .reset_index()
+                    .dropna(axis=1, how="all")
+                    .dropna()
                 )
-                if platform is None:
-                    platform = Platform(type=Platform.Type.argo, unique_id=unique_id)
-                    attrs = {}
-                    for f in META_FIELDS:
-                        attrs[META_FIELDS[f]] = (meta_data[f] or "").strip()
 
-                    platform.attrs = attrs
-                    session.add(platform)
-                    session.commit()
+                # remove missing variables from variables list
+                variables = [v for v in VARIABLES if v in df.columns]
 
-                for idx, time in enumerate(times):
-                    station = Station(
-                        time=time,
-                        latitude=ds["LATITUDE"].values[idx],
-                        longitude=ds["LONGITUDE"].values[idx],
-                        platform_id=platform.id,
-                    )
-
-                    try:
-                        session.add(station)
-                        session.commit()
-                    except IntegrityError:
-                        print("Error committing station.")
-                        session.rollback()
-
-                    samples = []
-                    for variable in variables:
-                        if variable not in datatype_map:
-                            statement = select(DataType).where(
-                                DataType.key == ds[variable].standard_name
-                            )
-                            dt = session.execute(statement).all()
-                            if not dt:
-                                dt = DataType(
-                                    key=ds[variable].standard_name,
-                                    name=ds[variable].long_name,
-                                    unit=ds[variable].units,
-                                )
-
-                                session.add(dt)
-                                session.commit()
-                                datatype_map[variable] = dt
-                            else:
-                                dt = dt[0][0]
-                        else:
-                            dt = datatype_map[variable]
-
-                        values = ds[variable].isel(TIME=idx).values
-
-                        if "DEPH" in ds.variables:
-                            depth = ds.DEPH.isel(TIME=idx).values
-                        elif "PRES" in ds.variables:
-                            pres = ds["PRES"].isel(TIME=idx).values
-                            lat = ds["LATITUDE"][idx].values
-
-                            depth = gsw.conversions.z_from_p(
-                                -pres,
-                                lat,
-                            )
-
-                        data = np.stack(
-                            [
-                                depth.flatten(),
-                                values.flatten(),
-                            ],
-                            axis=1,
+                for variable in variables:
+                    if variable not in datatype_map:
+                        statement = select(DataType).where(
+                            DataType.key == ds[variable].standard_name
                         )
-                        data = data[~np.isnan(data).any(axis=1)]
-
-                        samples = [
-                            Sample(
-                                depth=pair[0],
-                                datatype_key=dt.key,
-                                value=pair[1],
-                                station_id=station.id,
+                        dt = session.execute(statement).all()
+                        if not dt:
+                            dt = DataType(
+                                key=ds[variable].standard_name,
+                                name=ds[variable].long_name,
+                                unit=ds[variable].units,
                             )
-                            for pair in data
-                        ]
+                            session.add(dt)
+                        else:
+                            dt = dt[0][0]
 
-                        try:
-                            session.bulk_save_objects(samples)
-                        except IntegrityError:
-                            print("Error committing samples.")
-                            session.rollback()
+                        datatype_map[variable] = dt
 
                 session.commit()
 
+                p = Platform(
+                    type=Platform.Type.argo, unique_id=f"{ds.attrs["platform_code"]}"
+                )
+                attrs = {}
+                for f in META_FIELDS:
+                    attrs[META_FIELDS[f]] = (meta_data[f] or "").strip()
+                p.attrs = attrs
+
+                try:
+                    session.add(p)
+                    session.commit()
+                except IntegrityError:
+                    print("Error committing platform.")
+                    session.rollback()
+                    stmt = select(Platform.id).where(
+                        Platform.unique_id == ds.attrs["platform_code"]
+                    )
+                    p.id = session.execute(stmt).first()[0]
+
+                df["STATION_ID"] = 0
+
+                stations = [
+                    dict(
+                        platform_id=p.id,
+                        time=row.TIME,
+                        latitude=row.LATITUDE,
+                        longitude=row.LONGITUDE,
+                    )
+                    for idx, row in df[["TIME", "LATITUDE", "LONGITUDE"]]
+                    .drop_duplicates()
+                    .iterrows()
+                ]
+
+                try:
+                    stmt = insert(Station).values(stations).prefix_with("IGNORE")
+                    session.execute(stmt)
+                    session.commit()
+                except IntegrityError as e:
+                    print("Error committing station.")
+                    print(e)
+                    session.rollback()
+                stmt = select(Station).where(Station.platform_id == p.id)
+                station_data = session.execute(stmt).all()
+
+                for station in station_data:
+                    df.loc[
+                        df["TIME"].dt.floor("s") == station[0].time, "STATION_ID"
+                    ] = station[0].id
+
+                n_chunks = np.ceil(len(df) / 1e3)
+
+                if n_chunks < 1:
+                    continue
+
+                for chunk in np.array_split(df, n_chunks):
+                    samples = []
+                    for _, row in chunk.iterrows():
+                        for variable in variables:
+                            samples.append(
+                                dict(
+                                    station_id=row.STATION_ID,
+                                    depth=row.DEPTH,
+                                    value=row[variable],
+                                    datatype_key=datatype_map[variable].key,
+                                )
+                            )
+
+                    try:
+                        stmt = insert(Sample).values(samples).prefix_with("IGNORE")
+                        session.execute(stmt)
+                        session.commit()
+                    except IntegrityError as e:
+                        print("Error committing samples.")
+                        print(e)
+                        session.rollback()
+
+                    session.commit()
+
 
 if __name__ == "__main__":
-    defopt.run(main)
+    parser = argparse.ArgumentParser(
+        prog="CMEMS ARGO script",
+        description="Add CMEMS Profiling Float data to ONAV Obs database.",
+    )
+    parser.add_argument("uri", type=str)
+    parser.add_argument("filename", type=str)
+    args = parser.parse_args()
+
+    main(args.uri, args.filename)
