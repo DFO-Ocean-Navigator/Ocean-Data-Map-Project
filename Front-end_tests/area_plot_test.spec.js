@@ -1,6 +1,23 @@
 import { test, expect } from "@playwright/test";
 import datasets from "./test_datasets.json";
 
+let page;
+
+test.beforeAll(async ({ browser }) => {
+  // Create one page globally
+  page = await browser.newPage();
+
+  // Only ONE navigation for all datasets
+  await page.goto("http://0.0.0.0:8443/public/");
+
+  // Wait for progress bar to detach
+  await page.locator(".progress").waitFor({ state: "detached" });
+});
+
+test.afterAll(async () => {
+  await page.close();
+});
+
 //catches first successful response with a status of 200
 //if no successful response within 120 second it will throw an error
 async function waitForSuccessfulResponse(page, matchFn, timeout = 120000) {
@@ -19,28 +36,17 @@ async function waitForSuccessfulResponse(page, matchFn, timeout = 120000) {
 }
 
 // Helper function that handles the entire plotting and download process
-async function runPlotTest(page, dataset) {
+async function runPlotTest(dataset) {
   console.log(`Running Area test for dataset: ${dataset.name}`);
 
-  // Go to main page
-  await page.goto("https://142.130.125.45:8443/public/");
-  // await page.goto("https://staging.oceannavigator.ca/public/");
-  // Wait for data to load
-  // await page
-  //   .locator("img")
-  //   .first()
-  //   .waitFor({ state: "visible", timeout: 30000 });
 
   // Steps to select dataset on dataset selector
   for (const step of dataset.steps) {
     await page.getByRole("button", { name: step }).click();
   }
 
-  // Wait for data to load
-  await page
-    .locator("img")
-    .first()
-    .waitFor({ state: "visible", timeout: 30000 });
+  // Wait for progress bar to detach
+  await page.locator(".progress").waitFor({ state: "detached" });
 
   //applying dataset to the main map
   await page.getByRole("button", { name: "Go" }).click();
@@ -50,6 +56,15 @@ async function runPlotTest(page, dataset) {
     .locator("img")
     .first()
     .waitFor({ state: "visible", timeout: 30000 });
+
+  //test to see if dataset was correctly changed in dataset_selector
+  await expect(page.getByRole("button", { name: dataset.name }))
+    .toBeVisible()
+    .catch((err) => {
+      throw new Error(
+        `Dataset selector didn't get changed properly: ${err.message}`
+      );
+    });
 
   // Open Edit Map Features
   await page.locator(".MapTools > button:nth-child(2)").click();
@@ -132,17 +147,6 @@ async function runPlotTest(page, dataset) {
   } catch (err) {
     throw new Error(`Area plot didn't get generated: ${err.message}`);
   }
-
-  //test to see if dataset was correctly changed in dataset_selector
-  await expect(
-    page.locator("#left_map").getByRole("button", { name: dataset.name })
-  )
-    .toBeVisible()
-    .catch((err) => {
-      throw new Error(
-        `Dataset selector didn't get changed properly: ${err.message}`
-      );
-    });
 
   // selecting arrows from area settings column
   if (dataset.arrows != "none") {
@@ -271,19 +275,35 @@ async function runPlotTest(page, dataset) {
     }
   }
 
+  //close modal
+  await page.getByRole("button", { name: "Close" }).nth(1).click();
+  //unclick compare mode
+  await page.getByRole("checkbox", { name: "Compare Datasets" }).click();
+  //reset to giops dataset
+  if (dataset.id != "giops_day") {
+    await page.getByRole("button", { name: dataset.steps.at(-1) }).click();
+    await page
+      .getByRole("button", { name: dataset.steps.at(-2), exact: true })
+      .click();
+    await page.getByRole("button", { name: "GIOPS Forecast" }).click();
+    await page.getByRole("button", { name: "GIOPS 10 Day Daily Mean" }).click();
+  }
+
+  //reset map drawings
+  await page.locator(".MapTools > button:nth-child(6)").click();
+
   //****************************************************************END OF TEST**********************************************************************//
 }
 
-test("All datasets sequential test", async ({ page }) => {
-  test.setTimeout(120000);
+test("All datasets sequential test", async () => {
+  test.setTimeout(600000);
 
   const results = [];
 
   for (const dataset of datasets) {
     await test.step(`Testing dataset: ${dataset.name}`, async () => {
-      
       try {
-        await runPlotTest(page, dataset);
+        await runPlotTest(dataset);
         results.push({ dataset: dataset.name, status: "passed" });
       } catch (err) {
         results.push({
@@ -291,7 +311,24 @@ test("All datasets sequential test", async ({ page }) => {
           status: "failed",
           error: err.message,
         });
-        console.error(`Error in dataset "${dataset.name}": ${err.message}`);
+        console.error(`❌ Error in dataset "${dataset.name}": ${err.message}`);
+        // Reload the app so next dataset runs cleanly
+        console.log(`Reloading page after failure in ${dataset.name}...`);
+
+        //doing a hard reload
+        await page.reload({ waitUntil: "domcontentloaded" });
+
+        // Wait for loading bar to be completed
+        await page.locator(".progress").waitFor({ state: "detached" });
+        
+        //verifying if the reloaded page points to the home page
+        //some errors might display the api response and relaoding the page just reloads the response
+        const current = page.url();
+        const target = "http://0.0.0.0:8443/public/";
+
+        if (current !== target) {
+          await page.goto(target, { waitUntil: "domcontentloaded" });
+        }
       }
     });
   }
