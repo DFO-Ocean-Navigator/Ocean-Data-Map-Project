@@ -334,6 +334,7 @@ const LineWindow = (props) => {
     plot_query = {
       ...baseQuery,
       type: "hovmoller",
+      variable: props.dataset_0.variable,
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
       depth: props.dataset_0.depth,
