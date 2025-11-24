@@ -122,6 +122,7 @@ function OceanNavigator(props) {
         break;
       case "resetMap":
         mapRef.current.resetMap();
+        mapRef.current.selectFeatures([]);
         setPlotData([]);
         setSelectedFeatureIds([]);
         if (uiSettings.showDrawingTools) {
