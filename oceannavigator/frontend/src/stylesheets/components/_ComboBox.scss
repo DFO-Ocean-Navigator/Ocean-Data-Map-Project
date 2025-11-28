@@ -3,35 +3,9 @@ div.ComboBox {
     font-size: small;
     font-weight: bold;
   }
-}
-.ComboBox {
   .combobox-title-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px; 
-    margin-bottom: 6px;
-  }
-
-  .combobox-title {
-    font-size: small;
-    font-weight: bold;
-    margin: 0;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .combobox-help-button {
-    padding: 0.15rem 0.35rem;
-    font-size: 0.95rem;
-    line-height: 1;
-    text-decoration: none;
-  }
-
-  
-  .helpdialog .modal-dialog {
-    max-width: 560px;
   }
 }
