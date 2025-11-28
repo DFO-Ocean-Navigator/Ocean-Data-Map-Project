@@ -15,7 +15,7 @@ import { withTranslation } from "react-i18next";
 
 const LineWindow = (props) => {
   const { t: _ } = props;
-
+  
   // UI state
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
@@ -287,8 +287,11 @@ const LineWindow = (props) => {
 
   const baseQuery = {
     dataset: props.dataset_0.id,
-    quantum: props.dataset_0.quantum,
-    name: props.names[0],
+    dataset_quantum: props.dataset_0.quantum,
+    //props.names[0] was undefined
+    // name: props.names[0],
+    //for name do we return the name of the plot for example:flemish cap?
+    name:props.plotData.name,
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -303,6 +306,7 @@ const LineWindow = (props) => {
       ...baseQuery,
       type: "transect",
       variable: props.dataset_0.variable,
+      scale:props.dataset_0.variable_scale.join(","),
       path: props.plotData.coordinates,
       colormap: mainColormap,
       showmap: showMap,
@@ -316,6 +320,7 @@ const LineWindow = (props) => {
         compare_to: {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
+          scale:props.dataset_1.variable_scale.join(","),
           scale_diff: scaleDiff.toString(),
           colormap: rightColormap,
           colormap_diff: diffColormap,
@@ -328,6 +333,11 @@ const LineWindow = (props) => {
       type: "hovmoller",
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
+      variable:props.dataset_0.variable,
+      scale:props.dataset_0.variable_scale.join(","),
+      colormap: mainColormap,
+      path: props.plotData.coordinates,
+      showmap: showMap,
       depth: props.dataset_0.depth,
       ...(props.compareDatasets &&
         props.dataset_0.variable === props.dataset_1.variable && {
@@ -337,6 +347,7 @@ const LineWindow = (props) => {
             scale_diff: scaleDiff.toString(),
             colormap: rightColormap,
             colormap_diff: diffColormap,
+            scale:props.dataset_0.variable_scale.join(","),
           },
         }),
     };
