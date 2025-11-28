@@ -165,7 +165,10 @@ const AreaWindow = (props) => {
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
           title={_("Arrows")}
-        />
+        >
+          {_("arrows_help")}
+        </QuiverSelector>
+
         {/* Contour Selector drop down menu */}
         <ContourSelector
           id="contour"
@@ -173,7 +176,9 @@ const AreaWindow = (props) => {
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
           title={_("Additional Contours")}
-        />
+        >
+          {_("contour_help")}
+        </ContourSelector>
 
         <Accordion>
           <Accordion.Header>{_("Plot Options")}</Accordion.Header>
@@ -213,6 +218,7 @@ const AreaWindow = (props) => {
           url="/api/v2.0/plot/colormaps"
           title={_("Colourmap")}
         >
+          {_("colourmap_help")}
           <img src="/api/v2.0/plot/colormaps.png/" alt="" />
         </ComboBox>
       </Card.Body>
