@@ -4,3 +4,35 @@ div.ComboBox {
     font-weight: bold;
   }
 }
+/* If your file is .scss you can keep nested style; here's plain CSS for copy/paste */
+.ComboBox {
+  .combobox-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px; /* small gap between label and button */
+    margin-bottom: 6px;
+  }
+
+  .combobox-title {
+    font-size: small;
+    font-weight: bold;
+    margin: 0; /* remove default h1 margin */
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .combobox-help-button {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.95rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  /* Optional: style the help dialog size for long help text */
+  .helpdialog .modal-dialog {
+    max-width: 560px;
+  }
+}
