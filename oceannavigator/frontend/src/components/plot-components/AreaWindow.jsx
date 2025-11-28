@@ -131,13 +131,13 @@ const AreaWindow = (props) => {
         />
 
         {/* Displays Options for Compare Datasets */}
-        <Button
+        {/* <Button
           variant="default"
           style={{ display: props.dataset_compare ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
-        </Button>
+        </Button> */}
         <ColormapRange
           auto
           id="scale"
