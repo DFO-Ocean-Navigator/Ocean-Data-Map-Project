@@ -291,6 +291,7 @@ const PointWindow = ({
       plot_query.type = "observation";
       plot_query.observation = [plotData.id];
       plot_query.observation_variable = observationVariable;
+      plot_query.variable=dataset_0.variable;
       inputs = [global, observationVariableElem];
       break;
     case TabEnum.MOORING:

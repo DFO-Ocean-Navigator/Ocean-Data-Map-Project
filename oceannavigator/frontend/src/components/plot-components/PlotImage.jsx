@@ -63,11 +63,11 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           setUrl(FAIL_IMAGE);
         });
     }
-  }, [query,queryString]);
+  }, [query, queryString]);
 
   // Generate type and query object from props.query
   const generateQuery = useCallback((q) => {
-    let newQuery={}
+    let newQuery = {};
 
     switch (q.type) {
       case "profile":
@@ -83,56 +83,38 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
       case "timeseries":
         newQuery = {
           ...q,
-          station:q.point
-
+          station: q.point,
         };
         break;
       case "transect":
         newQuery = {
-          ...q
+          ...q,
         };
 
         if (q.compare_to) {
           newQuery.compare_to = {
             ...q.compare_to,
-            //query has attribution but not dataset_attribution  
-            //but attribution="" do we need it?          
+            //query has attribution but not dataset_attribution
+            //but attribution="" do we need it?
             dataset_attribution: q.compare_to.attribution,
           };
         }
         break;
       case "hovmoller":
         newQuery = {
-          ...q
+          ...q,
         };
 
         if (q.compare_to) {
           newQuery.compare_to = {
             ...q.compare_to,
             dataset_attribution: q.compare_to.attribution,
-           
-    
           };
         }
         break;
       case "map":
         newQuery = {
-          ...q
-          // ...newQuery,
-          // variable: q.variable,
-          // time: q.time,
-          // scale: q.scale,
-          // depth: q.depth,
-          // colormap: q.colormap,
-          // area: q.area,
-          // projection: q.projection,
-          // bathymetry: q.bathymetry,
-          // quiver: q.quiver,
-          // contour: q.contour,
-          // showarea: q.showarea,
-          // interp: q.interp,
-          // radius: q.radius,
-          // neighbours: q.neighbours,
+          ...q,
         };
 
         if (q.compare_to) {
@@ -141,13 +123,12 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
             dataset_attribution: q.compare_to.attribution,
             dataset_quantum: q.compare_to.quantum,
             scale: q.compare_to.variable_scale,
-
           };
         }
         break;
-              case "track":
+      case "track":
         newQuery = {
-          ...q
+          ...q,
           // ...newQuery,
           // variable: q.variable,
           // depth: q.depth,
@@ -162,23 +143,13 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
         break;
       case "class4":
         newQuery = {
-          ...newQuery,
-          class4id: q.class4id,
-          class4type: q.class4type,
-          forecast: q.forecast,
-          error: q.error,
-          showmap: q.showmap,
-          climatology: q.climatology,
-          models: q.models,
+          ...q,
         };
 
         break;
       case "observation":
         newQuery = {
-          ...newQuery,
-          observation: q.observation,
-          observation_variable: q.observation_variable,
-          variable: q.variable,
+          ...q,
         };
 
         break;
@@ -194,7 +165,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
 
         break;
       default:
-        newQuery = { ...newQuery, ...q };
+        newQuery = { ...q };
     }
     return [q.type, newQuery];
   }, []);

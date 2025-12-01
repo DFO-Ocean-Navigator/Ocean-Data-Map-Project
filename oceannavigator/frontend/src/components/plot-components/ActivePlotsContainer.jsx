@@ -85,7 +85,7 @@ const ActivePlotsContainer = ({
             swapViews={swapViews}
           />
         );
-      case "track":
+      case "Track":
         return (
           <TrackWindow
             dataset={dataset0}
