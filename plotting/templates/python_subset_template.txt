@@ -8,7 +8,7 @@ def requestFile():
 
 
    # Assemble full request
-   base_url = "https://oceannavigator.ca/api/v2.0/subset/"+query["dataset_name"]+"/"+query["variables"]+"?"
+   base_url = "https://www.oceannavigator.ca/api/v2.0/subset/"+query["dataset_name"]+"/"+query["variables"]+"?"
    url = base_url
    for key in query:
       url += f"&{{key}}={{query[key]}}"

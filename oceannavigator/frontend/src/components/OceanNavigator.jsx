@@ -43,7 +43,6 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
-  const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
@@ -185,13 +184,6 @@ function OceanNavigator(props) {
         setShowPermalink(true);
         break;
     }
-  };
-
-  const updateMapState = (key, value) => {
-    setMapState((prevMapState) => ({
-      ...prevMapState,
-      [key]: value,
-    }));
   };
 
   const updateDataset0 = (key, value) => {
@@ -341,22 +333,35 @@ function OceanNavigator(props) {
 
   return (
     <div className="OceanNavigator">
-      <ScaleViewer
-        dataset={dataset0}
-        mapSettings={mapSettings}
-        onUpdate={updateDataset0}
-        mapState={mapState}
-      />
-      {compareDatasets ? (
-        <ScaleViewer
-          dataset={dataset1}
-          mapSettings={mapSettings}
-          onUpdate={updateDataset0}
-          mapState={mapState}
-          right={true}
+      <div className="top-panel-components">
+        <div className="scale-viewer-container">
+          <ScaleViewer
+            dataset={dataset0}
+            mapSettings={mapSettings}
+            onUpdate={updateDataset0}
+            mapRef={mapRef}
+          />
+          {compareDatasets && (
+            <ScaleViewer
+              dataset={dataset1}
+              mapSettings={mapSettings}
+              onUpdate={updateDataset0}
+              mapRef={mapRef}
+              className="right"
+            />
+          )}
+        </div>
+
+        <MinimizedPlotBar plotData={plotData} action={action} />
+        <AnnotationButton
+          uiSettings={uiSettings}
+          updateUI={updateUI}
+          action={action}
         />
-      ) : null}
-      <MinimizedPlotBar plotData={plotData} action={action} />
+        <LinkButton action={action} />
+        <ToggleLanguage />
+      </div>
+
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -367,7 +372,6 @@ function OceanNavigator(props) {
         action={action}
         updateMapSettings={updateMapSettings}
         updateUI={updateUI}
-        updateMapState={updateMapState}
         compareDatasets={compareDatasets}
       />
       <MapInputs
@@ -384,13 +388,6 @@ function OceanNavigator(props) {
         showCompare={true}
         featureType={featureType}
       />
-      <ToggleLanguage />
-      <AnnotationButton
-        uiSettings={uiSettings}
-        updateUI={updateUI}
-        action={action}
-      />
-      <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <ActivePlotsContainer
         plotData={plotData}

@@ -5,7 +5,7 @@ query <- '{q}'
 queryObj <- fromJSON(query)
 fname <- "script_output.nc"
 
-base_url <- paste("https://oceannavigator.ca/api/v2.0/subset/", queryObj["dataset_name"], "/", queryObj["variables"], "?", sep="")
+base_url <- paste("https://www.oceannavigator.ca/api/v2.0/subset/", queryObj["dataset_name"], "/", queryObj["variables"], "?", sep="")
 url <- base_url
 
 for (key in names(queryObj))

@@ -29,7 +29,7 @@ def __db_funcs() -> Dict[str, Callable]:
                 func.avg(func.strftime("%s", v)), "unixepoch"
             ),
         }
-    elif dialect == "mysql":
+    elif dialect == "mysql" or dialect == "mariadb":
         funcs = {
             "year": lambda v: func.date_format(v, "%Y"),
             "month": lambda v: func.date_format(v, "%Y%m"),
