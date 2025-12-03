@@ -63,7 +63,7 @@ const ActivePlotsContainer = ({
             updateDataset1={updateDataset1}
             init={subquery}
             action={action}
-            dataset_compare={compareDatasets}
+            compareDatasets={compareDatasets}
             setCompareDatasets={setCompareDatasets}
             swapViews={swapViews}
           />
@@ -80,7 +80,7 @@ const ActivePlotsContainer = ({
             updateDataset1={updateDataset1}
             init={subquery}
             action={action}
-            dataset_compare={compareDatasets}
+            compareDatasets={compareDatasets}
             setCompareDatasets={setCompareDatasets}
             swapViews={swapViews}
           />
