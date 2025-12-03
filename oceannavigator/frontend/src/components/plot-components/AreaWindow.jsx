@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Accordion, Card, Col, Row, Nav } from "react-bootstrap";
+import { Accordion, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
@@ -21,15 +21,8 @@ const AreaWindow = (props) => {
   const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
 
   // Scale settings
-  const [scale, setScale] = useState(
-    props.init?.scale || props.dataset_0.variable_scale + ",auto"
-  );
-  const [scale1, setScale1] = useState(
-    props.init?.scale_1 || props.dataset_1.scale_1 + ",auto"
-  );
-  const [scaleDiff, setScaleDiff] = useState(
-    props.init?.scale_diff || "-10,10,auto"
-  );
+  const [scale, setScale] = useState(props.init?.scale || "auto");
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ||true);
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
@@ -75,15 +68,10 @@ const AreaWindow = (props) => {
 
   // Sync scale when dataset_0.variable changes
   useEffect(() => {
-    setScale(props.dataset_0.variable_scale + ",auto");
-  }, [props.dataset_0.variable]);
-
-  // Handler functions for specific updates
-  const handleScaleUpdate = (key, value) => {
-    if (Array.isArray(value)) {
-      setScale(`${value[0]},${value[1]}`);
+    if (!autoScale) {
+      setScale(props.dataset_0.variable_scale);
     }
-  };
+  }, [props.dataset_0.variable]);
 
   const handleQuiverUpdate = (key, value) => {
     setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
@@ -94,11 +82,20 @@ const AreaWindow = (props) => {
   };
 
   const compareChanged = (checked) => {
-    const newScale = checked
-      ? "-10,10,auto"
-      : props.dataset_0.variable_scale + ",auto";
+    const newScale = checked ? [-10, 10] : props.dataset_0.variable_scale;
     setScale(newScale);
     props.setCompareDatasets(checked);
+  };
+
+  const toggleAutoScale = () => {
+    let newScale = "auto";
+    if (autoScale) {
+      newScale = props.compareDatasets
+        ? [-10, 10]
+        : props.dataset_0.variable_scale;
+    }
+    setScale(newScale);
+    setAutoScale((p) => !p);
   };
 
   // Prepare UI segments
@@ -125,7 +122,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <CheckBox
           id="dataset_compare"
-          checked={props.dataset_compare}
+          checked={props.compareDatasets}
           onUpdate={(_, checked) => compareChanged(checked)}
           title={_("Compare Datasets")}
         />
@@ -133,17 +130,25 @@ const AreaWindow = (props) => {
         {/* Displays Options for Compare Datasets */}
         <Button
           variant="default"
-          style={{ display: props.dataset_compare ? "block" : "none" }}
+          style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
         </Button>
-        <ColormapRange
-          auto
-          id="scale"
-          state={scale.split(",")}
-          onUpdate={handleScaleUpdate}
+        <Form.Check
+          type="checkbox"
+          id={props.id + "_auto"}
+          checked={autoScale}
+          onChange={toggleAutoScale}
+          label={"Auto Range"}
         />
+        {autoScale ? null : (
+          <ColormapRange
+            id="scale"
+            state={scale}
+            onUpdate={(_, s) => setScale(s)}
+          />
+        )}
         {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
@@ -199,7 +204,7 @@ const AreaWindow = (props) => {
   const datasetCard = (
     <Card id="left_map" variant="primary">
       <Card.Header>
-        {props.dataset_compare ? _("Left Map (Anchor)") : _("Main Map")}
+        {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetSelector
@@ -225,7 +230,7 @@ const AreaWindow = (props) => {
     </Card>
   );
 
-  const compareDatasetCard = props.dataset_compare && (
+  const compareDatasetCard = props.compareDatasets && (
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
@@ -268,7 +273,7 @@ const AreaWindow = (props) => {
     const plot_query = {
       dataset: props.dataset_0.id,
       quantum: props.dataset_0.quantum,
-      scale: scale,
+      scale: scale.toString(),
       name: props.name,
       type: "map",
       colormap: leftColormap,
@@ -287,12 +292,12 @@ const AreaWindow = (props) => {
       radius: props.mapSettings.interpRadius,
       neighbours: props.mapSettings.interpNeighbours,
       plotTitle: plotTitle,
-      ...(props.dataset_compare && {
+      ...(props.compareDatasets && {
         compare_to: {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
-          scale: scale1,
-          scale_diff: scaleDiff,
+          scale: props.dataset_1.variable_scale.toString(),
+          scale_diff: scale?.toString(),
           colormap: rightColormap,
           colormap_diff: diffColormap,
         },
@@ -302,8 +307,8 @@ const AreaWindow = (props) => {
     const permlink_subquery = {
       currentTab,
       scale,
-      scale_1: scale1,
-      scale_diff: scaleDiff,
+      scale_1: props.dataset_1.variable_scale,
+      scale_diff: scale,
       leftColormap,
       rightColormap,
       colormap_diff: diffColormap,
@@ -354,7 +359,7 @@ AreaWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
   generatePermLink: PropTypes.func,
   dataset_1: PropTypes.object.isRequired,
-  dataset_compare: PropTypes.bool,
+  compareDatasets: PropTypes.bool,
   variable: PropTypes.string,
   projection: PropTypes.string,
   dataset_0: PropTypes.object.isRequired,
