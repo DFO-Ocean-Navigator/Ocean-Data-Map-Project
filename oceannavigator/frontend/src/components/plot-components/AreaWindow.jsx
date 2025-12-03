@@ -128,13 +128,13 @@ const AreaWindow = (props) => {
         />
 
         {/* Displays Options for Compare Datasets */}
-        <Button
+        {/* <Button
           variant="default"
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
-        </Button>
+        </Button> */}
         <Form.Check
           type="checkbox"
           id={props.id + "_auto"}
