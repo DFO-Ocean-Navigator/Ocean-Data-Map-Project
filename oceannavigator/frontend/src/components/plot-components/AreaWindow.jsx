@@ -268,7 +268,7 @@ const AreaWindow = (props) => {
       dataset: props.dataset_0.id,
       quantum: props.dataset_0.quantum,
       scale: scale.toString(),
-      name: props.name,
+      name: props.names[0],
       type: "map",
       colormap: leftColormap,
       time: props.dataset_0.time,
