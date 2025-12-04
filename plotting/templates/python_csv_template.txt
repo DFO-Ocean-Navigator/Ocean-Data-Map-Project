@@ -10,7 +10,7 @@ def requestFile():
 
 
    # Assemble full request
-   base_url = "https://oceannavigator.ca/api/v2.0/plot/{p}?"
+   base_url = "https://www.oceannavigator.ca/api/v2.0/plot/{p}?"
    url = base_url + urlencode({{"query": json.dumps(query)}}) + '&save=True&format=csv&size=10x7&dpi=144'
    print(url)
 
