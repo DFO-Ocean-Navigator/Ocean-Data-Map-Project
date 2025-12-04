@@ -237,13 +237,12 @@ const Map = forwardRef((props, ref) => {
         featureVectorSource,
         props.mapSettings
       );
-      const currentView = map0.getView();
 
       newMap = createMap(
         props.mapSettings,
         overlay,
         popupElement1,
-        currentView,
+        map0.getView(),
         layerData1,
         newLayerFeatureVector,
         obsDrawSource,
@@ -262,6 +261,15 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, select1);
+      if (drawActions && drawActions.map0) {
+        if (drawActions.map1 && newMap) {
+          newMap.removeInteraction(drawActions.map1);
+        }
+        const source = map0.getLayers().getArray()[5].getSource();
+        const mirroredDraw = getDrawAction(source, props.featureType);
+        newMap.addInteraction(mirroredDraw);
+        setDrawActions((prev) => ({ ...(prev || {}), map1: mirroredDraw }));
+      }
 
       let overlays = map0.getOverlays().getArray();
 
@@ -271,12 +279,21 @@ const Map = forwardRef((props, ref) => {
         }
       }
     } else if (map0) {
+      if (drawActions && drawActions.map1) {
+        if (map1) {
+          map1.removeInteraction(drawActions.map1);
+        }
+
+        setDrawActions((prev) => ({ ...(prev || {}), map1: null }));
+      }
+
       map0.getControls().item(0).setMap(map0); // change zoom control target
       map0.getControls().item(3).setMap(map0);
     }
     setMap1(newMap);
     setHoverSelect1(newHoverSelect);
   }, [props.compareDatasets]);
+
   useEffect(() => {
     if (select0 || select1) {
       select0.on("select", (e) => {
@@ -971,6 +988,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
     }
+    setDrawActions({ map0: null, map1: null });
   };
 
   const addAnnotationLabel = (text) => {
