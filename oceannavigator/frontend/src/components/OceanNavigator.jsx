@@ -46,7 +46,7 @@ function OceanNavigator(props) {
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
-  const [names, setNames] = useState([]);
+  const [names, setNames] = useState();
   const [observationArea, setObservationArea] = useState([]);
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
@@ -131,6 +131,7 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
+        setNames(newPlotData.name)
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
             (data) => data.id === newPlotData.id

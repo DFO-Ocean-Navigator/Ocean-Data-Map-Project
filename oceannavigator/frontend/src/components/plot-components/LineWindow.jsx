@@ -15,7 +15,6 @@ import { withTranslation } from "react-i18next";
 
 const LineWindow = (props) => {
   const { t: _ } = props;
-
   // UI state
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
@@ -115,13 +114,13 @@ const LineWindow = (props) => {
           onUpdate={(_, checked) => props.setCompareDatasets(checked)}
           title={_("Compare Datasets")}
         />
-        <Button
+        {/* <Button
           id="swap_views"
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
-        </Button>
+        </Button> */}
         {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
             <ColormapRange
@@ -288,7 +287,7 @@ const LineWindow = (props) => {
   const baseQuery = {
     dataset: props.dataset_0.id,
     quantum: props.dataset_0.quantum,
-    name: props.names[0],
+    name:props.names[0],
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -303,8 +302,9 @@ const LineWindow = (props) => {
       ...baseQuery,
       type: "transect",
       variable: props.dataset_0.variable,
+      scale:'auto',
       path: props.plotData.coordinates,
-      colormap: mainColormap,
+      colormap: mainColormap.toString(),
       showmap: showMap,
       time: props.dataset_0.time,
       linearthresh: linearThresh,
@@ -317,8 +317,9 @@ const LineWindow = (props) => {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
           scale_diff: scaleDiff.toString(),
-          colormap: rightColormap,
-          colormap_diff: diffColormap,
+          scale:'auto',
+          colormap: rightColormap.toString(),
+          colormap_diff: diffColormap.toString(),
         },
       }),
     };
@@ -328,6 +329,11 @@ const LineWindow = (props) => {
       type: "hovmoller",
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
+      variable:props.dataset_0.variable,
+      scale:'auto',
+      colormap: mainColormap.toString(),
+      path: props.plotData.coordinates,
+      showmap: showMap,
       depth: props.dataset_0.depth,
       ...(props.compareDatasets &&
         props.dataset_0.variable === props.dataset_1.variable && {
@@ -335,8 +341,10 @@ const LineWindow = (props) => {
             ...props.dataset_1,
             dataset: props.dataset_1.id,
             scale_diff: scaleDiff.toString(),
-            colormap: rightColormap,
-            colormap_diff: diffColormap,
+            colormap: rightColormap.toString(),
+            colormap_diff: diffColormap.toString(),
+            endtime:props.dataset_1.time,
+            scale:"auto",
           },
         }),
     };
@@ -346,9 +354,9 @@ const LineWindow = (props) => {
   const permlink_subquery = {
     selected,
     scale_diff: scaleDiff.toString(),
-    colormap: mainColormap,
-    colormap_right: rightColormap,
-    colormap_diff: diffColormap,
+    colormap: mainColormap.toString(),
+    colormap_right: rightColormap.toString(),
+    colormap_diff: diffColormap.toString(),
     size: plotSize,
     dpi: plotDpi,
     plotTitles,

@@ -26,56 +26,21 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const [url, setUrl] = useState(LOADING_IMAGE);
   const [queryString, setQueryString] = useState(null);
 
-  // Generate type and query object from props.query
-  const generateQuery = useCallback((q) => {
-    const base = { dataset: q.dataset, names: q.names };
-    if (q.plotTitle != null) base.plotTitle = q.plotTitle;
-    let newQuery = { ...base };
-    switch (q.type) {
-      case "profile":
-      case "ts":
-      case "sound":
-        newQuery = {
-          ...newQuery,
-          variable: q.variable,
-          station: q.point,
-          showmap: q.showmap,
-          time: q.time,
-        };
-        if (q.variable_range) newQuery.variable_range = q.variable_range;
-        if (q.compare_to) newQuery.compare_to = { ...q.compare_to };
-        break;
-      // ... handle other types similarly ...
-      case "track":
-        newQuery = {
-          ...newQuery,
-          variable: q.variable,
-          depth: q.depth,
-          track: q.track,
-          showmap: q.showmap,
-          latlon: q.latlon,
-          trackvariable: q.trackvariable,
-          starttime: q.starttime,
-          endtime: q.endtime,
-          track_quantum: q.track_quantum,
-        };
-        break;
-      default:
-        newQuery = { ...newQuery, ...q };
-    }
-    return [q.type, newQuery];
-  }, []);
+  // Generate API script
+  const generateScript = (language) => {
+    const [type, qry] = generateQuery(query);
 
-  // Build URL from query
-  const urlFromQuery = useCallback(
-    (q) => {
-      const [type, qry] = generateQuery(q);
-      return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
-        JSON.stringify(qry)
-      )}`;
-    },
-    [generateQuery]
-  );
+    const qstr = encodeURIComponent(JSON.stringify(qry));
+
+    const scriptType = language.includes("Plot") ? "plot" : "csv";
+    const scriptLang = language.startsWith("python") ? "python" : "r";
+
+    window.location.href =
+      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
+      `&plot_type=${encodeURIComponent(type)}` +
+      `&lang=${encodeURIComponent(scriptLang)}` +
+      `&script_type=${encodeURIComponent(scriptType)}`;
+  };
 
   // Load image when query changes
   useEffect(() => {
@@ -103,7 +68,207 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           setUrl(FAIL_IMAGE);
         });
     }
-  }, [query, generateQuery, queryString]);
+  }, [query, queryString]);
+
+  // Generate type and query object from props.query
+  const generateQuery = useCallback((q) => {
+    let newQuery = {};
+
+    switch (q.type) {
+      case "profile":
+      case "ts":
+      case "sound":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
+          station: q.point,
+          showmap: q.showmap,
+          time: q.time,
+          variable_range: q.variable_range,
+        };
+        break;
+      case "timeseries":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          showmap: q.showmap,
+          station: q.point,
+          variable: q.variable,
+          variable_range: q.variable_range,
+          depth: q.depth,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          //does time series require scale information?
+          // scale: q.scale,
+          colormap: q.colormap,
+          interp: q.interp,
+          radius: q.radius,
+          neighbours: q.neighbours,
+        };
+        break;
+      case "transect":
+        newQuery = {
+          dataset: q.dataset,
+          name: q.name,
+          variable: q.variable,
+          time: q.time,
+          scale: q.scale,
+          path: q.path,
+          showmap: q.showmap,
+          surfacevariable: q.surfacevariable,
+          linearthresh: q.linearthresh,
+          depth_limit: q.depth_limit,
+          colormap: q.colormap,
+          selectedPlots: q.selectedPlots,
+          profile_distance: q.profile_distance,
+        };
+
+        if (q.compare_to) {
+          newQuery.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.attribution,
+            dataset_quantum: q.compare_to.quantum,
+            time: q.compare_to.time,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            variable: q.compare_to.variable,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
+          };
+        }
+        break;
+      case "hovmoller":
+        newQuery = {
+          dataset: q.dataset,
+          name: q.name,
+          variable: q.variable,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          scale: q.scale,
+          colormap: q.colormap,
+          path: q.path,
+          depth: q.depth,
+          showmap: q.showmap,
+        };
+
+        if (q.compare_to) {
+          newQuery.compare_to = {
+            variable: q.compare_to.variable,
+            starttime: q.compare_to.starttime,
+            endtime: q.compare_to.endtime,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            depth: q.compare_to.depth,
+            dataset: q.compare_to.dataset,
+            dataset_quantum: q.compare_to.quantum,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
+          };
+        }
+        break;
+      case "map":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
+          time: q.time,
+          scale: q.scale,
+          depth: q.depth,
+          colormap: q.colormap,
+          area: q.area,
+          projection: q.projection,
+          bathymetry: q.bathymetry,
+          quiver: q.quiver,
+          contour: q.contour,
+          showarea: q.showarea,
+          interp: q.interp,
+          radius: q.radius,
+          neighbours: q.neighbours,
+        };
+
+        if (q.compare_to) {
+          newQuery.compare_to = {
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+            depth: q.compare_to.depth,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
+          };
+        }
+        break;
+      case "track":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
+          depth: q.depth,
+          track: q.track,
+          showmap: q.showmap,
+          latlon: q.latlon,
+          trackvariable: q.trackvariable,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          track_quantum: q.track_quantum,
+        };
+        break;
+      case "class4":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          class4id: q.class4id,
+          class4type: q.class4type,
+          forecast: q.forecast,
+          error: q.error,
+          showmap: q.showmap,
+          climatology: q.climatology,
+          models: q.models,
+        };
+
+        break;
+      case "observation":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          observation: q.observation,
+          observation_variable: q.observation_variable,
+          variable: q.variable,
+        };
+
+        break;
+      case "stick":
+        newQuery = {
+          dataset: q.dataset,
+          names: q.names,
+          station: q.point,
+          variable: q.variable,
+          depth: q.depth,
+          starttime: q.starttime,
+          endtime: q.endtime,
+        };
+
+        break;
+      default:
+        newQuery = { ...q };
+    }
+    return [q.type, newQuery];
+  }, []);
+
+  // Build URL from query
+  const urlFromQuery = useCallback(
+    (q) => {
+      const [type, qry] = generateQuery(q);
+      return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
+        JSON.stringify(qry)
+      )}`;
+    },
+    [generateQuery]
+  );
 
   // Toggle image link modal
   const toggleImageLink = () => setShowImagelink((prev) => !prev);
@@ -115,17 +280,6 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
       link += `&size=${query.size}&dpi=${query.dpi}`;
     }
     window.location.href = link;
-  };
-
-  // Generate API script
-  const generateScript = (lang) => {
-    let [type, qry] = generateQuery(query);
-    const payload = encodeURIComponent(JSON.stringify(qry));
-    let scriptType = lang.includes("Plot") ? "plot" : "csv";
-    let scriptLang = lang.startsWith("python") ? "python" : "r";
-    window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${payload}` +
-      `&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
   };
 
   // Handle link actions
@@ -223,15 +377,14 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           onSelect={generateScript}
           drop="up"
         >
-{["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-  <Dropdown.Item key={key} eventKey={key} disabled={fail}>
-    <Icon icon="code" />{" "}
-    {key === "rPlot" && "R - PLOT"}
-    {key === "pythonPlot" && "Python 3 - PLOT"}
-    {key === "pythonCSV" && "Python 3 - CSV"}
-    {key === "rCSV" && "R - CSV"}
-  </Dropdown.Item>
-))}
+          {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
+            <Dropdown.Item key={key} eventKey={key} disabled={fail}>
+              <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
+              {key === "pythonPlot" && "Python 3 - PLOT"}
+              {key === "pythonCSV" && "Python 3 - CSV"}
+              {key === "rCSV" && "R - CSV"}
+            </Dropdown.Item>
+          ))}
         </DropdownButton>
       </ButtonToolbar>
 
