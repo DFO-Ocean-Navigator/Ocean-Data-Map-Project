@@ -220,7 +220,7 @@ const LineWindow = (props) => {
               id="colormap_diff"
               state={diffColormap}
               onUpdate={(_, value) => setDiffColormap(value)}
-              title={_("Diff. Colour Map")}
+              title={_("Diff. Colourmap")}
               url="/api/v2.0/plot/colormaps"
             >
               {_("colourmap_help")}
@@ -252,7 +252,7 @@ const LineWindow = (props) => {
           id="colormap"
           state={mainColormap}
           onUpdate={(_, value) => setMainColormap(value)}
-          title={_("Colour Map")}
+          title={_("Colourmap")}
           url="/api/v2.0/plot/colormaps"
         >
           {_("colourmap_help")}
@@ -281,7 +281,7 @@ const LineWindow = (props) => {
           id="colormap_right"
           state={rightColormap}
           onUpdate={(_, value) => setRightColormap(value)}
-          title={_("Colour Map")}
+          title={_("Colourmap")}
           url="/api/v2.0/plot/colormaps"
         >
           {_("colourmap_help")}
