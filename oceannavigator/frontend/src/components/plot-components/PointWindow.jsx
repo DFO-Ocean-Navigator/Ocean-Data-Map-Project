@@ -160,14 +160,14 @@ const PointWindow = ({
         >
           {_("showmap_help")}
         </CheckBox>
-        {plotData.coordinates.length === 1 && (
+        {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
             state={plotData.coordinates}
             title={_("Location")}
             onUpdate={handlePointsUpdate}
           />
-        )}
+        )} */}
         <Accordion>
           <Accordion.Header>{_("Plot Options")}</Accordion.Header>
           <Accordion.Body>{plotOptions}</Accordion.Body>
