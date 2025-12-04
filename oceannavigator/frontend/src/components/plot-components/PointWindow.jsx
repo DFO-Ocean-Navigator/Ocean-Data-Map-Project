@@ -251,7 +251,7 @@ const PointWindow = ({
     dataset: dataset_0.id,
     point: plotData.coordinates,
     showmap: showMap,
-    name:plotData.name,
+    names:names,
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],

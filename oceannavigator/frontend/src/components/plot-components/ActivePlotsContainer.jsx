@@ -48,6 +48,7 @@ const ActivePlotsContainer = ({
             updateDataset={updateDataset0}
             init={subquery}
             action={action}
+            names={names}
           />
         );
       case "LineString":

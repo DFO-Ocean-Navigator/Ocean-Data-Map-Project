@@ -15,7 +15,6 @@ import { withTranslation } from "react-i18next";
 
 const LineWindow = (props) => {
   const { t: _ } = props;
-  
   // UI state
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
@@ -287,11 +286,8 @@ const LineWindow = (props) => {
 
   const baseQuery = {
     dataset: props.dataset_0.id,
-    dataset_quantum: props.dataset_0.quantum,
-    //props.names[0] was undefined
-    // name: props.names[0],
-    //for name do we return the name of the plot for example:flemish cap?
-    name:props.plotData.name,
+    quantum: props.dataset_0.quantum,
+    name:props.names[0],
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -320,7 +316,6 @@ const LineWindow = (props) => {
         compare_to: {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
-          scale:props.dataset_1.variable_scale.join(","),
           scale_diff: scaleDiff.toString(),
           scale:'auto',
           colormap: rightColormap,
