@@ -28,13 +28,18 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
 
   // Generate API script
   const generateScript = (language) => {
-    let [type, qry] = generateQuery(query);
-    query = encodeURIComponent(JSON.stringify(qry));
-    let scriptType = language.includes("Plot") ? "plot" : "csv";
-    let scriptLang = language.startsWith("python") ? "python" : "r";
+    const [type, qry] = generateQuery(query);
+
+    const qstr = encodeURIComponent(JSON.stringify(qry));
+
+    const scriptType = language.includes("Plot") ? "plot" : "csv";
+    const scriptLang = language.startsWith("python") ? "python" : "r";
+
     window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${qry}` +
-      `&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
+      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
+      `&plot_type=${encodeURIComponent(type)}` +
+      `&lang=${encodeURIComponent(scriptLang)}` +
+      `&script_type=${encodeURIComponent(scriptType)}`;
   };
 
   // Load image when query changes
@@ -74,88 +79,172 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
       case "ts":
       case "sound":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
           station: q.point,
+          showmap: q.showmap,
+          time: q.time,
+          variable_range: q.variable_range,
         };
-        //sound doesn't have compare mode, is this necessary?
-        // if (q.compare_to) newQuery.compare_to = { ...q.compare_to };
         break;
       case "timeseries":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          names: q.names,
+          showmap: q.showmap,
           station: q.point,
+          variable: q.variable,
+          variable_range: q.variable_range,
+          depth: q.depth,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          //does time series require scale information?
+          // scale: q.scale,
+          colormap: q.colormap,
+          interp: q.interp,
+          radius: q.radius,
+          neighbours: q.neighbours,
         };
         break;
       case "transect":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          name: q.name,
+          variable: q.variable,
+          time: q.time,
+          scale: q.scale,
+          path: q.path,
+          showmap: q.showmap,
+          surfacevariable: q.surfacevariable,
+          linearthresh: q.linearthresh,
+          depth_limit: q.depth_limit,
+          colormap: q.colormap,
+          selectedPlots: q.selectedPlots,
+          profile_distance: q.profile_distance,
         };
 
         if (q.compare_to) {
           newQuery.compare_to = {
-            ...q.compare_to,
-            //query has attribution but not dataset_attribution
-            //but attribution="" do we need it?
+            dataset: q.compare_to.dataset,
             dataset_attribution: q.compare_to.attribution,
+            dataset_quantum: q.compare_to.quantum,
+            time: q.compare_to.time,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            variable: q.compare_to.variable,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
       case "hovmoller":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          name: q.name,
+          variable: q.variable,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          scale: q.scale,
+          colormap: q.colormap,
+          path: q.path,
+          depth: q.depth,
+          showmap: q.showmap,
         };
 
         if (q.compare_to) {
           newQuery.compare_to = {
-            ...q.compare_to,
-            dataset_attribution: q.compare_to.attribution,
+            variable: q.compare_to.variable,
+            starttime: q.compare_to.starttime,
+            endtime: q.compare_to.endtime,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            depth: q.compare_to.depth,
+            dataset: q.compare_to.dataset,
+            dataset_quantum: q.compare_to.quantum,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
       case "map":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
+          time: q.time,
+          scale: q.scale,
+          depth: q.depth,
+          colormap: q.colormap,
+          area: q.area,
+          projection: q.projection,
+          bathymetry: q.bathymetry,
+          quiver: q.quiver,
+          contour: q.contour,
+          showarea: q.showarea,
+          interp: q.interp,
+          radius: q.radius,
+          neighbours: q.neighbours,
         };
 
         if (q.compare_to) {
           newQuery.compare_to = {
-            ...q.compare_to,
-            dataset_attribution: q.compare_to.attribution,
-            dataset_quantum: q.compare_to.quantum,
-            scale: q.compare_to.variable_scale,
+            dataset: q.compare_to.dataset,
+            dataset_attribution: q.compare_to.dataset_attribution,
+            dataset_quantum: q.compare_to.dataset_quantum,
+            time: q.compare_to.time,
+            variable: q.compare_to.variable,
+            depth: q.compare_to.depth,
+            scale: q.compare_to.scale,
+            scale_diff: q.compare_to.scale_diff,
+            colormap: q.compare_to.colormap,
+            colormap_diff: q.compare_to.colormap_diff,
           };
         }
         break;
       case "track":
         newQuery = {
-          ...q,
-          // ...newQuery,
-          // variable: q.variable,
-          // depth: q.depth,
-          // track: q.track,
-          // showmap: q.showmap,
-          // latlon: q.latlon,
-          // trackvariable: q.trackvariable,
-          // starttime: q.starttime,
-          // endtime: q.endtime,
-          // track_quantum: q.track_quantum,
+          dataset: q.dataset,
+          names: q.names,
+          variable: q.variable,
+          depth: q.depth,
+          track: q.track,
+          showmap: q.showmap,
+          latlon: q.latlon,
+          trackvariable: q.trackvariable,
+          starttime: q.starttime,
+          endtime: q.endtime,
+          track_quantum: q.track_quantum,
         };
         break;
       case "class4":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          names: q.names,
+          class4id: q.class4id,
+          class4type: q.class4type,
+          forecast: q.forecast,
+          error: q.error,
+          showmap: q.showmap,
+          climatology: q.climatology,
+          models: q.models,
         };
 
         break;
       case "observation":
         newQuery = {
-          ...q,
+          dataset: q.dataset,
+          names: q.names,
+          observation: q.observation,
+          observation_variable: q.observation_variable,
+          variable: q.variable,
         };
 
         break;
       case "stick":
         newQuery = {
-          ...newQuery,
+          dataset: q.dataset,
+          names: q.names,
           station: q.point,
           variable: q.variable,
           depth: q.depth,
