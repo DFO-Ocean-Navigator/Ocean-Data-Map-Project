@@ -114,13 +114,13 @@ const LineWindow = (props) => {
           onUpdate={(_, checked) => props.setCompareDatasets(checked)}
           title={_("Compare Datasets")}
         />
-        <Button
+        {/* <Button
           id="swap_views"
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
-        </Button>
+        </Button> */}
         {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
             <ColormapRange
