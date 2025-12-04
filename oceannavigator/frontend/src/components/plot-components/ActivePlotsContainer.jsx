@@ -48,6 +48,7 @@ const ActivePlotsContainer = ({
             updateDataset={updateDataset0}
             init={subquery}
             action={action}
+            names={names}
           />
         );
       case "LineString":
@@ -85,7 +86,7 @@ const ActivePlotsContainer = ({
             swapViews={swapViews}
           />
         );
-      case "track":
+      case "Track":
         return (
           <TrackWindow
             dataset={dataset0}

@@ -1,8 +1,37 @@
-div.TransectLimiter{
+div.TransectLimiter {
 
-    .TransectLimiter-title {
-      font-size: small;
-      font-weight: bold;
-    }
+  .threshold-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 6px;
+  }
 
+  .parameter-label-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .parameter-label {
+    font-size: small;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .help-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    width: 21px;      
+  height: 22px;  
+    color: #077da5;
+
+     &:active {
+    background: #008cba; 
+  }
+
+
+  }
 }
