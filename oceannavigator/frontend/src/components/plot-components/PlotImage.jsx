@@ -7,6 +7,7 @@ import {
   Alert,
   Dropdown,
   DropdownButton,
+  Spinner,
 } from "react-bootstrap";
 import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
@@ -25,22 +26,6 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState(LOADING_IMAGE);
   const [queryString, setQueryString] = useState(null);
-
-  // Generate API script
-  const generateScript = (language) => {
-    const [type, qry] = generateQuery(query);
-
-    const qstr = encodeURIComponent(JSON.stringify(qry));
-
-    const scriptType = language.includes("Plot") ? "plot" : "csv";
-    const scriptLang = language.startsWith("python") ? "python" : "r";
-
-    window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
-      `&plot_type=${encodeURIComponent(type)}` +
-      `&lang=${encodeURIComponent(scriptLang)}` +
-      `&script_type=${encodeURIComponent(scriptType)}`;
-  };
 
   // Load image when query changes
   useEffect(() => {
@@ -68,10 +53,26 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           setUrl(FAIL_IMAGE);
         });
     }
-  }, [query, queryString]);
+  }, [query]);
+
+  // Generate API script
+  const generateScript = (language) => {
+    const [type, qry] = generateQuery(query);
+
+    const qstr = encodeURIComponent(JSON.stringify(qry));
+
+    const scriptType = language.includes("Plot") ? "plot" : "csv";
+    const scriptLang = language.startsWith("python") ? "python" : "r";
+
+    window.location.href =
+      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
+      `&plot_type=${encodeURIComponent(type)}` +
+      `&lang=${encodeURIComponent(scriptLang)}` +
+      `&script_type=${encodeURIComponent(scriptType)}`;
+  };
 
   // Generate type and query object from props.query
-  const generateQuery = useCallback((q) => {
+  const generateQuery = (q) => {
     let newQuery = {};
 
     switch (q.type) {
@@ -99,8 +100,6 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           depth: q.depth,
           starttime: q.starttime,
           endtime: q.endtime,
-          //does time series require scale information?
-          // scale: q.scale,
           colormap: q.colormap,
           interp: q.interp,
           radius: q.radius,
@@ -257,7 +256,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
         newQuery = { ...q };
     }
     return [q.type, newQuery];
-  }, []);
+  };
 
   // Build URL from query
   const urlFromQuery = useCallback(
@@ -299,7 +298,11 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   return (
     <div className="PlotImage">
       <div className="RenderedImage">
-        <img src={url} alt="Plot" />
+        {loading ? (
+          <Spinner animation="border" variant="primary" />
+        ) : (
+          <img src={url} alt="Plot" />
+        )}
       </div>
       {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
       <ButtonToolbar className="button-bar">

@@ -1,8 +1,12 @@
 div.PlotImage {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
   text-align: center;
 
   div.btn-toolbar {
-    display: inline-block;
+    display: inline-flex;
   }
 
   img {
