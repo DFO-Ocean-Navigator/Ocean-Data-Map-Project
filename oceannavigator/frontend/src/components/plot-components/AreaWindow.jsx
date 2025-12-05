@@ -128,13 +128,13 @@ const AreaWindow = (props) => {
         />
 
         {/* Displays Options for Compare Datasets */}
-        <Button
+        {/* <Button
           variant="default"
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
           {_("Swap Views")}
-        </Button>
+        </Button> */}
         <Form.Check
           type="checkbox"
           id={props.id + "_auto"}
@@ -170,7 +170,10 @@ const AreaWindow = (props) => {
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
           title={_("Arrows")}
-        />
+        >
+          {_("arrows_help")}
+        </QuiverSelector>
+
         {/* Contour Selector drop down menu */}
         <ContourSelector
           id="contour"
@@ -178,7 +181,9 @@ const AreaWindow = (props) => {
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
           title={_("Additional Contours")}
-        />
+        >
+          {_("contour_help")}
+        </ContourSelector>
 
         <Accordion>
           <Accordion.Header>{_("Plot Options")}</Accordion.Header>
@@ -218,6 +223,7 @@ const AreaWindow = (props) => {
           url="/api/v2.0/plot/colormaps"
           title={_("Colourmap")}
         >
+          {_("colourmap_help")}
           <img src="/api/v2.0/plot/colormaps.png/" alt="" />
         </ComboBox>
       </Card.Body>
@@ -268,9 +274,9 @@ const AreaWindow = (props) => {
       dataset: props.dataset_0.id,
       quantum: props.dataset_0.quantum,
       scale: scale.toString(),
-      name: props.name,
+      name: props.names[0],
       type: "map",
-      colormap: leftColormap,
+      colormap: leftColormap.toString(),
       time: props.dataset_0.time,
       area,
       depth: props.dataset_0.depth,
@@ -292,8 +298,8 @@ const AreaWindow = (props) => {
           dataset: props.dataset_1.id,
           scale: props.dataset_1.variable_scale.toString(),
           scale_diff: scale?.toString(),
-          colormap: rightColormap,
-          colormap_diff: diffColormap,
+          colormap: rightColormap.toString(),
+          colormap_diff: diffColormap.toString(),
         },
       }),
     };
@@ -302,10 +308,10 @@ const AreaWindow = (props) => {
       currentTab,
       scale,
       scale_1: props.dataset_1.variable_scale,
-      scale_diff: scale,
-      leftColormap,
-      rightColormap,
-      colormap_diff: diffColormap,
+      scale_diff: scale.toString(),
+      leftColormap: leftColormap.toString(),
+      rightColormap:rightColormap.toString(),
+      colormap_diff: diffColormap.toString(),
       size: plotSize,
       dpi: plotDpi,
       plotTitle,

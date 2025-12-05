@@ -818,7 +818,7 @@ const getLineDistance = (line) => {
 export const createPlotData = (selected, projection) => {
   let title, type, observation, distance;
   let id = selected[0].getId();
-  let name = selected[0].get("name");
+  let name = selected.map(f => f.get("name"));
   let coordinates = selected.map((feature) =>
     feature.getGeometry().getCoordinates()
   );

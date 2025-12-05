@@ -151,7 +151,17 @@ function ComboBox({
 
     return (
       <div className="ComboBox input">
-        <h1 className="combobox-title">{title}</h1>
+         <div className="combobox-title-row">
+          <h1 className="combobox-title">{title}</h1>
+          {hasHelp && <Button
+            variant="link"
+            className="combobox-help-button"
+            onClick={openHelp}
+            aria-label={_("Open help for {{title}}", { title })}
+          >
+            {_("?")}
+          </Button>}
+        </div>
 
         <Modal show={showHelp} onHide={closeHelp} dialogClassName="helpdialog">
           <Modal.Header closeButton>
@@ -177,11 +187,6 @@ function ComboBox({
           {opts}
         </Form.Select>
 
-        {hasHelp && (
-          <Button variant="link" onClick={openHelp}>
-            {_(`Help`)}
-          </Button>
-        )}
       </div>
     );
   }

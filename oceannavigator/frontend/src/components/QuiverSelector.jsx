@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
 const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
-  // Mirror your old onUpdate method
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
