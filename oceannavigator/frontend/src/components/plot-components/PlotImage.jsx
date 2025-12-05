@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Button,
@@ -14,55 +14,62 @@ import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
 const FAIL_IMAGE = require("../fail.js");
-const LOADING_IMAGE = require("../../images/spinner.gif").default;
 
 const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
-  const imagelinkRef = useRef(null);
+  const imagelinkRef = useRef();
+  const queryConfigRef = useRef();
 
   // Local state
   const [showImagelink, setShowImagelink] = useState(false);
   const [fail, setFail] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState();
   const [loading, setLoading] = useState(true);
-  const [url, setUrl] = useState(LOADING_IMAGE);
+  const [url, setUrl] = useState();
 
   // Load image when query changes
   useEffect(() => {
-    const [type, qry] = generateQuery(query);
-    const qs = JSON.stringify(qry);
+    const [type, newQuery] = generateQuery(query);
+    const queryConfig = {
+      method: "get",
+      url: `/api/v2.0/plot/${type}`,
+      params: { query: JSON.stringify(newQuery), format: "json" },
+    };
 
-    setLoading(true);
-    setFail(false);
-    setUrl(LOADING_IMAGE);
-    setErrorMessage(null);
+    if (
+      JSON.stringify(queryConfigRef.current) !== JSON.stringify(queryConfig)
+    ) {
+      setLoading(true);
+      setFail(false);
+      setErrorMessage(null);
 
-    axios
-      .get(`/api/v2.0/plot/${type}`, {
-        params: { query: qs, format: "json" },
-      })
-      .then((res) => {
-        setLoading(false);
-        setFail(false);
-        setUrl(res.data);
-      })
-      .catch(() => {
-        setLoading(false);
-        setFail(true);
-        setUrl(FAIL_IMAGE);
-      });
+      queryConfigRef.current = queryConfig;
+
+      axios
+        .request(queryConfig)
+        .then((res) => {
+          setLoading(false);
+          setFail(false);
+          setUrl(res.data);
+        })
+        .catch(() => {
+          setLoading(false);
+          setFail(true);
+          setUrl(FAIL_IMAGE);
+        });
+    }
   }, [query]);
 
   // Generate API script
   const generateScript = (language) => {
-    const [type, qry] = generateQuery(query);
+    const [type, newQuery] = generateQuery(query);
 
-    const qstr = encodeURIComponent(JSON.stringify(qry));
+    const querystring = encodeURIComponent(JSON.stringify(newQuery));
 
     const scriptType = language.includes("Plot") ? "plot" : "csv";
     const scriptLang = language.startsWith("python") ? "python" : "r";
 
     window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
+      `${window.location.origin}/api/v2.0/generate_script?query=${querystring}` +
       `&plot_type=${encodeURIComponent(type)}` +
       `&lang=${encodeURIComponent(scriptLang)}` +
       `&script_type=${encodeURIComponent(scriptType)}`;
@@ -256,15 +263,12 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   };
 
   // Build URL from query
-  const urlFromQuery = useCallback(
-    (q) => {
-      const [type, qry] = generateQuery(q);
-      return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
-        JSON.stringify(qry)
-      )}`;
-    },
-    [generateQuery]
-  );
+  const urlFromQuery = (q) => {
+    const [type, qry] = generateQuery(q);
+    return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
+      JSON.stringify(qry)
+    )}`;
+  };
 
   // Toggle image link modal
   const toggleImageLink = () => setShowImagelink((prev) => !prev);
@@ -423,6 +427,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
     </div>
   );
 };
+
 //***********************************************************************
 PlotImage.propTypes = {
   query: PropTypes.object,
