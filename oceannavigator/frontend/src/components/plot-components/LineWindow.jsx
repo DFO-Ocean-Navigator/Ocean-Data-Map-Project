@@ -107,7 +107,7 @@ const LineWindow = (props) => {
   const globalSettings = (
     <Card id="global_settings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
-      <Card.Body className="global-settings-card">
+      <Card.Body>
         <CheckBox
           id="dataset_compare"
           checked={props.compareDatasets}
@@ -229,7 +229,7 @@ const LineWindow = (props) => {
       <Card.Header>
         {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
           onUpdate={props.updateDataset0}
@@ -258,7 +258,7 @@ const LineWindow = (props) => {
   const rightDataset = props.compareDatasets && (
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
           onUpdate={props.updateDataset1}

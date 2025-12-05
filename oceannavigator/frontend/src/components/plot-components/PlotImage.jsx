@@ -25,34 +25,31 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState(LOADING_IMAGE);
-  const [queryString, setQueryString] = useState(null);
 
   // Load image when query changes
   useEffect(() => {
     const [type, qry] = generateQuery(query);
     const qs = JSON.stringify(qry);
-    if (qs !== queryString) {
-      setLoading(true);
-      setFail(false);
-      setUrl(LOADING_IMAGE);
-      setErrorMessage(null);
-      setQueryString(qs);
 
-      axios
-        .get(`/api/v2.0/plot/${type}`, {
-          params: { query: qs, format: "json" },
-        })
-        .then((res) => {
-          setLoading(false);
-          setFail(false);
-          setUrl(res.data);
-        })
-        .catch(() => {
-          setLoading(false);
-          setFail(true);
-          setUrl(FAIL_IMAGE);
-        });
-    }
+    setLoading(true);
+    setFail(false);
+    setUrl(LOADING_IMAGE);
+    setErrorMessage(null);
+
+    axios
+      .get(`/api/v2.0/plot/${type}`, {
+        params: { query: qs, format: "json" },
+      })
+      .then((res) => {
+        setLoading(false);
+        setFail(false);
+        setUrl(res.data);
+      })
+      .catch(() => {
+        setLoading(false);
+        setFail(true);
+        setUrl(FAIL_IMAGE);
+      });
   }, [query]);
 
   // Generate API script
