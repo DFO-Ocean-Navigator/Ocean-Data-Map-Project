@@ -90,7 +90,16 @@ const PointWindow = ({
 
   // Handles when a tab is selected
   const onSelect = (k) => {
-    setSelected(parseInt(k));
+    k = parseInt(k)
+    if (k === TabEnum.MOORING && Array.isArray(dataset_0.variable)) {
+      let nextVar = dataset_0.variable[0]
+      setDataset_0((prevDs) => ({
+        ...prevDs,
+        variable: nextVar,
+        variable_range: {nextVar: prevDs.variable_range[nextVar]},
+      }));
+    }
+    setSelected(k);
   };
 
   const updatePlotSize = (key, value) => {
@@ -158,7 +167,7 @@ const PointWindow = ({
           showVariableSelector={showVarSelector}
           showDepthsAll={showDepthSelector}
           multipleVariables={multiVar}
-          mountedDataset={ds0}
+          mountedDataset={dataset_0}
         />
         <CheckBox
           id="showmap"
