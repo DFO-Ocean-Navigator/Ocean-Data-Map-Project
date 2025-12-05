@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   Button,
@@ -7,56 +7,45 @@ import {
   Alert,
   Dropdown,
   DropdownButton,
+  Spinner,
 } from "react-bootstrap";
 import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
 const FAIL_IMAGE = require("../fail.js");
-const LOADING_IMAGE = require("../../images/spinner.gif").default;
 
 const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
-  const imagelinkRef = useRef(null);
+  const imagelinkRef = useRef();
+  const queryConfigRef = useRef();
 
   // Local state
   const [showImagelink, setShowImagelink] = useState(false);
   const [fail, setFail] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState();
   const [loading, setLoading] = useState(true);
-  const [url, setUrl] = useState(LOADING_IMAGE);
-  const [queryString, setQueryString] = useState(null);
-
-  // Generate API script
-  const generateScript = (language) => {
-    const [type, qry] = generateQuery(query);
-
-    const qstr = encodeURIComponent(JSON.stringify(qry));
-
-    const scriptType = language.includes("Plot") ? "plot" : "csv";
-    const scriptLang = language.startsWith("python") ? "python" : "r";
-
-    window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${qstr}` +
-      `&plot_type=${encodeURIComponent(type)}` +
-      `&lang=${encodeURIComponent(scriptLang)}` +
-      `&script_type=${encodeURIComponent(scriptType)}`;
-  };
+  const [url, setUrl] = useState();
 
   // Load image when query changes
   useEffect(() => {
-    const [type, qry] = generateQuery(query);
-    const qs = JSON.stringify(qry);
-    if (qs !== queryString) {
+    const [type, newQuery] = generateQuery(query);
+    const queryConfig = {
+      method: "get",
+      url: `/api/v2.0/plot/${type}`,
+      params: { query: JSON.stringify(newQuery), format: "json" },
+    };
+
+    if (
+      JSON.stringify(queryConfigRef.current) !== JSON.stringify(queryConfig)
+    ) {
       setLoading(true);
       setFail(false);
-      setUrl(LOADING_IMAGE);
       setErrorMessage(null);
-      setQueryString(qs);
+
+      queryConfigRef.current = queryConfig;
 
       axios
-        .get(`/api/v2.0/plot/${type}`, {
-          params: { query: qs, format: "json" },
-        })
+        .request(queryConfig)
         .then((res) => {
           setLoading(false);
           setFail(false);
@@ -68,10 +57,26 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           setUrl(FAIL_IMAGE);
         });
     }
-  }, [query, queryString]);
+  }, [query]);
+
+  // Generate API script
+  const generateScript = (language) => {
+    const [type, newQuery] = generateQuery(query);
+
+    const querystring = encodeURIComponent(JSON.stringify(newQuery));
+
+    const scriptType = language.includes("Plot") ? "plot" : "csv";
+    const scriptLang = language.startsWith("python") ? "python" : "r";
+
+    window.location.href =
+      `${window.location.origin}/api/v2.0/generate_script?query=${querystring}` +
+      `&plot_type=${encodeURIComponent(type)}` +
+      `&lang=${encodeURIComponent(scriptLang)}` +
+      `&script_type=${encodeURIComponent(scriptType)}`;
+  };
 
   // Generate type and query object from props.query
-  const generateQuery = useCallback((q) => {
+  const generateQuery = (q) => {
     let newQuery = {};
 
     switch (q.type) {
@@ -99,8 +104,6 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           depth: q.depth,
           starttime: q.starttime,
           endtime: q.endtime,
-          //does time series require scale information?
-          // scale: q.scale,
           colormap: q.colormap,
           interp: q.interp,
           radius: q.radius,
@@ -257,18 +260,15 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
         newQuery = { ...q };
     }
     return [q.type, newQuery];
-  }, []);
+  };
 
   // Build URL from query
-  const urlFromQuery = useCallback(
-    (q) => {
-      const [type, qry] = generateQuery(q);
-      return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
-        JSON.stringify(qry)
-      )}`;
-    },
-    [generateQuery]
-  );
+  const urlFromQuery = (q) => {
+    const [type, qry] = generateQuery(q);
+    return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
+      JSON.stringify(qry)
+    )}`;
+  };
 
   // Toggle image link modal
   const toggleImageLink = () => setShowImagelink((prev) => !prev);
@@ -299,7 +299,11 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   return (
     <div className="PlotImage">
       <div className="RenderedImage">
-        <img src={url} alt="Plot" />
+        {loading ? (
+          <Spinner animation="border" variant="primary" />
+        ) : (
+          <img src={url} alt="Plot" />
+        )}
       </div>
       {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
       <ButtonToolbar className="button-bar">
@@ -423,6 +427,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
     </div>
   );
 };
+
 //***********************************************************************
 PlotImage.propTypes = {
   query: PropTypes.object,
