@@ -90,6 +90,7 @@ function OceanNavigator(props) {
           mapRef.current.selectFeatures(selectedIds);
 
           if (query.plotData) {
+            setSubquery(query.subquery)
             action("plot");
           }
         }, 1000);
