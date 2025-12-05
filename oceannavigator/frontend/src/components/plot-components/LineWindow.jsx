@@ -107,7 +107,7 @@ const LineWindow = (props) => {
   const globalSettings = (
     <Card id="global_settings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <CheckBox
           id="dataset_compare"
           checked={props.compareDatasets}

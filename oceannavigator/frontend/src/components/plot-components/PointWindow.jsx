@@ -136,7 +136,7 @@ const PointWindow = ({
   const global = (
     <Card key="globalSettings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
           onUpdate={handleDatasetUpdate}
