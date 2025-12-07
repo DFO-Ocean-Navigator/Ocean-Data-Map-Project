@@ -25,11 +25,9 @@ function AxisRange(props) {
   const updateParent = (newRange) => {
     if (auto) {
       props.onUpdate("variable_range", [props.variable, null]);
-    }
-    else {
+    } else {
       props.onUpdate("variable_range", [props.variable, newRange]);
     }
-    
   };
 
   const changed = (key, e) => {
@@ -46,7 +44,7 @@ function AxisRange(props) {
     if (e.target.checked) {
       props.onUpdate("variable_range", [props.variable, null]);
     } else {
-      updateParent([min, max]);
+      props.onUpdate("variable_range", [props.variable, [min, max]]);
     }
   };
 
