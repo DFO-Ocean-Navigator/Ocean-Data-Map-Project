@@ -82,22 +82,25 @@ const PointWindow = ({
 
   const handleDatasetUpdate = (key, value) => {
     setDataset_0((prev) => ({ ...prev, ...value }));
-    if (value.variable && value.variable.length === 1) {
-      const v = value.variable[0];
-      updateDataset("dataset", { ...value, variable: v });
+    if (value.variable) {
+      if (!Array.isArray(value.variable)) {
+        updateDataset("dataset", { ...value, variable: value.variable });
+      } else if (value.variable.length === 1) {
+        updateDataset("dataset", { ...value, variable: value.variable[0] });
+      }
     }
   };
 
   // Handles when a tab is selected
   const onSelect = (k) => {
-    k = parseInt(k)
+    k = parseInt(k);
     if (k === TabEnum.MOORING && Array.isArray(dataset_0.variable)) {
-      let nextVar = dataset_0.variable[0]
-      setDataset_0((prevDs) => ({
-        ...prevDs,
+      let nextVar = dataset_0.variable[0];
+      updateDataset("dataset", {
+        ...dataset_0,
         variable: nextVar,
-        variable_range: {nextVar: prevDs.variable_range[nextVar]},
-      }));
+        variable_range: { nextVar: dataset_0.variable_range[nextVar] },
+      });
     }
     setSelected(k);
   };
@@ -166,7 +169,7 @@ const PointWindow = ({
           showVariableSelector={showVarSelector}
           showDepthsAll={showDepthSelector}
           multipleVariables={multiVar}
-          mountedDataset={dataset_0}
+          mountedDataset={ds0}
         />
         <CheckBox
           id="showmap"
