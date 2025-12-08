@@ -136,8 +136,8 @@ const Class4Window = ({
               showmap,
               climatology,
               error,
-              plotSize,
-              plotDpi,
+              size: plotSize,
+              dpi: plotDpi,
               models,
             }}
             action={action}
