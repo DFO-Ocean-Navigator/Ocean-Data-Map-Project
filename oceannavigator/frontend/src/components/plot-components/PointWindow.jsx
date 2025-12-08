@@ -61,8 +61,8 @@ const PointWindow = ({
   const [dataset_0, setDataset_0] = useState(
     init?.dataset_0 || {
       id: ds0.id,
-      variable: [ds0.variable],
-      variable_range: {},
+      variable: ds0.variable,
+      variable_range: [null],
       time: ds0.time,
       depth: ds0.depth,
       starttime: ds0.starttime,
@@ -90,7 +90,24 @@ const PointWindow = ({
 
   // Handles when a tab is selected
   const onSelect = (k) => {
-    setSelected(parseInt(k));
+    k = parseInt(k)
+    if (k === TabEnum.MOORING && Array.isArray(dataset_0.variable)) {
+      let nextVar = dataset_0.variable[0]
+      setDataset_0((prevDs) => ({
+        ...prevDs,
+        variable: nextVar,
+        variable_range: {nextVar: prevDs.variable_range[nextVar]},
+      }));
+    }
+    setSelected(k);
+  };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
   };
 
   // Updates Plot with User Specified Title
@@ -119,8 +136,7 @@ const PointWindow = ({
     <>
       <ImageSize
         id="size"
-        state={plotSize}
-        onUpdate={(_, value) => setPlotSize(value)}
+        onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
@@ -136,7 +152,7 @@ const PointWindow = ({
   const global = (
     <Card key="globalSettings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
           onUpdate={handleDatasetUpdate}
@@ -150,7 +166,7 @@ const PointWindow = ({
           showVariableSelector={showVarSelector}
           showDepthsAll={showDepthSelector}
           multipleVariables={multiVar}
-          mountedDataset={ds0}
+          mountedDataset={dataset_0}
         />
         <CheckBox
           id="showmap"
@@ -251,7 +267,7 @@ const PointWindow = ({
     dataset: dataset_0.id,
     point: plotData.coordinates,
     showmap: showMap,
-    names:names,
+    names: names,
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -291,7 +307,7 @@ const PointWindow = ({
       plot_query.type = "observation";
       plot_query.observation = [plotData.id];
       plot_query.observation_variable = observationVariable;
-      plot_query.variable=dataset_0.variable;
+      plot_query.variable = dataset_0.variable;
       inputs = [global, observationVariableElem];
       break;
     case TabEnum.MOORING:

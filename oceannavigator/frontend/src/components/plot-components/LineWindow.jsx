@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
+import { Accordion, Button, Card, Nav, Row, Col, Form } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
@@ -19,8 +19,9 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
   const [scaleDiff, setScaleDiff] = useState(
-    props.init?.scale_diff || [-10,10]
+    props.init?.scale_diff || [-10, 10]
   );
 
   // Colormap settings
@@ -68,6 +69,25 @@ const LineWindow = (props) => {
     setSelected(parseInt(key));
   };
 
+  const toggleAutoScale = () => {
+    let newScale = "auto";
+    if (autoScale) {
+      newScale = props.compareDatasets
+        ? [-10, 10]
+        : props.dataset_0.variable_scale;
+    }
+    setScaleDiff(newScale);
+    setAutoScale((p) => !p);
+  };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
+  };
+
   const updatePlotTitle = (title) => {
     const idx = selected - 1;
     setPlotTitles((prev) => {
@@ -91,8 +111,7 @@ const LineWindow = (props) => {
     <>
       <ImageSize
         id="size"
-        state={plotSize}
-        onUpdate={(_, value) => setPlotSize(value)}
+        onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
@@ -123,12 +142,23 @@ const LineWindow = (props) => {
         </Button> */}
         {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
-            <ColormapRange
-              id="scale_diff"
-              state={scaleDiff}
-              onUpdate={(_, value) => setScaleDiff(value)}
-              title={_("Diff. Variable Range")}
-            />
+            <>
+              <Form.Check
+                type="checkbox"
+                id={props.id + "_auto"}
+                checked={autoScale}
+                onChange={toggleAutoScale}
+                label={"Auto Range"}
+              />
+              {autoScale ? null : (
+                <ColormapRange
+                  id="scale_diff"
+                  state={scaleDiff}
+                  onUpdate={(_, value) => setScaleDiff(value)}
+                  title={_("Diff. Variable Range")}
+                />
+              )}
+            </>
           )}
         <CheckBox
           id="showmap"
@@ -229,7 +259,7 @@ const LineWindow = (props) => {
       <Card.Header>
         {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
           onUpdate={props.updateDataset0}
@@ -258,7 +288,7 @@ const LineWindow = (props) => {
   const rightDataset = props.compareDatasets && (
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
           onUpdate={props.updateDataset1}
@@ -287,7 +317,7 @@ const LineWindow = (props) => {
   const baseQuery = {
     dataset: props.dataset_0.id,
     quantum: props.dataset_0.quantum,
-    name:props.names[0],
+    name: props.names[0],
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -295,20 +325,17 @@ const LineWindow = (props) => {
 
   let plot_query = {};
   if (selected === 1) {
-    const safeSurfaceVariable =
-      typeof surfaceVariable === "string" ? surfaceVariable : "none";
-
     plot_query = {
       ...baseQuery,
       type: "transect",
       variable: props.dataset_0.variable,
-      scale:'auto',
+      scale: "auto",
       path: props.plotData.coordinates,
       colormap: mainColormap.toString(),
       showmap: showMap,
       time: props.dataset_0.time,
       linearthresh: linearThresh,
-      surfacevariable: safeSurfaceVariable,
+      surfacevariable: surfaceVariable,
       depth_limit: depthLimit,
       profile_distance: profileDistance,
       selectedPlots: selectedPlots.toString(),
@@ -317,7 +344,7 @@ const LineWindow = (props) => {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
           scale_diff: scaleDiff.toString(),
-          scale:'auto',
+          scale: "auto",
           colormap: rightColormap.toString(),
           colormap_diff: diffColormap.toString(),
         },
@@ -329,8 +356,8 @@ const LineWindow = (props) => {
       type: "hovmoller",
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
-      variable:props.dataset_0.variable,
-      scale:'auto',
+      variable: props.dataset_0.variable,
+      scale: "auto",
       colormap: mainColormap.toString(),
       path: props.plotData.coordinates,
       showmap: showMap,
@@ -343,8 +370,8 @@ const LineWindow = (props) => {
             scale_diff: scaleDiff.toString(),
             colormap: rightColormap.toString(),
             colormap_diff: diffColormap.toString(),
-            endtime:props.dataset_1.time,
-            scale:"auto",
+            endtime: props.dataset_1.time,
+            scale: "auto",
           },
         }),
     };
@@ -361,8 +388,7 @@ const LineWindow = (props) => {
     dpi: plotDpi,
     plotTitles,
     showmap: showMap,
-    surfacevariable:
-      typeof surfaceVariable === "string" ? surfaceVariable : "none",
+    surfacevariable: surfaceVariable,
     selectedPlots,
     linearthresh: linearThresh,
     depth_limit: depthLimit,
@@ -383,7 +409,7 @@ const LineWindow = (props) => {
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
           {globalSettings}
-          {transectSettingsCard}
+          {selected === 1 ? transectSettingsCard : null}
         </Col>
         <Col lg={8} className="plot-col">
           <PlotImage
