@@ -20,7 +20,7 @@ const LineWindow = (props) => {
 
   // Scale settings
   const [scaleDiff, setScaleDiff] = useState(
-    props.init?.scale_diff || [-10,10]
+    props.init?.scale_diff || [-10, 10]
   );
 
   // Colormap settings
@@ -287,7 +287,7 @@ const LineWindow = (props) => {
   const baseQuery = {
     dataset: props.dataset_0.id,
     quantum: props.dataset_0.quantum,
-    name:props.names[0],
+    name: props.names[0],
     size: plotSize,
     dpi: plotDpi,
     plotTitle: plotTitles[selected - 1],
@@ -302,7 +302,7 @@ const LineWindow = (props) => {
       ...baseQuery,
       type: "transect",
       variable: props.dataset_0.variable,
-      scale:'auto',
+      scale: "auto",
       path: props.plotData.coordinates,
       colormap: mainColormap.toString(),
       showmap: showMap,
@@ -317,7 +317,7 @@ const LineWindow = (props) => {
           ...props.dataset_1,
           dataset: props.dataset_1.id,
           scale_diff: scaleDiff.toString(),
-          scale:'auto',
+          scale: "auto",
           colormap: rightColormap.toString(),
           colormap_diff: diffColormap.toString(),
         },
@@ -329,8 +329,8 @@ const LineWindow = (props) => {
       type: "hovmoller",
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
-      variable:props.dataset_0.variable,
-      scale:'auto',
+      variable: props.dataset_0.variable,
+      scale: "auto",
       colormap: mainColormap.toString(),
       path: props.plotData.coordinates,
       showmap: showMap,
@@ -343,8 +343,8 @@ const LineWindow = (props) => {
             scale_diff: scaleDiff.toString(),
             colormap: rightColormap.toString(),
             colormap_diff: diffColormap.toString(),
-            endtime:props.dataset_1.time,
-            scale:"auto",
+            endtime: props.dataset_1.time,
+            scale: "auto",
           },
         }),
     };
