@@ -45,7 +45,7 @@ const Class4Window = ({
     type: "class4",
     class4type,
     dataset,
-    forecast: forecast === "Best Estimate" ? "best" : forecast,
+    forecast: forecast,
     class4id: plotData.id,
     showmap,
     climatology,
@@ -65,7 +65,9 @@ const Class4Window = ({
     <div className="Class4Window">
       <Nav variant="tabs" activeKey={1}>
         <Nav.Item>
-          <Nav.Link eventKey={1} disabled>{_("Class4")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>
+            {_("Class4")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
