@@ -677,7 +677,9 @@ const Map = forwardRef((props, ref) => {
   const undoFeature = () => {
     let features = featureVectorSource.getFeatures();
     features = features.filter(
-      (feature) => feature.get("class") !== "observation"
+      (feature) =>
+        feature.get("class") !== "observation" &&
+        feature.get("type") !== "class4"
     );
     if (features.length > 0) {
       featureVectorSource.removeFeatures([features[features.length - 1]]);
