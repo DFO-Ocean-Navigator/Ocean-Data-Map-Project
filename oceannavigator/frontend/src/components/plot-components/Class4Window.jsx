@@ -19,29 +19,10 @@ const Class4Window = ({
   const [showmap, setShowmap] = useState(init.showmap || false);
   const [climatology, setClimatology] = useState(init.climatology || false);
   const [error, setError] = useState(init.error || "none");
-  const [size, setSize] = useState(init.size || "10x7");
-  const [dpi, setDpi] = useState(init.dpi || 144);
+  const [plotSize, setPlotSize] = useState(init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
-  const plot_query = {
-    type: "class4",
-    class4type,
-    dataset,
-    forecast: forecast === "Best Estimate" ? "best" : forecast,
-    class4id: plotData.id,
-    showmap,
-    climatology,
-    error,
-    size,
-    dpi,
-    models,
-  };
-
-  const error_options = [
-    { id: "none", value: _("None") },
-    { id: "observation", value: _("Value - Observation") },
-    { id: "climatology", value: _("Value - Climatology") },
-  ];
   //multi-select handler
   const handleModelsUpdate = (_, value) => {
     const newModel =
@@ -69,6 +50,35 @@ const Class4Window = ({
         : value || "none"
     );
   };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
+  };
+
+  const plot_query = {
+    type: "class4",
+    class4type,
+    dataset,
+    forecast: forecast === "Best Estimate" ? "best" : forecast,
+    class4id: plotData.id,
+    showmap,
+    climatology,
+    error,
+    size: plotSize,
+    dpi: plotDpi,
+    models,
+  };
+
+  const error_options = [
+    { id: "none", value: _("None") },
+    { id: "observation", value: _("Value - Observation") },
+    { id: "climatology", value: _("Value - Climatology") },
+  ];  
+
   return (
     <div className="Class4Window Window">
       <Row>
@@ -121,8 +131,7 @@ const Class4Window = ({
                 <Accordion.Body>
                   <ImageSize
                     id="size"
-                    state={size}
-                    onUpdate={(_, value) => setSize(value)}
+                    onUpdate={updatePlotSize}
                     title={_("Saved Image Size")}
                   />
                 </Accordion.Body>
@@ -138,8 +147,8 @@ const Class4Window = ({
               showmap,
               climatology,
               error,
-              size,
-              dpi,
+              plotSize,
+              plotDpi,
               models,
             }}
             action={action}

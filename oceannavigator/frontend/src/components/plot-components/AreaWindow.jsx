@@ -111,7 +111,6 @@ const AreaWindow = (props) => {
     <div>
       <ImageSize
         id="size"
-        state={plotSize}
         onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />

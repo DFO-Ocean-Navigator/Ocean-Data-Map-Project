@@ -136,7 +136,6 @@ const PointWindow = ({
     <>
       <ImageSize
         id="size"
-        state={plotSize}
         onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />

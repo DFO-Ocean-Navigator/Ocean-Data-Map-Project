@@ -239,7 +239,6 @@ class TrackWindow extends React.Component {
     var size = <ImageSize
       key='size'
       id='size'
-      state={this.state.size}
       onUpdate={this.onLocalUpdate}
       title={_("Saved Image Size")}
     />;
