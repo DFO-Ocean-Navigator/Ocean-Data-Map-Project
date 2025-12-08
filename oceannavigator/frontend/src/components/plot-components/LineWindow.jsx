@@ -303,9 +303,6 @@ const LineWindow = (props) => {
 
   let plot_query = {};
   if (selected === 1) {
-    const safeSurfaceVariable =
-      typeof surfaceVariable === "string" ? surfaceVariable : "none";
-
     plot_query = {
       ...baseQuery,
       type: "transect",
@@ -316,7 +313,7 @@ const LineWindow = (props) => {
       showmap: showMap,
       time: props.dataset_0.time,
       linearthresh: linearThresh,
-      surfacevariable: safeSurfaceVariable,
+      surfacevariable: surfaceVariable,
       depth_limit: depthLimit,
       profile_distance: profileDistance,
       selectedPlots: selectedPlots.toString(),
@@ -369,8 +366,7 @@ const LineWindow = (props) => {
     dpi: plotDpi,
     plotTitles,
     showmap: showMap,
-    surfacevariable:
-      typeof surfaceVariable === "string" ? surfaceVariable : "none",
+    surfacevariable: surfaceVariable,
     selectedPlots,
     linearthresh: linearThresh,
     depth_limit: depthLimit,
@@ -391,7 +387,7 @@ const LineWindow = (props) => {
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
           {globalSettings}
-          {transectSettingsCard}
+          {selected === 1 ? transectSettingsCard : null}
         </Col>
         <Col lg={8} className="plot-col">
           <PlotImage
