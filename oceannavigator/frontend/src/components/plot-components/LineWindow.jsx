@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
+import { Accordion, Button, Card, Nav, Row, Col, Form } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
@@ -19,6 +19,7 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
   const [scaleDiff, setScaleDiff] = useState(
     props.init?.scale_diff || [-10, 10]
   );
@@ -68,6 +69,25 @@ const LineWindow = (props) => {
     setSelected(parseInt(key));
   };
 
+  const toggleAutoScale = () => {
+    let newScale = "auto";
+    if (autoScale) {
+      newScale = props.compareDatasets
+        ? [-10, 10]
+        : props.dataset_0.variable_scale;
+    }
+    setScaleDiff(newScale);
+    setAutoScale((p) => !p);
+  };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
+  };
+
   const updatePlotTitle = (title) => {
     const idx = selected - 1;
     setPlotTitles((prev) => {
@@ -91,8 +111,7 @@ const LineWindow = (props) => {
     <>
       <ImageSize
         id="size"
-        state={plotSize}
-        onUpdate={(_, value) => setPlotSize(value)}
+        onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
@@ -123,12 +142,23 @@ const LineWindow = (props) => {
         </Button> */}
         {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
-            <ColormapRange
-              id="scale_diff"
-              state={scaleDiff}
-              onUpdate={(_, value) => setScaleDiff(value)}
-              title={_("Diff. Variable Range")}
-            />
+            <>
+              <Form.Check
+                type="checkbox"
+                id={props.id + "_auto"}
+                checked={autoScale}
+                onChange={toggleAutoScale}
+                label={"Auto Range"}
+              />
+              {autoScale ? null : (
+                <ColormapRange
+                  id="scale_diff"
+                  state={scaleDiff}
+                  onUpdate={(_, value) => setScaleDiff(value)}
+                  title={_("Diff. Variable Range")}
+                />
+              )}
+            </>
           )}
         <CheckBox
           id="showmap"
@@ -229,7 +259,7 @@ const LineWindow = (props) => {
       <Card.Header>
         {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
           onUpdate={props.updateDataset0}
@@ -258,7 +288,7 @@ const LineWindow = (props) => {
   const rightDataset = props.compareDatasets && (
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
-      <Card.Body>
+      <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
           onUpdate={props.updateDataset1}
@@ -295,9 +325,6 @@ const LineWindow = (props) => {
 
   let plot_query = {};
   if (selected === 1) {
-    const safeSurfaceVariable =
-      typeof surfaceVariable === "string" ? surfaceVariable : "none";
-
     plot_query = {
       ...baseQuery,
       type: "transect",
@@ -308,7 +335,7 @@ const LineWindow = (props) => {
       showmap: showMap,
       time: props.dataset_0.time,
       linearthresh: linearThresh,
-      surfacevariable: safeSurfaceVariable,
+      surfacevariable: surfaceVariable,
       depth_limit: depthLimit,
       profile_distance: profileDistance,
       selectedPlots: selectedPlots.toString(),
@@ -361,8 +388,7 @@ const LineWindow = (props) => {
     dpi: plotDpi,
     plotTitles,
     showmap: showMap,
-    surfacevariable:
-      typeof surfaceVariable === "string" ? surfaceVariable : "none",
+    surfacevariable: surfaceVariable,
     selectedPlots,
     linearthresh: linearThresh,
     depth_limit: depthLimit,
@@ -383,7 +409,7 @@ const LineWindow = (props) => {
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
           {globalSettings}
-          {transectSettingsCard}
+          {selected === 1 ? transectSettingsCard : null}
         </Col>
         <Col lg={8} className="plot-col">
           <PlotImage
