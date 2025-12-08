@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Accordion, Card, Nav, Row, Col, Button } from "react-bootstrap";
+import { Accordion, Button, Card, Nav, Row, Col, Form } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
@@ -19,6 +19,7 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
   const [scaleDiff, setScaleDiff] = useState(
     props.init?.scale_diff || [-10, 10]
   );
@@ -68,6 +69,17 @@ const LineWindow = (props) => {
     setSelected(parseInt(key));
   };
 
+  const toggleAutoScale = () => {
+    let newScale = "auto";
+    if (autoScale) {
+      newScale = props.compareDatasets
+        ? [-10, 10]
+        : props.dataset_0.variable_scale;
+    }
+    setScaleDiff(newScale);
+    setAutoScale((p) => !p);
+  };
+
   const updatePlotSize = (key, value) => {
     if (key === "size") {
       setPlotSize(value);
@@ -75,7 +87,7 @@ const LineWindow = (props) => {
       setPlotDpi(value);
     }
   };
-  
+
   const updatePlotTitle = (title) => {
     const idx = selected - 1;
     setPlotTitles((prev) => {
@@ -131,12 +143,23 @@ const LineWindow = (props) => {
         </Button> */}
         {props.compareDatasets &&
           props.dataset_0.variable === props.dataset_1.variable && (
-            <ColormapRange
-              id="scale_diff"
-              state={scaleDiff}
-              onUpdate={(_, value) => setScaleDiff(value)}
-              title={_("Diff. Variable Range")}
-            />
+            <>
+              <Form.Check
+                type="checkbox"
+                id={props.id + "_auto"}
+                checked={autoScale}
+                onChange={toggleAutoScale}
+                label={"Auto Range"}
+              />
+              {autoScale ? null : (
+                <ColormapRange
+                  id="scale_diff"
+                  state={scaleDiff}
+                  onUpdate={(_, value) => setScaleDiff(value)}
+                  title={_("Diff. Variable Range")}
+                />
+              )}
+            </>
           )}
         <CheckBox
           id="showmap"
