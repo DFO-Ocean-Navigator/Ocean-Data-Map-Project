@@ -23,24 +23,6 @@ const Class4Window = ({
   const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
-  //multi-select handler
-  const handleModelsUpdate = (_, value) => {
-    const newModel =
-      Array.isArray(value) && value[0]
-        ? Array.isArray(value[0])
-          ? value[0][0]
-          : value[0]
-        : null;
-
-    if (newModel) {
-      setModels((prev) =>
-        prev.includes(newModel)
-          ? prev.filter((m) => m !== newModel)
-          : [...prev, newModel]
-      );
-    }
-  };
-
   const handleErrorUpdate = (_, value) => {
     setError(
       Array.isArray(value)
@@ -77,7 +59,7 @@ const Class4Window = ({
     { id: "none", value: _("None") },
     { id: "observation", value: _("Value - Observation") },
     { id: "climatology", value: _("Value - Climatology") },
-  ];  
+  ];
 
   return (
     <div className="Class4Window Window">
@@ -114,7 +96,7 @@ const Class4Window = ({
                 id="models"
                 state={models}
                 multiple
-                onUpdate={handleModelsUpdate}
+                onUpdate={(_, value) => setModels(value[0])}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
               />
