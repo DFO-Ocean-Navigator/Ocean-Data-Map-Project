@@ -342,7 +342,7 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1}>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">

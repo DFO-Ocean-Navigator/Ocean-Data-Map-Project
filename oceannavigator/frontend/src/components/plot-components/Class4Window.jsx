@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Accordion, Card, Row, Col } from "react-bootstrap";
+import { Accordion, Card, Row, Col, Nav } from "react-bootstrap";
 import ComboBox from "../ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
@@ -62,9 +62,14 @@ const Class4Window = ({
   ];
 
   return (
-    <div className="Class4Window Window">
-      <Row>
-        <Col lg={2}>
+    <div className="Class4Window">
+      <Nav variant="tabs" activeKey={1}>
+        <Nav.Item>
+          <Nav.Link eventKey={1} disabled>{_("Class4")}</Nav.Link>
+        </Nav.Item>
+      </Nav>
+      <Row className="plot-window-container">
+        <Col className="settings-col" lg={2}>
           <Card>
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
@@ -121,7 +126,7 @@ const Class4Window = ({
             </Card.Body>
           </Card>
         </Col>
-        <Col lg={10}>
+        <Col lg={10} className="plot-col">
           <PlotImage
             query={plot_query}
             permlink_subquery={{
