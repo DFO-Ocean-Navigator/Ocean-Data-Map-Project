@@ -250,10 +250,13 @@ class HovmollerPlotter(LinePlotter):
 
             # Difference plot
             if self.compare["variables"][0] == self.variables[0]:
-
                 data_difference = self.data - self.compare["data"]
-                vmin = np.amin(data_difference)
-                vmax = np.amax(data_difference)
+                if self.compare["scale_diff"]:
+                    vmin = self.compare["scale_diff"][0]
+                    vmax = self.compare["scale_diff"][1]
+                else:
+                    vmin = np.amin(data_difference)
+                    vmax = np.amax(data_difference)
 
                 self._hovmoller_plot(
                     gs,
