@@ -33,9 +33,9 @@ const PointWindow = ({
 }) => {
   // UI state
   const [selected, setSelected] = useState(
-    init?.selected || plotData.observation
+    init?.selected?? (plotData.observation
       ? TabEnum.OBSERVATION
-      : TabEnum.PROFILE
+      : TabEnum.PROFILE)
   );
 
   // Display settings
@@ -302,7 +302,7 @@ const PointWindow = ({
         starttime: dataset_0.starttime,
         endtime: dataset_0.time,
         depth: dataset_0.depth,
-        colormap: colormap,
+        colormap: colormap.toString(),
         interp: mapSettings.interpType,
         radius: mapSettings.interpRadius,
         neighbours: mapSettings.interpNeighbours,
