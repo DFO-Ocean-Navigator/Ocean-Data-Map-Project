@@ -8,9 +8,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withTranslation } from "react-i18next";
 
 function AxisRange(props) {
-  const [auto, setAuto] = useState(true);
-  const [min, setMin] = useState(props.range[0]);
-  const [max, setMax] = useState(props.range[1]);
+  const [auto, setAuto] = useState(props.variable_range ? false : true);
+  const [min, setMin] = useState(props.variable_range?.[0] ?? props.range[0]);
+  const [max, setMax] = useState(props.variable_range?.[1] ?? props.range[1]);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -43,6 +43,8 @@ function AxisRange(props) {
     setAuto(e.target.checked);
     if (e.target.checked) {
       props.onUpdate("variable_range", [props.variable, null]);
+      setMin(props.range[0]);
+      setMax(props.range[1]);
     } else {
       props.onUpdate("variable_range", [props.variable, [min, max]]);
     }

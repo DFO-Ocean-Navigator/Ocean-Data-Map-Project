@@ -33,9 +33,8 @@ const PointWindow = ({
 }) => {
   // UI state
   const [selected, setSelected] = useState(
-    init?.selected?? (plotData.observation
-      ? TabEnum.OBSERVATION
-      : TabEnum.PROFILE)
+    init?.selected ??
+      (plotData.observation ? TabEnum.OBSERVATION : TabEnum.PROFILE)
   );
 
   // Display settings
@@ -157,6 +156,7 @@ const PointWindow = ({
       <Card.Header>{_("Global Settings")}</Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetSelector
+          subquery_variable_range={init?.dataset_0?.variable_range}
           id="dataset_0"
           onUpdate={handleDatasetUpdate}
           showQuiverSelector={false}

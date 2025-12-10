@@ -32,6 +32,7 @@ function DatasetSelector({
   onUpdate,
   id,
   variables,
+  subquery_variable_range,
   multipleVariables = false,
   showQuiverSelector = true,
   showTimeRange = false,
@@ -580,6 +581,7 @@ function DatasetSelector({
           variable={axisVariables[i]}
           range={axisVariableRanges[i]}
           onUpdate={updateAxisRange}
+          variable_range={subquery_variable_range?.[dataset.variable]}
         />
       );
       axisRange.push(range);
