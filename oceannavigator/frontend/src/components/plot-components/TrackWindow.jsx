@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Accordion from "react-bootstrap/Accordion";
-import { Card, Col, Row } from "react-bootstrap";
+import { Card, Col, Row, Nav} from "react-bootstrap";
 
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
@@ -135,6 +135,13 @@ const TrackWindow = (props) => {
 
   return (
     <div className="TrackWindow">
+      <Nav variant="tabs" activeKey={1}>
+        <Nav.Item>
+          <Nav.Link eventKey={1} disabled>
+            {_("Track")}
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
       <Row>
         <Col className="settings-col" lg={2}>
           <Card variant="primary" key="map_settings">
