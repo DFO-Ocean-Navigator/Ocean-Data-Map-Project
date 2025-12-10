@@ -90,7 +90,7 @@ const ActivePlotsContainer = ({
         return (
           <TrackWindow
             dataset={dataset0}
-            track={coordinates}
+            plotData={plot}
             names={names}
             onUpdate={updateDataset0}
             init={subquery}

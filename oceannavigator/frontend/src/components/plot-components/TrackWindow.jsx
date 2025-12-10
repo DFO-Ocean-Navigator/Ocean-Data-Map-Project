@@ -26,7 +26,7 @@ const TrackWindow = (props) => {
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [availableVariables, setAvailableVariables] = useState([]);
   const [latlon, setLatlon] = useState(false);
-  const [trackvariable, setTrackVariable] = useState([0]);
+  const [trackvariable, setTrackVariable] = useState(0);
   const [starttime, setStarttime] = useState();
   const [endtime, setEndtime] = useState();
   const [plotSize, setPlotSize] = useState("10x7");
@@ -54,16 +54,11 @@ const TrackWindow = (props) => {
 
     getVariables(dataset.id);
 
-    GetTrackTimeRangePromise(props.track).then((result) => {
+    GetTrackTimeRangePromise(props.plotData.id).then((result) => {
       let newMindate = new Date(result.data.min);
       let newMaxdate = new Date(result.data.max);
-
-      if (starttime < mindate) {
-        setStarttime(mindate);
-      }
-      if (endtime > maxdate) {
-        setEndtime(maxdate);
-      }
+      setStarttime(newMindate);
+      setEndtime(newMaxdate);
 
       setMinDate(newMindate);
       setMaxDate(newMaxdate);
@@ -86,23 +81,21 @@ const TrackWindow = (props) => {
     });
   };
 
-  const onLocalUpdate = (key, value) => {
-    // var newState = {};
-    // if (key == "dataset") {
-    //   let newDataset = availableDatasets.filter((d) => {
-    //     return d.id === value;
-    //   })[0];
-    //   this.getVariables(newDataset.id);
-    //   newState[key] = newDataset;
-    // } else if (typeof key === "string") {
-    //   newState[key] = value;
-    // } else {
-    //   for (var i = 0; i < key.length; i++) {
-    //     newState[key[i]] = value[i];
-    //   }
-    // }
+  const changeDataset = (key, value) => {
+    console.log(availableDatasets);
+    console.log(key, value);
 
-    // this.setState(newState);
+    let nextDataset = availableDatasets.filter((d) => d.id === value);
+    getVariables(nextDataset[0].id);
+    setDataset(nextDataset[0]);
+  };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
   };
 
   var plot_query = {
@@ -110,7 +103,7 @@ const TrackWindow = (props) => {
     quantum: dataset.quantum,
     name: props.name,
     type: "track",
-    track: props.track,
+    track: [props.plotData.id],
     showmap: showmap,
     variable: variable,
     latlon: latlon,
@@ -146,7 +139,7 @@ const TrackWindow = (props) => {
                     options={availableDatasets}
                     label={_("Dataset")}
                     placeholder={_("Dataset")}
-                    onChange={onLocalUpdate}
+                    onChange={changeDataset}
                     selected={dataset.id}
                   />
                 )}
@@ -158,7 +151,7 @@ const TrackWindow = (props) => {
                     label={_("Variable")}
                     placeholder={_("Variable")}
                     options={availableVariables}
-                    onChange={onLocalUpdate}
+                    onChange={(_, value) => setVariable(value)}
                     selected={variable}
                   />
                 )}
@@ -168,7 +161,7 @@ const TrackWindow = (props) => {
                   multiple
                   state={trackvariable}
                   def=""
-                  onUpdate={onLocalUpdate}
+                  onUpdate={(_, value) => setTrackVariable(value)}
                   url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
                   title={_("Observed Variable")}
                 >
@@ -178,22 +171,20 @@ const TrackWindow = (props) => {
                   key="showmap"
                   id="showmap"
                   checked={showmap}
-                  onUpdate={onLocalUpdate}
+                  onUpdate={(_, value) => setShowMap(value)}
                   title={_("Show Map")}
                 >
                   {_("showmap_help")}
                 </CheckBox>
-                ;
                 <CheckBox
                   key="latlon"
                   id="latlon"
                   checked={latlon}
-                  onUpdate={onLocalUpdate}
+                  onUpdate={(_, value) => setLatlon(value)}
                   title={_("Show Latitude/Longitude Plots")}
                 >
                   {_("latlon_help")}
                 </CheckBox>
-                ;
                 <div key="starttime-div">
                   <h1 className="time-label">Start Date</h1>
                   <DatePicker
@@ -201,9 +192,7 @@ const TrackWindow = (props) => {
                     id="starttime"
                     dateFormat="yyyy-MM-dd"
                     selected={starttime}
-                    onChange={(newDate) =>
-                      onLocalUpdate("starttime", newDate)
-                    }
+                    onChange={(newDate) => setStarttime(newDate)}
                     minDate={minDate}
                     maxDate={endtime}
                   />
@@ -215,9 +204,7 @@ const TrackWindow = (props) => {
                     id="endtime"
                     dateFormat="yyyy-MM-dd"
                     selected={endtime}
-                    onChange={(newDate) =>
-                      onLocalUpdate("endtime", newDate)
-                    }
+                    onChange={(newDate) => setEndtime(newDate)}
                     minDate={starttime}
                     maxDate={maxDate}
                   />
@@ -226,6 +213,11 @@ const TrackWindow = (props) => {
                   key="track_quantum"
                   id="track_quantum"
                   state={trackQuantum}
+                  title="Track Simplification"
+                  onUpdate={(key, value) => {
+                    value = Array.isArray(value) ? value[0] : value;
+                    setTrackQuantum(value);
+                  }}
                   data={[
                     { id: "minute", value: "Minute" },
                     { id: "hour", value: "Hour" },
@@ -234,8 +226,18 @@ const TrackWindow = (props) => {
                     { id: "month", value: "Month" },
                     { id: "year", value: "Year" },
                   ]}
-                  title="Track Simplification"
-                  onUpdate={onLocalUpdate}
+                />
+                <ComboBox
+                  key="depth"
+                  id="depth"
+                  state={depth}
+                  def={""}
+                  onUpdate={(_, value) => {
+                    value = Array.isArray(value) ? value[0] : value;
+                    setDepth(value);
+                  }}
+                  url={`/api/v2.0/dataset/${props.dataset.id}/${variable}/depths?include_all_key=true`}
+                  title={_("Depth")}
                 />
                 <Accordion key="plot-options-accordion">
                   <Accordion.Header>Plot Options</Accordion.Header>
@@ -243,20 +245,11 @@ const TrackWindow = (props) => {
                     <ImageSize
                       key="size"
                       id="size"
-                      onUpdate={onLocalUpdate}
+                      onUpdate={updatePlotSize}
                       title={_("Saved Image Size")}
                     />
                   </Accordion.Body>
                 </Accordion>
-                <ComboBox
-                  key="depth"
-                  id="depth"
-                  state={depth}
-                  def={""}
-                  onUpdate={onLocalUpdate}
-                  url={`/api/v2.0/dataset/${props.dataset.id}/${variable}/depths?include_all_key=true`}
-                  title={_("Depth")}
-                />
               </div>
             </Card.Body>
           </Card>
