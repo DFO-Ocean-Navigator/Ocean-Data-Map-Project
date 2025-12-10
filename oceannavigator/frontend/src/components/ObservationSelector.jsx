@@ -174,6 +174,11 @@ function ObservationSelector(props) {
       })
       .join("&");
     if (type == "track") {
+      props.action("setObsQuery", {
+        startDate,
+        endDate,
+        quantum,
+      });
       props.action("loadFeatures", "observation_tracks", result);
     } else {
       props.action("loadFeatures", "observation_points", result);

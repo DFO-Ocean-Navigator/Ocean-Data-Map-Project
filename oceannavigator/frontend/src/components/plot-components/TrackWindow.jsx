@@ -27,27 +27,16 @@ const TrackWindow = (props) => {
   const [availableVariables, setAvailableVariables] = useState([]);
   const [latlon, setLatlon] = useState(false);
   const [trackvariable, setTrackVariable] = useState(0);
-  const [starttime, setStarttime] = useState();
-  const [endtime, setEndtime] = useState();
+  const [starttime, setStarttime] = useState(props.observationQuery.startDate);
+  const [endtime, setEndtime] = useState(props.observationQuery.endDate);
   const [plotSize, setPlotSize] = useState("10x7");
   const [plotDpi, setPlotDpi] = useState(144);
   const [depth, setDepth] = useState(0);
-  const [trackQuantum, setTrackQuantum] = useState("month");
+  const [quantum, setQuantum] = useState(props.observationQuery.quantum);
   const [minDate, setMinDate] = useState();
   const [maxDate, setMaxDate] = useState();
 
   useEffect(() => {
-    if (props.obs_query) {
-      let pairs = props.obs_query.split("&").map((x) => x.split("="));
-      let dict = pairs.reduce(function (d, p) {
-        d[p[0]] = p[1];
-        return d;
-      }, {});
-      setStarttime(new Date(dict.start_date));
-      setEndtime(new Date(dict.end_date));
-      setTrackQuantum(dict.quantum);
-    }
-
     GetDatasetsPromise().then((result) => {
       setAvailableDatasets(result.data);
     });
@@ -57,9 +46,6 @@ const TrackWindow = (props) => {
     GetTrackTimeRangePromise(props.plotData.id).then((result) => {
       let newMindate = new Date(result.data.min);
       let newMaxdate = new Date(result.data.max);
-      setStarttime(newMindate);
-      setEndtime(newMaxdate);
-
       setMinDate(newMindate);
       setMaxDate(newMaxdate);
     });
@@ -90,6 +76,11 @@ const TrackWindow = (props) => {
     setDataset(nextDataset[0]);
   };
 
+  const updateQuantum = (key, value) => {
+    value = Array.isArray(value) ? value[0] : value;
+    setQuantum(value);
+  };
+
   const updatePlotSize = (key, value) => {
     if (key === "size") {
       setPlotSize(value);
@@ -111,7 +102,7 @@ const TrackWindow = (props) => {
     size: plotSize,
     dpi: plotDpi,
     depth: depth,
-    track_quantum: trackQuantum,
+    track_quantum: quantum,
   };
 
   if (starttime) {
@@ -210,14 +201,11 @@ const TrackWindow = (props) => {
                   />
                 </div>
                 <ComboBox
-                  key="track_quantum"
-                  id="track_quantum"
-                  state={trackQuantum}
+                  key="quantum"
+                  id="quantum"
+                  state={quantum}
                   title="Track Simplification"
-                  onUpdate={(key, value) => {
-                    value = Array.isArray(value) ? value[0] : value;
-                    setTrackQuantum(value);
-                  }}
+                  onUpdate={updateQuantum}
                   data={[
                     { id: "minute", value: "Minute" },
                     { id: "hour", value: "Hour" },
@@ -273,7 +261,7 @@ TrackWindow.propTypes = {
   onUpdate: PropTypes.func,
   init: PropTypes.object,
   action: PropTypes.func,
-  obs_query: PropTypes.string,
+  observationQuery: PropTypes.object,
 };
 
 export default withTranslation()(TrackWindow);

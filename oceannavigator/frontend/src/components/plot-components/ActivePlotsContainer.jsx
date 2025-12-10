@@ -22,6 +22,7 @@ const ActivePlotsContainer = ({
   action,
   compareDatasets,
   setCompareDatasets,
+  observationQuery,
   class4Type,
   swapViews,
 }) => {
@@ -91,6 +92,7 @@ const ActivePlotsContainer = ({
           <TrackWindow
             dataset={dataset0}
             plotData={plot}
+            observationQuery={observationQuery}
             names={names}
             onUpdate={updateDataset0}
             init={subquery}
@@ -170,6 +172,7 @@ ActivePlotsContainer.propTypes = {
   action: PropTypes.func.isRequired,
   compareDatasets: PropTypes.bool,
   setCompareDatasets: PropTypes.func.isRequired,
+  observationQuery: PropTypes.object,
   class4Type: PropTypes.string,
 };
 
