@@ -115,6 +115,24 @@ const TrackWindow = (props) => {
     }
   }
 
+  const permlink_subquery = {
+    showmap,
+    dataset,
+    variable,
+    availableDatasets,
+    availableVariables,
+    latlon,
+    trackvariable,
+    starttime,
+    endtime,
+    plotSize,
+    plotDpi,
+    depth,
+    quantum,
+    minDate,
+    maxDate,
+  };
+
   return (
     <div className="TrackWindow">
       <Row>
@@ -245,7 +263,7 @@ const TrackWindow = (props) => {
         <Col className="plot-col" lg={8}>
           <PlotImage
             query={plot_query} // For image saving link.
-            // permlink_subquery={this.state}
+            permlink_subquery={permlink_subquery}
             action={props.action}
           />
         </Col>
