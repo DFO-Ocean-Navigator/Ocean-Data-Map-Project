@@ -731,6 +731,21 @@ const Map = forwardRef((props, ref) => {
     featureVectorSource.removeFeatures(toRemove);
   };
 
+  const removeClass4Features = () => {
+    let features = featureVectorSource.getFeatures();
+    features = features.filter((feature) => feature.get("type") === "class4");
+    if (features.length > 0) {
+      featureVectorSource.removeFeatures(features);
+    }
+  };
+  const removeObsFeatures = () => {
+    let features = featureVectorSource.getFeatures();
+    features = features.filter((feature) => feature.get("type") === "class4");
+    if (features.length > 0) {
+      featureVectorSource.removeFeatures(features);
+    }
+  };
+
   const splitPolyFeatures = (featureId) => {
     let features = featureVectorSource.getFeatures();
     let toSplit = featureVectorSource.getFeatureById(featureId);
@@ -801,12 +816,15 @@ const Map = forwardRef((props, ref) => {
     let resolution = mapView.getResolution();
     switch (featureType) {
       case "observation_points":
+        removeObsFeatures();
         url = `/api/v2.0/observation/point/` + `${featureId}.json`;
         break;
       case "observation_tracks":
+        removeObsFeatures();
         url = `/api/v2.0/observation/track/` + `${featureId}.json`;
         break;
       case "class4":
+        removeClass4Features();
         url =
           `/api/v2.0/class4` +
           `/${props.class4Type}` +
