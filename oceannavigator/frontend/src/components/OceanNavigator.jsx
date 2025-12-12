@@ -54,7 +54,6 @@ function OceanNavigator(props) {
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
-
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
@@ -90,12 +89,11 @@ function OceanNavigator(props) {
             }
           }
           mapRef.current.selectFeatures(selectedIds);
-          if (query.showModal) {
-            let newPlotData = mapRef.current.getPlotData();
-            setPlotData(newPlotData);
+
+          if (query.plotData) {
+            setSubquery(query.subquery)
+            action("plot");
           }
-          updateUI({ modalType: query.modalType, showModal: query.showModal });
-          setSubquery(query.subquery);
         }, 1000);
       } catch (err) {
         console.error(err);
@@ -187,7 +185,7 @@ function OceanNavigator(props) {
         setCompareDatasets((prevCompare) => !prevCompare);
         break;
       case "permalink":
-        setSubquery(null);
+        setSubquery(arg);
         setShowPermalink(true);
         break;
     }
@@ -254,6 +252,11 @@ function OceanNavigator(props) {
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.features = mapRef.current.getFeatures();
+    let plotData=mapRef.current.getPlotData();
+    if (plotData?.active==true)
+    {
+      query.plotData=plotData.active
+    }
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
