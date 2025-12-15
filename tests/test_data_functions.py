@@ -46,7 +46,7 @@ class TestDataFunctions(unittest.TestCase):
             rtol=self.relative_tolerance,
         )
 
-    @unittest.skip("Failing")
+    # @unittest.skip("Failing")
     def test_deepsoundchannel(self):
         self.assertEqual(
             funcs.deepsoundchannel(
@@ -55,11 +55,9 @@ class TestDataFunctions(unittest.TestCase):
             0,
         )
 
-    @unittest.skip("IndexError: tuple index out of range")
+    # @unittest.skip("IndexError: tuple index out of range")
     def test_soniclayerdepth(self):
-        self.assertEqual(
-            funcs.soniclayerdepth(
-                xr.Variable(data=[0], dims=["depth"]), [45], [0.5], [32]
-            ),
-            0,
-        )
+        ds = xr.open_dataset("tests/testdata/giops_test.nc")
+        self.assertTrue(np.all(np.isnan(funcs.soniclayerdepth(
+                ds.depth, ds.latitude[0],ds.votemper[0, :, :2, :2],ds.vosaline[0, :, :2, :2]
+            ))))
