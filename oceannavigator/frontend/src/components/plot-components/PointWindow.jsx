@@ -283,7 +283,9 @@ const PointWindow = ({
       Object.assign(plot_query, {
         type: "profile",
         time: dataset_0.time,
-        variable: dataset_0.variable,
+        variable: Array.isArray(dataset_0.variable)
+          ? dataset_0.variable
+          : [dataset_0.variable],
         variable_range: Object.values(dataset_0.variable_range),
       });
       inputs = [global];
@@ -291,8 +293,6 @@ const PointWindow = ({
     case TabEnum.CTD:
       plot_query.type = "profile";
       plot_query.time = dataset_0.time;
-      // TODO: find index of matching variable in regex
-      // since not all datasets call temp votemper
       plot_query.variable = `${hasTemp ? "votemper," : ""}${
         hasSal ? "vosaline" : ""
       }`;
@@ -411,6 +411,7 @@ const PointWindow = ({
           <PlotImage
             query={plot_query}
             permlink_subquery={permlink_subquery}
+            featureId={plotData.id}
             action={action}
           />
         </Col>

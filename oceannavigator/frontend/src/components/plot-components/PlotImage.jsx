@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import {
   Button,
   ButtonToolbar,
   Modal,
-  Alert,
   Dropdown,
   DropdownButton,
   Spinner,
@@ -15,49 +15,9 @@ import { withTranslation } from "react-i18next";
 
 const FAIL_IMAGE = require("../fail.js");
 
-const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
+const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
   const imagelinkRef = useRef();
-  const queryConfigRef = useRef();
-
-  // Local state
   const [showImagelink, setShowImagelink] = useState(false);
-  const [fail, setFail] = useState(false);
-  const [errorMessage, setErrorMessage] = useState();
-  const [loading, setLoading] = useState(true);
-  const [url, setUrl] = useState();
-
-  // Load image when query changes
-  useEffect(() => {
-    const [type, newQuery] = generateQuery(query);
-    const queryConfig = {
-      method: "get",
-      url: `/api/v2.0/plot/${type}`,
-      params: { query: JSON.stringify(newQuery), format: "json" },
-    };
-
-    if (
-      JSON.stringify(queryConfigRef.current) !== JSON.stringify(queryConfig)
-    ) {
-      setLoading(true);
-      setFail(false);
-      setErrorMessage(null);
-
-      queryConfigRef.current = queryConfig;
-
-      axios
-        .request(queryConfig)
-        .then((res) => {
-          setLoading(false);
-          setFail(false);
-          setUrl(res.data);
-        })
-        .catch(() => {
-          setLoading(false);
-          setFail(true);
-          setUrl(FAIL_IMAGE);
-        });
-    }
-  }, [query]);
 
   // Generate API script
   const generateScript = (language) => {
@@ -296,25 +256,42 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
     imagelinkRef.current.select();
   };
 
+  // Fetch plot image data
+  const retrieveImage = async () => {
+    const [type, plotQuery] = generateQuery(query);
+    const queryConfig = {
+      method: "get",
+      url: `/api/v2.0/plot/${type}`,
+      params: { query: JSON.stringify(plotQuery), format: "json" },
+    };
+    const response = await axios.request(queryConfig);
+    return response.data;
+  };
+
+  const { data, error, loading } = useQuery({
+    queryKey: ["plotImage", { featureId, query }],
+    queryFn: retrieveImage,
+  });
+
+  var image = <Spinner animation="border" variant="primary" />;
+  if (error) {
+    image = <img src={FAIL_IMAGE} alt="Plot" />;
+  } else if (data) {
+    image = <img src={data} alt="Plot" />;
+  }
+
   return (
     <div className="PlotImage">
-      <div className="RenderedImage">
-        {loading ? (
-          <Spinner animation="border" variant="primary" />
-        ) : (
-          <img src={url} alt="Plot" />
-        )}
-      </div>
-      {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+      <div className="RenderedImage">{image}</div>
       <ButtonToolbar className="button-bar">
         <DropdownButton
           id="save"
           title={
             <span>
-              <Icon icon="save" /> {_("Save Image")}
+              <Icon icon="save" /> {t("Save Image")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={error || loading}
           onSelect={saveImage}
           drop="up"
         >
@@ -346,7 +323,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
               }
             >
               <Icon icon="file-text-o" />{" "}
-              {_(fmt === "stats" ? "Statistics (csv)" : fmt.toUpperCase())}
+              {t(fmt === "stats" ? "Statistics (csv)" : fmt.toUpperCase())}
             </Dropdown.Item>
           ))}
         </DropdownButton>
@@ -355,18 +332,18 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           id="link"
           title={
             <span>
-              <Icon icon="link" /> {_("Get Link")}
+              <Icon icon="link" /> {t("Get Link")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={error || loading}
           onSelect={getLink}
           drop="up"
         >
           <Dropdown.Item eventKey="web">
-            <Icon icon="globe" /> {_("Web")}
+            <Icon icon="globe" /> {t("Web")}
           </Dropdown.Item>
-          <Dropdown.Item eventKey="image" disabled={fail}>
-            <Icon icon="file-image-o" /> {_("Image")}
+          <Dropdown.Item eventKey="image" disabled={error || loading}>
+            <Icon icon="file-image-o" /> {t("Image")}
           </Dropdown.Item>
         </DropdownButton>
 
@@ -374,15 +351,15 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           id="script"
           title={
             <span>
-              <Icon icon="file-code-o" /> {_("API Script")}
+              <Icon icon="file-code-o" /> {t("API Script")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={error || loading}
           onSelect={generateScript}
           drop="up"
         >
           {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-            <Dropdown.Item key={key} eventKey={key} disabled={fail}>
+            <Dropdown.Item key={key} eventKey={key} disabled={error || loading}>
               <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
               {key === "pythonPlot" && "Python 3 - PLOT"}
               {key === "pythonCSV" && "Python 3 - CSV"}
@@ -399,7 +376,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
         onEntered={onLinkModalEntered}
       >
         <Modal.Header closeButton>
-          <Modal.Title>{_("Share Link")}</Modal.Title>
+          <Modal.Title>{t("Share Link")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <textarea
@@ -417,10 +394,10 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
               document.execCommand("copy");
             }}
           >
-            <Icon icon="copy" /> {_("Copy")}
+            <Icon icon="copy" /> {t("Copy")}
           </Button>
           <Button onClick={toggleImageLink}>
-            <Icon icon="close" /> {_("Close")}
+            <Icon icon="close" /> {t("Close")}
           </Button>
         </Modal.Footer>
       </Modal>
