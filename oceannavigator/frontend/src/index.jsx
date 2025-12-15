@@ -27,6 +27,6 @@ const root = createRoot(document.getElementById("app"));
 root.render(
   <QueryClientProvider client={queryClient}>
     <OceanNavigator />
-    <ReactQueryDevtools initialIsOpen={true} />
+    <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>
 );
