@@ -131,6 +131,7 @@ function OceanNavigator(props) {
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
+        queryClient.removeQueries({ queryKey: ["plotImage"] });
         break;
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
