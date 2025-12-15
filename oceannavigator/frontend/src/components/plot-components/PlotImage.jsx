@@ -268,13 +268,13 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
     return response.data;
   };
 
-  const { data, error, loading } = useQuery({
+  const { data, isError, isLoading } = useQuery({
     queryKey: ["plotImage", { featureId, query }],
     queryFn: retrieveImage,
   });
 
   var image = <Spinner animation="border" variant="primary" />;
-  if (error) {
+  if (isError) {
     image = <img src={FAIL_IMAGE} alt="Plot" />;
   } else if (data) {
     image = <img src={data} alt="Plot" />;
@@ -291,7 +291,7 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="save" /> {t("Save Image")}
             </span>
           }
-          disabled={error || loading}
+          disabled={isError || isLoading}
           onSelect={saveImage}
           drop="up"
         >
@@ -335,14 +335,14 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="link" /> {t("Get Link")}
             </span>
           }
-          disabled={error || loading}
+          disabled={isError || isLoading}
           onSelect={getLink}
           drop="up"
         >
           <Dropdown.Item eventKey="web">
             <Icon icon="globe" /> {t("Web")}
           </Dropdown.Item>
-          <Dropdown.Item eventKey="image" disabled={error || loading}>
+          <Dropdown.Item eventKey="image" disabled={isError || isLoading}>
             <Icon icon="file-image-o" /> {t("Image")}
           </Dropdown.Item>
         </DropdownButton>
@@ -354,12 +354,12 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="file-code-o" /> {t("API Script")}
             </span>
           }
-          disabled={error || loading}
+          disabled={isError || isLoading}
           onSelect={generateScript}
           drop="up"
         >
           {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-            <Dropdown.Item key={key} eventKey={key} disabled={error || loading}>
+            <Dropdown.Item key={key} eventKey={key} disabled={isError || isLoading}>
               <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
               {key === "pythonPlot" && "Python 3 - PLOT"}
               {key === "pythonCSV" && "Python 3 - CSV"}
