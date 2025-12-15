@@ -50,7 +50,7 @@ const AreaWindow = (props) => {
   // Feature settings
   const [quiver, setQuiver] = useState(
     props.init?.quiver || {
-      variable: "",
+      variable: "none",
       magnitude: "length",
       colormap: "default",
     }
@@ -58,7 +58,7 @@ const AreaWindow = (props) => {
 
   const [contour, setContour] = useState(
     props.init?.contour || {
-      variable: "",
+      variable: "none",
       colormap: "default",
       levels: "auto",
       legend: true,
@@ -333,6 +333,7 @@ const AreaWindow = (props) => {
       <PlotImage
         query={plot_query}
         permlink_subquery={permlink_subquery}
+        featureId={props.plotData.id}
         action={props.action}
       />
     );

@@ -415,6 +415,7 @@ const LineWindow = (props) => {
           <PlotImage
             query={plot_query}
             permlink_subquery={permlink_subquery}
+            featureId={props.plotData.id}
             action={props.action}
           />
         </Col>

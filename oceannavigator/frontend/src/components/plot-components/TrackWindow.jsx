@@ -26,7 +26,7 @@ const TrackWindow = (props) => {
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [availableVariables, setAvailableVariables] = useState([]);
   const [latlon, setLatlon] = useState(false);
-  const [trackvariable, setTrackVariable] = useState(0);
+  const [trackvariable, setTrackVariable] = useState([0]);
   const [starttime, setStarttime] = useState(props.observationQuery.startDate);
   const [endtime, setEndtime] = useState(props.observationQuery.endDate);
   const [plotSize, setPlotSize] = useState("10x7");
@@ -177,7 +177,7 @@ const TrackWindow = (props) => {
                   multiple
                   state={trackvariable}
                   def=""
-                  onUpdate={(_, value) => setTrackVariable(value)}
+                  onUpdate={(_, value) => setTrackVariable(value.flat())}
                   url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
                   title={_("Observed Variable")}
                 >
@@ -271,6 +271,7 @@ const TrackWindow = (props) => {
           <PlotImage
             query={plot_query} // For image saving link.
             permlink_subquery={permlink_subquery}
+            featureId={props.plotData.id}
             action={props.action}
           />
         </Col>
