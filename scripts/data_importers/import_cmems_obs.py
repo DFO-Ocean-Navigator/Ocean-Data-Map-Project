@@ -1,8 +1,11 @@
 import argparse
+import itertools
+import multiprocessing
 import os
 import sys
 
 import gsw
+import numpy as np
 import pandas as pd
 import xarray as xr
 from sqlalchemy import create_engine, select, insert
@@ -63,20 +66,55 @@ def get_station_ids(row, session):
     return row
 
 
-def import_obs_data(file, variables):
+def fix_drifter_depths(ds):
+    if "DEPH" in ds.variables and len(ds.DEPH) == 2 and -12000 in ds.DEPH.data:
+        inv_depth_idx = np.argwhere(ds.DEPH.data != -12000)
+        ds.DEPH.values[~inv_depth_idx] = ds.DEPH.values[inv_depth_idx]
+    return ds
+
+
+def format_attrs(attrs):
+    attrs = {
+        "Platform Code": attrs.get("platform_code"),
+        "WMO Platform Code": attrs.get("wmo_platform_code"),
+        "Platform Name": attrs.get("platform_name"),
+        "Institution": attrs.get("institution"),
+        "PI Name": attrs.get("creator_name"),
+        "Data Center": attrs.get("DC_REFERENCE"),
+        "Platform Type": attrs.get("wmo_instrument_type"),
+        "WMO Instrument Type": attrs.get("wmo_instrument_type"),
+    }
+    formatted_attrs = {}
+    for key, value in attrs.items():
+        new_value = value
+        if isinstance(new_value, bytes):
+            new_value = new_value.decode("utf-8").strip()
+        if isinstance(new_value, str):
+            uft8 = new_value.encode('utf-8', errors='ignore')
+            if b"\xef\xbf\xbd" in uft8:
+                new_value = formatted_attrs["Platform Code"]
+            else:
+                new_value = uft8.decode("utf-8").strip()
+        formatted_attrs[key] = new_value
+    formatted_attrs = {key: value for key, value in formatted_attrs.items() if value and value.strip()}
+    return formatted_attrs
+
+
+def import_obs_data(file, variables, platform_type):
     ds = xr.open_dataset(file).drop_duplicates("TIME")
 
     variables = [v for v in variables if v in ds.variables]
+    if len(variables) == 0:
+        return pd.DataFrame(), {}, []
+
+    if platform_type == "DB":
+        ds = fix_drifter_depths(ds)
+
     df = (
         ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
         .to_dataframe()
         .reset_index()
-        .dropna(axis=1, how="all")
-        .dropna()
     )
-
-    if "TRAJECTORY" in df.columns:
-        df.drop(columns=["TRAJECTORY"], inplace=True)
 
     # calculate depths if missing
     if "DEPTH" not in ds.variables and "DEPH" not in ds.variables and "PRES" in ds.variables:
@@ -104,12 +142,22 @@ def import_obs_data(file, variables):
 
     df.rename(columns=new_cols, inplace=True)
 
+    if "depth" not in df.columns and platform_type == "DB":
+        df["depth"] = 0.0
+
+    if "TRAJECTORY" in df.columns:
+        df.drop(columns=["TRAJECTORY"], inplace=True)
+
+    if "DEPH" in df.columns:
+        df.drop(columns=["DEPH"], inplace=True)
+
     df = pd.melt(
         df,
         id_vars=["time", "depth", "latitude", "longitude"],
         var_name="datatype_key",
     ).sort_values(by=["time", "depth"], ignore_index=True)
     df.time = df.time.dt.floor("s")
+    df.dropna(inplace=True)
 
     var_metadata = [{
         "key": ds[v].standard_name,
@@ -117,37 +165,30 @@ def import_obs_data(file, variables):
         "unit": ds[v].units
     } for v in variables]
 
-    return df, ds.attrs, var_metadata
+    attrs = format_attrs(ds.attrs)
+
+    return df, attrs, var_metadata
 
 
-def add_datatypes(session, variables, var_metadata):
-    db_datatypes = session.execute(select(DataType)).all()
-    db_datatype_keys = [dt[0].key for dt in db_datatypes]
+def add_datatypes(engine, variables, var_metadata):
+    with Session(engine) as session:
+        db_datatypes = session.execute(select(DataType)).all()
+        db_datatype_keys = [dt[0].key for dt in db_datatypes]
 
-    for variable in var_metadata:
-        if variable["key"] not in db_datatype_keys:
-            dt = DataType(
-                key=variable["key"],
-                name=variable["name"],
-                unit=variable["unit"],
-            )
-            session.add(dt)
+        for variable in var_metadata:
+            if variable["key"] not in db_datatype_keys:
+                dt = DataType(
+                    key=variable["key"],
+                    name=variable["name"],
+                    unit=variable["unit"],
+                )
+                session.add(dt)
 
-    session.commit()
+        session.commit()
 
 
-def add_platform(session, attrs, platform_type):
+def add_platform(engine, attrs, platform_type):
     platform_schema = None
-    platform_attrs = {
-        "Platform Code": attrs.get("platform_code"),
-        "WMO Platform Code": attrs.get("wmo_platform_code"),
-        "Platform Name": attrs.get("platform_name"),
-        "Institution": attrs.get("institution"),
-        "PI Name": attrs.get("creator_name"),
-        "Data Center": attrs.get("DC_REFERENCE"),
-        "Platform Type": attrs.get("wmo_instrument_type"),
-        "WMO Instrument Type": attrs.get("wmo_instrument_type"),
-    }
 
     match platform_type:
         case "GL":
@@ -159,64 +200,68 @@ def add_platform(session, attrs, platform_type):
         case "CT":
             platform_schema = Platform.Type.mission
 
-    platform = Platform(type=platform_schema, unique_id=f"{attrs["platform_code"]}")
-    platform.attrs = {key: value for key, value in platform_attrs.items() if value and value.strip()}
+    platform = Platform(type=platform_schema, unique_id=f"{attrs["Platform Code"]}")
+    platform.attrs = attrs
 
-    try:
-        session.add(platform)
-        session.commit()
-    except IntegrityError as e:
-        print("Error committing platform.")
-        print(e)
-        session.rollback()
+    with Session(engine) as session:
+        try:
+            session.add(platform)
+            session.commit()
+            platform_id = platform.id
+        except IntegrityError as e:
+            print("Error committing platform.")
+            print(e)
+            session.rollback()
 
-        stmt = select(Platform.id).where(
-            Platform.unique_id == attrs["platform_code"]
-        )
-        platform.id = session.execute(stmt).first()[0]
+            stmt = select(Platform.id).where(
+                Platform.unique_id == attrs["Platform Code"]
+            )
+            platform_id = session.execute(stmt).first()[0]
 
-    return platform
+    return platform_id
 
 
-def add_stations(df, session):
+def add_stations(df, engine):
     station_df = df[["platform_id", "time", "latitude", "longitude"]]
     station_df.drop_duplicates(inplace=True)
 
-    station_df.to_sql(
-        name="stations",
-        con=session.connection(),
-        if_exists="append",
-        index=False,
-        chunksize=100,
-        method=insert_stations,
-    )
+    with Session(engine) as session:
+        station_df.to_sql(
+            name="stations",
+            con=session.connection(),
+            if_exists="append",
+            index=False,
+            chunksize=100,
+            method=insert_stations,
+        )
 
-    station_df["station_id"] = None
+        station_df["station_id"] = None
 
-    station_df = station_df.apply(get_station_ids, axis=1, session=session)
+        station_df = station_df.apply(get_station_ids, axis=1, session=session)
 
-    df = pd.merge(df, station_df)
+        df = pd.merge(df, station_df)
 
     return df
 
 
-def add_samples(df, session):
+def add_samples(df, engine):
     samples_df = df[["station_id", "depth", "value", "datatype_key"]]
 
-    samples_df.to_sql(
-        name="samples",
-        con=session.connection(),
-        if_exists="append",
-        index=False,
-        chunksize=100,
-        method=insert_samples,
-    )
+    with Session(engine) as session:
+        samples_df.to_sql(
+            name="samples",
+            con=session.connection(),
+            if_exists="append",
+            index=False,
+            chunksize=100,
+            method=insert_samples,
+        )
 
 
-def import_cmems_obs(url, file_list, platform_type):
+def import_cmems_obs(uri, file_list, platform_type):
 
     engine = create_engine(
-        url,
+        uri,
         connect_args={"connect_timeout": 10},
         pool_recycle=3600,
     )
@@ -226,17 +271,28 @@ def import_cmems_obs(url, file_list, platform_type):
 
     variables = get_platform_variables(platform_type)
 
-    with Session(engine) as session:
-        for file in file_list:
-            df, attrs, var_metadata = import_obs_data(file, variables)
+    for file in file_list:
+        print(f"Importing file: {file}")
+        df, attrs, var_metadata = import_obs_data(file, variables, platform_type)
+        if len(df) == 0:
+            print(f"No valid variables found in file: {file}. Skipping.")
+            continue
 
-            add_datatypes(session, variables, var_metadata)
+        add_datatypes(engine, variables, var_metadata)
 
-            platform = add_platform(session, attrs, platform_type)
-            df["platform_id"] = platform.id
+        platform_id = add_platform(engine, attrs, platform_type)
+        df["platform_id"] = platform_id
 
-            df = add_stations(df, session)
-            add_samples(df, session)
+        df = add_stations(df, engine)
+        add_samples(df, engine)
+
+    engine.dispose()
+
+
+def import_cmems_obs_mp(uri, file_list, platform_type):
+    inputs = list(itertools.product([uri], file_list, [platform_type]))
+    with multiprocessing.Pool(processes=4) as pool:
+        pool.starmap(import_cmems_obs, inputs)
 
 
 if __name__ == "__main__":
@@ -249,4 +305,4 @@ if __name__ == "__main__":
     parser.add_argument("platform_type", type=str, help="Type of platform: GL, DB, PF, CT.")
     args = parser.parse_args()
 
-    import_cmems_obs(args.uri, args.filename, args.platform_type)
+    import_cmems_obs([args.uri, args.filename, args.platform_type])
