@@ -49,6 +49,7 @@ function DatasetSelector({
   action,
   t,
 }) {
+  const [updateParent, setUpdateParent] = useState(true);
   const [dataset, setDataset] = useState(mountedDataset);
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
@@ -56,9 +57,12 @@ function DatasetSelector({
   );
 
   useEffect(() => {
-    // Update dataset on intial app load
-    if (dataset.time > 0 && mountedDataset.time < 0) {
+    if (
+      updateParent &&
+      JSON.stringify(dataset) !== JSON.stringify(mountedDataset)
+    ) {
       onUpdate("dataset", dataset);
+      setUpdateParent(false);
     }
   }, [dataset]);
 
@@ -97,7 +101,7 @@ function DatasetSelector({
     enabled: !!variableIds.includes(dataset.variable),
   });
 
-  const changeDataset = (key, value) => {
+  const updateDataset = (key, value) => {
     cleanQueryCache(["dataset", dataset.id]);
 
     let nextDataset = availableDatasets.filter((d) => {
@@ -135,6 +139,7 @@ function DatasetSelector({
   };
 
   const updateTime = (key, value) => {
+    //TODO: Check that start/endtime selectors work properly
     let nextTime = dataset.time;
     let nextStarttime = dataset.starttime;
     switch (key) {
@@ -187,15 +192,59 @@ function DatasetSelector({
     });
   };
 
-  const toggleSearchDatasets = () => {};
+  const toggleSearchDatasets = () => {
+    setShowDatasetSearch((prevState) => !prevState);
+  };
 
-  const updateSearchFilters = (key, value) => {};
+  const updateSearchFilters = (key, value) => {
+    if (!key) {
+      setDatasetSearchFilters(DATASET_FILTER_DEFAULTS);
+    } else {
+      value = value ? value : DATASET_FILTER_DEFAULTS[key];
+      setDatasetSearchFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+    }
+  };
 
-  const updateDataset = (key, value) => {};
+  const applySearchFilters = (datasetId, variableId, vectorVariable, date) => {
+    updateDataset("id", datasetId);
+    variableId && updateVariable("variable", variableId);
+    vectorVariable && updateQuiver("quiverVariable", vectorVariable);
+    if (date) {
+      let dates = datasetTimestamps.map((t) => new Date(t.value));
+      let [, timeIdx] = dates.reduce(
+        (prev, curr, idx) => {
+          let diff = Math.abs(curr - date);
+          return diff <= prev[0] ? [diff, idx] : prev;
+        },
+        [Infinity, 0]
+      );
+      let nextTime = datasetTimestamps[timeIdx].id;
+      updateTime("time", nextTime);
+      setUpdateParent(true);
+    }
+  };
+
+  const updateAxisRange = (key, value) => {
+    let range = dataset.variable_range;
+    range[value[0]] = value[1];
+    setDataset({ ...dataset, variable_range: range });
+  };
 
   if (variableIds.length > 0 && !variableIds.includes(dataset.variable)) {
     let nextVariable = datasetVariables[0];
     updateVariable("variable", nextVariable.id);
+  }
+
+  if (
+    dataset.quiverVariable !== "none" &&
+    variableIds.length > 0 &&
+    (!variableIds.includes(dataset.quiverVariable) ||
+      !MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class))
+  ) {
+    updateQuiver("quiverVariable", "none");
   }
 
   if (datasetTimestamps.length > 0 && !timestampIds.includes(dataset.time)) {
@@ -230,7 +279,7 @@ function DatasetSelector({
         options={availableDatasets}
         label={t("Dataset")}
         placeholder={t("Dataset")}
-        onChange={changeDataset}
+        onChange={updateDataset}
         selected={dataset.id}
         horizontalLayout={horizontalLayout}
       />
@@ -429,6 +478,69 @@ function DatasetSelector({
     </OverlayTrigger>
   );
 
+  let axisRange = [];
+  if (
+    showAxisRange &&
+    datasetVariables &&
+    datasetVariables.length > 0 &&
+    !loading
+  ) {
+    let axisVariables = Array.isArray(dataset.variable)
+      ? dataset.variable
+      : [dataset.variable];
+    let variableData = datasetVariables.filter((v) =>
+      axisVariables.includes(v.id)
+    );
+    let axisVariableRanges = variableData.map((v) => v.scale);
+    let axisVariableNames = variableData.map((v) => v.value);
+    for (let i = 0; i < axisVariables.length; ++i) {
+      let range = (
+        <AxisRange
+          key={axisVariables[i] + "_axis_range"}
+          id={axisVariables[i] + "_axis_range"}
+          title={axisVariableNames[i] + " Range"}
+          variable={axisVariables[i]}
+          range={axisVariableRanges[i]}
+          onUpdate={updateAxisRange}
+        />
+      );
+      axisRange.push(range);
+    }
+  }
+
+  const compareSwitch = showCompare ? (
+    <Form.Check
+      type="switch"
+      id="custom-switch"
+      label={t("Compare Datasets")}
+      checked={compareDatasets}
+      onChange={() => {
+        action("toggleCompare");
+      }}
+    />
+  ) : null;
+
+  let datasetSearchButton = null;
+  if (datasetSearch) {
+    datasetSearchButton = (
+      <OverlayTrigger
+        key="draw-search-btn"
+        placement="top"
+        overlay={<Tooltip id={"draw-tooltip"}>{t("Search Datasets")}</Tooltip>}
+      >
+        <Button
+          className="go-button"
+          variant="primary"
+          size="sm"
+          onClick={toggleSearchDatasets}
+          title="Search Datasets"
+        >
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </Button>
+      </OverlayTrigger>
+    );
+  }
+
   console.log(dataset);
 
   return (
@@ -444,17 +556,17 @@ function DatasetSelector({
         {quiverSelector}
         {depthSelector}
 
-        {/* {axisRange}
+        {axisRange}
         {horizontalLayout ? null : timeSelector}
-         */}
+
         {horizontalLayout ? goButton : null}
-        {/* {showCompare ? compareSwitch : null}
-        {datasetSearchButton} */}
+        {showCompare ? compareSwitch : null}
+        {datasetSearchButton}
       </div>
       {horizontalLayout ? timeSelector : null}
       {horizontalLayout ? null : goButton}
 
-      {/* <Modal
+      <Modal
         show={showDatasetSearch}
         size="xl"
         dialogClassName="full-screen-modal"
@@ -468,7 +580,7 @@ function DatasetSelector({
             datasets={availableDatasets}
             filters={datasetSearchFilters}
             updateFilters={updateSearchFilters}
-            updateDataset={changeDataset}
+            applyFilters={applySearchFilters}
             closeModal={toggleSearchDatasets}
           />
         </Modal.Body>
@@ -477,7 +589,7 @@ function DatasetSelector({
             Close
           </Button>
         </Modal.Footer>
-      </Modal> */}
+      </Modal>
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>

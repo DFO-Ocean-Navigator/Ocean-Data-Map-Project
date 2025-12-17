@@ -7,7 +7,7 @@ const DATASET_DEFAULTS = Object.freeze({
   time: -1,
   starttime: -1,
   variable: "votemper",
-  quiverVariable: "None",
+  quiverVariable: "none",
   quiverDensity: 0,
   variable_scale: [-5, 30],
   variable_two_dimensional: false,

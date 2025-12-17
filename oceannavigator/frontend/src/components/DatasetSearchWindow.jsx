@@ -12,7 +12,7 @@ const DatasetSearchWindow = ({
   datasets,
   filters,
   updateFilters,
-  updateDataset,
+  applyFilters,
   closeModal,
 }) => {
   const { t } = useTranslation();
@@ -37,7 +37,7 @@ const DatasetSearchWindow = ({
 
   useEffect(() => {
     if (Object.keys(variableDataMap).length > 0) {
-      applyFilters();
+      filterDatasets();
     }
   }, [filters]);
 
@@ -57,33 +57,25 @@ const DatasetSearchWindow = ({
     return () => clearTimeout(timer);
   }, [latitude, longitude]);
 
-  const applyDataset = (id) => {
-    let variableId,
-      variableScale = null;
+  const applyDataset = (datasetId) => {
     let variable = variableDataMap[filters.variable]?.filter(
-      (ds) => ds.dataset_id === id
+      (ds) => ds.dataset_id === datasetId
     )[0];
-    if (variable) {
-      variableId = variable.variable_id;
-      variableScale = variable.variable_scale;
-    }
     let vectorVariable =
       variableDataMap[filters.vectorVariable]?.filter(
-        (ds) => ds.dataset_id === id
-      )[0].variable_id ?? "none";
+        (ds) => ds.dataset_id === datasetId
+      )[0]
 
-    updateDataset(
-      id,
-      variableId,
-      true,
-      vectorVariable,
-      variableScale,
+    applyFilters(
+      datasetId,
+      variable?.variable_id,
+      vectorVariable?.variable_id,
       filters.date
     );
     closeModal();
   };
 
-  const applyFilters = async () => {
+  const filterDatasets = async () => {
     setLoading(true);
     let newFilteredIds = datasets.map((ds) => ds.id);
     let newFilterLabels = [];
