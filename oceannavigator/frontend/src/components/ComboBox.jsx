@@ -32,8 +32,8 @@ function ComboBox({
         .then((res) => {
           let list = res.data.slice();
           const ids = list.map((d) => d.id);
-
           if (
+            def === "quiverSelectorPresent" ||
             (propState === "" && typeof propState === "string") ||
             propState === "none"
           ) {

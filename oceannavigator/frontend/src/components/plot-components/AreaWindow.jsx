@@ -21,8 +21,8 @@ const AreaWindow = (props) => {
   const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
 
   // Scale settings
-  const [scale, setScale] = useState(props.init?.scale || "auto");
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
+  const [scale, setScale] = useState(props.init?.scale ?? "auto");
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
@@ -49,7 +49,7 @@ const AreaWindow = (props) => {
 
   // Feature settings
   const [quiver, setQuiver] = useState(
-    props.init?.quiver || {
+    props.init?.quiver ?? {
       variable: "",
       magnitude: "length",
       colormap: "default",
@@ -176,11 +176,11 @@ const AreaWindow = (props) => {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
+          def="quiverSelectorPresent"
           title={_("Arrows")}
         >
           {_("arrows_help")}
         </QuiverSelector>
-
         {/* Contour Selector drop down menu */}
         <ContourSelector
           id="contour"
@@ -216,6 +216,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
+          subquery_depth={props.init?.depth}
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -243,6 +244,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
+          subquery_depth={props.init?.depth}
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -307,6 +309,7 @@ const AreaWindow = (props) => {
           scale_diff: scale?.toString(),
           colormap: rightColormap.toString(),
           colormap_diff: diffColormap.toString(),
+          depth: props.dataset_1.depth,
         },
       }),
     };
@@ -315,6 +318,7 @@ const AreaWindow = (props) => {
       currentTab,
       scale,
       scale_1: props.dataset_1.variable_scale,
+      autoScale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
       rightColormap: rightColormap.toString(),
@@ -325,8 +329,9 @@ const AreaWindow = (props) => {
       showarea: showArea,
       bathymetry,
       surfacevariable: surfaceVariable,
-      quiver,
       contour,
+      quiver,
+      depth: props.dataset_0.depth,
     };
 
     content = (
@@ -342,7 +347,9 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>
+            {_("Map")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
