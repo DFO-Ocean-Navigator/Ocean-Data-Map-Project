@@ -187,6 +187,7 @@ const AreaWindow = (props) => {
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
+          def="contourSelectorPresent"
           title={_("Additional Contours")}
         >
           {_("contour_help")}

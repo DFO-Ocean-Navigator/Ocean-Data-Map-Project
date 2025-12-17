@@ -8,6 +8,7 @@ const ContourSelector = ({
   state,
   dataset,
   id,
+  def,
   title,
   children,
   onUpdate,
@@ -65,7 +66,7 @@ const ContourSelector = ({
       <ComboBox
         id="variable"
         state={state.variable}
-        def=""
+        def={def}
         onUpdate={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables`}
         title={title}
@@ -139,6 +140,7 @@ ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
   dataset: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
+  def: PropTypes.string,
   title: PropTypes.string,
   children: PropTypes.node,
   onUpdate: PropTypes.func.isRequired,

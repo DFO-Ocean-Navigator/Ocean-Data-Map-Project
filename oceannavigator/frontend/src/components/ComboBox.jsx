@@ -34,6 +34,7 @@ function ComboBox({
           const ids = list.map((d) => d.id);
           if (
             def === "quiverSelectorPresent" ||
+            def === "contourSelectorPresent" ||
             (propState === "" && typeof propState === "string") ||
             propState === "none"
           ) {
