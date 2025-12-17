@@ -17,6 +17,7 @@ function ComboBox({
   def = "",
   children,
   t: _,
+  subquery = false,
 }) {
   const [optionsData, setOptionsData] = useState([]);
   const [showHelp, setShowHelp] = useState(false);
@@ -33,8 +34,7 @@ function ComboBox({
           let list = res.data.slice();
           const ids = list.map((d) => d.id);
           if (
-            def === "quiverSelectorPresent" ||
-            def === "contourSelectorPresent" ||
+            subquery === true ||
             (propState === "" && typeof propState === "string") ||
             propState === "none"
           ) {

@@ -176,7 +176,7 @@ const AreaWindow = (props) => {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
-          def="quiverSelectorPresent"
+          subquery={props.init?.quiver?true:false}
           title={_("Arrows")}
         >
           {_("arrows_help")}
@@ -187,7 +187,7 @@ const AreaWindow = (props) => {
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
-          def="contourSelectorPresent"
+          subquery={props.init?.contour?true:false}
           title={_("Additional Contours")}
         >
           {_("contour_help")}

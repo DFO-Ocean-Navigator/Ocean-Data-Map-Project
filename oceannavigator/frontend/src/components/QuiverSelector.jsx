@@ -7,7 +7,7 @@ const QuiverSelector = ({
   state,
   dataset,
   id,
-  def,
+  subquery,
   title,
   children,
   onUpdate,
@@ -32,7 +32,7 @@ const QuiverSelector = ({
       <ComboBox
         id="variable"
         state={state.variable}
-        def={def}
+        subquery={subquery}
         onUpdate={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
         title={title}
@@ -63,7 +63,7 @@ QuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.string.isRequired,
   title: PropTypes.string,
-  def: PropTypes.string,
+  subquery: PropTypes.bool,
   state: PropTypes.shape({
     variable: PropTypes.string,
     magnitude: PropTypes.string,

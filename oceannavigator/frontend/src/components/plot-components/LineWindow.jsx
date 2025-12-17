@@ -183,6 +183,7 @@ const LineWindow = (props) => {
         <ComboBox
           id="surfacevariable"
           state={surfaceVariable}
+          subquery={ props.init?.surfacevariable?true:false}
           onUpdate={(_, value) => {
             let variableName = value;
             if (Array.isArray(value) && value.length > 0) {
