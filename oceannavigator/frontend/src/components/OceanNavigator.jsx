@@ -46,7 +46,7 @@ function OceanNavigator(props) {
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
-  const [names, setNames] = useState();
+  const [names, setNames] = useState([undefined]);
   const [observationArea, setObservationArea] = useState([]);
   const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
@@ -89,10 +89,18 @@ function OceanNavigator(props) {
             }
           }
           mapRef.current.selectFeatures(selectedIds);
-
           if (query.plotData) {
-            setSubquery(query.subquery)
-            action("plot");
+            const inactivePlots = query.plotData.filter(
+              (p) => p.active !== true
+            );
+
+            if (inactivePlots.length > 0) {
+              action("updatePlots", inactivePlots);
+            }
+            if (query.subquery) {
+              setSubquery(query.subquery);
+              action("plot");
+            }
           }
         }, 1000);
       } catch (err) {
@@ -130,7 +138,7 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
-        setNames(newPlotData.name)
+        setNames(newPlotData.name);
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
             (data) => data.id === newPlotData.id
@@ -175,7 +183,7 @@ function OceanNavigator(props) {
         break;
       case "setObsQuery":
         if (arg) {
-          setObservationQuery(arg)
+          setObservationQuery(arg);
         }
         break;
       case "class4Type":
@@ -252,11 +260,7 @@ function OceanNavigator(props) {
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.features = mapRef.current.getFeatures();
-    let plotData=mapRef.current.getPlotData();
-    if (plotData?.active==true)
-    {
-      query.plotData=plotData.active
-    }
+    query.plotData = plotData;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
