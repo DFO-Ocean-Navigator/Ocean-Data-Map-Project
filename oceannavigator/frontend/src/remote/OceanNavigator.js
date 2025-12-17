@@ -11,21 +11,24 @@ const instance = axios.create({
   adapter: cacheAdapterEnhancer(adapter),
 });
 
-export function GetDatasetsPromise() {
-  return instance.get("/api/v2.0/datasets");
+export async function GetDatasetsPromise() {
+  const response = await instance.get("/api/v2.0/datasets");
+  return response.data;
 }
 
-export function GetVariablesPromise(dataset) {
-  return instance.get(`/api/v2.0/dataset/${dataset}/variables`);
+export async function GetVariablesPromise(dataset) {
+  const response = await instance.get(`/api/v2.0/dataset/${dataset}/variables`);
+  return response.data;
 }
 
-export function GetTimestampsPromise(dataset, variable) {
-  return instance.get(
+export async function GetTimestampsPromise(dataset, variable) {
+  const response = await instance.get(
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps"
   );
+  return response.data;
 }
-export function GetDepthsPromise(dataset, variable) {
-  return instance.get(
+export async function GetDepthsPromise(dataset, variable) {
+  const response = await instance.get(
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/depths",
     {
       params: {
@@ -33,13 +36,13 @@ export function GetDepthsPromise(dataset, variable) {
       },
     }
   );
+  return response.data;
 }
 
 //returns a complete list of variables for users to select
 export function GetAllVariablesPromise() {
   return instance.get("/api/v2.0/datasets/variables/all");
 }
-
 
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
@@ -89,7 +92,6 @@ export function FilterDatasetsByLocationPromise(
     `/api/v2.0/datasets/filter/location?${params.toString()}`
   );
 }
-
 
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
