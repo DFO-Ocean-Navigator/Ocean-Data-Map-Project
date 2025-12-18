@@ -30,6 +30,47 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
+function useDatasetQuery(dataset) {
+  const { data: datasets = [] } = useQuery({
+    queryKey: ["datasets"],
+    queryFn: GetDatasetsPromise,
+  });
+
+  const { data: variables = [], isLoading: variablesLoading } = useQuery(
+    {
+      queryKey: ["dataset", "variables", dataset.id],
+      queryFn: () => GetVariablesPromise(dataset.id),
+    }
+  );
+
+  const variableIds = variables.map((v) => {
+    return v.id;
+  });
+
+  const { data: timestamps = [], isLoading: timestampsLoading } =
+    useQuery({
+      queryKey: ["dataset", "timestamps", dataset.id, dataset.variable],
+      queryFn: () => GetTimestampsPromise(dataset.id, dataset.variable),
+      enabled: !!variableIds.includes(dataset.variable),
+    });
+
+  const { data: depths = [], isLoading: depthLoading } = useQuery({
+    queryKey: ["dataset", "depths", dataset.id, dataset.variable],
+    queryFn: () => GetDepthsPromise(dataset.id, dataset.variable),
+    enabled: !!variableIds.includes(dataset.variable),
+  });
+
+  const isLoading = variablesLoading || timestampsLoading || depthLoading;
+
+  return {
+    datasets,
+    variables,
+    timestamps,
+    depths,
+    isLoading
+  }
+}
+
 function DatasetSelector({
   onUpdate,
   id,
@@ -57,6 +98,8 @@ function DatasetSelector({
     DATASET_FILTER_DEFAULTS
   );
 
+  const datasetQuery = useDatasetQuery(dataset);
+
   useEffect(() => {
     if (
       updateParent &&
@@ -69,43 +112,10 @@ function DatasetSelector({
 
   const queryClient = useRef(useQueryClient());
 
-  const { data: availableDatasets = [] } = useQuery({
-    queryKey: ["datasets"],
-    queryFn: GetDatasetsPromise,
-  });
-
-  const { data: datasetVariables = [], isLoading: variablesLoading } = useQuery(
-    {
-      queryKey: ["dataset", "variables", dataset.id],
-      queryFn: () => GetVariablesPromise(dataset.id),
-    }
-  );
-
-  const variableIds = datasetVariables.map((v) => {
-    return v.id;
-  });
-
-  const { data: datasetTimestamps = [], isLoading: timestampsLoading } =
-    useQuery({
-      queryKey: ["dataset", "timestamps", dataset.id, dataset.variable],
-      queryFn: () => GetTimestampsPromise(dataset.id, dataset.variable),
-      enabled: !!variableIds.includes(dataset.variable),
-    });
-
-  const timestampIds = datasetTimestamps.map((ts) => {
-    return ts.id;
-  });
-
-  const { data: datasetDepths = [], isLoading: depthLoading } = useQuery({
-    queryKey: ["dataset", "depths", dataset.id, dataset.variable],
-    queryFn: () => GetDepthsPromise(dataset.id, dataset.variable),
-    enabled: !!variableIds.includes(dataset.variable),
-  });
-
   const updateDataset = (key, value) => {
     cleanQueryCache(["dataset", dataset.id]);
 
-    let nextDataset = availableDatasets.filter((d) => {
+    let nextDataset = datasetQuery.datasets.filter((d) => {
       return d.id === value;
     })[0];
 
@@ -123,7 +133,7 @@ function DatasetSelector({
   const updateVariable = (key, value) => {
     cleanQueryCache(["dataset", dataset.variable]);
 
-    let nextVariable = datasetVariables.filter((v) => {
+    let nextVariable = datasetQuery.variables.filter((v) => {
       return v.id === value;
     })[0];
     let variable_scale = nextVariable.scale;
@@ -150,8 +160,8 @@ function DatasetSelector({
           let timeIdx = timestampIds.indexOf(value);
           nextStarttime =
             timeIdx > 20
-              ? datasetTimestamps[timeIdx - 20].id
-              : datasetTimestamps[0].id;
+              ? datasetQuery.timestamps[timeIdx - 20].id
+              : datasetQuery.timestamps[0].id;
         }
         break;
       case "starttime":
@@ -214,7 +224,7 @@ function DatasetSelector({
     variableId && updateVariable("variable", variableId);
     vectorVariable && updateQuiver("quiverVariable", vectorVariable);
     if (date) {
-      let dates = datasetTimestamps.map((t) => new Date(t.value));
+      let dates = datasetQuery.timestamps.map((t) => new Date(t.value));
       let [, timeIdx] = dates.reduce(
         (prev, curr, idx) => {
           let diff = Math.abs(curr - date);
@@ -222,7 +232,7 @@ function DatasetSelector({
         },
         [Infinity, 0]
       );
-      let nextTime = datasetTimestamps[timeIdx].id;
+      let nextTime = datasetQuery.timestamps[timeIdx].id;
       updateTime("time", nextTime);
       setUpdateParent(true);
     }
@@ -234,8 +244,16 @@ function DatasetSelector({
     setDataset({ ...dataset, variable_range: range });
   };
 
+  const variableIds = datasetQuery.variables.map((v) => {
+    return v.id;
+  });
+
+  const timestampIds = datasetQuery.timestamps.map((ts) => {
+    return ts.id;
+  });
+
   if (variableIds.length > 0 && !variableIds.includes(dataset.variable)) {
-    let nextVariable = datasetVariables[0];
+    let nextVariable = datasetQuery.variables[0];
     updateVariable("variable", nextVariable.id);
   }
 
@@ -248,11 +266,11 @@ function DatasetSelector({
     updateQuiver("quiverVariable", "none");
   }
 
-  if (datasetTimestamps.length > 0 && !timestampIds.includes(dataset.time)) {
+  if (datasetQuery.timestamps.length > 0 && !timestampIds.includes(dataset.time)) {
     let nextTime;
     if (dataset.time < 0) {
       // no timestamp previously selected, so select the latest one
-      nextTime = datasetTimestamps[datasetTimestamps.length - 1].id;
+      nextTime = datasetQuery.timestamps[datasetQuery.timestamps.length - 1].id;
     } else {
       // find nearest timestamp
       nextTime = timestampIds.reduce((previous, current) => {
@@ -264,18 +282,17 @@ function DatasetSelector({
     updateTime("time", nextTime);
   }
 
-  const loading = variablesLoading || timestampsLoading || depthLoading;
-  const loadingTitle = availableDatasets.filter((d) => {
+  const loadingTitle = datasetQuery.datasets.filter((d) => {
     return d.id === dataset.id;
   })[0]?.value;
 
   let datasetSelector = null;
-  if (availableDatasets && availableDatasets.length > 0) {
+  if (datasetQuery.datasets && datasetQuery.datasets.length > 0) {
     datasetSelector = (
       <DatasetDropdown
         id={`dataset-selector-dataset-selector-${id}`}
         key={`dataset-selector-dataset-selector-${id}`}
-        options={availableDatasets}
+        options={datasetQuery.datasets}
         label={t("Dataset")}
         placeholder={t("Dataset")}
         onChange={updateDataset}
@@ -286,14 +303,14 @@ function DatasetSelector({
   }
 
   let variableSelector = null;
-  if (showVariableSelector && datasetVariables && datasetVariables.length > 0) {
+  if (showVariableSelector && datasetQuery.variables && datasetQuery.variables.length > 0) {
     let variableOptions = [];
     if (variables === "3d") {
-      variableOptions = datasetVariables.filter((v) => {
+      variableOptions = datasetQuery.variables.filter((v) => {
         return v.two_dimensional === false;
       });
     } else {
-      variableOptions = datasetVariables;
+      variableOptions = datasetQuery.variables;
     }
 
     // Work-around for when someone selected a plot that requires
@@ -316,7 +333,7 @@ function DatasetSelector({
         onChange={updateVariable}
         selected={selected}
         multiple={multipleVariables}
-        loading={loading}
+        loading={datasetQuery.isLoading}
         horizontalLayout={horizontalLayout}
       />
     );
@@ -326,10 +343,10 @@ function DatasetSelector({
   if (showQuiverSelector) {
     let quiverVariables = [];
     if (
-      datasetVariables &&
+      datasetQuery.variables &&
       MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class)
     ) {
-      quiverVariables = datasetVariables.filter((variable) => {
+      quiverVariables = datasetQuery.variables.filter((variable) => {
         return variable.vector_variable;
       });
     }
@@ -345,7 +362,7 @@ function DatasetSelector({
           options={quiverVariables}
           onChange={updateQuiver}
           selected={dataset.quiverVariable}
-          loading={loading}
+          loading={datasetQuery.isLoading}
           horizontalLayout={horizontalLayout}
         />
         <Form.Label>Quiver Density</Form.Label>
@@ -369,8 +386,8 @@ function DatasetSelector({
   let depthSelector = null;
   if (
     showDepthSelector &&
-    datasetDepths &&
-    datasetDepths.length > 0 &&
+    datasetQuery.depths &&
+    datasetQuery.depths.length > 0 &&
     !dataset.variable_two_dimensional
   ) {
     depthSelector = (
@@ -381,12 +398,12 @@ function DatasetSelector({
         placeholder={t("Depth")}
         options={
           showDepthsAll
-            ? datasetDepths
-            : datasetDepths.filter((d) => d.id !== "all")
+            ? datasetQuery.depths
+            : datasetQuery.depths.filter((d) => d.id !== "all")
         }
         onChange={updateDepth}
         selected={
-          datasetDepths.filter((d) => {
+          datasetQuery.depths.filter((d) => {
             let depth = parseInt(dataset.depth);
             if (isNaN(depth)) {
               // when depth == "bottom" or "all"
@@ -396,27 +413,27 @@ function DatasetSelector({
             return d.id === depth;
           })[0].id
         }
-        loading={loading}
+        loading={datasetQuery.isLoading}
         horizontalLayout={horizontalLayout}
       />
     );
   }
 
   let timeSelector = null;
-  if (datasetTimestamps) {
+  if (datasetQuery.timestamps) {
     if (showTimeSlider && !compareDatasets) {
       timeSelector = (
         <TimeSlider
           key="time"
           id="time"
           dataset={dataset}
-          timestamps={datasetTimestamps}
+          timestamps={datasetQuery.timestamps}
           selected={dataset.time}
           onChange={updateTime}
-          loading={loading}
+          loading={datasetQuery.isLoading}
         />
       );
-    } else if (datasetTimestamps && !loading) {
+    } else if (datasetQuery.timestamps && !datasetQuery.isLoading) {
       if (showTimeRange) {
         timeSelector = (
           <div>
@@ -428,7 +445,7 @@ function DatasetSelector({
               onUpdate={updateTime}
               max={dataset.time}
               dataset={dataset}
-              timestamps={datasetTimestamps}
+              timestamps={datasetQuery.timestamps}
             />
             <TimePicker
               key="time"
@@ -438,7 +455,7 @@ function DatasetSelector({
               onUpdate={updateTime}
               min={dataset.starttime}
               dataset={dataset}
-              timestamps={datasetTimestamps}
+              timestamps={datasetQuery.timestamps}
             />
           </div>
         );
@@ -451,7 +468,7 @@ function DatasetSelector({
             onUpdate={updateTime}
             title={t("Time (UTC)")}
             dataset={dataset}
-            timestamps={datasetTimestamps}
+            timestamps={datasetQuery.timestamps}
             horizontalLayout={horizontalLayout}
           />
         );
@@ -470,7 +487,7 @@ function DatasetSelector({
         variant="primary"
         type="submit"
         onClick={handleGoButton}
-        disabled={loading}
+        disabled={datasetQuery.isLoading}
       >
         {t("Go")}
       </Button>
@@ -480,14 +497,14 @@ function DatasetSelector({
   let axisRange = [];
   if (
     showAxisRange &&
-    datasetVariables &&
-    datasetVariables.length > 0 &&
-    !loading
+    datasetQuery.variables &&
+    datasetQuery.variables.length > 0 &&
+    !datasetQuery.isLoading
   ) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
       : [dataset.variable];
-    let variableData = datasetVariables.filter((v) =>
+    let variableData = datasetQuery.variables.filter((v) =>
       axisVariables.includes(v.id)
     );
     let axisVariableRanges = variableData.map((v) => v.scale);
@@ -581,7 +598,7 @@ function DatasetSelector({
         </Modal.Header>
         <Modal.Body>
           <DatasetSearchWindow
-            datasets={availableDatasets}
+            datasets={datasetQuery.datasets}
             filters={datasetSearchFilters}
             updateFilters={updateSearchFilters}
             applyFilters={applySearchFilters}
@@ -595,7 +612,7 @@ function DatasetSelector({
         </Modal.Footer>
       </Modal>
 
-      <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
+      <Modal show={datasetQuery.isLoading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
           <Modal.Title>{`${t("Loading")} ${loadingTitle}`}</Modal.Title>
         </Modal.Header>
