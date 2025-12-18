@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
@@ -10,6 +11,15 @@ import DatasetSelector from "../DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import { GetVariablesPromise } from "../../remote/OceanNavigator.js";
 import { withTranslation } from "react-i18next";
+
+function useGetVariables(datasetId) {
+  const { data: variables = [] } = useQuery({
+    queryKey: ["dataset", "variables", datasetId],
+    queryFn: () => GetVariablesPromise(datasetId),
+  });
+
+  return variables;
+}
 
 const TabEnum = {
   PROFILE: 1,
@@ -43,9 +53,6 @@ const PointWindow = ({
   const [colormap, setColormap] = useState(init?.colormap || "default");
 
   // Data state
-  const [datasetVariables, setDatasetVariables] = useState(
-    init?.datasetVariables || []
-  );
   const [observationVariable, setObservationVariable] = useState(
     init?.observation_variable || [0]
   );
@@ -70,15 +77,12 @@ const PointWindow = ({
     }
   );
 
-  // Fetch dataset variables when dataset ID changes
-  useEffect(() => {
-    GetVariablesPromise(dataset_0.id).then(
-      (res) => {
-        setDatasetVariables(res.data.map((v) => v.id));
-      },
-      (err) => console.error(err)
-    );
-  }, [dataset_0.id]);
+  const datasetVariables = useGetVariables(dataset_0.id);
+  const only2d = datasetVariables.every((v) => v.two_dimensional === true);
+
+  if (only2d && selected !== TabEnum.MOORING) {
+    setSelected(TabEnum.MOORING);
+  }
 
   const handleDatasetUpdate = (key, value) => {
     setDataset_0((prev) => ({ ...prev, ...value }));
@@ -261,8 +265,8 @@ const PointWindow = ({
   // temp/salinity check
   // Checks if the current dataset's variables contain Temperature
   // and Salinity. This is used to enable/disable some tabs.
-  const hasTemp = datasetVariables.some((v) => /temp/i.test(v));
-  const hasSal = datasetVariables.some((v) => /salin/i.test(v));
+  const hasTemp = datasetVariables.some((v) => /temp/i.test(v.value));
+  const hasSal = datasetVariables.some((v) => /salin/i.test(v.value));
   const hasTempSal = hasTemp && hasSal;
 
   // Start constructing query for image
@@ -373,27 +377,27 @@ const PointWindow = ({
     <div className="PointWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.PROFILE}>{_("Profile")}</Nav.Link>
+          <Nav.Link eventKey={TabEnum.PROFILE} disabled={only2d}>{_("Profile")}</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal || only2d}>
             {_("CTD Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSal || only2d}>
             {_("T/S Diagram")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSal || only2d}>
             {_("Sound Speed Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link
             eventKey={TabEnum.OBSERVATION}
-            disabled={!plotData.observation}
+            disabled={!plotData.observation || only2d}
           >
             {_("Observation")}
           </Nav.Link>
