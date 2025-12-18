@@ -19,6 +19,7 @@ import {
   GetVariablesPromise,
   GetTimestampsPromise,
   GetDepthsPromise,
+  GetAllVariablesPromise,
 } from "../remote/OceanNavigator.js";
 
 import { withTranslation } from "react-i18next";
@@ -264,8 +265,6 @@ function DatasetSelector({
   }
 
   const loading = variablesLoading || timestampsLoading || depthLoading;
-  const loadingPercent =
-    (100 * (3 - variablesLoading - timestampsLoading - depthLoading)) / 3;
   const loadingTitle = availableDatasets.filter((d) => {
     return d.id === dataset.id;
   })[0]?.value;
@@ -522,6 +521,11 @@ function DatasetSelector({
 
   let datasetSearchButton = null;
   if (datasetSearch) {
+    queryClient.current.prefetchQuery({
+      queryKey: ["datasetFilters", "allVariables"],
+      queryFn: GetAllVariablesPromise,
+    });
+
     datasetSearchButton = (
       <OverlayTrigger
         key="draw-search-btn"
@@ -596,7 +600,7 @@ function DatasetSelector({
           <Modal.Title>{`${t("Loading")} ${loadingTitle}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ProgressBar now={loadingPercent} />
+          <ProgressBar now={100} animated />
         </Modal.Body>
       </Modal>
     </>

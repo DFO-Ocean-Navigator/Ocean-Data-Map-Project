@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Row, Col, Form, Badge, Spinner } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
@@ -8,6 +9,88 @@ import {
   FilterDatasetsByLocationPromise,
 } from "../remote/OceanNavigator.js";
 
+function useDatasetFilters(datasets, filters) {
+  const { data: variableMap = {}, isLoading: variablesLoading } = useQuery({
+    queryKey: ["datasetFilters", "allVariables"],
+    queryFn: GetAllVariablesPromise,
+  });
+
+  let filteredDatasetIds = datasets.map((ds) => ds.id);
+
+  // Filter by variable
+  if (filters.variable !== "any") {
+    const variableData = variableMap[filters.variable];
+    const datasetIds = variableData.map((entry) => entry.dataset_id);
+    filteredDatasetIds = datasetIds.filter((id) => datasetIds.includes(id));
+  }
+
+  // Filter by vector variable
+  if (filters.vectorVariable !== "none") {
+    const variableData = variableMap[filters.vectorVariable];
+    const datasetIds = variableData.reduce(
+      (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
+      []
+    );
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      datasetIds.includes(id)
+    );
+  }
+
+  // Filter by depth
+  if (filters.depth !== "all") {
+    let datasetIds = Object.values(variableMap).reduce((ids, ds) => {
+      ds.forEach((d) => {
+        if (d.depth) {
+          ids.push(d.dataset_id);
+        }
+      });
+      return ids;
+    }, []);
+    datasetIds = [...new Set(datasetIds)];
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      filters.depth === "3d"
+        ? datasetIds.includes(id)
+        : !datasetIds.includes(id)
+    );
+  }
+
+  // Filter by date
+  const { data: dateFilteredIds, isLoading: dateLoading } = useQuery({
+    queryKey: ["datasetFilters", "date", filteredDatasetIds, filters.date],
+    queryFn: () =>
+      FilterDatasetsByDatePromise(
+        filteredDatasetIds,
+        filters.date.toISOString()
+      ),
+    enabled: filters.date != null,
+  });
+
+  dateFilteredIds && (filteredDatasetIds = dateFilteredIds);
+
+  // Filter by location
+  const { data: locFilteredIds, isLoading: locLoading } = useQuery({
+    queryKey: [
+      "datasetFilters",
+      "location",
+      filteredDatasetIds,
+      filters.location,
+    ],
+    queryFn: () =>
+      FilterDatasetsByLocationPromise(
+        filteredDatasetIds,
+        filters.location[0],
+        (parseFloat(filters.location[1]) + 360) % 360
+      ),
+    enabled: filters.location[0] != "" && filters.location[1] != "",
+  });
+
+  locFilteredIds && (filteredDatasetIds = locFilteredIds);
+
+  const isLoading = variablesLoading || dateLoading || locLoading;
+
+  return { ids: filteredDatasetIds, variableMap, isLoading };
+}
+
 const DatasetSearchWindow = ({
   datasets,
   filters,
@@ -16,30 +99,10 @@ const DatasetSearchWindow = ({
   closeModal,
 }) => {
   const { t } = useTranslation();
-  const [filterLabels, setFilterLabels] = useState([]);
-  const [filteredDatasetIds, setFilteredDatasetIds] = useState(
-    datasets.map((ds) => ds.id)
-  );
-  const [variableDataMap, setVariableDataMap] = useState({});
   const [latitude, setLatitude] = useState(filters.location[0]);
   const [longitude, setLongitude] = useState(filters.location[1]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    const loadData = async () => {
-      const variablesResult = await GetAllVariablesPromise();
-      setVariableDataMap(variablesResult.data);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    if (Object.keys(variableDataMap).length > 0) {
-      filterDatasets();
-    }
-  }, [filters]);
+  const filteredDatasets = useDatasetFilters(datasets, filters);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -58,13 +121,12 @@ const DatasetSearchWindow = ({
   }, [latitude, longitude]);
 
   const applyDataset = (datasetId) => {
-    let variable = variableDataMap[filters.variable]?.filter(
+    let variable = filteredDatasets.variableMap[filters.variable]?.filter(
       (ds) => ds.dataset_id === datasetId
     )[0];
-    let vectorVariable =
-      variableDataMap[filters.vectorVariable]?.filter(
-        (ds) => ds.dataset_id === datasetId
-      )[0]
+    let vectorVariable = filteredDatasets.variableMap[
+      filters.vectorVariable
+    ]?.filter((ds) => ds.dataset_id === datasetId)[0];
 
     applyFilters(
       datasetId,
@@ -75,105 +137,55 @@ const DatasetSearchWindow = ({
     closeModal();
   };
 
-  const filterDatasets = async () => {
-    setLoading(true);
-    let newFilteredIds = datasets.map((ds) => ds.id);
-    let newFilterLabels = [];
+  // Generate filter label elements
+  let filterLabels = [];
 
-    // Filter by variable
-    if (filters.variable !== "any") {
-      const variableData = variableDataMap[filters.variable];
-      const datasetIds = variableData.map((entry) => entry.dataset_id);
-      newFilteredIds = datasetIds.filter((id) => datasetIds.includes(id));
-      newFilterLabels.push({
-        key: "variable",
-        label: `Variable: ${filters.variable}`,
-      });
-    }
+  if (filters.variable !== "any") {
+    filterLabels.push({
+      key: "variable",
+      label: `Variable: ${filters.variable}`,
+    });
+  }
 
-    // Filter by vector variable
-    if (filters.vectorVariable !== "none") {
-      const variableData = variableDataMap[filters.vectorVariable];
-      const datasetIds = variableData.reduce(
-        (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
-        []
-      );
-      newFilteredIds = newFilteredIds.filter((id) => datasetIds.includes(id));
-      newFilterLabels.push({
-        key: "vectorVariable",
-        label: `${t("Quiver")}: ${filters.vectorVariable}`,
-      });
-    }
+  if (filters.vectorVariable !== "none") {
+    filterLabels.push({
+      key: "vectorVariable",
+      label: `${t("Quiver")}: ${filters.vectorVariable}`,
+    });
+  }
 
-    // Filter by depth
-    if (filters.depth !== "all") {
-      let datasetIds = Object.values(variableDataMap).reduce((ids, ds) => {
-        ds.forEach((d) => {
-          if (d.depth) {
-            ids.push(d.dataset_id);
-          }
-        });
-        return ids;
-      }, []);
-      datasetIds = [...new Set(datasetIds)];
-      newFilteredIds = newFilteredIds.filter((id) =>
-        filters.depth === "3d"
-          ? datasetIds.includes(id)
-          : !datasetIds.includes(id)
-      );
-      newFilterLabels.push({
-        key: "depth",
-        label: `Depth dimension: ${filters.depth}`,
-      });
-    }
+  if (filters.depth !== "all") {
+    filterLabels.push({
+      key: "depth",
+      label: `Depth dimension: ${filters.depth}`,
+    });
+  }
 
-    // Filter by date
-    if (filters.date !== null) {
-      newFilterLabels.push({
-        key: "date",
-        label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
-      });
-      if (newFilteredIds.length > 0) {
-        let dateFilter = await FilterDatasetsByDatePromise(
-          newFilteredIds,
-          filters.date.toISOString()
-        );
-        newFilteredIds = await dateFilter.data;
-      }
-    }
+  if (filters.date !== null) {
+    filterLabels.push({
+      key: "date",
+      label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
+    });
+  }
 
-    // Filter by Location
-    if (filters.location[0] && filters.location[1]) {
-      if (newFilteredIds.length > 0) {
-        let locFiltered = await FilterDatasetsByLocationPromise(
-          newFilteredIds,
-          filters.location[0],
-          (parseFloat(filters.location[1]) + 360) % 360
-        );
-        newFilteredIds = await locFiltered.data;
-      }
-      newFilterLabels.push({
-        key: "location",
-        label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
-      });
-    }
+  if (filters.location[0] && filters.location[1]) {
+    filterLabels.push({
+      key: "location",
+      label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
+    });
+  }
 
-    newFilterLabels = newFilterLabels.map(({ key, label }) => (
-      <Badge key={key} bg="primary" className="d-flex align-items-center">
-        {label}
-        <button
-          type="button"
-          className="btn-close btn-close-white ms-2"
-          style={{ fontSize: "0.7em" }}
-          onClick={() => updateFilters(key)}
-        />
-      </Badge>
-    ));
-
-    setFilterLabels(newFilterLabels);
-    setFilteredDatasetIds(newFilteredIds);
-    setLoading(false);
-  };
+  filterLabels = filterLabels.map(({ key, label }) => (
+    <Badge key={key} bg="primary" className="d-flex align-items-center">
+      {label}
+      <button
+        type="button"
+        className="btn-close btn-close-white ms-2"
+        style={{ fontSize: "0.7em" }}
+        onClick={() => updateFilters(key)}
+      />
+    </Badge>
+  ));
 
   const depthOptions = [
     <option key="all" value="all">
@@ -191,16 +203,16 @@ const DatasetSearchWindow = ({
     <option key="any" value="any">
       Any
     </option>,
-    ...Object.keys(variableDataMap).map((name) => (
+    ...Object.keys(filteredDatasets.variableMap).map((name) => (
       <option key={name} value={name}>
         {name}
       </option>
     )),
   ];
 
-  let vectorVariableOptions = Object.keys(variableDataMap).reduce(
+  let vectorVariableOptions = Object.keys(filteredDatasets.variableMap).reduce(
     (vars, name) => {
-      if (variableDataMap[name].some((d) => d.vector_variables)) {
+      if (filteredDatasets.variableMap[name].some((d) => d.vector_variables)) {
         vars.push(
           <option key={name} value={name}>
             {name}
@@ -216,7 +228,7 @@ const DatasetSearchWindow = ({
     ]
   );
 
-  let datasetCards = filteredDatasetIds.map((id) => {
+  let datasetCards = filteredDatasets.ids.map((id) => {
     let dataset = datasets.filter((ds) => ds.id == id)[0];
     return (
       <div key={id} className="card mb-2">
@@ -241,7 +253,7 @@ const DatasetSearchWindow = ({
 
   return (
     <>
-      {loading && (
+      {filteredDatasets.isLoading && (
         <div className="loading-overlay">
           <Spinner animation="border" variant="light">
             <span className="visually-hidden">Loading...</span>

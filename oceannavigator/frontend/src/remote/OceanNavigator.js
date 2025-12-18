@@ -40,8 +40,9 @@ export async function GetDepthsPromise(dataset, variable) {
 }
 
 //returns a complete list of variables for users to select
-export function GetAllVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/variables/all");
+export async function GetAllVariablesPromise() {
+  const response = await instance.get("/api/v2.0/datasets/variables/all");
+  return response.data
 }
 
 export function GetPresetPointsPromise() {
@@ -61,7 +62,7 @@ export function GetClass4Promise() {
 }
 
 // Filter datasets by date
-export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
+export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   const params = new URLSearchParams({
     target_date: targetDate,
   });
@@ -70,11 +71,14 @@ export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
     params.append("dataset_ids", datasetIds.join(","));
   }
 
-  return instance.get(`/api/v2.0/datasets/filter/date?${params.toString()}`);
+  const response = await instance.get(
+    `/api/v2.0/datasets/filter/date?${params.toString()}`
+  );
+  return response.data;
 }
 
 // Filter datasets by location
-export function FilterDatasetsByLocationPromise(
+export async function FilterDatasetsByLocationPromise(
   datasetIds,
   latitude,
   longitude
@@ -88,9 +92,10 @@ export function FilterDatasetsByLocationPromise(
     params.append("dataset_ids", datasetIds.join(","));
   }
 
-  return instance.get(
+  const response = await instance.get(
     `/api/v2.0/datasets/filter/location?${params.toString()}`
   );
+  return response.data;
 }
 
 export function GetTrackTimeRangePromise(track) {
