@@ -111,6 +111,13 @@ function DatasetSelector({
     }
   }, [dataset]);
 
+  useEffect(() => {
+    // update dataset selectors in all components if dataset changed
+    if (JSON.stringify(dataset) !== JSON.stringify(mountedDataset)) {
+      setDataset(mountedDataset);
+    }
+  }, [mountedDataset]);
+
   const queryClient = useRef(useQueryClient());
 
   const updateDataset = (key, value) => {
@@ -460,7 +467,7 @@ function DatasetSelector({
   }
 
   let timeSelector = null;
-  if (datasetQuery.timestamps) {
+  if (datasetQuery.timestamps.length > 0) {
     if (showTimeSlider && !compareDatasets) {
       timeSelector = (
         <TimeSlider
