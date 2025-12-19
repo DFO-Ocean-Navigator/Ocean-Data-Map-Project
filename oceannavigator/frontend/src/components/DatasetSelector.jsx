@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
@@ -13,14 +13,8 @@ import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
 import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
-
-import {
-  GetDatasetsPromise,
-  GetVariablesPromise,
-  GetTimestampsPromise,
-  GetDepthsPromise,
-  GetAllVariablesPromise,
-} from "../remote/OceanNavigator.js";
+import { GetAllVariablesPromise } from "../remote/OceanNavigator.js";
+import { useGetDatasets, useGetDatasetParams } from "../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -29,68 +23,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
-
-function useGetDatasets() {
-  const {
-    data = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["datasets"],
-    queryFn: GetDatasetsPromise,
-  });
-
-  return { data, isLoading, isError };
-}
-function useGetDatasetParams(dataset) {
-  const {
-    data: variables = [],
-    isLoading: variablesLoading,
-    isError: variablesError,
-  } = useQuery({
-    queryKey: ["dataset", "variables", dataset.id],
-    queryFn: () => GetVariablesPromise(dataset.id),
-  });
-
-  const variableIds = variables.map((v) => {
-    return v.id;
-  });
-
-  let queryVar = Array.isArray(dataset.variable)
-    ? dataset.variable[0]
-    : dataset.variable;
-
-  const {
-    data: timestamps = [],
-    isLoading: timestampsLoading,
-    isError: timestampsError,
-  } = useQuery({
-    queryKey: ["dataset", "timestamps", dataset.id, queryVar],
-    queryFn: () => GetTimestampsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const {
-    data: depths = [],
-    isLoading: depthsLoading,
-    isError: depthsError,
-  } = useQuery({
-    queryKey: ["dataset", "depths", dataset.id, queryVar],
-    queryFn: () => GetDepthsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const isLoading = variablesLoading || timestampsLoading || depthsLoading;
-  const isError = variablesError || timestampsError || depthsError;
-
-  return {
-    variables,
-    timestamps,
-    depths,
-    isLoading,
-    isError,
-  };
-}
 
 function DatasetSelector({
   onUpdate,
@@ -144,7 +76,7 @@ function DatasetSelector({
   const updateDataset = (key, value) => {
     cleanQueryCache(["dataset", dataset.id]);
 
-    let nextDataset = datasets.datasets.filter((d) => {
+    let nextDataset = datasets.data.filter((d) => {
       return d.id === value;
     })[0];
 

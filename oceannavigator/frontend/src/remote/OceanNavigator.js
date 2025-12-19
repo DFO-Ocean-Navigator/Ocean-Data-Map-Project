@@ -94,3 +94,14 @@ export async function FilterDatasetsByLocationPromise(
 export function GetTrackTimeRangePromise(track) {
   return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
 }
+
+export async function GetPlotImagePromise(plotType, query) {
+    const queryConfig = {
+      method: "get",
+      url: `/api/v2.0/plot/${plotType}`,
+      params: { query: JSON.stringify(query), format: "json" },
+    };
+    const response = await axios.request(queryConfig);
+    return response.data;
+  
+}

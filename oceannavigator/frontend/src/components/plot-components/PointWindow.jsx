@@ -270,67 +270,79 @@ const PointWindow = ({
   const hasTempSal = hasTemp && hasSal;
 
   // Start constructing query for image
-  const plot_query = {
-    dataset: dataset_0.id,
-    point: plotData.coordinates,
-    showmap: showMap,
-    names: names,
-    size: plotSize,
-    dpi: plotDpi,
-    plotTitle: plotTitles[selected - 1],
-    type: "",
-  };
 
-  let inputs = [];
+  let plotType = "";
+  let plotQuery = {
+    dataset: dataset_0.id,
+    names: names,
+  };
+  let inputs = [global];
+
   switch (selected) {
     case TabEnum.PROFILE:
-      Object.assign(plot_query, {
-        type: "profile",
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
         time: dataset_0.time,
         variable: Array.isArray(dataset_0.variable)
           ? dataset_0.variable
           : [dataset_0.variable],
         variable_range: Object.values(dataset_0.variable_range),
-      });
-      inputs = [global];
+      };
+      plotType = "profile";
       break;
     case TabEnum.CTD:
-      plot_query.type = "profile";
-      plot_query.time = dataset_0.time;
-      plot_query.variable = `${hasTemp ? "votemper," : ""}${
-        hasSal ? "vosaline" : ""
-      }`;
-      inputs = [global];
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable: `${hasTemp ? "votemper," : ""}${hasSal ? "vosaline" : ""}`,
+        variable_range: Object.values(dataset_0.variable_range),
+      };
+      plotType = "profile";
       break;
     case TabEnum.TS:
-      Object.assign(plot_query, { type: "ts", time: dataset_0.time });
-      inputs = [global];
+      plotQuery = {
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable_range: Object.values(dataset_0.variable_range),
+      };
+      plotType = "ts";
       break;
     case TabEnum.SOUND:
-      Object.assign(plot_query, { type: "sound", time: dataset_0.time });
-      inputs = [global];
+      plotQuery = {
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable_range: Object.values(dataset_0.variable_range),
+      };
+      plotType = "sound";
       break;
     case TabEnum.OBSERVATION:
-      plot_query.type = "observation";
-      plot_query.observation = [plotData.id];
-      plot_query.observation_variable = observationVariable;
-      plot_query.variable = dataset_0.variable;
-      inputs = [global, observationVariableElem];
+      plotQuery = {
+        observation: [plotData.id],
+        observation_variable: observationVariable,
+      };
+      plotType.type = "observation";
+      inputs.push(observationVariableElem);
       break;
     case TabEnum.MOORING:
-      Object.assign(plot_query, {
-        type: "timeseries",
-        variable: dataset_0.variable,
+      plotQuery = {
+        showmap: showMap,
+        station: plotData.coordinates,
         variable_range: Object.values(dataset_0.variable_range),
+        depth: dataset_0.depth,
         starttime: dataset_0.starttime,
         endtime: dataset_0.time,
-        depth: dataset_0.depth,
         colormap: colormap,
         interp: mapSettings.interpType,
         radius: mapSettings.interpRadius,
         neighbours: mapSettings.interpNeighbours,
-      });
-      inputs = [global];
+      };
+      plotType = "timeseries";
       if (dataset_0.depth === "all")
         // Add Colormap selector
         inputs.push(
@@ -346,16 +358,6 @@ const PointWindow = ({
             <img src="/plot/colormaps.png/" alt="" />{" "}
           </ComboBox>
         );
-      break;
-    case TabEnum.STICK:
-      Object.assign(plot_query, {
-        type: "stick",
-        variable: dataset_0.variable,
-        starttime: dataset_0.starttime,
-        endtime: dataset_0.time,
-        depth: dataset_0.depth,
-      });
-      inputs = [global, multiDepthVector];
       break;
   }
 
@@ -377,7 +379,9 @@ const PointWindow = ({
     <div className="PointWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.PROFILE} disabled={only2d}>{_("Profile")}</Nav.Link>
+          <Nav.Link eventKey={TabEnum.PROFILE} disabled={only2d}>
+            {_("Profile")}
+          </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal || only2d}>
@@ -413,10 +417,13 @@ const PointWindow = ({
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage
-            query={plot_query}
+            plotType={plotType}
+            query={plotQuery}
             permlink_subquery={permlink_subquery}
             featureId={plotData.id}
             action={action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>

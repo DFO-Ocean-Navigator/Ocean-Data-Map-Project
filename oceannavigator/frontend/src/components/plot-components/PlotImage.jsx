@@ -1,6 +1,4 @@
 import React, { useState, useRef } from "react";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
 import {
   Button,
   ButtonToolbar,
@@ -13,11 +11,24 @@ import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
+import { usePlotImageQuery } from "../../remote/queries.js";
+
 const FAIL_IMAGE = require("../fail.js");
 
-const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
+const PlotImage = ({
+  plotType,
+  query,
+  permlink_subquery,
+  featureId,
+  action,
+  size,
+  dpi,
+  t,
+}) => {
   const imagelinkRef = useRef();
   const [showImagelink, setShowImagelink] = useState(false);
+
+  const image = usePlotImageQuery(featureId, plotType, query);
 
   // Generate API script
   const generateScript = (language) => {
@@ -237,7 +248,7 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
   const saveImage = (format) => {
     let link = `${urlFromQuery(query)}&save=True&format=${format}`;
     if (!["odv", "csv"].includes(format)) {
-      link += `&size=${query.size}&dpi=${query.dpi}`;
+      link += `&size=${size}&dpi=${dpi}`;
     }
     window.location.href = link;
   };
@@ -256,33 +267,16 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
     imagelinkRef.current.select();
   };
 
-  // Fetch plot image data
-  const retrieveImage = async () => {
-    const [type, plotQuery] = generateQuery(query);
-    const queryConfig = {
-      method: "get",
-      url: `/api/v2.0/plot/${type}`,
-      params: { query: JSON.stringify(plotQuery), format: "json" },
-    };
-    const response = await axios.request(queryConfig);
-    return response.data;
-  };
-
-  const { data, isError, isLoading } = useQuery({
-    queryKey: ["plotImage", { featureId, query }],
-    queryFn: retrieveImage,
-  });
-
-  var image = <Spinner animation="border" variant="primary" />;
-  if (isError) {
-    image = <img src={FAIL_IMAGE} alt="Plot" />;
-  } else if (data) {
-    image = <img src={data} alt="Plot" />;
+  let imageElement = <Spinner animation="border" variant="primary" />;
+  if (image.isError) {
+    imageElement = <img src={FAIL_IMAGE} alt="Plot" />;
+  } else if (image.data) {
+    imageElement = <img src={image.data} alt="Plot" />;
   }
 
   return (
     <div className="PlotImage">
-      <div className="RenderedImage">{image}</div>
+      <div className="RenderedImage">{imageElement}</div>
       <ButtonToolbar className="button-bar">
         <DropdownButton
           id="save"
@@ -291,7 +285,7 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="save" /> {t("Save Image")}
             </span>
           }
-          disabled={isError || isLoading}
+          disabled={image.isError || image.isLoading}
           onSelect={saveImage}
           drop="up"
         >
@@ -335,14 +329,14 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="link" /> {t("Get Link")}
             </span>
           }
-          disabled={isError || isLoading}
+          disabled={image.isError || image.isLoading}
           onSelect={getLink}
           drop="up"
         >
           <Dropdown.Item eventKey="web">
             <Icon icon="globe" /> {t("Web")}
           </Dropdown.Item>
-          <Dropdown.Item eventKey="image" disabled={isError || isLoading}>
+          <Dropdown.Item eventKey="image" disabled={image.isError || image.isLoading}>
             <Icon icon="file-image-o" /> {t("Image")}
           </Dropdown.Item>
         </DropdownButton>
@@ -354,12 +348,16 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
               <Icon icon="file-code-o" /> {t("API Script")}
             </span>
           }
-          disabled={isError || isLoading}
+          disabled={image.isError || image.isLoading}
           onSelect={generateScript}
           drop="up"
         >
           {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-            <Dropdown.Item key={key} eventKey={key} disabled={isError || isLoading}>
+            <Dropdown.Item
+              key={key}
+              eventKey={key}
+              disabled={image.isError || image.isLoading}
+            >
               <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
               {key === "pythonPlot" && "Python 3 - PLOT"}
               {key === "pythonCSV" && "Python 3 - CSV"}
@@ -384,7 +382,7 @@ const PlotImage = ({ query, permlink_subquery, featureId, action, t }) => {
             readOnly
             value={`${window.location.origin}${urlFromQuery(
               query
-            )}&format=png&size=${query.size}&dpi=${query.dpi}`}
+            )}&format=png&size=${size}&dpi=${dpi}`}
           />
         </Modal.Body>
         <Modal.Footer>

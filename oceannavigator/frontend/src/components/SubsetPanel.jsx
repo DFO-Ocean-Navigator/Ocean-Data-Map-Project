@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Card } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -13,47 +12,7 @@ import Icon from "./lib/Icon.jsx";
 import { withTranslation } from "react-i18next";
 import SelectBox from "./lib/SelectBox.jsx";
 
-import {
-  GetVariablesPromise,
-  GetTimestampsPromise,
-  GetDepthsPromise,
-} from "../remote/OceanNavigator.js";
-
-function useDatasetQuery(dataset) {
-  const { data: variables = [], isLoading: variablesLoading } = useQuery({
-    queryKey: ["dataset", "variables", dataset.id],
-    queryFn: () => GetVariablesPromise(dataset.id),
-  });
-
-  const variableIds = variables.map((v) => {
-    return v.id;
-  });
-
-  let queryVar = Array.isArray(dataset.variable)
-    ? dataset.variable[0]
-    : dataset.variable;
-
-  const { data: timestamps = [], isLoading: timestampsLoading } = useQuery({
-    queryKey: ["dataset", "timestamps", dataset.id, queryVar],
-    queryFn: () => GetTimestampsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const { data: depths = [], isLoading: depthLoading } = useQuery({
-    queryKey: ["dataset", "depths", dataset.id, queryVar],
-    queryFn: () => GetDepthsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const isLoading = variablesLoading || timestampsLoading || depthLoading;
-
-  return {
-    variables,
-    timestamps,
-    depths,
-    isLoading,
-  };
-}
+import { useGetDatasetParams } from "../remote/queries.js";
 
 function SubsetPanel(props) {
   const [outputTimerange, setOutputTimerange] = useState(false);
@@ -66,9 +25,8 @@ function SubsetPanel(props) {
   const [outputDepth, setOutputDepth] = useState(props.dataset.depth);
   const [zip, setZip] = useState(false);
 
-  const { variables, timestamps, depths, isLoading } = useDatasetQuery(
-    props.dataset
-  );
+  const { variables, timestamps, depths, isLoading, isError } =
+    useGetDatasetParams(props.dataset);
 
   useEffect(() => {
     setOutputVariables([]);
