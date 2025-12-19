@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Accordion, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import PlotImage from "./PlotImage.jsx";
@@ -66,8 +66,14 @@ const AreaWindow = (props) => {
     }
   );
 
+  const isFirstRender = useRef(true);
   // Sync scale when dataset_0.variable changes
   useEffect(() => {
+    //guard useEffect on first render. to handle permalink
+    if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
     if (!autoScale) {
       setScale(props.dataset_0.variable_scale);
     }
@@ -217,7 +223,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
-          subquery_depth={props.init?.depth}
+          subquery_depth={props.init?.left_depth}
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -245,7 +251,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
-          subquery_depth={props.init?.depth}
+          subquery_depth={props.init?.right_depth}
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -318,7 +324,6 @@ const AreaWindow = (props) => {
     const permlink_subquery = {
       currentTab,
       scale,
-      scale_1: props.dataset_1.variable_scale,
       autoScale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
@@ -332,7 +337,8 @@ const AreaWindow = (props) => {
       surfacevariable: surfaceVariable,
       contour,
       quiver,
-      depth: props.dataset_0.depth,
+      left_depth: props.dataset_0.depth,
+      right_depth: props.dataset_1.depth
     };
 
     content = (
