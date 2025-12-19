@@ -74,7 +74,7 @@ export function useGetDatasetParams(dataset) {
 export function usePlotImageQuery(feature, plotType, query){
   const { data, isLoading, isError } = useQuery({
     queryKey: ["plotImage", { feature, plotType, query }],
-    queryFn: GetPlotImagePromise(plotType, query),
+    queryFn: () => GetPlotImagePromise(plotType, query),
   });
 
   return {data, isLoading, isError}
