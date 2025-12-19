@@ -19,7 +19,7 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
   const [scaleDiff, setScaleDiff] = useState(
     props.init?.scale_diff || [-10, 10]
   );
@@ -183,6 +183,7 @@ const LineWindow = (props) => {
         <ComboBox
           id="surfacevariable"
           state={surfaceVariable}
+          subquery={ props.init?.surfacevariable?true:false}
           onUpdate={(_, value) => {
             let variableName = value;
             if (Array.isArray(value) && value.length > 0) {
@@ -262,6 +263,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
+          subquery_depth={props.init?.depth}
           onUpdate={props.updateDataset0}
           variables={selected === 2 ? "all" : "3d"}
           showQuiverSelector={false}
@@ -291,6 +293,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
+          subquery_depth={props.init?.depth}
           onUpdate={props.updateDataset1}
           variables={selected === 2 ? "all" : "3d"}
           showQuiverSelector={false}
@@ -372,6 +375,7 @@ const LineWindow = (props) => {
             colormap_diff: diffColormap.toString(),
             endtime: props.dataset_1.time,
             scale: "auto",
+            depth: props.dataset_1.depth,
           },
         }),
     };
@@ -380,7 +384,7 @@ const LineWindow = (props) => {
   // Create permlink_subquery from current state
   const permlink_subquery = {
     selected,
-    scale_diff: scaleDiff.toString(),
+    scale_diff: scaleDiff,
     colormap: mainColormap.toString(),
     colormap_right: rightColormap.toString(),
     colormap_diff: diffColormap.toString(),
@@ -394,6 +398,8 @@ const LineWindow = (props) => {
     depth_limit: depthLimit,
     profile_distance: profileDistance,
     show_profile: showProfile,
+    depth: props.dataset_0.depth,
+    autoScale: autoScale,
   };
 
   return (

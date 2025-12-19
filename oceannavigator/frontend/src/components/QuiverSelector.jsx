@@ -3,7 +3,16 @@ import ComboBox from "./ComboBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const QuiverSelector = ({
+  state,
+  dataset,
+  id,
+  subquery,
+  title,
+  children,
+  onUpdate,
+  t: _,
+}) => {
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
@@ -23,7 +32,7 @@ const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ })
       <ComboBox
         id="variable"
         state={state.variable}
-        def=""
+        subquery={subquery}
         onUpdate={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
         title={title}
@@ -54,6 +63,7 @@ QuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.string.isRequired,
   title: PropTypes.string,
+  subquery: PropTypes.bool,
   state: PropTypes.shape({
     variable: PropTypes.string,
     magnitude: PropTypes.string,
