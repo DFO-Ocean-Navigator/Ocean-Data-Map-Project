@@ -90,17 +90,8 @@ function OceanNavigator(props) {
           }
           mapRef.current.selectFeatures(selectedIds);
           if (query.plotData) {
-            const inactivePlots = query.plotData.filter(
-              (p) => p.active !== true
-            );
-
-            if (inactivePlots.length > 0) {
-              action("updatePlots", inactivePlots);
-            }
-            if (query.subquery) {
-              setSubquery(query.subquery);
-              action("plot");
-            }
+            setSubquery(query.subquery);
+            action("updatePlots", query.plotData);
           }
         }, 1000);
       } catch (err) {
