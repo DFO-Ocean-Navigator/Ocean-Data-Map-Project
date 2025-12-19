@@ -22,28 +22,35 @@ function TimeSlider(props) {
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
+    let newIndex = props.timestamps.findIndex((timestamp) => {
+      return timestamp.id === props.selected;
+    });
+
+    setSelectedIndex(newIndex);
+
     let newNTicks = 20;
+    let newMinTick, newMaxTick;
     if (props.dataset.quantum === "hour") {
       newNTicks = 48;
     } else if (props.timestamps.length < newNTicks) {
       newNTicks = props.timestamps.length;
     }
-    setMinTick(
-      props.timestamps.length < newNTicks
-        ? 0
-        : props.timestamps.length - newNTicks
-    );
-    setMaxTick(props.timestamps.length);
-    let newIndex = props.timestamps.findIndex((timestamp) => {
-      return timestamp.id === props.selected;
-    });
-    setSelectedIndex(newIndex);
+
+    setNTicks(newNTicks);
+
+    if (props.timestamps.length < newNTicks) {
+      newMinTick = 0;
+      newMaxTick = props.timestamps.length;
+    } else {
+      newMinTick = newNTicks * Math.trunc(newIndex / newNTicks);
+      newMaxTick = newMinTick + newNTicks;
+    }
 
     if (props.dataset.id.includes("climatology")) {
       setClimatology(true);
     }
-
-    setNTicks(newNTicks);
+    setMinTick(newMinTick);
+    setMaxTick(newMaxTick);
   }, [props.timestamps]);
 
   useEffect(() => {
@@ -272,7 +279,7 @@ function TimeSlider(props) {
         : nextFrameIdx;
 
     prevTime = getFormattedTime(new Date(props.timestamps[prevTimeIdx].value));
-    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));        
+    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));
     firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
     lastFrameTime = getFormattedTime(
       new Date(props.timestamps[props.timestamps.length - 1].value)
