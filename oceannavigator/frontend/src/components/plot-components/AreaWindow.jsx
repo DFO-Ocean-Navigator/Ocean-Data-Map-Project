@@ -277,12 +277,10 @@ const AreaWindow = (props) => {
             },
           ];
 
-    const plot_query = {
+    const plotQuery = {
       dataset: props.dataset_0.id,
-      quantum: props.dataset_0.quantum,
       scale: scale.toString(),
       name: props.names[0],
-      type: "map",
       colormap: leftColormap.toString(),
       time: props.dataset_0.time,
       area,
@@ -293,12 +291,9 @@ const AreaWindow = (props) => {
       showarea: showArea,
       variable: props.dataset_0.variable,
       projection: props.mapSettings.projection,
-      size: plotSize,
-      dpi: plotDpi,
       interp: props.mapSettings.interpType,
       radius: props.mapSettings.interpRadius,
       neighbours: props.mapSettings.interpNeighbours,
-      plotTitle: plotTitle,
       ...(props.compareDatasets && {
         compare_to: {
           ...props.dataset_1,
@@ -331,10 +326,13 @@ const AreaWindow = (props) => {
 
     content = (
       <PlotImage
-        query={plot_query}
+        plotType="map"
+        query={plotQuery}
         permlink_subquery={permlink_subquery}
         featureId={props.plotData.id}
         action={props.action}
+        size={plotSize}
+        dpi={plotDpi}
       />
     );
   }

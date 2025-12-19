@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Accordion from "react-bootstrap/Accordion";
-import { Card, Col, Row, Nav} from "react-bootstrap";
+import { Card, Col, Row, Nav } from "react-bootstrap";
 
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
@@ -89,29 +89,25 @@ const TrackWindow = (props) => {
     }
   };
 
-  var plot_query = {
+  var plotQuery = {
     dataset: dataset.id,
-    quantum: dataset.quantum,
     name: props.name,
-    type: "track",
     track: [props.plotData.id],
     showmap: showmap,
     variable: variable,
     latlon: latlon,
     trackvariable: trackvariable,
-    size: plotSize,
-    dpi: plotDpi,
     depth: depth,
     track_quantum: quantum,
   };
 
   if (starttime) {
-    if (plot_query.starttime instanceof Date) {
-      plot_query.starttime = starttime.toISOString();
-      plot_query.endtime = endtime.toISOString();
+    if (plotQuery.starttime instanceof Date) {
+      plotQuery.starttime = starttime.toISOString();
+      plotQuery.endtime = endtime.toISOString();
     } else {
-      plot_query.starttime = starttime;
-      plot_query.endtime = endtime;
+      plotQuery.starttime = starttime;
+      plotQuery.endtime = endtime;
     }
   }
 
@@ -269,10 +265,13 @@ const TrackWindow = (props) => {
         </Col>
         <Col className="plot-col" lg={8}>
           <PlotImage
-            query={plot_query} // For image saving link.
+            plotType="track"
+            query={plotQuery} // For image saving link.
             permlink_subquery={permlink_subquery}
             featureId={props.plotData.id}
             action={props.action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>

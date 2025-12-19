@@ -314,25 +314,20 @@ const LineWindow = (props) => {
     </Card>
   );
 
-  const baseQuery = {
+  let plotType;
+  let plotQuery = {
     dataset: props.dataset_0.id,
-    quantum: props.dataset_0.quantum,
     name: props.names[0],
-    size: plotSize,
-    dpi: plotDpi,
-    plotTitle: plotTitles[selected - 1],
+    variable: props.dataset_0.variable,
+    scale: "auto",
+    path: props.plotData.coordinates,
+    colormap: mainColormap.toString(),
+    showmap: showMap,
   };
 
-  let plot_query = {};
   if (selected === 1) {
-    plot_query = {
-      ...baseQuery,
-      type: "transect",
-      variable: props.dataset_0.variable,
-      scale: "auto",
-      path: props.plotData.coordinates,
-      colormap: mainColormap.toString(),
-      showmap: showMap,
+    plotQuery = {
+      ...plotQuery,
       time: props.dataset_0.time,
       linearthresh: linearThresh,
       surfacevariable: surfaceVariable,
@@ -350,17 +345,12 @@ const LineWindow = (props) => {
         },
       }),
     };
+    plotType = "transect";
   } else {
-    plot_query = {
-      ...baseQuery,
-      type: "hovmoller",
+    plotQuery = {
+      ...plotQuery,
       starttime: props.dataset_0.starttime,
       endtime: props.dataset_0.time,
-      variable: props.dataset_0.variable,
-      scale: "auto",
-      colormap: mainColormap.toString(),
-      path: props.plotData.coordinates,
-      showmap: showMap,
       depth: props.dataset_0.depth,
       ...(props.compareDatasets &&
         props.dataset_0.variable === props.dataset_1.variable && {
@@ -375,6 +365,7 @@ const LineWindow = (props) => {
           },
         }),
     };
+    plotType = "hovmoller";
   }
 
   // Create permlink_subquery from current state
@@ -413,10 +404,13 @@ const LineWindow = (props) => {
         </Col>
         <Col lg={8} className="plot-col">
           <PlotImage
-            query={plot_query}
+            plotType={plotType}
+            query={plotQuery}
             permlink_subquery={permlink_subquery}
             featureId={props.plotData.id}
             action={props.action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
         <Col lg={2} className="settings-col">

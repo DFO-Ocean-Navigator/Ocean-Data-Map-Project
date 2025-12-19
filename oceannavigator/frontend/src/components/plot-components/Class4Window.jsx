@@ -41,8 +41,7 @@ const Class4Window = ({
     }
   };
 
-  const plot_query = {
-    type: "class4",
+  const plotQuery = {
     class4type,
     dataset,
     forecast: forecast,
@@ -50,8 +49,6 @@ const Class4Window = ({
     showmap,
     climatology,
     error,
-    size: plotSize,
-    dpi: plotDpi,
     models,
   };
 
@@ -140,10 +137,13 @@ const Class4Window = ({
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage
-            query={plot_query}
+            plotType="class4"
+            query={plotQuery}
             permlink_subquery={permlink_subquery}
             featureId={plotData.id}
             action={action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>
