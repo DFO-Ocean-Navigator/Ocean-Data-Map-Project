@@ -68,9 +68,6 @@ const TrackWindow = (props) => {
   };
 
   const changeDataset = (key, value) => {
-    console.log(availableDatasets);
-    console.log(key, value);
-
     let nextDataset = availableDatasets.filter((d) => d.id === value);
     getVariables(nextDataset[0].id);
     setDataset(nextDataset[0]);

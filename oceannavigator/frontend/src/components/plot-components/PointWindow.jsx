@@ -299,12 +299,12 @@ const PointWindow = ({
         showmap: showMap,
         time: dataset_0.time,
         variable: `${hasTemp ? "votemper," : ""}${hasSal ? "vosaline" : ""}`,
-        variable_range: Object.values(dataset_0.variable_range),
       };
       plotType = "profile";
       break;
     case TabEnum.TS:
       plotQuery = {
+        ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
         time: dataset_0.time,
@@ -314,6 +314,7 @@ const PointWindow = ({
       break;
     case TabEnum.SOUND:
       plotQuery = {
+        ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
         time: dataset_0.time,
@@ -323,6 +324,7 @@ const PointWindow = ({
       break;
     case TabEnum.OBSERVATION:
       plotQuery = {
+        ...plotQuery,
         observation: [plotData.id],
         observation_variable: observationVariable,
       };
@@ -331,9 +333,11 @@ const PointWindow = ({
       break;
     case TabEnum.MOORING:
       plotQuery = {
+        ...plotQuery,
+        variable: dataset_0.variable,
+        variable_range: Object.values(dataset_0.variable_range),
         showmap: showMap,
         station: plotData.coordinates,
-        variable_range: Object.values(dataset_0.variable_range),
         depth: dataset_0.depth,
         starttime: dataset_0.starttime,
         endtime: dataset_0.time,
