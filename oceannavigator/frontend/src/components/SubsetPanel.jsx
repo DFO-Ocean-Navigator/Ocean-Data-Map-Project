@@ -10,12 +10,11 @@ import TimePicker from "./TimePicker.jsx";
 import PropTypes from "prop-types";
 import Icon from "./lib/Icon.jsx";
 import { withTranslation } from "react-i18next";
-import { GetVariablesPromise } from "../remote/OceanNavigator.js";
 import SelectBox from "./lib/SelectBox.jsx";
-import { GetDepthsPromise } from "../remote/OceanNavigator.js";
+
+import { useGetDatasetParams } from "../remote/queries.js";
 
 function SubsetPanel(props) {
-  const [loading, setLoading] = useState(false);
   const [outputTimerange, setOutputTimerange] = useState(false);
   const [outputVariables, setOutputVariables] = useState([]);
   const [outputStarttime, setOutputStarttime] = useState(
@@ -23,20 +22,15 @@ function SubsetPanel(props) {
   );
   const [outputEndtime, setOutputEndtime] = useState(props.dataset.time);
   const [outputFormat, setOutputFormat] = useState("NETCDF4");
-  const [zip, setZip] = useState(false);
-  const [subset_variables, setSubset_variables] = useState([]);
-
-  //codes i added
   const [outputDepth, setOutputDepth] = useState(props.dataset.depth);
-  const [availableDepths, setAvailableDepths] = useState([]);
-  const [showDepthSelector, setShowDepthSelector] = useState(false);
+  const [zip, setZip] = useState(false);
+
+  const { variables, timestamps, depths, isLoading, isError } =
+    useGetDatasetParams(props.dataset);
 
   useEffect(() => {
     setOutputVariables([]);
-    setShowDepthSelector(false);
-    setAvailableDepths([]);
     setOutputDepth(props.dataset.depth);
-    getSubsetVariables();
     setOutputStarttime(props.dataset.starttime);
     setOutputEndtime(props.dataset.time);
   }, [props.dataset.id]);
@@ -67,25 +61,8 @@ function SubsetPanel(props) {
     return [lat_min, lat_max, long_min, long_max];
   };
 
-  const handleVariableSelection = (selectedVariableIds) => {
-    setOutputVariables(selectedVariableIds);
-
-    const variablesWithDepth = subset_variables.filter(
-      (v) => selectedVariableIds.includes(v.id) && v.two_dimensional === false
-    );
-
-    if (variablesWithDepth.length > 0) {
-      setShowDepthSelector(variablesWithDepth.length);
-
-      const varId = variablesWithDepth[0].id;
-      GetDepthsPromise(props.dataset.id, varId).then((result) => {
-        +setAvailableDepths(result.data);
-        +setOutputDepth(result.data[1].id);
-      });
-    } else {
-      setAvailableDepths([]);
-      setOutputDepth(props.dataset.depth);
-    }
+  const handleVariableSelection = (key, value) => {
+    setOutputVariables(key[0] == "variable" ? value[0] : []);
   };
 
   const subsetArea = () => {
@@ -138,21 +115,16 @@ function SubsetPanel(props) {
       "&script_type=subset";
   };
 
-  const getSubsetVariables = () => {
-    setLoading(true);
-
-    GetVariablesPromise(props.dataset.id).then((variableResult) => {
-      setSubset_variables(variableResult.data);
-      setLoading(false);
-    });
-  };
+  const showDepthSelector = variables.some(
+    (v) => outputVariables.includes(v.id) && v.two_dimensional === false
+  );
 
   return (
     <div>
       <Card key="subset" variant="primary">
         <Card.Header>{__("Subset")}</Card.Header>
         <Card.Body>
-          {loading ? null : (
+          {isLoading ? null : (
             <>
               <ComboBox
                 id="variable"
@@ -160,27 +132,23 @@ function SubsetPanel(props) {
                 multiple={true}
                 state={outputVariables}
                 def={"defaults.dataset"}
-                onUpdate={(keys, values) =>
-                  handleVariableSelection(
-                    keys[0] == "variable" ? values[0] : []
-                  )
-                }
-                data={subset_variables}
+                onUpdate={handleVariableSelection}
+                data={variables}
                 title={"Variables"}
               />
 
-              {showDepthSelector && availableDepths.length > 0 && (
+              {showDepthSelector && depths.length > 0 && (
                 <SelectBox
                   id="subset-depth-selector"
                   name="depth"
                   label={__("Depth")}
                   placeholder={__("Depth")}
-                  options={availableDepths}
+                  options={depths}
                   onChange={(_, value) => {
                     setOutputDepth(value);
                   }}
                   selected={outputDepth}
-                  loading={loading}
+                  loading={isLoading}
                 />
               )}
 
@@ -206,6 +174,7 @@ function SubsetPanel(props) {
                     setOutputStarttime(value);
                   }}
                   max={outputTimerange ? outputEndtime : null}
+                  timestamps={timestamps}
                 />
               </div>
               <TimePicker
@@ -220,6 +189,7 @@ function SubsetPanel(props) {
                   setOutputEndtime(value);
                 }}
                 min={outputTimerange ? outputStarttime : null}
+                timestamps={timestamps}
               />
 
               <Form.Group controlId="outputFormat">

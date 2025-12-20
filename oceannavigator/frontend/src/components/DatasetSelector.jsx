@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
@@ -12,13 +13,8 @@ import TimeSlider from "./TimeSlider.jsx";
 import TimePicker from "./TimePicker.jsx";
 import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
-
-import {
-  GetDatasetsPromise,
-  GetVariablesPromise,
-  GetTimestampsPromise,
-  GetDepthsPromise,
-} from "../remote/OceanNavigator.js";
+import { GetAllVariablesPromise } from "../remote/OceanNavigator.js";
+import { useGetDatasets, useGetDatasetParams } from "../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -48,280 +44,144 @@ function DatasetSelector({
   action,
   t,
 }) {
-  const [loading, setLoading] = useState(true);
-  const [loadingPercent, setLoadingPercent] = useState(0);
-  const [loadingTitle, setLoadingTitle] = useState("");
-  const [datasetVariables, setDatasetVariables] = useState([]);
-  const [datasetTimestamps, setDatasetTimestamps] = useState([]);
-  const [datasetDepths, setDatasetDepths] = useState([]);
   const [dataset, setDataset] = useState(mountedDataset);
-  const [availableDatasets, setAvailableDatasets] = useState([]);
-  const [updateParent, setUpdateParent] = useState(false);
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
     DATASET_FILTER_DEFAULTS
   );
 
-  useEffect(() => {
-    GetDatasetsPromise().then((result) => {
-      setAvailableDatasets(result.data);
-    });
-  }, []);
+  const datasets = useGetDatasets();
+  const datasetParams = useGetDatasetParams(dataset);
 
   useEffect(() => {
-    if (availableDatasets.length > 0) {
-      changeDataset(mountedDataset.id, mountedDataset.variable, true);
-    }
-  }, [availableDatasets]);
-
-  useEffect(() => {
+    // update timestamps on initial app load
     if (
-      mountedDataset.id !== dataset.id ||
-      mountedDataset.variable !== dataset.variable
+      mountedDataset.time < 0 &&
+      mountedDataset.starttime < 0 &&
+      JSON.stringify(dataset) !== JSON.stringify(mountedDataset)
     ) {
-      changeDataset(mountedDataset.id, mountedDataset.variable, true);
-    }
-  }, [mountedDataset]);
-
-  useEffect(() => {
-    if (updateParent) {
       onUpdate("dataset", dataset);
-      setUpdateParent(false);
     }
   }, [dataset]);
 
-  const changeDataset = (
-    newDataset,
-    newVariable,
-    updateParentOnSuccess = false,
-    newQuiverVariable,
-    newVariableScale,
-    date
-  ) => {
-    const currentDataset = availableDatasets.filter((d) => {
-      return d.id === newDataset;
+  useEffect(() => {
+    // update dataset selectors in all components if dataset changed
+    if (JSON.stringify(dataset) !== JSON.stringify(mountedDataset)) {
+      setDataset(mountedDataset);
+    }
+  }, [mountedDataset]);
+
+  const queryClient = useRef(useQueryClient());
+
+  const updateDataset = (key, value) => {
+    cleanQueryCache(["dataset", dataset.id]);
+
+    let nextDataset = datasets.data.filter((d) => {
+      return d.id === value;
     })[0];
 
-    setLoading(true);
-    setLoadingPercent(10);
-    setLoadingTitle(currentDataset.value);
-    const quantum = currentDataset.quantum;
-    const model_class = currentDataset.model_class;
-
-    GetVariablesPromise(newDataset).then(
-      (variableResult) => {
-        // Carry the currently selected variable to the new
-        // dataset if said variable exists in the new dataset.
-        setLoadingPercent(33);
-        newVariable = newVariable ?? mountedDataset.variable
-        newVariableScale = newVariableScale ?? mountedDataset.variable_scale;
-        newQuiverVariable = newQuiverVariable ?? mountedDataset.quiverVariable;
-        let newQuiverDensity = mountedDataset.quiverDensity;
-        let variable_range = {};
-        variable_range[newVariable] = null;
-        const variableIds = variableResult.data.map((v) => {
-          return v.id;
-        });
-
-        if (!variableIds.includes(newVariable)) {
-          newVariable = variableResult.data[0].id;
-          newVariableScale = variableResult.data[0].scale;
-          variable_range[newVariable] = null;
-        }
-
-        GetTimestampsPromise(newDataset, newVariable).then(
-          (timeResult) => {
-            setLoadingPercent(66);
-            const timeData = timeResult.data;
-            let newTime, newStarttime;
-            if (date) {
-              let dates = timeData.map((t) => new Date(t.value));
-              let [, timeIdx] = dates.reduce((prev, curr, idx) => {
-                let diff = Math.abs(curr - date)
-                return diff <= prev[0] ? [diff, idx] : prev;
-              }, [Infinity, 0]);
-              newTime = timeData[timeIdx].id;
-              newStarttime = timeIdx > 20
-                  ? timeData[timeIdx - 20].id
-                  : timeData[0].id;
-            } else {
-              newTime = timeData[timeData.length - 1].id;
-              newStarttime = timeData.length > 20
-                  ? timeData[timeData.length - 20].id
-                  : timeData[0].id;
-              if (mountedDataset && mountedDataset.id === newDataset) {
-                newTime =
-                  mountedDataset.time > 0 ? mountedDataset.time : newTime;
-                newStarttime =
-                  mountedDataset.starttime > 0
-                    ? mountedDataset.starttime
-                    : newStarttime;
-              }
-            }
-            GetDepthsPromise(newDataset, newVariable).then(
-              (depthResult) => {
-                setLoadingPercent(90);
-                setDataset({
-                  id: newDataset,
-                  model_class: model_class,
-                  quantum: quantum,
-                  time: newTime,
-                  depth: 0,
-                  starttime: newStarttime,
-                  variable: newVariable,
-                  variable_scale: newVariableScale,
-                  variable_range: variable_range,
-                  quiverVariable: newQuiverVariable,
-                  quiverDensity: newQuiverDensity,
-                  default_location: currentDataset.default_location,
-                });
-                setDatasetVariables(variableResult.data);
-                setDatasetTimestamps(timeData);
-                setDatasetDepths(depthResult.data);
-                setLoading(false);
-                setLoadingPercent(100);
-
-                if (updateParentOnSuccess) {
-                  setUpdateParent(true);
-                }
-              },
-              (error) => {
-                setLoading(false);
-                setLoadingPercent(0);
-                console.error(error);
-              }
-            );
-          },
-          (error) => {
-            setLoading(false);
-            setLoadingPercent(0);
-            console.error(error);
-          }
-        );
-      },
-      (error) => {
-        setLoading(false);
-        setLoadingPercent(0);
-        console.error(error);
-      }
-    );
+    setDataset((prevDataset) => ({
+      ...prevDataset,
+      attribution: nextDataset.attribution,
+      default_location: nextDataset.default_location,
+      id: nextDataset.id,
+      depth: 0,
+      model_class: nextDataset.model_class,
+      quantum: nextDataset.quantum,
+    }));
   };
 
-  const changeVariable = (newVariable) => {
-    if (datasetDepths.length === 0) {
-      GetDepthsPromise(dataset.id, newVariable).then((depthResult) => {
-        setDatasetDepths(depthResult.data);
-      });
-    }
+  const updateVariable = (key, value) => {
+    cleanQueryCache(["dataset", dataset.variable]);
 
-    let newDataset = {};
-
-    // Multiple variables were selected
-    // so don't update everything else
-    if (newVariable instanceof HTMLCollection) {
-      let variables = Array.from(newVariable).map((o) => o.value);
+    let nextVar;
+    if (value instanceof HTMLCollection) {
+      let variables = Array.from(value).map((o) => o.value);
       let variableRanges = {};
       variables.forEach((v) => {
         variableRanges[v] = null;
       });
-      newDataset = {
+      nextVar = {
         variable: variables,
         variable_range: variableRanges,
         variable_two_dimensional: false,
       };
       if (variables.length === 1) {
-        const variable = datasetVariables.find((v) => v.id === variables[0]);
-        newDataset = { ...newDataset, variable_scale: variable.scale };
+        const variable = datasetParams.variables.find(
+          (v) => v.id === variables[0]
+        );
+        nextVar = { ...nextVar, variable_scale: variable.scale };
       }
     } else {
-      const variable = datasetVariables.find((v) => v.id === newVariable);
-      let newVariableRange = {};
-      newVariableRange[newVariable] = null;
-
-      newDataset = {
-        variable: newVariable,
+      let variable = datasetParams.variables.find((v) => {
+        return v.id === value;
+      });
+      nextVar = {
+        variable: variable.id,
         variable_scale: variable.scale,
-        variable_range: newVariableRange,
-        variable_two_dimensional: variable.two_dimensional,
+        variable_range: { [value]: null },
+        variable_two_dimensional: false,
       };
     }
-
-    setDataset((prevDataset) => {
-      return { ...prevDataset, ...newDataset };
-    });
+    setDataset((prevDataset) => ({
+      ...prevDataset,
+      ...nextVar,
+    }));
   };
 
-  const changeTime = (newTime) => {
-    newTime = Number(newTime)
-    let newStarttime = dataset.starttime;
-    if (dataset.starttime > newTime) {
-      const timeIdx = datasetTimestamps.findIndex(
-        (timestamp) => timestamp.id === newTime
-      );
-      newStarttime =
-        timeIdx > 20
-          ? datasetTimestamps[timeIdx - 20].id
-          : datasetTimestamps[0].id;
+  const updateTime = (key, value) => {
+    //TODO: Check that start/endtime selectors work properly
+    let nextTime = dataset.time;
+    let nextStarttime = dataset.starttime;
+    switch (key) {
+      case "time":
+        nextTime = value;
+        if (value < nextStarttime || nextStarttime < 0) {
+          let timeIdx = timestampIds.indexOf(value);
+          nextStarttime =
+            timeIdx > 20
+              ? datasetParams.timestamps[timeIdx - 20].id
+              : datasetParams.timestamps[0].id;
+        }
+        break;
+      case "starttime":
+        nextStarttime = value;
+        break;
     }
-
-    const newDataset = { ...dataset, time: newTime };
-
-    if (newStarttime !== dataset.starttime) {
-      newDataset.starttime = newStarttime;
-    }
-
-    if (
-      mountedDataset.dataset === dataset.dataset &&
-      mountedDataset.variable === dataset.variable
-    ) {
-      newDataset.variable_scale = mountedDataset.variable_scale;
-    }
-
-    setDataset(newDataset);
+    setDataset((prevDataset) => ({
+      ...prevDataset,
+      time: nextTime,
+      starttime: nextStarttime,
+    }));
   };
 
-  const nothingChanged = (key, value) => {
-    return dataset[key] === value;
+  const updateQuiver = (key, value) => {
+    setDataset((prevDataset) => ({
+      ...prevDataset,
+      [key]: value,
+    }));
   };
 
-  const datasetChanged = (key) => {
-    return key === "dataset";
-  };
-
-  const variableChanged = (key) => {
-    return key === "variable";
-  };
-
-  const timeChanged = (key) => {
-    return key === "time";
-  };
-
-  const updateDataset = (key, value, quiverVariable = null) => {
-    if (nothingChanged(key, value)) {
-      return;
-    }
-
-    if (datasetChanged(key)) {
-      changeDataset(value, dataset.variable, quiverVariable);
-      return;
-    }
-
-    if (variableChanged(key)) {
-      changeVariable(value);
-      return;
-    }
-
-    if (timeChanged(key)) {
-      changeTime(value);
-      return;
-    }
-
-    let newDataset = { ...dataset, [key]: value };
-    setDataset(newDataset);
+  const updateDepth = (key, value) => {
+    value === "all" && setUpdateParent(false);
+    setDataset((prevDataset) => ({
+      ...prevDataset,
+      [key]: value,
+    }));
   };
 
   const handleGoButton = () => {
     onUpdate("dataset", dataset);
+  };
+
+  const cleanQueryCache = (keys) => {
+    !Array.isArray(keys) && (keys = [keys]);
+    queryClient.current.removeQueries({
+      predicate: (query) => {
+        const queryKey = query.queryKey;
+        return keys.every((key) => queryKey.includes(key));
+      },
+    });
   };
 
   const toggleSearchDatasets = () => {
@@ -340,14 +200,95 @@ function DatasetSelector({
     }
   };
 
-  let datasetSelector = null;
+  const applySearchFilters = (datasetId, variableId, vectorVariable, date) => {
+    updateDataset("id", datasetId);
+    variableId && updateVariable("variable", variableId);
+    vectorVariable && updateQuiver("quiverVariable", vectorVariable);
+    if (date) {
+      let dates = datasetParams.timestamps.map((t) => new Date(t.value));
+      let [, timeIdx] = dates.reduce(
+        (prev, curr, idx) => {
+          let diff = Math.abs(curr - date);
+          return diff <= prev[0] ? [diff, idx] : prev;
+        },
+        [Infinity, 0]
+      );
+      let nextTime = datasetParams.timestamps[timeIdx].id;
+      updateTime("time", nextTime);
+      setUpdateParent(true);
+    }
+  };
 
-  if (availableDatasets && availableDatasets.length > 0) {
+  const updateAxisRange = (key, value) => {
+    let range = dataset.variable_range;
+    range[value[0]] = value[1];
+    setDataset({ ...dataset, variable_range: range });
+  };
+
+  const variableIds = datasetParams.variables.map((v) => {
+    return v.id;
+  });
+
+  const timestampIds = datasetParams.timestamps.map((ts) => {
+    return ts.id;
+  });
+
+  if (variableIds.length > 0) {
+    if (!multipleVariables && Array.isArray(dataset.variable)) {
+      updateVariable("variable", dataset.variable[0]);
+    } else {
+      let datasetHasVar = Array.isArray(dataset.variable)
+        ? (datasetHasVar = dataset.variable.every((v) =>
+            variableIds.includes(v)
+          ))
+        : variableIds.includes(dataset.variable);
+
+      if (!datasetHasVar) {
+        let nextVariable = datasetParams.variables[0];
+        updateVariable("variable", nextVariable.id);
+      }
+    }
+  }
+
+  if (
+    dataset.quiverVariable !== "none" &&
+    variableIds.length > 0 &&
+    (!variableIds.includes(dataset.quiverVariable) ||
+      !MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class))
+  ) {
+    updateQuiver("quiverVariable", "none");
+  }
+
+  if (
+    datasetParams.timestamps.length > 0 &&
+    !timestampIds.includes(dataset.time)
+  ) {
+    let nextTime;
+    if (dataset.time < 0) {
+      // no timestamp previously selected, so select the latest one
+      nextTime = datasetParams.timestamps[datasetParams.timestamps.length - 1].id;
+    } else {
+      // find nearest timestamp
+      nextTime = timestampIds.reduce((previous, current) => {
+        const previousDiff = Math.abs(previous - dataset.time);
+        const currentDiff = Math.abs(current - dataset.time);
+        return currentDiff <= previousDiff ? current : previous;
+      });
+    }
+    updateTime("time", nextTime);
+  }
+
+  const loadingTitle = datasets.data.filter((d) => {
+    return d.id === dataset.id;
+  })[0]?.value;
+
+  let datasetSelector = null;
+  if (datasets.data && datasets.data.length > 0) {
     datasetSelector = (
       <DatasetDropdown
         id={`dataset-selector-dataset-selector-${id}`}
         key={`dataset-selector-dataset-selector-${id}`}
-        options={availableDatasets}
+        options={datasets.data}
         label={t("Dataset")}
         placeholder={t("Dataset")}
         onChange={updateDataset}
@@ -358,14 +299,18 @@ function DatasetSelector({
   }
 
   let variableSelector = null;
-  if (showVariableSelector && datasetVariables && datasetVariables.length > 0) {
+  if (
+    showVariableSelector &&
+    datasetParams.variables &&
+    datasetParams.variables.length > 0
+  ) {
     let variableOptions = [];
     if (variables === "3d") {
-      variableOptions = datasetVariables.filter((v) => {
+      variableOptions = datasetParams.variables.filter((v) => {
         return v.two_dimensional === false;
       });
     } else {
-      variableOptions = datasetVariables;
+      variableOptions = datasetParams.variables;
     }
 
     // Work-around for when someone selected a plot that requires
@@ -385,10 +330,10 @@ function DatasetSelector({
         label={t("Variable")}
         placeholder={t("Variable")}
         options={variableOptions}
-        onChange={updateDataset}
+        onChange={updateVariable}
         selected={selected}
         multiple={multipleVariables}
-        loading={loading}
+        loading={datasetParams.isLoading}
         horizontalLayout={horizontalLayout}
       />
     );
@@ -398,10 +343,10 @@ function DatasetSelector({
   if (showQuiverSelector) {
     let quiverVariables = [];
     if (
-      datasetVariables &&
+      datasetParams.variables &&
       MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class)
     ) {
-      quiverVariables = datasetVariables.filter((variable) => {
+      quiverVariables = datasetParams.variables.filter((variable) => {
         return variable.vector_variable;
       });
     }
@@ -415,9 +360,9 @@ function DatasetSelector({
           label={t("Quiver")}
           placeholder={t("Quiver Variable")}
           options={quiverVariables}
-          onChange={updateDataset}
+          onChange={updateQuiver}
           selected={dataset.quiverVariable}
-          loading={loading}
+          loading={datasetParams.isLoading}
           horizontalLayout={horizontalLayout}
         />
         <Form.Label>Quiver Density</Form.Label>
@@ -432,7 +377,7 @@ function DatasetSelector({
             1: "+",
           }}
           defaultValue={dataset.quiverDensity}
-          onChange={(x) => updateDataset("quiverDensity", parseInt(x))}
+          onChange={(x) => updateQuiver("quiverDensity", parseInt(x))}
         />
       </div>
     );
@@ -441,8 +386,8 @@ function DatasetSelector({
   let depthSelector = null;
   if (
     showDepthSelector &&
-    datasetDepths &&
-    datasetDepths.length > 0 &&
+    datasetParams.depths &&
+    datasetParams.depths.length > 0 &&
     !dataset.variable_two_dimensional
   ) {
     depthSelector = (
@@ -453,12 +398,12 @@ function DatasetSelector({
         placeholder={t("Depth")}
         options={
           showDepthsAll
-            ? datasetDepths
-            : datasetDepths.filter((d) => d.id !== "all")
+            ? datasetParams.depths
+            : datasetParams.depths.filter((d) => d.id !== "all")
         }
-        onChange={updateDataset}
+        onChange={updateDepth}
         selected={
-          datasetDepths.filter((d) => {
+          datasetParams.depths.filter((d) => {
             let depth = parseInt(dataset.depth);
             if (isNaN(depth)) {
               // when depth == "bottom" or "all"
@@ -468,64 +413,66 @@ function DatasetSelector({
             return d.id === depth;
           })[0].id
         }
-        loading={loading}
+        loading={datasetParams.isLoading}
         horizontalLayout={horizontalLayout}
       />
     );
   }
 
   let timeSelector = null;
-  if (showTimeSlider && !compareDatasets) {
-    timeSelector = (
-      <TimeSlider
-        key="time"
-        id="time"
-        dataset={dataset}
-        timestamps={datasetTimestamps}
-        selected={dataset.time}
-        onChange={updateDataset}
-        loading={loading}
-      />
-    );
-  } else if (datasetTimestamps && !loading) {
-    if (showTimeRange) {
+  if (datasetParams.timestamps.length > 0) {
+    if (showTimeSlider && !compareDatasets) {
       timeSelector = (
-        <div>
-          <TimePicker
-            key="starttime"
-            id="starttime"
-            state={dataset.starttime}
-            title={t("Start Time (UTC)")}
-            onUpdate={updateDataset}
-            max={dataset.time}
-            dataset={dataset}
-            timestamps={datasetTimestamps}
-          />
+        <TimeSlider
+          key="time"
+          id="time"
+          dataset={dataset}
+          timestamps={datasetParams.timestamps}
+          selected={dataset.time}
+          onChange={updateTime}
+          loading={datasetParams.isLoading}
+        />
+      );
+    } else if (datasetParams.timestamps && !datasetParams.isLoading) {
+      if (showTimeRange) {
+        timeSelector = (
+          <div>
+            <TimePicker
+              key="starttime"
+              id="starttime"
+              state={dataset.starttime}
+              title={t("Start Time (UTC)")}
+              onUpdate={updateTime}
+              max={dataset.time}
+              dataset={dataset}
+              timestamps={datasetParams.timestamps}
+            />
+            <TimePicker
+              key="time"
+              id="time"
+              state={dataset.time}
+              title={t("End Time (UTC)")}
+              onUpdate={updateTime}
+              min={dataset.starttime}
+              dataset={dataset}
+              timestamps={datasetParams.timestamps}
+            />
+          </div>
+        );
+      } else {
+        timeSelector = (
           <TimePicker
             key="time"
             id="time"
             state={dataset.time}
-            title={t("End Time (UTC)")}
-            onUpdate={updateDataset}
-            min={dataset.starttime}
+            onUpdate={updateTime}
+            title={t("Time (UTC)")}
             dataset={dataset}
-            timestamps={datasetTimestamps}
+            timestamps={datasetParams.timestamps}
+            horizontalLayout={horizontalLayout}
           />
-        </div>
-      );
-    } else {
-      timeSelector = (
-        <TimePicker
-          key="time"
-          id="time"
-          state={dataset.time}
-          onUpdate={updateDataset}
-          title={t("Time (UTC)")}
-          dataset={dataset}
-          timestamps={datasetTimestamps}
-          horizontalLayout={horizontalLayout}
-        />
-      );
+        );
+      }
     }
   }
 
@@ -540,30 +487,24 @@ function DatasetSelector({
         variant="primary"
         type="submit"
         onClick={handleGoButton}
-        disabled={loading}
+        disabled={datasetParams.isLoading}
       >
         {t("Go")}
       </Button>
     </OverlayTrigger>
   );
 
-  function updateAxisRange(key, value) {
-    let range = dataset.variable_range;
-    range[value[0]] = value[1];
-    setDataset({ ...dataset, variable_range: range });
-  }
-
   let axisRange = [];
   if (
     showAxisRange &&
-    datasetVariables &&
-    datasetVariables.length > 0 &&
-    !loading
+    datasetParams.variables &&
+    datasetParams.variables.length > 0 &&
+    !datasetParams.isLoading
   ) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
       : [dataset.variable];
-    let variableData = datasetVariables.filter((v) =>
+    let variableData = datasetParams.variables.filter((v) =>
       axisVariables.includes(v.id)
     );
     let axisVariableRanges = variableData.map((v) => v.scale);
@@ -594,8 +535,14 @@ function DatasetSelector({
       }}
     />
   ) : null;
+
   let datasetSearchButton = null;
   if (datasetSearch) {
+    queryClient.current.prefetchQuery({
+      queryKey: ["datasetFilters", "allVariables"],
+      queryFn: GetAllVariablesPromise,
+    });
+
     datasetSearchButton = (
       <OverlayTrigger
         key="draw-search-btn"
@@ -615,6 +562,8 @@ function DatasetSelector({
     );
   }
 
+  console.log(dataset);
+
   return (
     <>
       <div
@@ -630,6 +579,7 @@ function DatasetSelector({
 
         {axisRange}
         {horizontalLayout ? null : timeSelector}
+
         {horizontalLayout ? goButton : null}
         {showCompare ? compareSwitch : null}
         {datasetSearchButton}
@@ -648,10 +598,10 @@ function DatasetSelector({
         </Modal.Header>
         <Modal.Body>
           <DatasetSearchWindow
-            datasets={availableDatasets}
+            datasets={datasets.data}
             filters={datasetSearchFilters}
             updateFilters={updateSearchFilters}
-            updateDataset={changeDataset}
+            applyFilters={applySearchFilters}
             closeModal={toggleSearchDatasets}
           />
         </Modal.Body>
@@ -662,12 +612,17 @@ function DatasetSelector({
         </Modal.Footer>
       </Modal>
 
-      <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
+      <Modal
+        show={datasetParams.isLoading}
+        backdrop
+        size="sm"
+        dialogClassName="loading-modal"
+      >
         <Modal.Header>
           <Modal.Title>{`${t("Loading")} ${loadingTitle}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ProgressBar now={loadingPercent} />
+          <ProgressBar now={100} animated />
         </Modal.Body>
       </Modal>
     </>

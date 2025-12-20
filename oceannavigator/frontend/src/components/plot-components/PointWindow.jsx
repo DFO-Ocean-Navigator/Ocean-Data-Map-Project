@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
@@ -10,6 +11,15 @@ import DatasetSelector from "../DatasetSelector.jsx";
 import PropTypes from "prop-types";
 import { GetVariablesPromise } from "../../remote/OceanNavigator.js";
 import { withTranslation } from "react-i18next";
+
+function useGetVariables(datasetId) {
+  const { data: variables = [] } = useQuery({
+    queryKey: ["dataset", "variables", datasetId],
+    queryFn: () => GetVariablesPromise(datasetId),
+  });
+
+  return variables;
+}
 
 const TabEnum = {
   PROFILE: 1,
@@ -43,9 +53,6 @@ const PointWindow = ({
   const [colormap, setColormap] = useState(init?.colormap || "default");
 
   // Data state
-  const [datasetVariables, setDatasetVariables] = useState(
-    init?.datasetVariables || []
-  );
   const [observationVariable, setObservationVariable] = useState(
     init?.observation_variable || [0]
   );
@@ -70,15 +77,12 @@ const PointWindow = ({
     }
   );
 
-  // Fetch dataset variables when dataset ID changes
-  useEffect(() => {
-    GetVariablesPromise(dataset_0.id).then(
-      (res) => {
-        setDatasetVariables(res.data.map((v) => v.id));
-      },
-      (err) => console.error(err)
-    );
-  }, [dataset_0.id]);
+  const datasetVariables = useGetVariables(dataset_0.id);
+  const only2d = datasetVariables.every((v) => v.two_dimensional === true);
+
+  if (only2d && selected !== TabEnum.MOORING) {
+    setSelected(TabEnum.MOORING);
+  }
 
   const handleDatasetUpdate = (key, value) => {
     setDataset_0((prev) => ({ ...prev, ...value }));
@@ -261,72 +265,88 @@ const PointWindow = ({
   // temp/salinity check
   // Checks if the current dataset's variables contain Temperature
   // and Salinity. This is used to enable/disable some tabs.
-  const hasTemp = datasetVariables.some((v) => /temp/i.test(v));
-  const hasSal = datasetVariables.some((v) => /salin/i.test(v));
+  const hasTemp = datasetVariables.some((v) => /temp/i.test(v.value));
+  const hasSal = datasetVariables.some((v) => /salin/i.test(v.value));
   const hasTempSal = hasTemp && hasSal;
 
   // Start constructing query for image
-  const plot_query = {
-    dataset: dataset_0.id,
-    point: plotData.coordinates,
-    showmap: showMap,
-    names: names,
-    size: plotSize,
-    dpi: plotDpi,
-    plotTitle: plotTitles[selected - 1],
-    type: "",
-  };
 
-  let inputs = [];
+  let plotType = "";
+  let plotQuery = {
+    dataset: dataset_0.id,
+    names: names,
+  };
+  let inputs = [global];
+
   switch (selected) {
     case TabEnum.PROFILE:
-      Object.assign(plot_query, {
-        type: "profile",
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
         time: dataset_0.time,
-        variable: dataset_0.variable,
+        variable: Array.isArray(dataset_0.variable)
+          ? dataset_0.variable
+          : [dataset_0.variable],
         variable_range: Object.values(dataset_0.variable_range),
-      });
-      inputs = [global];
+      };
+      plotType = "profile";
       break;
     case TabEnum.CTD:
-      plot_query.type = "profile";
-      plot_query.time = dataset_0.time;
-      // TODO: find index of matching variable in regex
-      // since not all datasets call temp votemper
-      plot_query.variable = `${hasTemp ? "votemper," : ""}${
-        hasSal ? "vosaline" : ""
-      }`;
-      inputs = [global];
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable: `${hasTemp ? "votemper," : ""}${hasSal ? "vosaline" : ""}`,
+      };
+      plotType = "profile";
       break;
     case TabEnum.TS:
-      Object.assign(plot_query, { type: "ts", time: dataset_0.time });
-      inputs = [global];
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable_range: Object.values(dataset_0.variable_range),
+      };
+      plotType = "ts";
       break;
     case TabEnum.SOUND:
-      Object.assign(plot_query, { type: "sound", time: dataset_0.time });
-      inputs = [global];
+      plotQuery = {
+        ...plotQuery,
+        station: plotData.coordinates,
+        showmap: showMap,
+        time: dataset_0.time,
+        variable_range: Object.values(dataset_0.variable_range),
+      };
+      plotType = "sound";
       break;
     case TabEnum.OBSERVATION:
-      plot_query.type = "observation";
-      plot_query.observation = [plotData.id];
-      plot_query.observation_variable = observationVariable;
-      plot_query.variable = dataset_0.variable;
-      inputs = [global, observationVariableElem];
+      plotQuery = {
+        ...plotQuery,
+        observation: [plotData.id],
+        observation_variable: observationVariable,
+      };
+      plotType.type = "observation";
+      inputs.push(observationVariableElem);
       break;
     case TabEnum.MOORING:
-      Object.assign(plot_query, {
-        type: "timeseries",
+      plotQuery = {
+        ...plotQuery,
         variable: dataset_0.variable,
         variable_range: Object.values(dataset_0.variable_range),
+        showmap: showMap,
+        station: plotData.coordinates,
+        depth: dataset_0.depth,
         starttime: dataset_0.starttime,
         endtime: dataset_0.time,
-        depth: dataset_0.depth,
         colormap: colormap,
         interp: mapSettings.interpType,
         radius: mapSettings.interpRadius,
         neighbours: mapSettings.interpNeighbours,
-      });
-      inputs = [global];
+      };
+      plotType = "timeseries";
       if (dataset_0.depth === "all")
         // Add Colormap selector
         inputs.push(
@@ -342,16 +362,6 @@ const PointWindow = ({
             <img src="/plot/colormaps.png/" alt="" />{" "}
           </ComboBox>
         );
-      break;
-    case TabEnum.STICK:
-      Object.assign(plot_query, {
-        type: "stick",
-        variable: dataset_0.variable,
-        starttime: dataset_0.starttime,
-        endtime: dataset_0.time,
-        depth: dataset_0.depth,
-      });
-      inputs = [global, multiDepthVector];
       break;
   }
 
@@ -373,27 +383,29 @@ const PointWindow = ({
     <div className="PointWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.PROFILE}>{_("Profile")}</Nav.Link>
+          <Nav.Link eventKey={TabEnum.PROFILE} disabled={only2d}>
+            {_("Profile")}
+          </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal || only2d}>
             {_("CTD Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSal || only2d}>
             {_("T/S Diagram")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSal}>
+          <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSal || only2d}>
             {_("Sound Speed Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link
             eventKey={TabEnum.OBSERVATION}
-            disabled={!plotData.observation}
+            disabled={!plotData.observation || only2d}
           >
             {_("Observation")}
           </Nav.Link>
@@ -409,9 +421,13 @@ const PointWindow = ({
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage
-            query={plot_query}
+            plotType={plotType}
+            query={plotQuery}
             permlink_subquery={permlink_subquery}
+            featureId={plotData.id}
             action={action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>

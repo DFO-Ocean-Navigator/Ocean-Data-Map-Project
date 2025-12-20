@@ -1,14 +1,16 @@
 const DATASET_DEFAULTS = Object.freeze({
   id: "giops_day",
+  model_class: "Mercator",
   attribution: "",
   quantum: "day",
   depth: 0,
   time: -1,
   starttime: -1,
   variable: "votemper",
-  quiverVariable: "None",
+  quiverVariable: "none",
   quiverDensity: 0,
   variable_scale: [-5, 30],
+  variable_range: {votemper: null},
   variable_two_dimensional: false,
 });
 
