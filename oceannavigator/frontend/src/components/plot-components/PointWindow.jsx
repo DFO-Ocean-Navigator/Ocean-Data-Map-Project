@@ -368,6 +368,7 @@ const PointWindow = ({
     datasetVariables,
     observation_variable: observationVariable,
     dataset_0,
+    names:names
   };
 
   return (
