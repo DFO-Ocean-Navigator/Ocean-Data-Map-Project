@@ -32,6 +32,8 @@ function DatasetSelector({
   onUpdate,
   id,
   variables,
+  subquery_variable_range,
+  subquery_depth,
   multipleVariables = false,
   showQuiverSelector = true,
   showTimeRange = false,
@@ -76,8 +78,9 @@ function DatasetSelector({
 
   useEffect(() => {
     if (
-      mountedDataset.id !== dataset.id ||
-      mountedDataset.variable !== dataset.variable
+      availableDatasets.length > 0 &&
+      (mountedDataset.id !== dataset.id ||
+        mountedDataset.variable !== dataset.variable)
     ) {
       changeDataset(mountedDataset.id, mountedDataset.variable, true);
     }
@@ -113,7 +116,7 @@ function DatasetSelector({
         // Carry the currently selected variable to the new
         // dataset if said variable exists in the new dataset.
         setLoadingPercent(33);
-        newVariable = newVariable ?? mountedDataset.variable
+        newVariable = newVariable ?? mountedDataset.variable;
         newVariableScale = newVariableScale ?? mountedDataset.variable_scale;
         newQuiverVariable = newQuiverVariable ?? mountedDataset.quiverVariable;
         let newQuiverDensity = mountedDataset.quiverDensity;
@@ -136,17 +139,20 @@ function DatasetSelector({
             let newTime, newStarttime;
             if (date) {
               let dates = timeData.map((t) => new Date(t.value));
-              let [, timeIdx] = dates.reduce((prev, curr, idx) => {
-                let diff = Math.abs(curr - date)
-                return diff <= prev[0] ? [diff, idx] : prev;
-              }, [Infinity, 0]);
+              let [, timeIdx] = dates.reduce(
+                (prev, curr, idx) => {
+                  let diff = Math.abs(curr - date);
+                  return diff <= prev[0] ? [diff, idx] : prev;
+                },
+                [Infinity, 0]
+              );
               newTime = timeData[timeIdx].id;
-              newStarttime = timeIdx > 20
-                  ? timeData[timeIdx - 20].id
-                  : timeData[0].id;
+              newStarttime =
+                timeIdx > 20 ? timeData[timeIdx - 20].id : timeData[0].id;
             } else {
               newTime = timeData[timeData.length - 1].id;
-              newStarttime = timeData.length > 20
+              newStarttime =
+                timeData.length > 20
                   ? timeData[timeData.length - 20].id
                   : timeData[0].id;
               if (mountedDataset && mountedDataset.id === newDataset) {
@@ -166,7 +172,7 @@ function DatasetSelector({
                   model_class: model_class,
                   quantum: quantum,
                   time: newTime,
-                  depth: 0,
+                  depth: subquery_depth??0,
                   starttime: newStarttime,
                   variable: newVariable,
                   variable_scale: newVariableScale,
@@ -577,6 +583,7 @@ function DatasetSelector({
           variable={axisVariables[i]}
           range={axisVariableRanges[i]}
           onUpdate={updateAxisRange}
+          variable_range={subquery_variable_range?.[dataset.variable]}
         />
       );
       axisRange.push(range);

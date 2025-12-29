@@ -17,6 +17,7 @@ function ComboBox({
   def = "",
   children,
   t: _,
+  subquery = false,
 }) {
   const [optionsData, setOptionsData] = useState([]);
   const [showHelp, setShowHelp] = useState(false);
@@ -32,8 +33,8 @@ function ComboBox({
         .then((res) => {
           let list = res.data.slice();
           const ids = list.map((d) => d.id);
-
           if (
+            subquery === true ||
             (propState === "" && typeof propState === "string") ||
             propState === "none"
           ) {
@@ -59,7 +60,6 @@ function ComboBox({
     const notIn = Array.isArray(value)
       ? value.some((v) => !a.includes(v) && !a.includes(parseFloat(v)))
       : !a.includes(value) && !a.includes(f);
-
     if (notIn || (propState === "" && list.length) || propState === "all") {
       if (multiple) {
         value =
@@ -81,15 +81,6 @@ function ComboBox({
     }
     if (typeof onUpdate === "function") {
       onUpdate(id, value);
-      const idx = a.indexOf(value);
-      if (idx !== -1) {
-        const d = list[idx];
-        for (let k in d) {
-          if (k !== "id" && k !== "value" && d[k] != null) {
-            onUpdate(id + "_" + k, d[k]);
-          }
-        }
-      }
     }
   }
 
@@ -151,16 +142,18 @@ function ComboBox({
 
     return (
       <div className="ComboBox input">
-         <div className="combobox-title-row">
+        <div className="combobox-title-row">
           <h1 className="combobox-title">{title}</h1>
-          {hasHelp && <Button
-            variant="link"
-            className="combobox-help-button"
-            onClick={openHelp}
-            aria-label={_("Open help for {{title}}", { title })}
-          >
-            {_("?")}
-          </Button>}
+          {hasHelp && (
+            <Button
+              variant="link"
+              className="combobox-help-button"
+              onClick={openHelp}
+              aria-label={_("Open help for {{title}}", { title })}
+            >
+              {_("?")}
+            </Button>
+          )}
         </div>
 
         <Modal show={showHelp} onHide={closeHelp} dialogClassName="helpdialog">
@@ -186,7 +179,6 @@ function ComboBox({
         >
           {opts}
         </Form.Select>
-
       </div>
     );
   }
