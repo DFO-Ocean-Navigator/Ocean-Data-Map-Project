@@ -91,11 +91,11 @@ function OceanNavigator(props) {
           mapRef.current.selectFeatures(selectedIds);
           if (query.plotData) {
             setSubquery(query.subquery);
-            if(query.subquery.names)
-            {
-              setNames(query.subquery.names)
-            }
+
             action("updatePlots", query.plotData);
+          }
+          if (query.subquery.names) {
+            setNames(query.subquery.names);
           }
         }, 1000);
       } catch (err) {
