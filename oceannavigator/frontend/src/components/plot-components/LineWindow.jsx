@@ -263,7 +263,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
-          subquery_depth={props.init?.depth}
+          subquery_depth={props.init?.depth_left}
           onUpdate={props.updateDataset0}
           variables={selected === 2 ? "all" : "3d"}
           showQuiverSelector={false}
@@ -293,7 +293,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
-          subquery_depth={props.init?.depth}
+          subquery_depth={props.init?.depth_right}
           onUpdate={props.updateDataset1}
           variables={selected === 2 ? "all" : "3d"}
           showQuiverSelector={false}
@@ -398,7 +398,8 @@ const LineWindow = (props) => {
     depth_limit: depthLimit,
     profile_distance: profileDistance,
     show_profile: showProfile,
-    depth: props.dataset_0.depth,
+    depth_left: props.dataset_0.depth,
+    depth_right:props.dataset_1.depth,
     autoScale: autoScale,
   };
 
