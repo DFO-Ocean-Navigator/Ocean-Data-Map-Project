@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  headers: { "Cache-Control": "no-cache" }
+  headers: { "Cache-Control": "no-cache" },
 });
 
 export async function GetDatasetsPromise() {
@@ -35,7 +35,7 @@ export async function GetDepthsPromise(dataset, variable) {
 //returns a complete list of variables for users to select
 export async function GetAllVariablesPromise() {
   const response = await instance.get("/api/v2.0/datasets/variables/all");
-  return response.data
+  return response.data;
 }
 
 export function GetPresetPointsPromise() {
@@ -96,12 +96,11 @@ export function GetTrackTimeRangePromise(track) {
 }
 
 export async function GetPlotImagePromise(plotType, query) {
-    const queryConfig = {
-      method: "get",
-      url: `/api/v2.0/plot/${plotType}`,
-      params: { query: JSON.stringify(query), format: "json" },
-    };
-    const response = await axios.request(queryConfig);
-    return response.data;
-  
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/plot/${plotType}`,
+    params: { query: JSON.stringify(query), format: "json" },
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
 }

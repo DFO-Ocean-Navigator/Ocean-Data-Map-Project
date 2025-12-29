@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, QueryClient } from "@tanstack/react-query";
 
 import {
   GetDatasetsPromise,
@@ -6,7 +6,10 @@ import {
   GetTimestampsPromise,
   GetDepthsPromise,
   GetPlotImagePromise,
+  GetAllVariablesPromise,
 } from "./OceanNavigator.js";
+
+const queryClient = new QueryClient();
 
 export function useGetDatasets() {
   const {
@@ -21,61 +24,66 @@ export function useGetDatasets() {
   return { data, isLoading, isError };
 }
 
-export function useGetDatasetParams(dataset) {
+export function useGetDatasetVariables(dataset, enabled = true) {
   const {
-    data: variables = [],
-    isLoading: variablesLoading,
-    isError: variablesError,
+    data = [],
+    isLoading,
+    isError,
   } = useQuery({
     queryKey: ["dataset", "variables", dataset.id],
     queryFn: () => GetVariablesPromise(dataset.id),
+    enabled,
   });
 
-  const variableIds = variables.map((v) => {
-    return v.id;
-  });
-
-  let queryVar = Array.isArray(dataset.variable)
-    ? dataset.variable[0]
-    : dataset.variable;
-
-  const {
-    data: timestamps = [],
-    isLoading: timestampsLoading,
-    isError: timestampsError,
-  } = useQuery({
-    queryKey: ["dataset", "timestamps", dataset.id, queryVar],
-    queryFn: () => GetTimestampsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const {
-    data: depths = [],
-    isLoading: depthsLoading,
-    isError: depthsError,
-  } = useQuery({
-    queryKey: ["dataset", "depths", dataset.id, queryVar],
-    queryFn: () => GetDepthsPromise(dataset.id, queryVar),
-    enabled: !!variableIds.includes(queryVar),
-  });
-
-  const isLoading = variablesLoading || timestampsLoading || depthsLoading;
-  const isError = variablesError || timestampsError || depthsError;
-
-  return {
-    variables,
-    timestamps,
-    depths,
-    isLoading,
-    isError,
-  };
+  return { data, isLoading, isError };
 }
 
-export function usePlotImageQuery(feature, plotType, query){
+export function useGetDatasetTimestamps(dataset, enabled) {
+  let variable = Array.isArray(dataset.variable)
+    ? dataset.variable[0]
+    : dataset.variable;
+  const {
+    data = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["dataset", "timestamps", dataset.id, variable.id],
+    queryFn: () => GetTimestampsPromise(dataset.id, variable.id),
+    enabled,
+  });
+
+  return { data, isLoading, isError };
+}
+
+export function useGetDatasetDepths(dataset, enabled) {
+  let variable = Array.isArray(dataset.variable)
+    ? dataset.variable[0]
+    : dataset.variable;
+  const {
+    data = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["dataset", "depths", dataset.id, variable.id],
+    queryFn: () => GetDepthsPromise(dataset.id, variable.id),
+    enabled: enabled,
+  });
+
+  return { data, isLoading, isError };
+}
+
+export function usePlotImageQuery(feature, plotType, query) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["plotImage", { feature, plotType, query }],
     queryFn: () => GetPlotImagePromise(plotType, query),
   });
 
-  return {data, isLoading, isError}
+  return { data, isLoading, isError };
+}
+
+export function prefetchAllVariables() {
+  queryClient.prefetchQuery({
+    queryKey: ["datasetFilters", "allVariables"],
+    queryFn: GetAllVariablesPromise,
+  });
 }

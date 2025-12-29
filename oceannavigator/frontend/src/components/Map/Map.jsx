@@ -349,7 +349,7 @@ const Map = forwardRef((props, ref) => {
   }, [props.dataset1.id]);
 
   useEffect(() => {
-    if (props.dataset0.time >= 0) {
+    if (props.dataset0.time.id >= 0) {
       layerData0.setSource(
         new XYZ(getDataSource(props.dataset0, props.mapSettings))
       );

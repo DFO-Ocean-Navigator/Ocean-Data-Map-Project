@@ -4,14 +4,18 @@ const DATASET_DEFAULTS = Object.freeze({
   attribution: "",
   quantum: "day",
   depth: 0,
-  time: -1,
-  starttime: -1,
-  variable: "votemper",
+  time: { id: -1, value: "" },
+  starttime: { id: -1, value: "" },
+  variable: {
+    id: "votemper",
+    value: "Potential Temperature",
+    scale: [-5, 30],
+    interp: null,
+    two_dimensional: false,
+    vector_variable: false,
+  },
   quiverVariable: "none",
   quiverDensity: 0,
-  variable_scale: [-5, 30],
-  variable_range: {votemper: null},
-  variable_two_dimensional: false,
 });
 
 const MAP_DEFAULTS = Object.freeze({
@@ -29,7 +33,7 @@ const DATASET_FILTER_DEFAULTS = {
   vectorVariable: "none",
   depth: "all",
   date: null,
-  location: ["", ""]
+  location: ["", ""],
 };
 
 export { DATASET_DEFAULTS, MAP_DEFAULTS, DATASET_FILTER_DEFAULTS };

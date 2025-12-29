@@ -8,7 +8,7 @@ import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
-import DatasetDropdown from "../DatasetDropdown.jsx";
+import DatasetDropdown from "../selectors/DatasetDropdown.jsx";
 import SelectBox from "../lib/SelectBox.jsx";
 
 import {
@@ -22,7 +22,7 @@ import { withTranslation } from "react-i18next";
 const TrackWindow = (props) => {
   const [showmap, setShowMap] = useState(true);
   const [dataset, setDataset] = useState(props.dataset);
-  const [variable, setVariable] = useState(props.dataset.variable);
+  const [variable, setVariable] = useState(props.dataset.variable.id);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [availableVariables, setAvailableVariables] = useState([]);
   const [latlon, setLatlon] = useState(false);

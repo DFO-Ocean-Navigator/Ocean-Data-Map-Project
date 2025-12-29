@@ -4,6 +4,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { Accordion, Row, Col } from "react-bootstrap";
+import { useGetDatasets } from "../../remote/queries";
 
 import { withTranslation } from "react-i18next";
 
@@ -38,25 +39,43 @@ const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   </button>
 ));
 
-function DatasetDropdown(props) {
-  const [options, setOptions] = useState([]);
-  const [title, setTitle] = useState("");
+function DatasetDropdown({
+  updateDataset,
+  updateQueryState,
+  selected,
+  horizontalLayout,
+  t,
+}) {
+  const datasets = useGetDatasets();
 
   useEffect(() => {
-    let dropdownItems = [];
-    let menus = props.options.map((d) => d.group);
+    updateQueryState("datasets", datasets.isLoading, datasets.isError);
+  }, [datasets.isLoading, datasets.isError]);
+
+  const selectHandler = (dataset) => {
+    let nextDataset = datasets.data.filter((d) => {
+      return d.id === dataset;
+    })[0];
+
+    updateDataset("dataset", nextDataset);
+  };
+
+  let title = "";
+  let dropdownItems = [];
+  if (datasets.data.length > 0) {
+    let menus = datasets.data.map((d) => d.group);
     menus = [...new Set(menus)];
 
     for (let menu of menus) {
-      let datasets = props.options.filter((d) => {
+      let groupDatasets = datasets.data.filter((d) => {
         return d.group === menu;
       });
-      let submenus = datasets.map((d) => d.subgroup);
+      let submenus = groupDatasets.map((d) => d.subgroup);
       submenus = [...new Set(submenus)];
 
       let options = [];
       for (let submenu of submenus) {
-        let subDatasets = datasets.filter((d) => {
+        let subDatasets = groupDatasets.filter((d) => {
           return d.subgroup === submenu;
         });
         options.push([
@@ -83,37 +102,24 @@ function DatasetDropdown(props) {
       );
     }
 
-    const newTitle = props.options.filter((d) => {
-      return d.id === props.selected;
+    title = datasets.data.filter((d) => {
+      return d.id === selected;
     })[0].value;
+  }
 
-    setOptions(dropdownItems);
-    setTitle(newTitle);
-  }, []);
-
-  useEffect(() => {
-    const newTitle = props.options.filter((d) => {
-      return d.id === props.selected;
-    })[0].value;
-
-    setTitle(newTitle);
-  }, [props.selected]);
-
-  const selectHandler = (dataset) => {
-    props.onChange("dataset", dataset);
-  };
-
-  const formLayout = props.horizontalLayout ? Row : Col;
+  const formLayout = horizontalLayout ? Row : Col;
 
   return (
-    <div className={`dd-group ${props.horizontalLayout ? "" : "vertical"}`}>
+    <div className={`dd-group ${horizontalLayout ? "" : "vertical"}`}>
       <InputGroup as={formLayout}>
-        <Form.Label column className="dd-label">{props.label}</Form.Label>
+        <Form.Label column className="dd-label">
+          {t("Dataset")}
+        </Form.Label>
         <Dropdown>
           <Dropdown.Toggle className={"dd-toggle"} as={CustomToggle}>
             {title}
           </Dropdown.Toggle>
-          <Dropdown.Menu className="dd-menu">{options}</Dropdown.Menu>
+          <Dropdown.Menu className="dd-menu">{dropdownItems}</Dropdown.Menu>
         </Dropdown>
       </InputGroup>
     </div>
@@ -123,11 +129,10 @@ function DatasetDropdown(props) {
 //***********************************************************************
 DatasetDropdown.propTypes = {
   id: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  options: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDataset: PropTypes.func.isRequired,
+  updateQueryState: PropTypes.func.isRequired,
   selected: PropTypes.string.isRequired,
-  helpContent: PropTypes.arrayOf(PropTypes.object),
+  horizontalLayout: PropTypes.bool,
 };
 
 export default withTranslation()(DatasetDropdown);

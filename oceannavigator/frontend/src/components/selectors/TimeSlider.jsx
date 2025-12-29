@@ -10,7 +10,7 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import TimeSliderButton from "./TimeSliderButton.jsx";
+import TimeSliderButton from "../TimeSliderButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -18,7 +18,7 @@ function TimeSlider(props) {
   const [minTick, setMinTick] = useState(0);
   const [maxTick, setMaxTick] = useState(1);
   const [nTicks, setNTicks] = useState(48);
-  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,15 @@ function TimeSlider(props) {
       return timestamp.id === props.selected;
     });
 
-    setSelectedIndex(newIndex);
+    if (newIndex !== selectedIndex) {
+      setSelectedIndex(newIndex);
+    }
+  }, [props.selected]);
+
+  useEffect(() => {
+    let newIndex = props.timestamps.findIndex((timestamp) => {
+      return timestamp.id === props.selected;
+    });
 
     let newNTicks = 20;
     let newMinTick, newMaxTick;
@@ -54,7 +62,11 @@ function TimeSlider(props) {
   }, [props.timestamps]);
 
   useEffect(() => {
-    if (props.timestamps.length > 0) {
+    if (
+      props.timestamps.length > 0 &&
+      selectedIndex > 0 &&
+      parseInt(props.timestamps[selectedIndex].id) !== props.selected
+    ) {
       props.onChange(props.id, parseInt(props.timestamps[selectedIndex].id));
     }
   }, [selectedIndex]);
@@ -131,7 +143,7 @@ function TimeSlider(props) {
   };
 
   const SliderHandle = () => {
-    if (selectedIndex < props.timestamps.length) {
+    if (selectedIndex > 0 && selectedIndex < props.timestamps.length) {
       let time = new Date(props.timestamps[selectedIndex].value);
 
       return (
