@@ -41,11 +41,16 @@ function DatasetSelector({
   t,
 }) {
   const [dataset, setDataset] = useState(mountedDataset);
-  const [loading, setLoading] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [queryStatus, setQueryStatus] = useState({
+    variables: "",
+  });
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
     DATASET_FILTER_DEFAULTS
   );
+
+  const datasetRef = useRef(dataset);
 
   useEffect(() => {
     // update timestamps on initial app load
@@ -65,9 +70,27 @@ function DatasetSelector({
     }
   }, [mountedDataset]);
 
+  useEffect(() => {
+    let isLoading = Object.values(queryStatus).some((s) => s === "pending");
+    let isError = Object.values(queryStatus).some((s) => s === "error");
+    let isSuccess = Object.values(queryStatus).every((s) => s === "success");
+    setLoading(isLoading);
+    if (isSuccess) {
+      // save dataset configuration in case of query failure
+      datasetRef.current = dataset;
+    }
+    if (isError) {
+      // revert to dataset last sucessful  querried
+      setDataset(datasetRef.current);
+    }
+  }, [queryStatus]);
+
   const updateDataset = (key, value) => {
     switch (key) {
       case "dataset":
+        setQueryStatus({
+          variables: "pending",
+        });
         setDataset((prevDataset) => ({
           ...prevDataset,
           attribution: value.attribution,
@@ -79,7 +102,6 @@ function DatasetSelector({
           value: value.value,
         }));
         break;
-
       default:
         setDataset((prevDataset) => ({
           ...prevDataset,
@@ -89,15 +111,8 @@ function DatasetSelector({
     }
   };
 
-  const updateQueryState = (key, isLoading, isError) => {
-    if (!isLoading) {
-      setLoading((prevLoading) => prevLoading.filter((k) => k !== key));
-    } else if (isLoading) {
-      setLoading([...loading, key]);
-    }
-    if (isError) {
-      // reset dataset
-    }
+  const updateQueryStatus = (key, status) => {
+    setQueryStatus((prev) => ({ ...prev, [key]: status }));
   };
 
   const handleGoButton = () => {
@@ -139,14 +154,11 @@ function DatasetSelector({
     // }
   };
 
-  const loadingTitle = dataset.value;
-
   let datasetSelector = (
     <DatasetDropdown
       id={`dataset-selector-dataset-selector-${id}`}
       key={`dataset-selector-dataset-selector-${id}`}
       updateDataset={updateDataset}
-      updateQueryState={updateQueryState}
       selected={dataset.id}
       horizontalLayout={horizontalLayout}
     />
@@ -157,7 +169,7 @@ function DatasetSelector({
       id={`${id}-variable-selector`}
       dataset={dataset}
       updateDataset={updateDataset}
-      updateQueryState={updateQueryState}
+      updateQueryStatus={updateQueryStatus}
       hasDepth={hasDepth}
       multipleVariables={multipleVariables}
       showAxisRange={showAxisRange}
@@ -170,7 +182,6 @@ function DatasetSelector({
       id={`${id}-quiver-selector`}
       dataset={dataset}
       updateDataset={updateDataset}
-      updateQueryState={updateQueryState}
       horizontalLayout
       enabled
     />
@@ -182,10 +193,10 @@ function DatasetSelector({
         id={`${id}-depth-selector`}
         dataset={dataset}
         updateDataset={updateDataset}
-        updateQueryState={updateQueryState}
+        updateQueryStatus={updateQueryStatus}
         showAllDepths={showAllDepths}
         horizontalLayout={horizontalLayout}
-        enabled={!loading.includes("variables")}
+        enabled={queryStatus.variables !== "pending"}
       />
     ) : null;
 
@@ -200,10 +211,10 @@ function DatasetSelector({
       id={`${id}-time-selector`}
       dataset={dataset}
       updateDataset={updateDataset}
-      updateQueryState={updateQueryState}
+      updateQueryStatus={updateQueryStatus}
       selectorType={timeSelectorType}
       horizontalLayout={horizontalLayout}
-      enabled={!loading.includes("variables")}
+      enabled={queryStatus.variables !== "pending"}
     />
   );
 
@@ -218,7 +229,7 @@ function DatasetSelector({
         variant="primary"
         type="submit"
         onClick={handleGoButton}
-        disabled={loading.length > 0}
+        disabled={loading}
       >
         {t("Go")}
       </Button>
@@ -259,8 +270,6 @@ function DatasetSelector({
       </OverlayTrigger>
     );
   }
-
-  console.log(dataset);
 
   return (
     <>
@@ -308,14 +317,9 @@ function DatasetSelector({
         </Modal.Footer>
       </Modal>
 
-      <Modal
-        show={loading.length > 0}
-        backdrop
-        size="sm"
-        dialogClassName="loading-modal"
-      >
+      <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
-          <Modal.Title>{`${t("Loading")} ${loadingTitle}`}</Modal.Title>
+          <Modal.Title>{`${t("Loading")} ${dataset.value}`}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <ProgressBar now={100} animated />

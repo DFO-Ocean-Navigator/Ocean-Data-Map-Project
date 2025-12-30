@@ -11,7 +11,7 @@ import { withTranslation } from "react-i18next";
 function TimeSelector({
   dataset,
   updateDataset,
-  updateQueryState,
+  updateQueryStatus,
   selectorType,
   horizontalLayout,
   enabled = true,
@@ -20,17 +20,13 @@ function TimeSelector({
   const timestamps = useGetDatasetTimestamps(dataset, enabled);
 
   useEffect(() => {
-    updateQueryState("timestamps", timestamps.isLoading, timestamps.isError);
-  }, [timestamps.isLoading, timestamps.isError]);
-
-  useEffect(() => {
     let timeIdx = timestamps.data.findIndex(
-      (ts) => ts.value === dataset.time.value
+      (ts) => ts.id === dataset.time.id && ts.value === dataset.time.value
     );
 
     if (timestamps.data.length > 0 && timeIdx < 0) {
       let time, starttime;
-      if (dataset.time.id < 0) {
+      if (!dataset.time.value) {
         // no timestamp previously selected, so select the latest one
         time = timestamps.data[timestamps.data.length - 1];
         starttime = timestamps.data[timestamps.data.length - 21];
@@ -51,11 +47,11 @@ function TimeSelector({
           }
         }
       }
-      // need to case where next dataset has same timestamp datetime value but uses different ts format (i.e. giops -> cmems)
       updateDataset("time", time);
       updateDataset("starttime", starttime);
     }
-  }, [dataset, timestamps.data]);
+    updateQueryStatus("timestamps", timestamps.status);
+  }, [dataset, timestamps.status]);
 
   const findNearestTime = (timestamp) => {
     return timestamps.data.reduce((previous, current) => {
@@ -157,7 +153,7 @@ function TimeSelector({
 TimeSelector.propTypes = {
   dataset: PropTypes.object.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  updateQueryState: PropTypes.func.isRequired,
+  updateQueryStatus: PropTypes.func.isRequired,
   selectorType: PropTypes.string,
   horizontalLayout: PropTypes.bool,
   enabled: PropTypes.bool,

@@ -78,7 +78,7 @@ const PlotImage = ({
   };
 
   let imageElement = <Spinner animation="border" variant="primary" />;
-  if (image.isError) {
+  if (image.status === "error") {
     imageElement = <img src={FAIL_IMAGE} alt="Plot" />;
   } else if (image.data) {
     imageElement = <img src={image.data} alt="Plot" />;
@@ -95,7 +95,7 @@ const PlotImage = ({
               <Icon icon="save" /> {t("Save Image")}
             </span>
           }
-          disabled={image.isError || image.isLoading}
+          disabled={image.status === "pending" || image.status === "error" }
           onSelect={saveImage}
           drop="up"
         >
@@ -139,7 +139,7 @@ const PlotImage = ({
               <Icon icon="link" /> {t("Get Link")}
             </span>
           }
-          disabled={image.isError || image.isLoading}
+          disabled={image.status === "pending" || image.status === "error" }
           onSelect={getLink}
           drop="up"
         >
@@ -148,7 +148,7 @@ const PlotImage = ({
           </Dropdown.Item>
           <Dropdown.Item
             eventKey="image"
-            disabled={image.isError || image.isLoading}
+            disabled={image.status === "pending" || image.status === "error" }
           >
             <Icon icon="file-image-o" /> {t("Image")}
           </Dropdown.Item>
@@ -161,7 +161,7 @@ const PlotImage = ({
               <Icon icon="file-code-o" /> {t("API Script")}
             </span>
           }
-          disabled={image.isError || image.isLoading}
+          disabled={image.status === "pending" || image.status === "error" }
           onSelect={generateScript}
           drop="up"
         >
@@ -169,7 +169,7 @@ const PlotImage = ({
             <Dropdown.Item
               key={key}
               eventKey={key}
-              disabled={image.isError || image.isLoading}
+              disabled={image.status === "pending" || image.status === "error" }
             >
               <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
               {key === "pythonPlot" && "Python 3 - PLOT"}

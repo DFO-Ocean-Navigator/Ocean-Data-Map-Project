@@ -14,10 +14,12 @@ function SubsetPanel(props) {
     ...props.dataset,
     variable: [props.dataset.variable],
   });
+  const [queryStatus, setQueryStatus] = useState({
+    variables: "",
+  });
   const [outputTimerange, setOutputTimerange] = useState(false);
   const [outputFormat, setOutputFormat] = useState("NETCDF4");
   const [zip, setZip] = useState(false);
-  const [loading, setLoading] = useState([]);
 
   const updateDataset = (key, value) => {
     setSubsetDataset((prevDataset) => ({
@@ -26,12 +28,8 @@ function SubsetPanel(props) {
     }));
   };
 
-  const updateQueryState = (key, isLoading, isError) => {
-    if (!isLoading) {
-      setLoading((prevLoading) => prevLoading.filter((k) => k !== key));
-    } else if (isLoading) {
-      setLoading([...loading, key]);
-    }
+  const updateQueryStatus = (key, status) => {
+    setQueryStatus((prev) => ({ ...prev, [key]: status }));
   };
 
   const calculateAreaBoundingBox = (area) => {
@@ -108,8 +106,6 @@ function SubsetPanel(props) {
     (v) => v.two_dimensional === false
   );
 
-  console.log("loading", loading);
-
   return (
     <div>
       <Card key="subset" variant="primary">
@@ -119,7 +115,7 @@ function SubsetPanel(props) {
             id="subset-panel-variable-selector"
             dataset={subsetDataset}
             updateDataset={updateDataset}
-            updateQueryState={updateQueryState}
+            updateQueryStatus={updateQueryStatus}
             multipleVariables={true}
           />
           {showDepthSelector ? (
@@ -127,9 +123,9 @@ function SubsetPanel(props) {
               id={"subset-panel-depth-selector"}
               dataset={subsetDataset}
               updateDataset={updateDataset}
-              updateQueryState={updateQueryState}
+              updateQueryStatus={updateQueryStatus}
               showAllDepths={true}
-              enabled
+              enabled={queryStatus.variables !== "pending"}
             />
           ) : null}
           <CheckBox
@@ -145,9 +141,9 @@ function SubsetPanel(props) {
             id={"subset-panel-time-selector"}
             dataset={subsetDataset}
             updateDataset={updateDataset}
-            updateQueryState={updateQueryState}
+            updateQueryStatus={updateQueryStatus}
             selectorType={outputTimerange ? "range" : null}
-            enabled
+            enabled={queryStatus.variables !== "pending"}
           />
           <Form.Group controlId="outputFormat">
             <Form.Label>{__("Output Format")}</Form.Label>

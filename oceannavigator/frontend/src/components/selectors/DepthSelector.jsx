@@ -11,7 +11,7 @@ function DepthSelector({
   id,
   dataset,
   updateDataset,
-  updateQueryState,
+  updateQueryStatus,
   showAllDepths,
   horizontalLayout = false,
   enabled = true,
@@ -20,8 +20,11 @@ function DepthSelector({
   const depths = useGetDatasetDepths(dataset, enabled);
 
   useEffect(() => {
-    updateQueryState("depths", depths.isLoading, depths.isError);
-  }, [depths.isLoading, depths.isError]);
+    updateQueryStatus(
+      "depths",
+      depths.status
+    );
+  }, [depths.status]);
 
   const updateDepth = (key, value) => {
     value === "all" && setUpdateParent(false);
@@ -60,7 +63,7 @@ DepthSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.object.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  updateQueryState: PropTypes.func.isRequired,
+  updateQueryStatus: PropTypes.func.isRequired,
   showAllDepths: PropTypes.bool,
   horizontalLayout: PropTypes.bool,
   enabled: PropTypes.bool,

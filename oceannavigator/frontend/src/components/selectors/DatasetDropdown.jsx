@@ -41,16 +41,11 @@ const DropdownButton = forwardRef(({ children, onClick }, ref) => (
 
 function DatasetDropdown({
   updateDataset,
-  updateQueryState,
   selected,
   horizontalLayout,
   t,
 }) {
   const datasets = useGetDatasets();
-
-  useEffect(() => {
-    updateQueryState("datasets", datasets.isLoading, datasets.isError);
-  }, [datasets.isLoading, datasets.isError]);
 
   const selectHandler = (dataset) => {
     let nextDataset = datasets.data.filter((d) => {
@@ -130,7 +125,6 @@ function DatasetDropdown({
 DatasetDropdown.propTypes = {
   id: PropTypes.string.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  updateQueryState: PropTypes.func.isRequired,
   selected: PropTypes.string.isRequired,
   horizontalLayout: PropTypes.bool,
 };

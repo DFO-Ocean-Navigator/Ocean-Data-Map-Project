@@ -14,16 +14,11 @@ function QuiverSelector({
   id,
   dataset,
   updateDataset,
-  updateQueryState,
   horizontalLayout,
   enabled = true,
   t,
 }) {
   const variables = useGetDatasetVariables(dataset, enabled);
-
-  useEffect(() => {
-    updateQueryState("variables", variables.isLoading, variables.isError);
-  }, [variables.isLoading, variables.isError]);
 
   useEffect(() => {
     const variableIds = variables.data.map((v) => {
@@ -89,7 +84,6 @@ function QuiverSelector({
 QuiverSelector.propTypes = {
   dataset: PropTypes.object.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  updateQueryState: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
 };
 

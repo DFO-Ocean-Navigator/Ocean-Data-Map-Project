@@ -11,7 +11,7 @@ function variableSelector({
   id,
   dataset,
   updateDataset,
-  updateQueryState,
+  updateQueryStatus,
   hasDepth = false,
   multipleVariables = false,
   showAxisRange = false,
@@ -21,12 +21,8 @@ function variableSelector({
   const variables = useGetDatasetVariables(dataset);
 
   useEffect(() => {
-    updateQueryState("variables", variables.isLoading, variables.isError);
-  }, [variables.isLoading, variables.isError]);
-
-  useEffect(() => {
     if (variables.data.length > 0) {
-      // dataset changed - current variable not in new dataset:
+      // dataset changed - check current variable in new dataset:
       const variableIds = variables.data.map((v) => {
         return v.id;
       });
@@ -40,7 +36,8 @@ function variableSelector({
         updateVariable("variable", variables.data[0].id);
       }
     }
-  }, [dataset]);
+    updateQueryStatus("variables", variables.status);
+  }, [dataset, variables.status]);
 
   useEffect(() => {
     // handle multiple variable changes
@@ -143,7 +140,7 @@ variableSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.object.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  updateQueryState: PropTypes.func.isRequired,
+  updateQueryStatus: PropTypes.func.isRequired,
   hasDepth: PropTypes.bool,
   multipleVariables: PropTypes.bool,
   horizontalLayout: PropTypes.bool,
