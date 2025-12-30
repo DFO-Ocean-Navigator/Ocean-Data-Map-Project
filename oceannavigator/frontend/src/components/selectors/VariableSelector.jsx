@@ -110,8 +110,10 @@ function variableSelector({
   let selected;
   if (Array.isArray(dataset.variable)) {
     selected = dataset.variable.map((v) => v.id);
+    !multipleVariables && (selected = selected[0]);
   } else {
-    selected = multipleVariables ? [dataset.variable.id] : dataset.variable.id;
+    selected = dataset.variable.id;
+    multipleVariables && (selected = [selected]);
   }
 
   return (
