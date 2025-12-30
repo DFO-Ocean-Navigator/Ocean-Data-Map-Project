@@ -84,7 +84,14 @@ const PointWindow = ({
 
   // Handles when a tab is selected
   const onSelect = (tab) => {
-    setSelected(parseInt(tab));
+    tab = parseInt(tab);
+    if (tab === TabEnum.MOORING && Array.isArray(plotDataset.variable)) {
+      handleDatasetUpdate("dataset", {
+        ...plotDataset,
+        variable: plotDataset.variable[0],
+      });
+    }
+    setSelected(tab);
   };
 
   const updatePlotSize = (key, value) => {
