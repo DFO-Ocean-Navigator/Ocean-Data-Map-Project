@@ -35,7 +35,7 @@ function TimeSelector({
         time = findNearestTime(dataset.time);
         starttime = findNearestTime(dataset.starttime);
 
-        if (time.id === starttime.id) {
+        if (time.id === starttime.id && selectorType === 'range') {
           timeIdx = timestamps.data.findIndex((ts) => ts.value === time.value);
           let starttimeIdx = timestamps.data.findIndex(
             (ts) => ts.value === starttime.value

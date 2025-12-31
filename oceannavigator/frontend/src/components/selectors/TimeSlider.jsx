@@ -25,41 +25,35 @@ function TimeSlider(props) {
     let newIndex = props.timestamps.findIndex((timestamp) => {
       return timestamp.id === props.selected;
     });
-
-    if (newIndex !== selectedIndex) {
+    if (newIndex >= 0 && newIndex !== selectedIndex) {
       setSelectedIndex(newIndex);
+
+      let newNTicks = 20;
+      let newMinTick, newMaxTick;
+      if (props.dataset.quantum === "hour") {
+        newNTicks = 48;
+      }
+      if (props.timestamps.length < newNTicks) {
+        newNTicks = props.timestamps.length;
+      }
+
+      setNTicks(newNTicks);
+
+      if (props.timestamps.length < newNTicks) {
+        newMinTick = 0;
+        newMaxTick = props.timestamps.length;
+      } else {
+        newMinTick = newNTicks * Math.trunc(newIndex / newNTicks);
+        newMaxTick = newMinTick + newNTicks;
+      }
+
+      if (props.dataset.id.includes("climatology")) {
+        setClimatology(true);
+      }
+      setMinTick(newMinTick);
+      setMaxTick(newMaxTick);
     }
-  }, [props.selected]);
-
-  useEffect(() => {
-    let newIndex = props.timestamps.findIndex((timestamp) => {
-      return timestamp.id === props.selected;
-    });
-
-    let newNTicks = 20;
-    let newMinTick, newMaxTick;
-    if (props.dataset.quantum === "hour") {
-      newNTicks = 48;
-    } else if (props.timestamps.length < newNTicks) {
-      newNTicks = props.timestamps.length;
-    }
-
-    setNTicks(newNTicks);
-
-    if (props.timestamps.length < newNTicks) {
-      newMinTick = 0;
-      newMaxTick = props.timestamps.length;
-    } else {
-      newMinTick = newNTicks * Math.trunc(newIndex / newNTicks);
-      newMaxTick = newMinTick + newNTicks;
-    }
-
-    if (props.dataset.id.includes("climatology")) {
-      setClimatology(true);
-    }
-    setMinTick(newMinTick);
-    setMaxTick(newMaxTick);
-  }, [props.timestamps]);
+  }, [props.selected, props.timestamps]);
 
   useEffect(() => {
     if (
