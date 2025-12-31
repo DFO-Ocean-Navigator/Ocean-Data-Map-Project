@@ -43,7 +43,7 @@ const ActivePlotsContainer = ({
       case "Point":
         return (
           <PointWindow
-            dataset_0={dataset0}
+            dataset={dataset0}
             plotData={plot}
             mapSettings={mapSettings}
             updateDataset={updateDataset0}

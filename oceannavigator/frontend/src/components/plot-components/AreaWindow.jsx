@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Accordion, Card, Col, Form, Row, Nav } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
+import { Accordion, Button, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
@@ -9,7 +8,7 @@ import ContourSelector from "../ContourSelector.jsx";
 import QuiverSelector from "../QuiverSelector.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
-import DatasetSelector from "../DatasetSelector.jsx";
+import DatasetSelector from "../selectors/DatasetSelector.jsx";
 import SubsetPanel from "../SubsetPanel.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
@@ -50,7 +49,7 @@ const AreaWindow = (props) => {
   // Feature settings
   const [quiver, setQuiver] = useState(
     props.init?.quiver || {
-      variable: "",
+      variable: "none",
       magnitude: "length",
       colormap: "default",
     }
@@ -58,7 +57,7 @@ const AreaWindow = (props) => {
 
   const [contour, setContour] = useState(
     props.init?.contour || {
-      variable: "",
+      variable: "none",
       colormap: "default",
       levels: "auto",
       legend: true,
@@ -277,28 +276,23 @@ const AreaWindow = (props) => {
             },
           ];
 
-    const plot_query = {
+    const plotQuery = {
       dataset: props.dataset_0.id,
-      quantum: props.dataset_0.quantum,
       scale: scale.toString(),
       name: props.names[0],
-      type: "map",
       colormap: leftColormap.toString(),
-      time: props.dataset_0.time,
+      time: props.dataset_0.time.id,
       area,
       depth: props.dataset_0.depth,
       bathymetry: bathymetry,
       quiver,
       contour,
       showarea: showArea,
-      variable: props.dataset_0.variable,
+      variable: props.dataset_0.variable.id,
       projection: props.mapSettings.projection,
-      size: plotSize,
-      dpi: plotDpi,
       interp: props.mapSettings.interpType,
       radius: props.mapSettings.interpRadius,
       neighbours: props.mapSettings.interpNeighbours,
-      plotTitle: plotTitle,
       ...(props.compareDatasets && {
         compare_to: {
           ...props.dataset_1,
@@ -331,9 +325,13 @@ const AreaWindow = (props) => {
 
     content = (
       <PlotImage
-        query={plot_query}
+        plotType="map"
+        query={plotQuery}
         permlink_subquery={permlink_subquery}
+        featureId={props.plotData.id}
         action={props.action}
+        size={plotSize}
+        dpi={plotDpi}
       />
     );
   }
@@ -342,7 +340,9 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>
+            {_("Map")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">

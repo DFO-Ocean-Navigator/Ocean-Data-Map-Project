@@ -5,7 +5,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-import DatasetSelector from "./DatasetSelector.jsx";
+import DatasetSelector from "./selectors/DatasetSelector.jsx";
 import DrawingTools from "./DrawingTools.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 
@@ -55,8 +55,8 @@ function MapInputs(props) {
       <div className="dataset-selector-container">
         <div className={"map-inputs"}>
           <DatasetSelector
-            key="map_inputs_dataset_0"
-            id="dataset_0"
+            key="map-inputs-dataset0-selector"
+            id="map-inputs-dataset0-selector"
             mountedDataset={props.dataset0}
             onUpdate={props.updateDataset0}
             mapSettings={props.mapSettings}
@@ -72,8 +72,8 @@ function MapInputs(props) {
         {props.compareDatasets ? (
           <div className={"map-inputs"}>
             <DatasetSelector
-              key="map_inputs_dataset_1"
-              id="dataset_1"
+              key="map-inputs-dataset1-selector"
+              id="map-inputs-dataset1-selector"
               mountedDataset={props.dataset1}
               onUpdate={props.updateDataset1}
               mapSettings={props.mapSettings}

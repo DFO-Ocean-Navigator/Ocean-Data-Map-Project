@@ -58,7 +58,7 @@ function ColormapRange(props) {
       "/api/v2.0/range/" +
       props.dataset.id +
       "/" +
-      props.dataset.variable +
+      props.dataset.variable.id +
       "/" +
       props.mapSettings.interpType +
       "/" +

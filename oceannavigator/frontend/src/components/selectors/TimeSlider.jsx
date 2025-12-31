@@ -10,7 +10,7 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import TimeSliderButton from "./TimeSliderButton.jsx";
+import TimeSliderButton from "../TimeSliderButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -18,36 +18,49 @@ function TimeSlider(props) {
   const [minTick, setMinTick] = useState(0);
   const [maxTick, setMaxTick] = useState(1);
   const [nTicks, setNTicks] = useState(48);
-  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [climatology, setClimatology] = useState(false);
 
   useEffect(() => {
-    let newNTicks = 20;
-    if (props.dataset.quantum === "hour") {
-      newNTicks = 48;
-    } else if (props.timestamps.length < newNTicks) {
-      newNTicks = props.timestamps.length;
-    }
-    setMinTick(
-      props.timestamps.length < newNTicks
-        ? 0
-        : props.timestamps.length - newNTicks
-    );
-    setMaxTick(props.timestamps.length);
     let newIndex = props.timestamps.findIndex((timestamp) => {
       return timestamp.id === props.selected;
     });
-    setSelectedIndex(newIndex);
+    if (newIndex >= 0 && newIndex !== selectedIndex) {
+      setSelectedIndex(newIndex);
 
-    if (props.dataset.id.includes("climatology")) {
-      setClimatology(true);
+      let newNTicks = 20;
+      let newMinTick, newMaxTick;
+      if (props.dataset.quantum === "hour") {
+        newNTicks = 48;
+      }
+      if (props.timestamps.length < newNTicks) {
+        newNTicks = props.timestamps.length;
+      }
+
+      setNTicks(newNTicks);
+
+      if (props.timestamps.length < newNTicks) {
+        newMinTick = 0;
+        newMaxTick = props.timestamps.length;
+      } else {
+        newMinTick = newNTicks * Math.trunc(newIndex / newNTicks);
+        newMaxTick = newMinTick + newNTicks;
+      }
+
+      if (props.dataset.id.includes("climatology")) {
+        setClimatology(true);
+      }
+      setMinTick(newMinTick);
+      setMaxTick(newMaxTick);
     }
-
-    setNTicks(newNTicks);
-  }, [props.timestamps]);
+  }, [props.selected, props.timestamps]);
 
   useEffect(() => {
-    if (props.timestamps.length > 0) {
+    if (
+      props.timestamps.length > 0 &&
+      selectedIndex > 0 &&
+      parseInt(props.timestamps[selectedIndex].id) !== props.selected
+    ) {
       props.onChange(props.id, parseInt(props.timestamps[selectedIndex].id));
     }
   }, [selectedIndex]);
@@ -124,7 +137,7 @@ function TimeSlider(props) {
   };
 
   const SliderHandle = () => {
-    if (selectedIndex < props.timestamps.length) {
+    if (selectedIndex > 0 && selectedIndex < props.timestamps.length) {
       let time = new Date(props.timestamps[selectedIndex].value);
 
       return (
@@ -272,7 +285,7 @@ function TimeSlider(props) {
         : nextFrameIdx;
 
     prevTime = getFormattedTime(new Date(props.timestamps[prevTimeIdx].value));
-    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));        
+    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));
     firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
     lastFrameTime = getFormattedTime(
       new Date(props.timestamps[props.timestamps.length - 1].value)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Accordion from "react-bootstrap/Accordion";
-import { Card, Col, Row, Nav} from "react-bootstrap";
+import { Card, Col, Row, Nav } from "react-bootstrap";
 
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
@@ -8,7 +8,7 @@ import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
-import DatasetDropdown from "../DatasetDropdown.jsx";
+import DatasetDropdown from "../selectors/DatasetDropdown.jsx";
 import SelectBox from "../lib/SelectBox.jsx";
 
 import {
@@ -22,11 +22,11 @@ import { withTranslation } from "react-i18next";
 const TrackWindow = (props) => {
   const [showmap, setShowMap] = useState(true);
   const [dataset, setDataset] = useState(props.dataset);
-  const [variable, setVariable] = useState(props.dataset.variable);
+  const [variable, setVariable] = useState(props.dataset.variable.id);
   const [availableDatasets, setAvailableDatasets] = useState([]);
   const [availableVariables, setAvailableVariables] = useState([]);
   const [latlon, setLatlon] = useState(false);
-  const [trackvariable, setTrackVariable] = useState(0);
+  const [trackvariable, setTrackVariable] = useState([0]);
   const [starttime, setStarttime] = useState(props.observationQuery.startDate);
   const [endtime, setEndtime] = useState(props.observationQuery.endDate);
   const [plotSize, setPlotSize] = useState("10x7");
@@ -68,9 +68,6 @@ const TrackWindow = (props) => {
   };
 
   const changeDataset = (key, value) => {
-    console.log(availableDatasets);
-    console.log(key, value);
-
     let nextDataset = availableDatasets.filter((d) => d.id === value);
     getVariables(nextDataset[0].id);
     setDataset(nextDataset[0]);
@@ -89,29 +86,25 @@ const TrackWindow = (props) => {
     }
   };
 
-  var plot_query = {
+  var plotQuery = {
     dataset: dataset.id,
-    quantum: dataset.quantum,
     name: props.name,
-    type: "track",
     track: [props.plotData.id],
     showmap: showmap,
     variable: variable,
     latlon: latlon,
     trackvariable: trackvariable,
-    size: plotSize,
-    dpi: plotDpi,
     depth: depth,
     track_quantum: quantum,
   };
 
   if (starttime) {
-    if (plot_query.starttime instanceof Date) {
-      plot_query.starttime = starttime.toISOString();
-      plot_query.endtime = endtime.toISOString();
+    if (plotQuery.starttime instanceof Date) {
+      plotQuery.starttime = starttime.toISOString();
+      plotQuery.endtime = endtime.toISOString();
     } else {
-      plot_query.starttime = starttime;
-      plot_query.endtime = endtime;
+      plotQuery.starttime = starttime;
+      plotQuery.endtime = endtime;
     }
   }
 
@@ -177,7 +170,7 @@ const TrackWindow = (props) => {
                   multiple
                   state={trackvariable}
                   def=""
-                  onUpdate={(_, value) => setTrackVariable(value)}
+                  onUpdate={(_, value) => setTrackVariable(value.flat())}
                   url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
                   title={_("Observed Variable")}
                 >
@@ -269,9 +262,13 @@ const TrackWindow = (props) => {
         </Col>
         <Col className="plot-col" lg={8}>
           <PlotImage
-            query={plot_query} // For image saving link.
+            plotType="track"
+            query={plotQuery} // For image saving link.
             permlink_subquery={permlink_subquery}
+            featureId={props.plotData.id}
             action={props.action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>
