@@ -39,11 +39,8 @@ function TimeSelector({
 
         if (time.id <= starttime.id) {
           timeIdx = timestamps.data.findIndex((ts) => ts.value === time.value);
-          let starttimeIdx = timestamps.data.findIndex(
-            (ts) => ts.value === starttime.value
-          );
-          if (starttimeIdx > 0) {
-            starttime = timestamps.data[starttimeIdx - 1];
+          if (timeIdx > 0) {
+            starttime = timestamps.data[timeIdx - 1];
           } else if (timeIdx < timestamps.data.length - 1) {
             time = timestamps.data[timeIdx + 1];
           }
@@ -56,7 +53,7 @@ function TimeSelector({
   }, [dataset, timestamps.status]);
 
   const findNearestTime = (timestamp) => {
-    const testDate = new Date(timestamp.value)
+    const testDate = new Date(timestamp.value);
     return timestamps.data.reduce((previous, current) => {
       const previousDiff = Math.abs(new Date(previous.value) - testDate);
       const currentDiff = Math.abs(new Date(current.value) - testDate);
@@ -65,16 +62,19 @@ function TimeSelector({
   };
 
   const updateTime = (key, value) => {
-    //TODO: Check that start/endtime selectors work properl
+    value = parseInt(value);
+
     let time = dataset.time.id;
     let starttime = dataset.starttime.id;
+    let timeIdx, starttimeIdx;
+
     const timestampIds = timestamps.data.map((ts) => {
       return ts.id;
     });
+
     switch (key) {
       case "time":
-        time = value;
-        let timeIdx = timestampIds.indexOf(value);
+        timeIdx = timestampIds.indexOf(value);
         if (value < starttime || starttime < 0) {
           let starttime =
             timeIdx > 20 ? timestamps.data[timeIdx - 20] : timestamps.data[0];
@@ -83,7 +83,12 @@ function TimeSelector({
         updateDataset("time", timestamps.data[timeIdx]);
         break;
       case "starttime":
-        starttime = value;
+        timeIdx = timestampIds.indexOf(time);
+        starttimeIdx = timestampIds.indexOf(value);
+        if (time <= value) {
+          starttimeIdx = timeIdx > 0 ? timeIdx - 1 : 0;
+        }
+        updateDataset("starttime", timestamps.data[starttimeIdx]);
         break;
     }
   };
