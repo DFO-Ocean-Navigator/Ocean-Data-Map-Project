@@ -7,7 +7,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import DatasetDropdown from "./DatasetDropdown.jsx";
 import DatasetSearchWindow from "../DatasetSearchWindow.jsx";
 import { DATASET_FILTER_DEFAULTS } from "../Defaults.js";
-import { useGetDatasets, prefetchAllVariables } from "../../remote/queries.js";
+import { prefetchAllVariables } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -42,6 +42,7 @@ function DatasetSelector({
 }) {
   const [dataset, setDataset] = useState(mountedDataset);
   const [loading, setLoading] = useState(false);
+  const [updateParent, setUpdateParent] = useState(false);
   const [queryStatus, setQueryStatus] = useState({
     variables: "",
   });
@@ -55,13 +56,13 @@ function DatasetSelector({
   useEffect(() => {
     // update timestamps on initial app load
     if (
-      mountedDataset.time.id < 0 &&
-      mountedDataset.starttime.id < 0 &&
+      updateParent &&
       JSON.stringify(dataset) !== JSON.stringify(mountedDataset)
     ) {
       onUpdate("dataset", dataset);
+      setUpdateParent(false);
     }
-  }, [dataset]);
+  }, [updateParent]);
 
   useEffect(() => {
     // update dataset selectors in all components if dataset changed
@@ -85,7 +86,7 @@ function DatasetSelector({
     }
   }, [queryStatus]);
 
-  const updateDataset = (key, value) => {
+  const updateDataset = (key, value, shouldUpdateParent = false) => {
     switch (key) {
       case "dataset":
         setQueryStatus({
@@ -109,6 +110,7 @@ function DatasetSelector({
         }));
         break;
     }
+    setUpdateParent(shouldUpdateParent)
   };
 
   const updateQueryStatus = (key, status) => {
@@ -135,23 +137,8 @@ function DatasetSelector({
     }
   };
 
-  const applySearchFilters = (datasetId, variableId, vectorVariable, date) => {
-    updateDataset("id", datasetId);
-    variableId && updateVariable("variable", variableId);
-    vectorVariable && updateQuiver("quiverVariable", vectorVariable);
-    // if (date) {
-    //   let dates = datasetParams.timestamps.map((t) => new Date(t.value));
-    //   let [, timeIdx] = dates.reduce(
-    //     (prev, curr, idx) => {
-    //       let diff = Math.abs(curr - date);
-    //       return diff <= prev[0] ? [diff, idx] : prev;
-    //     },
-    //     [Infinity, 0]
-    //   );
-    //   let nextTime = datasetParams.timestamps[timeIdx].id;
-    //   updateTime("time", nextTime);
-    //   setUpdateParent(true);
-    // }
+  const applySearchFilters = (filteredDataset) => {
+    setDataset({ ...dataset, ...filteredDataset });
   };
 
   let datasetSelector = (
@@ -302,13 +289,12 @@ function DatasetSelector({
           <Modal.Title>Search Datasets</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* <DatasetSearchWindow
-            datasets={datasets.data}
+          <DatasetSearchWindow
             filters={datasetSearchFilters}
             updateFilters={updateSearchFilters}
             applyFilters={applySearchFilters}
             closeModal={toggleSearchDatasets}
-          /> */}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={toggleSearchDatasets}>

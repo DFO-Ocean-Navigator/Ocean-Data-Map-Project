@@ -10,7 +10,7 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import TimeSliderButton from "../TimeSliderButton.jsx";
+import TimeSliderButton from "./TimeSliderButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -58,7 +58,7 @@ function TimeSlider(props) {
   useEffect(() => {
     if (
       props.timestamps.length > 0 &&
-      selectedIndex > 0 &&
+      selectedIndex >= 0 &&
       parseInt(props.timestamps[selectedIndex].id) !== props.selected
     ) {
       props.onChange(props.id, parseInt(props.timestamps[selectedIndex].id));
@@ -137,7 +137,7 @@ function TimeSlider(props) {
   };
 
   const SliderHandle = () => {
-    if (selectedIndex > 0 && selectedIndex < props.timestamps.length) {
+    if (selectedIndex >= 0 && selectedIndex < props.timestamps.length) {
       let time = new Date(props.timestamps[selectedIndex].value);
 
       return (

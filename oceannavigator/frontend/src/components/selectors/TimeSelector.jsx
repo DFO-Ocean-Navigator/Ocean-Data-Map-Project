@@ -26,16 +26,18 @@ function TimeSelector({
 
     if (timestamps.data.length > 0 && timeIdx < 0) {
       let time, starttime;
+      let updateParent = dataset.time.fromSearch || false;
       if (!dataset.time.value) {
         // no timestamp previously selected, so select the latest one
         time = timestamps.data[timestamps.data.length - 1];
         starttime = timestamps.data[timestamps.data.length - 21];
+        updateParent = true;
       } else {
         // find timestamp nearest to previously selected
         time = findNearestTime(dataset.time);
         starttime = findNearestTime(dataset.starttime);
 
-        if (time.id === starttime.id && selectorType === 'range') {
+        if (time.id <= starttime.id) {
           timeIdx = timestamps.data.findIndex((ts) => ts.value === time.value);
           let starttimeIdx = timestamps.data.findIndex(
             (ts) => ts.value === starttime.value
@@ -47,15 +49,15 @@ function TimeSelector({
           }
         }
       }
-      updateDataset("time", time);
-      updateDataset("starttime", starttime);
+      updateDataset("time", time, updateParent);
+      updateDataset("starttime", starttime, updateParent);
     }
     updateQueryStatus("timestamps", timestamps.status);
   }, [dataset, timestamps.status]);
 
   const findNearestTime = (timestamp) => {
+    const testDate = new Date(timestamp.value)
     return timestamps.data.reduce((previous, current) => {
-      let testDate = new Date(timestamp.value);
       const previousDiff = Math.abs(new Date(previous.value) - testDate);
       const currentDiff = Math.abs(new Date(current.value) - testDate);
       return currentDiff <= previousDiff ? current : previous;

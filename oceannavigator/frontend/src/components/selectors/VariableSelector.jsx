@@ -22,18 +22,32 @@ function variableSelector({
 
   useEffect(() => {
     if (variables.data.length > 0) {
-      // dataset changed - check current variable in new dataset:
-      const variableIds = variables.data.map((v) => {
-        return v.id;
-      });
-      let datasetHasVar = Array.isArray(dataset.variable)
-        ? (datasetHasVar = dataset.variable.every((v) =>
-            variableIds.includes(v.id)
-          ))
-        : variableIds.includes(dataset.variable.id);
+      if (dataset.variable?.fromSearch) {
+        // dataset changed using search window - add missing data
+        updateDataset(
+          "variable",
+          variables.data.find((v) => v.id === dataset.variable.id),
+          true
+        );
+      } else {
+        const variableIds = variables.data.map((v) => {
+          return v.id;
+        });
+        // dataset changed - check current variable in new dataset:
+        if (typeof dataset.variable === "string") {
+          // variable id passed to component instead of object
+          updateVariable("variable", dataset.variable);
+        } else {
+          let datasetHasVar = Array.isArray(dataset.variable)
+            ? (datasetHasVar = dataset.variable.every((v) =>
+                variableIds.includes(v.id)
+              ))
+            : variableIds.includes(dataset.variable.id);
 
-      if (!datasetHasVar) {
-        updateVariable("variable", variables.data[0].id);
+          if (!datasetHasVar) {
+            updateVariable("variable", variables.data[0].id);
+          }
+        }
       }
     }
     updateQueryStatus("variables", variables.status);

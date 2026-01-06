@@ -11,7 +11,7 @@ import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-import { usePlotImageQuery } from "../../remote/queries.js";
+import { useGetPlotImage } from "../../remote/queries.js";
 
 const FAIL_IMAGE = require("../fail.js");
 
@@ -28,7 +28,7 @@ const PlotImage = ({
   const imagelinkRef = useRef();
   const [showImagelink, setShowImagelink] = useState(false);
 
-  const image = usePlotImageQuery(featureId, plotType, query);
+  const image = useGetPlotImage(featureId, plotType, query);
 
   // Generate API script
   const generateScript = (language) => {

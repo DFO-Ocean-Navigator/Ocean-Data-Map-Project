@@ -1,4 +1,4 @@
-import { useQuery, QueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   GetDatasetsPromise,
@@ -7,14 +7,23 @@ import {
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
+  FilterDatasetsByDatePromise,
+  FilterDatasetsByLocationPromise,
 } from "./OceanNavigator.js";
-
-const queryClient = new QueryClient();
 
 export function useGetDatasets() {
   const { data = [], status } = useQuery({
     queryKey: ["datasets"],
     queryFn: GetDatasetsPromise,
+  });
+
+  return { data, status };
+}
+
+export function useGetAllVariables() {
+  const { data = {}, status } = useQuery({
+    queryKey: ["datasetFilters", "allVariables"],
+    queryFn: GetAllVariablesPromise,
   });
 
   return { data, status };
@@ -56,7 +65,7 @@ export function useGetDatasetDepths(dataset, enabled) {
   return { data, status };
 }
 
-export function usePlotImageQuery(feature, plotType, query) {
+export function useGetPlotImage(feature, plotType, query) {
   const { data, status } = useQuery({
     queryKey: ["plotImage", { feature, plotType, query }],
     queryFn: () => GetPlotImagePromise(plotType, query),
@@ -65,7 +74,32 @@ export function usePlotImageQuery(feature, plotType, query) {
   return { data, status };
 }
 
+export function useDateFilter(datasetIds, date, enabled) {
+  const { data, status } = useQuery({
+    queryKey: ["datasetFilters", "date", datasetIds, date],
+    queryFn: () => FilterDatasetsByDatePromise(datasetIds, date.toISOString()),
+    enabled: enabled,
+  });
+
+  return { data, status };
+}
+
+export function useLocationFilter(datasetIds, location, enabled) {
+  const { data, status } = useQuery({
+    queryKey: ["datasetFilters", "location", datasetIds, location],
+    queryFn: () =>
+      FilterDatasetsByLocationPromise(
+        datasetIds,
+        location[0],
+        (parseFloat(location[1]) + 360) % 360
+      ),
+    enabled: enabled,
+  });
+  return { data, status };
+}
+
 export function prefetchAllVariables() {
+  const queryClient = useQueryClient();
   queryClient.prefetchQuery({
     queryKey: ["datasetFilters", "allVariables"],
     queryFn: GetAllVariablesPromise,
