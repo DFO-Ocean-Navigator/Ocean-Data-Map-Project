@@ -8,7 +8,7 @@ import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
-import DatasetDropdown from "../selectors/DatasetDropdown.jsx";
+import DatasetSelector from "../data-selectors/DatasetSelector.jsx";
 import SelectBox from "../lib/SelectBox.jsx";
 
 import {
@@ -142,8 +142,8 @@ const TrackWindow = (props) => {
             <Card.Body className="global-settings-card">
               <div className="inputs-container">
                 {availableDatasets.length > 0 && (
-                  <DatasetDropdown
-                    id="dataset"
+                  <DatasetSelector
+                    id="track-window-dataset-selector"
                     key="dataset"
                     options={availableDatasets}
                     label={_("Dataset")}

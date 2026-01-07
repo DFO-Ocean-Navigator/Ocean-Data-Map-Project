@@ -5,9 +5,9 @@ import PropTypes from "prop-types";
 
 import CheckBox from "./lib/CheckBox.jsx";
 import Icon from "./lib/Icon.jsx";
-import VariableSelector from "./selectors/VariableSelector.jsx";
-import TimeSelector from "./selectors/TimeSelector.jsx";
-import DepthSelector from "./selectors/DepthSelector.jsx";
+import VariableSelector from "./data-selectors/VariableSelector.jsx";
+import TimeSelector from "./data-selectors/TimeSelector.jsx";
+import DepthSelector from "./data-selectors/DepthSelector.jsx";
 
 function SubsetPanel(props) {
   const [subsetDataset, setSubsetDataset] = useState({

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { forwardRef } from "react";
 import PropTypes from "prop-types";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
@@ -39,7 +39,7 @@ const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   </button>
 ));
 
-function DatasetDropdown({
+function DatasetSelector({
   updateDataset,
   selected,
   horizontalLayout,
@@ -122,11 +122,11 @@ function DatasetDropdown({
 }
 
 //***********************************************************************
-DatasetDropdown.propTypes = {
+DatasetSelector.propTypes = {
   id: PropTypes.string.isRequired,
   updateDataset: PropTypes.func.isRequired,
   selected: PropTypes.string.isRequired,
   horizontalLayout: PropTypes.bool,
 };
 
-export default withTranslation()(DatasetDropdown);
+export default withTranslation()(DatasetSelector);

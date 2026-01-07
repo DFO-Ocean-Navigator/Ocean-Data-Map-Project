@@ -6,7 +6,7 @@ import ComboBox from "../ComboBox.jsx";
 import LocationInput from "../LocationInput.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
-import DatasetSelector from "../selectors/DatasetSelector.jsx";
+import DatasetPanel from "../DatasetPanel.jsx";
 import PropTypes from "prop-types";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 import { withTranslation } from "react-i18next";
@@ -145,8 +145,8 @@ const PointWindow = ({
     <Card key="globalSettings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
       <Card.Body className="global-settings-card">
-        <DatasetSelector
-          id="point-window-dataset-selector"
+        <DatasetPanel
+          id="point-window-dataset-panel"
           onUpdate={handleDatasetUpdate}
           showQuiverSelector={false}
           showVariableRange={false}

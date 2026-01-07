@@ -8,7 +8,7 @@ import ContourSelector from "../ContourSelector.jsx";
 import QuiverSelector from "../QuiverSelector.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
-import DatasetSelector from "../selectors/DatasetSelector.jsx";
+import DatasetPanel from "../DatasetPanel.jsx";
 import SubsetPanel from "../SubsetPanel.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
@@ -217,8 +217,8 @@ const AreaWindow = (props) => {
         {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
       <Card.Body className="global-settings-card">
-        <DatasetSelector
-          id="area-window-dataset0-selector"
+        <DatasetPanel
+          id="area-window-dataset0-panel"
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -244,8 +244,8 @@ const AreaWindow = (props) => {
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
-        <DatasetSelector
-          id="area-window-dataset1-selector"
+        <DatasetPanel
+          id="area-window-dataset1-panel"
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}

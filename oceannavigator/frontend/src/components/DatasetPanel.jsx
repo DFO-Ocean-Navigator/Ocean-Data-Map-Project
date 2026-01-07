@@ -3,24 +3,21 @@ import PropTypes from "prop-types";
 import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-
-import DatasetDropdown from "./DatasetDropdown.jsx";
-import DatasetSearchWindow from "../DatasetSearchWindow.jsx";
-import { DATASET_FILTER_DEFAULTS } from "../Defaults.js";
-import { prefetchAllVariables } from "../../remote/queries.js";
-
 import { withTranslation } from "react-i18next";
-
 import "rc-slider/assets/index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
-import VariableSelector from "./VariableSelector.jsx";
-import TimeSelector from "./TimeSelector.jsx";
-import DepthSelector from "./DepthSelector.jsx";
-import QuiverSelector from "./QuiverSelector.jsx";
+import DatasetSelector from "./data-selectors/DatasetSelector.jsx";
+import VariableSelector from "./data-selectors/VariableSelector.jsx";
+import TimeSelector from "./data-selectors/TimeSelector.jsx";
+import DepthSelector from "./data-selectors/DepthSelector.jsx";
+import QuiverSelector from "./data-selectors/QuiverSelector.jsx";
+import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
+import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
+import { prefetchAllVariables } from "../remote/queries.js";
 
-function DatasetSelector({
+function DatasetPanel({
   onUpdate,
   id,
   hasDepth,
@@ -110,7 +107,7 @@ function DatasetSelector({
         }));
         break;
     }
-    setUpdateParent(shouldUpdateParent)
+    setUpdateParent(shouldUpdateParent);
   };
 
   const updateQueryStatus = (key, status) => {
@@ -140,16 +137,6 @@ function DatasetSelector({
   const applySearchFilters = (filteredDataset) => {
     setDataset({ ...dataset, ...filteredDataset });
   };
-
-  let datasetSelector = (
-    <DatasetDropdown
-      id={`dataset-selector-dataset-selector-${id}`}
-      key={`dataset-selector-dataset-selector-${id}`}
-      updateDataset={updateDataset}
-      selected={dataset.id}
-      horizontalLayout={horizontalLayout}
-    />
-  );
 
   let variableSelector = showVariableSelector ? (
     <VariableSelector
@@ -263,10 +250,16 @@ function DatasetSelector({
       <div
         id={`dataset-selector-${id}`}
         className={
-          horizontalLayout ? "DatasetSelector-horizontal" : "DatasetSelector"
+          horizontalLayout ? "DatasetPanel-horizontal" : "DatasetPanel"
         }
       >
-        {datasetSelector}
+        <DatasetSelector
+          id={`${id}-dataset-selector`}
+          key={`${id}-dataset-selector`}
+          updateDataset={updateDataset}
+          selected={dataset.id}
+          horizontalLayout={horizontalLayout}
+        />
         {variableSelector}
         {quiverSelector}
         {depthSelector}
@@ -316,7 +309,7 @@ function DatasetSelector({
 }
 
 //***********************************************************************
-DatasetSelector.propTypes = {
+DatasetPanel.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
   variables: PropTypes.string,
@@ -337,4 +330,4 @@ DatasetSelector.propTypes = {
   t: PropTypes.func.isRequired,
 };
 
-export default withTranslation()(DatasetSelector);
+export default withTranslation()(DatasetPanel);

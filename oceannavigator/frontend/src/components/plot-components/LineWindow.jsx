@@ -6,7 +6,7 @@ import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import TransectLimiter from "../TransectLimiter.jsx";
-import DatasetSelector from "../selectors/DatasetSelector.jsx";
+import DatasetPanel from "..//DatasetPanel.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
@@ -257,8 +257,8 @@ const LineWindow = (props) => {
         {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
       </Card.Header>
       <Card.Body className="global-settings-card">
-        <DatasetSelector
-          id="line-window-dataset0-selector"
+        <DatasetPanel
+          id="line-window-dataset0-panel"
           onUpdate={props.updateDataset0}
           hasDepth={selected === 1}
           showQuiverSelector={false}
@@ -286,8 +286,8 @@ const LineWindow = (props) => {
     <Card id="right_map" variant="primary">
       <Card.Header>{_("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
-        <DatasetSelector
-          id="line-window-dataset1-selector"
+        <DatasetPanel
+          id="line-window-dataset1-panel"
           onUpdate={props.updateDataset1}
           hasDepth={selected === 1}
           showQuiverSelector={false}
