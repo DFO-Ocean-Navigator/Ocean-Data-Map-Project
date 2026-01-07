@@ -242,9 +242,9 @@ class HovmollerPlotter(LinePlotter):
                 self.compare["colormap"],
                 self.compare["variable_unit"],
                 self.compare["variable_name"]  # gettext(self.compare["variable_name"])
-                + get_depth_label(self.compare["depth"], self.compare["depth_unit"]),
+                + get_depth_label(self.compare["depth_value"], self.compare["depth_unit"]),
                 #  gettext(
-                #     get_depth_label(self.compare["depth"], self.compare["depth_unit"])
+                #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),
             )
 
@@ -276,11 +276,11 @@ class HovmollerPlotter(LinePlotter):
                     ]  # gettext(self.compare["variable_name"])
                     + " Difference"  # + gettext(" Difference")
                     + get_depth_label(
-                        self.compare["depth"], self.compare["depth_unit"]
+                        self.compare["depth_value"], self.compare["depth_unit"]
                     ),
                     # + gettext(
                     #     get_depth_label(
-                    #         self.compare["depth"], self.compare["depth_unit"]
+                    #         self.compare["depth_value"], self.compare["depth_unit"]
                     #     )
                     # ),
                 )
