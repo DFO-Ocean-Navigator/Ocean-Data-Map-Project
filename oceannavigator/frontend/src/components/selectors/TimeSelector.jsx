@@ -41,8 +41,13 @@ function TimeSelector({
           timeIdx = timestamps.data.findIndex((ts) => ts.value === time.value);
           if (timeIdx > 0) {
             starttime = timestamps.data[timeIdx - 1];
-          } else if (timeIdx < timestamps.data.length - 1) {
+          } else if (
+            timeIdx < timestamps.data.length - 1 &&
+            selectorType === "range"
+          ) {
             time = timestamps.data[timeIdx + 1];
+          } else {
+            starttime = timestamps.data[0];
           }
         }
       }

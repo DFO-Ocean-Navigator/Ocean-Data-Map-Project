@@ -65,12 +65,12 @@ const AreaWindow = (props) => {
     }
   );
 
-  // Sync scale when dataset_0.variable changes
+  // Sync scale when dataset0.variable changes
   useEffect(() => {
     if (!autoScale) {
-      setScale(props.dataset_0.variable_scale);
+      setScale(props.dataset0.variable.scale);
     }
-  }, [props.dataset_0.variable]);
+  }, [props.dataset0.variable]);
 
   const handleQuiverUpdate = (key, value) => {
     setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
@@ -81,7 +81,11 @@ const AreaWindow = (props) => {
   };
 
   const compareChanged = (checked) => {
-    const newScale = checked ? [-10, 10] : props.dataset_0.variable_scale;
+    const newScale = checked
+      ? autoScale
+        ? "auto"
+        : [-10, 10]
+      : props.dataset0.variable.scale;
     setScale(newScale);
     props.setCompareDatasets(checked);
   };
@@ -91,7 +95,7 @@ const AreaWindow = (props) => {
     if (autoScale) {
       newScale = props.compareDatasets
         ? [-10, 10]
-        : props.dataset_0.variable_scale;
+        : props.dataset0.variable.scale;
     }
     setScale(newScale);
     setAutoScale((p) => !p);
@@ -174,7 +178,7 @@ const AreaWindow = (props) => {
           id="quiver"
           state={quiver}
           onUpdate={handleQuiverUpdate}
-          dataset={props.dataset_0.id}
+          dataset={props.dataset0.id}
           title={_("Arrows")}
         >
           {_("arrows_help")}
@@ -185,7 +189,7 @@ const AreaWindow = (props) => {
           id="contour"
           state={contour}
           onUpdate={handleContourUpdate}
-          dataset={props.dataset_0.id}
+          dataset={props.dataset0.id}
           title={_("Additional Contours")}
         >
           {_("contour_help")}
@@ -202,7 +206,7 @@ const AreaWindow = (props) => {
   const subsetPanel = (
     <SubsetPanel
       id="SubsetPanel"
-      dataset={props.dataset_0}
+      dataset={props.dataset0}
       area={props.plotData.coordinates}
     />
   );
@@ -214,12 +218,12 @@ const AreaWindow = (props) => {
       </Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetSelector
-          id="dataset_0"
+          id="area-window-dataset0-selector"
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
           mapSettings={props.mapSettings}
-          mountedDataset={props.dataset_0}
+          mountedDataset={props.dataset0}
         />
         <ComboBox
           id="leftColormap"
@@ -241,12 +245,12 @@ const AreaWindow = (props) => {
       <Card.Header>{_("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetSelector
-          id="dataset_1"
+          id="area-window-dataset1-selector"
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}
           mapSettings={props.mapSettings}
-          mountedDataset={props.dataset_1}
+          mountedDataset={props.dataset1}
         />
         <ComboBox
           id="rightColormap"
@@ -277,38 +281,40 @@ const AreaWindow = (props) => {
           ];
 
     const plotQuery = {
-      dataset: props.dataset_0.id,
+      dataset: props.dataset0.id,
       scale: scale.toString(),
       name: props.names[0],
       colormap: leftColormap.toString(),
-      time: props.dataset_0.time.id,
+      time: props.dataset0.time.id,
       area,
-      depth: props.dataset_0.depth,
+      depth: props.dataset0.depth,
       bathymetry: bathymetry,
       quiver,
       contour,
       showarea: showArea,
-      variable: props.dataset_0.variable.id,
+      variable: props.dataset0.variable.id,
       projection: props.mapSettings.projection,
       interp: props.mapSettings.interpType,
       radius: props.mapSettings.interpRadius,
       neighbours: props.mapSettings.interpNeighbours,
-      ...(props.compareDatasets && {
-        compare_to: {
-          ...props.dataset_1,
-          dataset: props.dataset_1.id,
-          scale: props.dataset_1.variable_scale.toString(),
-          scale_diff: scale?.toString(),
-          colormap: rightColormap.toString(),
-          colormap_diff: diffColormap.toString(),
-        },
-      }),
+      ...(props.compareDatasets &&
+        props.dataset1.time.id > 0 && {
+          compare_to: {
+            dataset: props.dataset1.id,
+            variable: props.dataset1.variable.id,
+            time: props.dataset1.time.id,
+            depth: props.dataset1.depth,
+            scale: "auto",
+            scale_diff: scale?.toString(),
+            colormap: rightColormap.toString(),
+            colormap_diff: diffColormap.toString(),
+          },
+        }),
     };
 
     const permlink_subquery = {
       currentTab,
       scale,
-      scale_1: props.dataset_1.variable_scale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
       rightColormap: rightColormap.toString(),
@@ -365,11 +371,11 @@ const AreaWindow = (props) => {
 AreaWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
   generatePermLink: PropTypes.func,
-  dataset_1: PropTypes.object.isRequired,
+  dataset1: PropTypes.object.isRequired,
   compareDatasets: PropTypes.bool,
   variable: PropTypes.string,
   projection: PropTypes.string,
-  dataset_0: PropTypes.object.isRequired,
+  dataset0: PropTypes.object.isRequired,
   name: PropTypes.string,
   onUpdate: PropTypes.func,
   init: PropTypes.object,

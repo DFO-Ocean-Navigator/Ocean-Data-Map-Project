@@ -41,7 +41,7 @@ function DatasetSelector({
   t,
 }) {
   const [dataset, setDataset] = useState(mountedDataset);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [updateParent, setUpdateParent] = useState(false);
   const [queryStatus, setQueryStatus] = useState({
     variables: "",
