@@ -60,28 +60,28 @@ function SubsetPanel(props) {
       const max_range = [AABB[1], AABB[3]].join();
       queryString = "&min_range=" + min_range + "&max_range=" + max_range;
     }
-    const variables = subsetDataset.variables.map((v) => v.id).join();
-    const starttime = outputTimerange ? dataset.starttime : dataset.time;
+    const variables = subsetDataset.variable.map((v) => v.id).join();
+    const starttime = outputTimerange ? subsetDataset.starttime.id : subsetDataset.time.id;
     window.location.href =
-      `/api/v2.0/subset/${props.dataset.id}/${variables}?` +
+      `/api/v2.0/subset/${subsetDataset.id}/${variables}?` +
       "&output_format=" +
       outputFormat +
       queryString +
       "&time=" +
-      [starttime, dataset.time].join() +
+      [starttime, subsetDataset.time.id].join() +
       "&should_zip=" +
       (zip ? 1 : 0) +
-      (showDepthSelector ? `&depth=${dataset.depth}` : "");
+      (showDepthSelector ? `&depth=${subsetDataset.depth}` : "");
   };
 
   const saveScript = (key) => {
-    const variables = subsetDataset.variables.map((v) => v.id).join();
-    const starttime = outputTimerange ? dataset.starttime : dataset.time;
+    const variables = subsetDataset.variable.map((v) => v.id).join();
+    const starttime = outputTimerange ? subsetDataset.starttime.id : subsetDataset.time.id;
     let query = {
       output_format: outputFormat,
-      dataset_name: props.dataset.id,
+      dataset_name: subsetDataset.id,
       variables: variables,
-      time: [starttime, dataset.time].join(),
+      time: [starttime, subsetDataset.time.id].join(),
       should_zip: zip ? 1 : 0,
     };
     // check if predefined area
