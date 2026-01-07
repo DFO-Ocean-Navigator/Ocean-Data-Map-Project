@@ -30,6 +30,7 @@ function DatasetPanel({
   showAllDepths = false,
   horizontalLayout = false,
   datasetSearch = false,
+  disableTimeSelector = false,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -180,7 +181,7 @@ function DatasetPanel({
   } else if (showTimeRange) {
     timeSelectorType = "range";
   }
-  const timeSelector = (
+  const timeSelector = !disableTimeSelector && (
     <TimeSelector
       id={`${id}-time-selector`}
       dataset={dataset}
@@ -222,7 +223,7 @@ function DatasetPanel({
     />
   ) : null;
 
-  let datasetSearchButton = null;
+  let datasetSearchButton, datasetSearchModal;
   if (datasetSearch) {
     prefetchAllVariables();
 
@@ -242,6 +243,32 @@ function DatasetPanel({
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </Button>
       </OverlayTrigger>
+    );
+
+    datasetSearchModal = (
+      <Modal
+        show={showDatasetSearch}
+        size="xl"
+        dialogClassName="full-screen-modal"
+        onHide={toggleSearchDatasets}
+      >
+        <Modal.Header closeButton closeVariant="white">
+          <Modal.Title>Search Datasets</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <DatasetSearchWindow
+            filters={datasetSearchFilters}
+            updateFilters={updateSearchFilters}
+            applyFilters={applySearchFilters}
+            closeModal={toggleSearchDatasets}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={toggleSearchDatasets}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     );
   }
 
@@ -272,29 +299,7 @@ function DatasetPanel({
       {horizontalLayout ? timeSelector : null}
       {horizontalLayout ? null : goButton}
 
-      <Modal
-        show={showDatasetSearch}
-        size="xl"
-        dialogClassName="full-screen-modal"
-        onHide={toggleSearchDatasets}
-      >
-        <Modal.Header closeButton closeVariant="white">
-          <Modal.Title>Search Datasets</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <DatasetSearchWindow
-            filters={datasetSearchFilters}
-            updateFilters={updateSearchFilters}
-            applyFilters={applySearchFilters}
-            closeModal={toggleSearchDatasets}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={toggleSearchDatasets}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {datasetSearchModal}
 
       <Modal show={loading} backdrop size="sm" dialogClassName="loading-modal">
         <Modal.Header>
@@ -323,6 +328,7 @@ DatasetPanel.propTypes = {
   mountedDataset: PropTypes.object,
   horizontalLayout: PropTypes.bool,
   showTimeSlider: PropTypes.bool,
+  disableTimeSelector: PropTypes.bool,
   compareDatasets: PropTypes.bool,
   showSearchBtn: PropTypes.bool,
   showCompare: PropTypes.bool,

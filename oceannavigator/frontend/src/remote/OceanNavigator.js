@@ -91,8 +91,12 @@ export async function FilterDatasetsByLocationPromise(
   return response.data;
 }
 
-export function GetTrackTimeRangePromise(track) {
-  return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
+export async function GetTrackTimeRangePromise(track) {
+  const response = await instance.get(
+    `/api/v2.0/observation/tracktimerange/${track}.json`
+  );
+
+  return response.data;
 }
 
 export async function GetPlotImagePromise(plotType, query) {

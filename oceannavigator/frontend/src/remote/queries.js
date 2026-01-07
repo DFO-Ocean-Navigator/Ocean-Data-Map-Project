@@ -7,6 +7,7 @@ import {
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
+  GetTrackTimeRangePromise,
   FilterDatasetsByDatePromise,
   FilterDatasetsByLocationPromise,
 } from "./OceanNavigator.js";
@@ -95,6 +96,15 @@ export function useLocationFilter(datasetIds, location, enabled) {
       ),
     enabled: enabled,
   });
+  return { data, status };
+}
+
+export function useGetTrackTimeRange(trackId) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observations", "trackTimeRange", trackId],
+    queryFn: () => GetTrackTimeRangePromise(trackId),
+  });
+
   return { data, status };
 }
 

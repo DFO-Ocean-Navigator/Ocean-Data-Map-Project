@@ -1,76 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Accordion from "react-bootstrap/Accordion";
 import { Card, Col, Row, Nav } from "react-bootstrap";
+import DatePicker from "react-datepicker";
 
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
-import DatePicker from "react-datepicker";
 import PropTypes from "prop-types";
-import DatasetSelector from "../data-selectors/DatasetSelector.jsx";
-import SelectBox from "../lib/SelectBox.jsx";
-
-import {
-  GetDatasetsPromise,
-  GetVariablesPromise,
-  GetTrackTimeRangePromise,
-} from "../../remote/OceanNavigator.js";
+import DatasetPanel from "../DatasetPanel.jsx";
+import { useGetTrackTimeRange } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
 const TrackWindow = (props) => {
   const [showmap, setShowMap] = useState(true);
-  const [dataset, setDataset] = useState(props.dataset);
-  const [variable, setVariable] = useState(props.dataset.variable.id);
-  const [availableDatasets, setAvailableDatasets] = useState([]);
-  const [availableVariables, setAvailableVariables] = useState([]);
+  const [plotDataset, setPlotDataset] = useState(props.dataset);
   const [latlon, setLatlon] = useState(false);
   const [trackvariable, setTrackVariable] = useState([0]);
+  const [quantum, setQuantum] = useState(props.observationQuery.quantum);
   const [starttime, setStarttime] = useState(props.observationQuery.startDate);
   const [endtime, setEndtime] = useState(props.observationQuery.endDate);
   const [plotSize, setPlotSize] = useState("10x7");
   const [plotDpi, setPlotDpi] = useState(144);
-  const [depth, setDepth] = useState(0);
-  const [quantum, setQuantum] = useState(props.observationQuery.quantum);
-  const [minDate, setMinDate] = useState();
-  const [maxDate, setMaxDate] = useState();
 
-  useEffect(() => {
-    GetDatasetsPromise().then((result) => {
-      setAvailableDatasets(result.data);
-    });
+  const trackTimeRange = useGetTrackTimeRange(props.plotData.id);
 
-    getVariables(dataset.id);
-
-    GetTrackTimeRangePromise(props.plotData.id).then((result) => {
-      let newMindate = new Date(result.data.min);
-      let newMaxdate = new Date(result.data.max);
-      setMinDate(newMindate);
-      setMaxDate(newMaxdate);
-    });
-  }, []);
-
-  const getVariables = (dataset) => {
-    GetVariablesPromise(dataset).then((variableResult) => {
-      let variables = variableResult.data;
-
-      setAvailableVariables(variables);
-
-      let currentVariable = variables.filter((v) => {
-        return v.id === variable;
-      })[0];
-
-      if (!currentVariable) {
-        setVariable(variables[0].id);
-      }
-    });
-  };
-
-  const changeDataset = (key, value) => {
-    let nextDataset = availableDatasets.filter((d) => d.id === value);
-    getVariables(nextDataset[0].id);
-    setDataset(nextDataset[0]);
+  const handleDatasetUpdate = (key, value) => {
+    setPlotDataset((prev) => ({ ...prev, ...value }));
   };
 
   const updateQuantum = (key, value) => {
@@ -87,14 +44,14 @@ const TrackWindow = (props) => {
   };
 
   var plotQuery = {
-    dataset: dataset.id,
+    dataset: plotDataset.id,
     name: props.name,
     track: [props.plotData.id],
     showmap: showmap,
-    variable: variable,
+    variable: plotDataset.variable.id,
     latlon: latlon,
     trackvariable: trackvariable,
-    depth: depth,
+    depth: plotDataset.depth,
     track_quantum: quantum,
   };
 
@@ -110,20 +67,13 @@ const TrackWindow = (props) => {
 
   const permlink_subquery = {
     showmap,
-    dataset,
-    variable,
-    availableDatasets,
-    availableVariables,
+    plotDataset,
     latlon,
     trackvariable,
     starttime,
     endtime,
     plotSize,
     plotDpi,
-    depth,
-    quantum,
-    minDate,
-    maxDate,
   };
 
   return (
@@ -141,41 +91,6 @@ const TrackWindow = (props) => {
             <Card.Header>{_("Track Settings")}</Card.Header>
             <Card.Body className="global-settings-card">
               <div className="inputs-container">
-                {availableDatasets.length > 0 && (
-                  <DatasetSelector
-                    id="track-window-dataset-selector"
-                    key="dataset"
-                    options={availableDatasets}
-                    label={_("Dataset")}
-                    placeholder={_("Dataset")}
-                    onChange={changeDataset}
-                    selected={dataset.id}
-                  />
-                )}
-                {availableVariables.length > 0 && (
-                  <SelectBox
-                    key="variable"
-                    id="variable"
-                    name={_("variable")}
-                    label={_("Variable")}
-                    placeholder={_("Variable")}
-                    options={availableVariables}
-                    onChange={(_, value) => setVariable(value)}
-                    selected={variable}
-                  />
-                )}
-                <ComboBox
-                  key="trackvariable"
-                  id="trackvariable"
-                  multiple
-                  state={trackvariable}
-                  def=""
-                  onUpdate={(_, value) => setTrackVariable(value.flat())}
-                  url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
-                  title={_("Observed Variable")}
-                >
-                  <h1>Track Variable</h1>
-                </ComboBox>
                 <CheckBox
                   key="showmap"
                   id="showmap"
@@ -194,6 +109,19 @@ const TrackWindow = (props) => {
                 >
                   {_("latlon_help")}
                 </CheckBox>
+                <ComboBox
+                  key="trackvariable"
+                  id="trackvariable"
+                  multiple
+                  state={trackvariable}
+                  def=""
+                  onUpdate={(_, value) => setTrackVariable(value.flat())}
+                  url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
+                  title={_("Observed Variable")}
+                >
+                  <h1>Track Variable</h1>
+                </ComboBox>
+
                 <div key="starttime-div">
                   <h1 className="time-label">Start Date</h1>
                   <DatePicker
@@ -202,7 +130,7 @@ const TrackWindow = (props) => {
                     dateFormat="yyyy-MM-dd"
                     selected={starttime}
                     onChange={(newDate) => setStarttime(newDate)}
-                    minDate={minDate}
+                    minDate={trackTimeRange.data.min}
                     maxDate={endtime}
                   />
                 </div>
@@ -215,7 +143,7 @@ const TrackWindow = (props) => {
                     selected={endtime}
                     onChange={(newDate) => setEndtime(newDate)}
                     minDate={starttime}
-                    maxDate={maxDate}
+                    maxDate={trackTimeRange.data.max}
                   />
                 </div>
                 <ComboBox
@@ -232,18 +160,6 @@ const TrackWindow = (props) => {
                     { id: "month", value: "Month" },
                     { id: "year", value: "Year" },
                   ]}
-                />
-                <ComboBox
-                  key="depth"
-                  id="depth"
-                  state={depth}
-                  def={""}
-                  onUpdate={(_, value) => {
-                    value = Array.isArray(value) ? value[0] : value;
-                    setDepth(value);
-                  }}
-                  url={`/api/v2.0/dataset/${props.dataset.id}/${variable}/depths?include_all_key=true`}
-                  title={_("Depth")}
                 />
                 <Accordion key="plot-options-accordion">
                   <Accordion.Header>Plot Options</Accordion.Header>
@@ -270,6 +186,21 @@ const TrackWindow = (props) => {
             size={plotSize}
             dpi={plotDpi}
           />
+        </Col>
+        <Col lg={2} className="settings-col">
+          <Card id="left_map" variant="primary">
+            <Card.Header>{_("Main Map")}</Card.Header>
+            <Card.Body className="global-settings-card">
+              <DatasetPanel
+                id="track-window-dataset-panel"
+                onUpdate={handleDatasetUpdate}
+                hasDepth={true}
+                disableTimeSelector={true}
+                showQuiverSelector={false}
+                mountedDataset={plotDataset}
+              />
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
     </div>
