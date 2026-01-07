@@ -364,7 +364,7 @@ function ObservationSelector(props) {
           <Card.Title>Depth Filter</Card.Title>
           <Form.Check
             type="switch"
-            id="platform-toggle"
+            id="depth-toggle"
             onClick={() => {
               setDepthActive(!depthActive);
             }}
