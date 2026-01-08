@@ -18,10 +18,10 @@ function QuiverSelector({
   enabled = true,
   t,
 }) {
-  const variables = useGetDatasetVariables(dataset, enabled);
+  const quiverVariables = useGetDatasetVariables(dataset, enabled, true);
 
   useEffect(() => {
-    const variableIds = variables.data.map((v) => {
+    const variableIds = quiverVariables.data.map((v) => {
       return v.id;
     });
     if (
@@ -38,28 +38,19 @@ function QuiverSelector({
     updateDataset("quiverVariable", value);
   };
 
-  let quiverVariables = [];
-  if (
-    variables.data &&
-    MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class)
-  ) {
-    quiverVariables = variables.data.filter((variable) => {
-      return variable.vector_variable;
-    });
-  }
-  quiverVariables.unshift({ id: "none", value: "None" });
+  let quiverOptions = [{ id: "none", value: "None" }, ...quiverVariables.data];
 
   return (
     <div className="quiver-options">
       <SelectBox
-        id={`dataset-selector-quiver-selector-${id}`}
+        id={`${id}-quiver-selector`}
         name="quiverVariable"
         label={t("Quiver")}
         placeholder={t("Quiver Variable")}
-        options={quiverVariables}
+        options={quiverVariables.data}
         onChange={updateQuiver}
         selected={dataset.quiverVariable}
-        loading={variables.isLoading}
+        loading={quiverVariables.status === "pending"}
         horizontalLayout={horizontalLayout}
       />
       <Form.Label>Quiver Density</Form.Label>

@@ -5,7 +5,7 @@ import ComboBox from "../ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ContourSelector from "../ContourSelector.jsx";
-import QuiverSelector from "../QuiverSelector.jsx";
+import AreaQuiverSelector from "./AreaQuiverSelector.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import DatasetPanel from "../DatasetPanel.jsx";
@@ -174,7 +174,7 @@ const AreaWindow = (props) => {
           title={_("Show Selected Area(s)")}
         />
         {/* Arrow Selector Drop Down menu */}
-        <QuiverSelector
+        <AreaQuiverSelector
           id="quiver"
           state={quiver}
           onUpdate={handleQuiverUpdate}
@@ -182,7 +182,7 @@ const AreaWindow = (props) => {
           title={_("Arrows")}
         >
           {_("arrows_help")}
-        </QuiverSelector>
+        </AreaQuiverSelector>
 
         {/* Contour Selector drop down menu */}
         <ContourSelector

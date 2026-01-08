@@ -30,10 +30,14 @@ export function useGetAllVariables() {
   return { data, status };
 }
 
-export function useGetDatasetVariables(dataset, enabled = true) {
+export function useGetDatasetVariables(
+  dataset,
+  enabled = true,
+  vectorsOnly = false
+) {
   const { data = [], status } = useQuery({
-    queryKey: ["dataset", "variables", dataset.id],
-    queryFn: () => GetVariablesPromise(dataset.id),
+    queryKey: ["dataset", "variables", dataset.id, vectorsOnly],
+    queryFn: () => GetVariablesPromise(dataset.id, vectorsOnly),
     enabled,
   });
 

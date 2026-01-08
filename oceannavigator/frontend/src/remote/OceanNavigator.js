@@ -9,8 +9,12 @@ export async function GetDatasetsPromise() {
   return response.data;
 }
 
-export async function GetVariablesPromise(dataset) {
-  const response = await instance.get(`/api/v2.0/dataset/${dataset}/variables`);
+export async function GetVariablesPromise(dataset, vectorsOnly) {
+  const response = await instance.get(
+    `/api/v2.0/dataset/${dataset}/variables${
+      vectorsOnly ? "?vectors_only=True" : ""
+    }`
+  );
   return response.data;
 }
 

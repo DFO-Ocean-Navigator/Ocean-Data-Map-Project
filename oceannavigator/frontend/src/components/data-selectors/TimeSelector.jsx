@@ -99,63 +99,59 @@ function TimeSelector({
   };
 
   let timeSelector;
-  if (!timestamps.isLoading && timestamps.data.length > 0) {
-    if (timestamps.data.length > 0 && dataset.time.id > 0) {
-      switch (selectorType) {
-        case "slider":
-          timeSelector = (
-            <TimeSlider
-              key="time"
-              id="time"
-              dataset={dataset}
-              timestamps={timestamps.data}
-              selected={dataset.time.id}
-              onChange={updateTime}
-              loading={timestamps.isLoading}
-            />
-          );
-          break;
-        case "range":
-          timeSelector = (
-            <div>
-              <TimePicker
-                key="starttime"
-                id="starttime"
-                state={dataset.starttime.id}
-                title={t("Start Time (UTC)")}
-                onUpdate={updateTime}
-                max={dataset.time.id}
-                dataset={dataset}
-                timestamps={timestamps.data}
-              />
-              <TimePicker
-                key="time"
-                id="time"
-                state={dataset.time.id}
-                title={t("End Time (UTC)")}
-                onUpdate={updateTime}
-                min={dataset.starttime.id}
-                dataset={dataset}
-                timestamps={timestamps.data}
-              />
-            </div>
-          );
-          break;
-        default:
-          timeSelector = (
-            <TimePicker
-              key="time"
-              id="time"
-              state={dataset.time.id}
-              onUpdate={updateTime}
-              title={t("Time (UTC)")}
-              dataset={dataset}
-              timestamps={timestamps.data}
-              horizontalLayout={horizontalLayout}
-            />
-          );
-      }
-    }
+  switch (selectorType) {
+    case "slider":
+      timeSelector = (
+        <TimeSlider
+          key="time"
+          id="time"
+          dataset={dataset}
+          timestamps={timestamps.data}
+          selected={dataset.time.id}
+          onChange={updateTime}
+          loading={timestamps.isLoading}
+        />
+      );
+      break;
+    case "range":
+      timeSelector = (
+        <div>
+          <TimePicker
+            key="starttime"
+            id="starttime"
+            state={dataset.starttime.id}
+            title={t("Start Time (UTC)")}
+            onUpdate={updateTime}
+            max={dataset.time.id}
+            dataset={dataset}
+            timestamps={timestamps.data}
+          />
+          <TimePicker
+            key="time"
+            id="time"
+            state={dataset.time.id}
+            title={t("End Time (UTC)")}
+            onUpdate={updateTime}
+            min={dataset.starttime.id}
+            dataset={dataset}
+            timestamps={timestamps.data}
+          />
+        </div>
+      );
+      break;
+    default:
+      timeSelector = (
+        <TimePicker
+          key="time"
+          id="time"
+          state={dataset.time.id}
+          onUpdate={updateTime}
+          title={t("Time (UTC)")}
+          dataset={dataset}
+          timestamps={timestamps.data}
+          horizontalLayout={horizontalLayout}
+        />
+      );
   }
 
   return timeSelector;
