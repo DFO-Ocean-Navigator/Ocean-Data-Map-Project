@@ -358,6 +358,7 @@ const LineWindow = (props) => {
             variable: props.dataset1.variable.id,
             starttime: props.dataset1.starttime.id,
             endtime: props.dataset1.time.id,
+            depth: props.dataset1.depth,
             scale: "auto",
             scale_diff: scaleDiff.toString(),
             colormap: rightColormap.toString(),
