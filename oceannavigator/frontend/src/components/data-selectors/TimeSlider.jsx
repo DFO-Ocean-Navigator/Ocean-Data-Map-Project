@@ -29,16 +29,15 @@ function TimeSlider(props) {
       setSelectedIndex(newIndex);
 
       let newNTicks = 20;
-      let newMinTick, newMaxTick;
       if (props.dataset.quantum === "hour") {
         newNTicks = 48;
       }
       if (props.timestamps.length < newNTicks) {
         newNTicks = props.timestamps.length;
       }
-
       setNTicks(newNTicks);
 
+      let newMinTick, newMaxTick;
       if (props.timestamps.length < newNTicks) {
         newMinTick = 0;
         newMaxTick = props.timestamps.length;
@@ -47,13 +46,14 @@ function TimeSlider(props) {
         newMaxTick = newMinTick + newNTicks;
       }
 
+      setMinTick(newMinTick);
+      setMaxTick(newMaxTick);
+
       if (props.dataset.id.includes("climatology")) {
         setClimatology(true);
       }
-      setMinTick(newMinTick);
-      setMaxTick(newMaxTick);
     }
-  }, [props.selected, props.timestamps]);
+  }, [props.selected, props.timestamps, props.dataset.quantum]);
 
   useEffect(() => {
     if (
