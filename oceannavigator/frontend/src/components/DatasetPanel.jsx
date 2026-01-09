@@ -41,9 +41,9 @@ function DatasetPanel({
   const [dataset, setDataset] = useState(mountedDataset);
   const [loading, setLoading] = useState(true);
   const [updateParent, setUpdateParent] = useState(false);
-  const [queryStatus, setQueryStatus] = useState({
-    variables: "",
-  });
+  const [queryStatus, setQueryStatus] = useState(() =>
+    showVariableSelector ? { variables: "pending" } : {}
+  );
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
     DATASET_FILTER_DEFAULTS
@@ -87,9 +87,7 @@ function DatasetPanel({
   const updateDataset = (key, value, shouldUpdateParent = false) => {
     switch (key) {
       case "dataset":
-        setQueryStatus({
-          variables: "pending",
-        });
+        setQueryStatus(showVariableSelector ? { variables: "pending" } : {});
         setDataset((prevDataset) => ({
           ...prevDataset,
           attribution: value.attribution,

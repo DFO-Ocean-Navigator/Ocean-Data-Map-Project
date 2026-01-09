@@ -64,7 +64,9 @@ const PointWindow = ({
   );
 
   const variables = useGetDatasetVariables(plotDataset);
-  const only2d = variables.data.every((v) => v.two_dimensional === true);
+  const only2d =
+    variables.data.length > 0 &&
+    variables.data.every((v) => v.two_dimensional === true);
 
   // should be in useEffect
   if (only2d && selected !== TabEnum.MOORING) {
@@ -282,7 +284,7 @@ const PointWindow = ({
         observation: [plotData.id],
         observation_variable: observationVariable,
       };
-      plotType.type = "observation";
+      plotType = "observation";
       inputs.push(observationVariableElem);
       break;
     case TabEnum.MOORING:
