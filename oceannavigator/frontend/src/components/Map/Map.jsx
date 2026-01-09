@@ -242,7 +242,7 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings,
         overlay,
         popupElement1,
-        mapView,
+        map0.getView(),
         layerData1,
         newLayerFeatureVector,
         obsDrawSource,
@@ -261,7 +261,6 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, select1);
-
       if (drawActions && drawActions.map0) {
         if (drawActions.map1 && newMap) {
           newMap.removeInteraction(drawActions.map1);
@@ -991,6 +990,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
     }
+    setDrawActions({ map0: null, map1: null });
   };
 
   const addAnnotationLabel = (text) => {
