@@ -85,7 +85,7 @@ const PointWindow = ({
   // Handles when a tab is selected
   const onSelect = (tab) => {
     tab = parseInt(tab);
-    if (tab === TabEnum.MOORING && Array.isArray(plotDataset.variable)) {
+    if (tab !== TabEnum.PROFILE && Array.isArray(plotDataset.variable)) {
       handleDatasetUpdate("dataset", {
         ...plotDataset,
         variable: plotDataset.variable[0],
@@ -264,7 +264,6 @@ const PointWindow = ({
         station: plotData.coordinates,
         showmap: showMap,
         time: plotDataset.time.id,
-        variable_range: plotDataset.variable.map((v) => v?.axisRange),
       };
       plotType = "ts";
       break;
@@ -274,7 +273,6 @@ const PointWindow = ({
         station: plotData.coordinates,
         showmap: showMap,
         time: plotDataset.time.id,
-        variable_range: plotDataset.variable.map((v) => v?.axisRange),
       };
       plotType = "sound";
       break;
