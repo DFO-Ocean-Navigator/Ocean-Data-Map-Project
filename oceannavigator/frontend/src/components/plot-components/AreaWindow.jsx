@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Accordion, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import PlotImage from "./PlotImage.jsx";
@@ -21,8 +21,8 @@ const AreaWindow = (props) => {
   const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
 
   // Scale settings
-  const [scale, setScale] = useState(props.init?.scale || "auto");
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
+  const [scale, setScale] = useState(props.init?.scale ?? "auto");
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
@@ -49,7 +49,7 @@ const AreaWindow = (props) => {
 
   // Feature settings
   const [quiver, setQuiver] = useState(
-    props.init?.quiver || {
+    props.init?.quiver ?? {
       variable: "",
       magnitude: "length",
       colormap: "default",
@@ -66,8 +66,14 @@ const AreaWindow = (props) => {
     }
   );
 
+  const isFirstRender = useRef(true);
   // Sync scale when dataset_0.variable changes
   useEffect(() => {
+    //guard useEffect on first render. to handle permalink
+    if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
     if (!autoScale) {
       setScale(props.dataset_0.variable_scale);
     }
@@ -176,17 +182,18 @@ const AreaWindow = (props) => {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
+          subquery={props.init?.quiver?true:false}
           title={_("Arrows")}
         >
           {_("arrows_help")}
         </QuiverSelector>
-
         {/* Contour Selector drop down menu */}
         <ContourSelector
           id="contour"
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
+          subquery={props.init?.contour?true:false}
           title={_("Additional Contours")}
         >
           {_("contour_help")}
@@ -216,6 +223,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_0"
+          subquery_depth={props.init?.left_depth}
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -243,6 +251,7 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetSelector
           id="dataset_1"
+          subquery_depth={props.init?.right_depth}
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -307,6 +316,7 @@ const AreaWindow = (props) => {
           scale_diff: scale?.toString(),
           colormap: rightColormap.toString(),
           colormap_diff: diffColormap.toString(),
+          depth: props.dataset_1.depth,
         },
       }),
     };
@@ -314,7 +324,7 @@ const AreaWindow = (props) => {
     const permlink_subquery = {
       currentTab,
       scale,
-      scale_1: props.dataset_1.variable_scale,
+      autoScale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
       rightColormap: rightColormap.toString(),
@@ -325,8 +335,10 @@ const AreaWindow = (props) => {
       showarea: showArea,
       bathymetry,
       surfacevariable: surfaceVariable,
-      quiver,
       contour,
+      quiver,
+      left_depth: props.dataset_0.depth,
+      right_depth: props.dataset_1.depth
     };
 
     content = (
@@ -342,7 +354,9 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>
+            {_("Map")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
