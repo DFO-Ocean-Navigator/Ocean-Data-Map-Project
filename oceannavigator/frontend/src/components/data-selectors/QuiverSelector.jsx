@@ -35,7 +35,7 @@ function QuiverSelector({
   }, [dataset]);
 
   const updateQuiver = (key, value) => {
-    updateDataset("quiverVariable", value);
+    updateDataset(key, value);
   };
 
   let quiverOptions = [{ id: "none", value: "None" }, ...quiverVariables.data];
@@ -44,10 +44,11 @@ function QuiverSelector({
     <div className="quiver-options">
       <SelectBox
         id={`${id}-quiver-selector`}
+        key="quiverVariable"
         name="quiverVariable"
         label={t("Quiver")}
         placeholder={t("Quiver Variable")}
-        options={quiverVariables.data}
+        options={quiverOptions}
         onChange={updateQuiver}
         selected={dataset.quiverVariable}
         loading={quiverVariables.status === "pending"}
