@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 
-import Class4Calendar from "./calendars/Class4Calendar.jsx";
+import Class4Calendar from "./data-selectors/calendars/Class4Calendar.jsx";
 import { GetClass4Promise } from "../remote/OceanNavigator.js";
 
 function Class4Selector(props) {

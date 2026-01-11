@@ -1,9 +1,9 @@
 import React from "react";
-import ComboBox from "./ComboBox.jsx";
+import ComboBox from "../ComboBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
@@ -50,7 +50,7 @@ const QuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ })
   );
 };
 //***********************************************************************
-QuiverSelector.propTypes = {
+AreaQuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.string.isRequired,
   title: PropTypes.string,
@@ -64,4 +64,4 @@ QuiverSelector.propTypes = {
   t: PropTypes.func.isRequired,
 };
 
-export default withTranslation()(QuiverSelector);
+export default withTranslation()(AreaQuiverSelector);

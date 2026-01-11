@@ -1,0 +1,55 @@
+div.DatasetPanel {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+div.DatasetPanel-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+div.quiver-options {
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+
+  .label {
+    text-wrap: nowrap;
+  }
+
+  .rc-slider {
+    width: 80px;
+
+    .rc-slider-mark-text {
+      top: -30px;
+      font-size: medium;
+    }
+  }
+}
+
+.go-button {
+  margin: 5px;
+
+}
+
+.go-button:hover {
+  background-color: #fff;
+  border: 1px solid #008cba;
+  color: #008cba;
+}
+
+.loading-modal {
+  top: 33%;
+  z-index: 100;
+  .modal-content {
+    width: 200%;
+    transform: translateX(-25%);
+  }
+}
