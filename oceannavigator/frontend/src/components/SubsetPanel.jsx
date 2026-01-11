@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Card, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import { withTranslation } from "react-i18next";
 import PropTypes from "prop-types";
@@ -21,6 +21,13 @@ function SubsetPanel(props) {
   const [outputFormat, setOutputFormat] = useState("NETCDF4");
   const [zip, setZip] = useState(false);
 
+  useEffect(() => {
+    setSubsetDataset({
+      ...props.dataset,
+      variable: [props.dataset.variable],
+    });
+  }, [props.dataset]);
+  
   const updateDataset = (key, value) => {
     setSubsetDataset((prevDataset) => ({
       ...prevDataset,
@@ -50,33 +57,40 @@ function SubsetPanel(props) {
   };
 
   const subsetArea = () => {
-    var queryString = [];
+    var areaParams = {};
     // check if predefined area
     if (typeof props.area === "string" || props.area instanceof String) {
-      queryString = "&area=" + props.area;
+      areaParams["area"] = props.area;
     } else {
       const AABB = calculateAreaBoundingBox(props.area);
       const min_range = [AABB[0], AABB[2]].join();
       const max_range = [AABB[1], AABB[3]].join();
-      queryString = "&min_range=" + min_range + "&max_range=" + max_range;
+      areaParams["min_range"] = min_range;
+      areaParams["max_range"] = max_range;
     }
     const variables = subsetDataset.variable.map((v) => v.id).join();
-    const starttime = outputTimerange ? subsetDataset.starttime.id : subsetDataset.time.id;
+    const starttime = outputTimerange
+      ? subsetDataset.starttime.id
+      : subsetDataset.time.id;
+
+    let query = {
+      output_format: outputFormat,
+      ...areaParams,
+      time: [starttime, subsetDataset.time.id].join(),
+      should_zip: zip ? 1 : 0,
+    };
+    showDepthSelector && (query["depth"] = subsetDataset.depth);
+
     window.location.href =
       `/api/v2.0/subset/${subsetDataset.id}/${variables}?` +
-      "&output_format=" +
-      outputFormat +
-      queryString +
-      "&time=" +
-      [starttime, subsetDataset.time.id].join() +
-      "&should_zip=" +
-      (zip ? 1 : 0) +
-      (showDepthSelector ? `&depth=${subsetDataset.depth}` : "");
+      JSON.stringify(query);
   };
 
   const saveScript = (key) => {
     const variables = subsetDataset.variable.map((v) => v.id).join();
-    const starttime = outputTimerange ? subsetDataset.starttime.id : subsetDataset.time.id;
+    const starttime = outputTimerange
+      ? subsetDataset.starttime.id
+      : subsetDataset.time.id;
     let query = {
       output_format: outputFormat,
       dataset_name: subsetDataset.id,
