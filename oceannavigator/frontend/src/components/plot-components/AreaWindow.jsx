@@ -21,7 +21,7 @@ const AreaWindow = (props) => {
   const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
 
   // Scale settings
-  const [scale, setScale] = useState(props.init?.scale ?? "auto");
+  const [scale, setScale] = useState("auto");
   const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
 
   // Colormap settings
@@ -66,18 +66,12 @@ const AreaWindow = (props) => {
     }
   );
 
-  const isFirstRender = useRef(true);
   // Sync scale when dataset_0.variable changes
   useEffect(() => {
-    //guard useEffect on first render. to handle permalink
-    if (isFirstRender.current) {
-    isFirstRender.current = false;
-    return;
-  }
     if (!autoScale) {
-      setScale(props.dataset_0.variable_scale);
+      setScale(props.init?.scale ?? props.dataset_0.variable_scale);
     }
-  }, [props.dataset_0.variable]);
+  }, []);
 
   const handleQuiverUpdate = (key, value) => {
     setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
@@ -182,7 +176,7 @@ const AreaWindow = (props) => {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset_0.id}
-          subquery={props.init?.quiver?true:false}
+          subquery={props.init?.quiver ? true : false}
           title={_("Arrows")}
         >
           {_("arrows_help")}
@@ -193,7 +187,7 @@ const AreaWindow = (props) => {
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset_0.id}
-          subquery={props.init?.contour?true:false}
+          subquery={props.init?.contour ? true : false}
           title={_("Additional Contours")}
         >
           {_("contour_help")}
@@ -338,7 +332,7 @@ const AreaWindow = (props) => {
       contour,
       quiver,
       left_depth: props.dataset_0.depth,
-      right_depth: props.dataset_1.depth
+      right_depth: props.dataset_1.depth,
     };
 
     content = (
