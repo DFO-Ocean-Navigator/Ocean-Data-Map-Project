@@ -228,7 +228,7 @@ const AreaWindow = (props) => {
           def="default"
           onUpdate={(_, value) => setLeftColormap(value)}
           url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
+          title={props.compareDatasets ? _("Diff. Colourmap") : _("Colourmap")}
         >
           {_("colourmap_help")}
           <img src="/api/v2.0/plot/colormaps.png/" alt="" />
@@ -249,16 +249,6 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_1}
         />
-        <ComboBox
-          id="rightColormap"
-          state={rightColormap}
-          def="default"
-          onUpdate={(_, value) => setRightColormap(value)}
-          url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
-        >
-          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-        </ComboBox>
       </Card.Body>
     </Card>
   );
@@ -342,7 +332,9 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>
+            {_("Map")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
