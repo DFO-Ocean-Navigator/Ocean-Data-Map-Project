@@ -156,6 +156,19 @@ const AreaWindow = (props) => {
             onUpdate={(_, s) => setScale(s)}
           />
         )}
+        {props.compareDatasets && (
+          <ComboBox
+            id="colormap_diff"
+            state={diffColormap}
+            onUpdate={(_, value) => setDiffColormap(value)}
+            title={_("Diff. Colourmap")}
+            url="/api/v2.0/plot/colormaps"
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
+
         {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
