@@ -161,7 +161,7 @@ function DatasetPanel({
   ) : null;
 
   let depthSelector =
-    showDepthSelector && !dataset.variable_two_dimensional ? (
+    showDepthSelector && !dataset.variable.two_dimensional ? (
       <DepthSelector
         id={`${id}-depth-selector`}
         dataset={dataset}
