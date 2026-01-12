@@ -28,9 +28,6 @@ const AreaWindow = (props) => {
   const [leftColormap, setLeftColormap] = useState(
     props.init?.leftColormap || "default"
   );
-  const [rightColormap, setRightColormap] = useState(
-    props.init?.rightColormap || "default"
-  );
   const [diffColormap, setDiffColormap] = useState(
     props.init?.colormap_diff || "default"
   );
@@ -156,7 +153,7 @@ const AreaWindow = (props) => {
             onUpdate={(_, s) => setScale(s)}
           />
         )}
-        {props.compareDatasets && (
+        {props.compareDatasets && !autoScale && (
           <ComboBox
             id="colormap_diff"
             state={diffColormap}
@@ -235,17 +232,19 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset_0}
         />
-        <ComboBox
-          id="leftColormap"
-          state={leftColormap}
-          def="default"
-          onUpdate={(_, value) => setLeftColormap(value)}
-          url="/api/v2.0/plot/colormaps"
-          title={props.compareDatasets ? _("Diff. Colourmap") : _("Colourmap")}
-        >
-          {_("colourmap_help")}
-          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-        </ComboBox>
+        {!props.compareDatasets && (
+          <ComboBox
+            id="leftColormap"
+            state={leftColormap}
+            def="default"
+            onUpdate={(_, value) => setLeftColormap(value)}
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
       </Card.Body>
     </Card>
   );
@@ -320,7 +319,6 @@ const AreaWindow = (props) => {
       scale_1: props.dataset_1.variable_scale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
-      rightColormap: rightColormap.toString(),
       colormap_diff: diffColormap.toString(),
       size: plotSize,
       dpi: plotDpi,
