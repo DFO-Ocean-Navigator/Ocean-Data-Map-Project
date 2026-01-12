@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-import AxisRange from "../AxisRange.jsx";
+
 import SelectBox from "../lib/SelectBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
@@ -14,7 +14,6 @@ function variableSelector({
   updateQueryStatus,
   hasDepth = false,
   multipleVariables = false,
-  showAxisRange = false,
   horizontalLayout = false,
   t,
 }) {
@@ -22,31 +21,29 @@ function variableSelector({
 
   useEffect(() => {
     if (variables.data.length > 0) {
-      if (dataset.variable?.fromSearch) {
-        // dataset changed using search window - add missing data
-        updateDataset(
-          "variable",
-          variables.data.find((v) => v.id === dataset.variable.id),
-          true
-        );
-      } else {
-        const variableIds = variables.data.map((v) => {
-          return v.id;
-        });
-        // dataset changed - check current variable in new dataset:
-        if (typeof dataset.variable === "string") {
-          // variable id passed to component instead of object
-          updateVariable("variable", dataset.variable);
-        } else {
-          let datasetHasVar = Array.isArray(dataset.variable)
-            ? (datasetHasVar = dataset.variable.every((v) =>
-                variableIds.includes(v.id)
-              ))
-            : variableIds.includes(dataset.variable.id);
+      const variableIds = Array.isArray(dataset.variable)
+        ? dataset.variable.map((v) => {
+            return v.id;
+          })
+        : [dataset.variable.id];
 
-          if (!datasetHasVar) {
-            updateVariable("variable", variables.data[0].id);
-          }
+      let nextVariable = variables.data.filter((v) =>
+        variableIds.includes(v.id)
+      );
+
+      if (nextVariable.length === 0) {
+        // current variable not in new dataset - select first variable
+        updateVariable("variable", variables.data[0].id);
+      } else {
+        let testVariable = !Array.isArray(dataset.variable)
+          ? [dataset.variable]
+          : dataset.variable;
+        if (JSON.stringify(nextVariable) !== JSON.stringify(testVariable)) {
+          // overwrite variable with data from new dataset if different
+          updateVariable(
+            "variable",
+            nextVariable.map((v) => v.id)
+          );
         }
       }
     }
@@ -65,26 +62,17 @@ function variableSelector({
   const updateVariable = (key, value) => {
     let variable;
     if (value instanceof HTMLCollection) {
-      // multiple variables
       let variableIds = Array.from(value).map((o) => o.value);
       variable = variables.data.filter((v) => variableIds.includes(v.id));
+    } else if (Array.isArray(value)) {
+      variable = variables.data.filter((v) => value.includes(v.id));
+      !multipleVariables && (variable = variable[0]);
     } else {
       // single variable selected
       variable = variables.data.find((v) => v.id === value);
     }
-    updateDataset("variable", variable);
-  };
 
-  const updateAxisRange = (key, value) => {
-    let variable;
-    if (multipleVariables) {
-      variable = [...dataset.variable];
-      let idx = variable.findIndex((v) => v.id === value[0]);
-      variable[idx].axisRange = value[1];
-    } else {
-      variable = { ...dataset.variable, axisRange: value[1] };
-    }
-    updateDataset("variable", variable);
+    updateDataset(key, variable, dataset.variable?.updateParent);
   };
 
   let variableOptions = [];
@@ -94,26 +82,6 @@ function variableSelector({
     });
   } else {
     variableOptions = variables.data;
-  }
-
-  let axisRange = [];
-  if (showAxisRange) {
-    let axisVariables = Array.isArray(dataset.variable)
-      ? dataset.variable
-      : [dataset.variable];
-    for (let variable of axisVariables) {
-      let range = (
-        <AxisRange
-          key={variable.id + "_axis_range"}
-          id={variable.id + "_axis_range"}
-          title={variable.value + " Range"}
-          variable={variable}
-          range={variable.axisRange || variable.scale}
-          onUpdate={updateAxisRange}
-        />
-      );
-      axisRange.push(range);
-    }
   }
 
   // Work-around for when someone selected a plot that requires
@@ -146,7 +114,7 @@ function variableSelector({
           horizontalLayout={horizontalLayout}
         />
       )}
-      {showAxisRange && axisRange}
+      {/* {axisRange && axisRangeSelectors} */}
     </>
   );
 }
@@ -159,6 +127,8 @@ variableSelector.propTypes = {
   updateQueryStatus: PropTypes.func.isRequired,
   hasDepth: PropTypes.bool,
   multipleVariables: PropTypes.bool,
+  axisRange: PropTypes.object,
+  updateAxisRange: PropTypes.func,
   horizontalLayout: PropTypes.bool,
   t: PropTypes.func.isRequired,
 };

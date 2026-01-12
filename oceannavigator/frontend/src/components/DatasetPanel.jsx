@@ -8,6 +8,7 @@ import "rc-slider/assets/index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
+import AxisRange from "./AxisRange.jsx";
 import DatasetSelector from "./data-selectors/DatasetSelector.jsx";
 import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
@@ -70,6 +71,14 @@ function DatasetPanel({
   }, [mountedDataset]);
 
   useEffect(() => {
+    // ignore depth status if variable is 2D
+    if (
+      dataset.variable.two_dimensional &&
+      queryStatus["depths"] === "pending"
+    ) {
+      setQueryStatus((prev) => ({ ...prev, depths: "success" }));
+    }
+
     let isLoading = Object.values(queryStatus).some((s) => s === "pending");
     let isError = Object.values(queryStatus).some((s) => s === "error");
     let isSuccess = Object.values(queryStatus).every((s) => s === "success");
@@ -97,6 +106,13 @@ function DatasetPanel({
           model_class: value.model_class,
           quantum: value.quantum,
           value: value.value,
+        }));
+        break;
+      case "axisRange":
+        let newAxisRange = { ...dataset.axisRange, [value[0]]: value[1] };
+        setDataset((prevDataset) => ({
+          ...prevDataset,
+          axisRange: newAxisRange,
         }));
         break;
       default:
@@ -145,10 +161,29 @@ function DatasetPanel({
       updateQueryStatus={updateQueryStatus}
       hasDepth={hasDepth}
       multipleVariables={multipleVariables}
-      showAxisRange={showAxisRange}
       horizontalLayout={horizontalLayout}
     />
   ) : null;
+
+  let axisRangeSelectors = [];
+  if (showAxisRange) {
+    let axisVariables = Array.isArray(dataset.variable)
+      ? dataset.variable
+      : [dataset.variable];
+    for (let variable of axisVariables) {
+      let rangeSelector = (
+        <AxisRange
+          key={variable.id + "_axis_range"}
+          id={variable.id + "_axis_range"}
+          title={variable.value + " Range"}
+          variable={variable}
+          range={dataset.axisRange[variable.id] || variable.scale}
+          onUpdate={updateDataset}
+        />
+      );
+      axisRangeSelectors.push(rangeSelector);
+    }
+  }
 
   let quiverSelector = showQuiverSelector ? (
     <QuiverSelector
@@ -169,7 +204,10 @@ function DatasetPanel({
         updateQueryStatus={updateQueryStatus}
         showAllDepths={showAllDepths}
         horizontalLayout={horizontalLayout}
-        enabled={queryStatus.variables !== "pending"}
+        enabled={
+          queryStatus.variables !== "pending" &&
+          !dataset.variable.two_dimensional
+        }
       />
     ) : null;
 
@@ -286,6 +324,7 @@ function DatasetPanel({
           horizontalLayout={horizontalLayout}
         />
         {variableSelector}
+        {axisRangeSelectors}
         {quiverSelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}

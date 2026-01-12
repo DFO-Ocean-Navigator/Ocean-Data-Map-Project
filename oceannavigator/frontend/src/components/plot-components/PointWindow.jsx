@@ -64,6 +64,7 @@ const PointWindow = ({
   );
 
   const variables = useGetDatasetVariables(plotDataset);
+
   const only2d =
     variables.data.length > 0 &&
     variables.data.every((v) => v.two_dimensional === true);
@@ -233,6 +234,9 @@ const PointWindow = ({
     names: names,
   };
   let inputs = [global];
+  let axisRange = Array.isArray(plotDataset.variable)
+    ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
+    : plotDataset.axisRange[plotDataset.variable.id];
 
   switch (selected) {
     case TabEnum.PROFILE:
@@ -244,9 +248,7 @@ const PointWindow = ({
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
           : plotDataset.variable.id,
-        variable_range: Array.isArray(plotDataset.variable)
-          ? plotDataset.variable.map((v) => v?.axisRange)
-          : plotDataset.variable?.axisRange,
+        variable_range: axisRange,
       };
       plotType = "profile";
       break;
@@ -293,9 +295,7 @@ const PointWindow = ({
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
           : plotDataset.variable.id,
-        variable_range: Array.isArray(plotDataset.variable)
-          ? plotDataset.variable.map((v) => v?.axisRange)
-          : plotDataset.variable?.axisRange,
+        variable_range: axisRange,
         showmap: showMap,
         station: plotData.coordinates,
         depth: plotDataset.depth,

@@ -210,7 +210,7 @@ const DatasetSearchWindow = ({
       (dataset.variable = {
         id: variable.variable_id,
         value: filters.variable,
-        fromSearch: true,
+        updateParent: true,
       });
     vectorVariable && (dataset.quiverVariable = vectorVariable.variable_id);
 
@@ -218,7 +218,7 @@ const DatasetSearchWindow = ({
       (dataset.time = {
         id: -1,
         value: filters.date,
-        fromSearch: true,
+        updateParent: true,
       });
 
     applyFilters(dataset);

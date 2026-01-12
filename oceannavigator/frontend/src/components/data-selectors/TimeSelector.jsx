@@ -26,7 +26,7 @@ function TimeSelector({
 
     if (timestamps.data.length > 0 && timeIdx < 0) {
       let time, starttime;
-      let updateParent = dataset.time.fromSearch || false;
+      let updateParent = dataset.time.updateParent || false;
       if (!dataset.time.value) {
         // no timestamp previously selected, so select the latest one
         time = timestamps.data[timestamps.data.length - 1];
