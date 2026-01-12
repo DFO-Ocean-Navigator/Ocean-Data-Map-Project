@@ -286,7 +286,9 @@ const AreaWindow = (props) => {
       scale: scale.toString(),
       name: props.names[0],
       type: "map",
-      colormap: leftColormap.toString(),
+      colormap: props.compareDatasets
+        ? diffColormap.toString()
+        : leftColormap.toString(),
       time: props.dataset_0.time,
       area,
       depth: props.dataset_0.depth,
@@ -308,8 +310,6 @@ const AreaWindow = (props) => {
           dataset: props.dataset_1.id,
           scale: props.dataset_1.variable_scale.toString(),
           scale_diff: scale?.toString(),
-          colormap: rightColormap.toString(),
-          colormap_diff: diffColormap.toString(),
         },
       }),
     };
