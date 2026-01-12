@@ -246,8 +246,8 @@ function OceanNavigator(props) {
     // We have a request from Point/Line/AreaWindow component.
 
     query.subquery = subquery;
-    query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
+    query.showModal = false;
     query.features = mapRef.current.getFeatures();
 
     // We have a request from the Permalink component.
