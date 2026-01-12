@@ -22,7 +22,7 @@ const AreaWindow = (props) => {
 
   // Scale settings
   const [scale, setScale] = useState(props.init?.scale || "auto");
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale ||true);
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
@@ -98,13 +98,20 @@ const AreaWindow = (props) => {
     setAutoScale((p) => !p);
   };
 
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
+  };
+
   // Prepare UI segments
   const plotOptions = (
     <div>
       <ImageSize
         id="size"
-        state={plotSize}
-        onUpdate={(_, value) => setPlotSize(value)}
+        onUpdate={updatePlotSize}
         title={_("Saved Image Size")}
       />
       <CustomPlotLabels
@@ -310,7 +317,7 @@ const AreaWindow = (props) => {
       scale_1: props.dataset_1.variable_scale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
-      rightColormap:rightColormap.toString(),
+      rightColormap: rightColormap.toString(),
       colormap_diff: diffColormap.toString(),
       size: plotSize,
       dpi: plotDpi,
@@ -335,7 +342,7 @@ const AreaWindow = (props) => {
     <div className="AreaWindow Window">
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
-          <Nav.Link eventKey={1}>{_("Map")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled>{_("Map")}</Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">

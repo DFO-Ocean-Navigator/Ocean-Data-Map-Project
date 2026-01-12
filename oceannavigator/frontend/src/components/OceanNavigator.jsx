@@ -48,6 +48,7 @@ function OceanNavigator(props) {
   const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState();
   const [observationArea, setObservationArea] = useState([]);
+  const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
 
@@ -172,6 +173,11 @@ function OceanNavigator(props) {
         if (arg) {
           setObservationArea(arg);
           updateUI({ modalType: "observationSelect", showModal: true });
+        }
+        break;
+      case "setObsQuery":
+        if (arg) {
+          setObservationQuery(arg)
         }
         break;
       case "class4Type":
@@ -402,6 +408,7 @@ function OceanNavigator(props) {
         action={action}
         compareDatasets={compareDatasets}
         setCompareDatasets={setCompareDatasets}
+        observationQuery={observationQuery}
         class4Type={class4Type}
         swapViews={swapViews}
       />

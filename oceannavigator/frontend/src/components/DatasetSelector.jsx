@@ -252,6 +252,7 @@ function DatasetSelector({
   };
 
   const changeTime = (newTime) => {
+    newTime = Number(newTime)
     let newStarttime = dataset.starttime;
     if (dataset.starttime > newTime) {
       const timeIdx = datasetTimestamps.findIndex(
