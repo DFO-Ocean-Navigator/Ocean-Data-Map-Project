@@ -21,6 +21,7 @@ import Class4Selector from "./Class4Selector.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
+import ReportWindow from "./Reportwindow.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -131,7 +132,7 @@ function OceanNavigator(props) {
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
-        setNames(newPlotData.name)
+        setNames(newPlotData.name);
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
             (data) => data.id === newPlotData.id
@@ -278,6 +279,17 @@ function OceanNavigator(props) {
   let modalSize = "lg";
 
   switch (uiSettings.modalType) {
+    case "report":
+      modalBodyContent = (
+        <ReportWindow
+          generatePermLink={generatePermLink}
+          compareDatasets={compareDatasets}
+          updateUI={updateUI}
+        />
+      );
+      modalTitle = __("Report Bug");
+      break;
+
     case "presetFeatures":
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
