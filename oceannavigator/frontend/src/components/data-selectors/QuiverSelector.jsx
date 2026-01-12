@@ -38,7 +38,10 @@ function QuiverSelector({
     updateDataset(key, value);
   };
 
-  let quiverOptions = [{ id: "none", value: "None" }, ...quiverVariables.data];
+  let quiverOptions = [{ id: "none", value: "None" }];
+  if (MODEL_CLASSES_WITH_QUIVER.includes(dataset.model_class)) {
+    quiverOptions = [...quiverOptions, ...quiverVariables.data];
+  }
 
   return (
     <div className="quiver-options">
