@@ -60,6 +60,9 @@ const PointWindow = ({
       variable: Array.isArray(dataset.variable)
         ? dataset.variable
         : [dataset.variable],
+      axisRange: dataset.hasOwnProperty('axisRange')
+        ? dataset.axisRange
+        : { [dataset.variable.id]: null },
     }
   );
 
