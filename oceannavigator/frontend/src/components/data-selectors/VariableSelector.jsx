@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-
 import SelectBox from "../lib/SelectBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
@@ -17,7 +16,12 @@ function variableSelector({
   horizontalLayout = false,
   t,
 }) {
-  const variables = useGetDatasetVariables(dataset);
+  let variables = useGetDatasetVariables(dataset);
+  if (hasDepth) {
+    variables.data = variables.data.filter((v) => {
+      return v.two_dimensional === false;
+    });
+  }
 
   useEffect(() => {
     if (variables.data.length > 0) {
@@ -75,19 +79,10 @@ function variableSelector({
     updateDataset(key, variable, dataset.variable?.updateParent);
   };
 
-  let variableOptions = [];
-  if (hasDepth) {
-    variableOptions = variables.data.filter((v) => {
-      return v.two_dimensional === false;
-    });
-  } else {
-    variableOptions = variables.data;
-  }
-
   // Work-around for when someone selected a plot that requires
   // 3D variables, but the selected dataset doesn't have any LOL.
   // This check prevents a white-screen crash.
-  const stillHasVariablesToShow = variableOptions.length > 0;
+  const stillHasVariablesToShow = variables.data.length > 0;
 
   let selected;
   if (Array.isArray(dataset.variable)) {
@@ -106,7 +101,7 @@ function variableSelector({
           name={t("variable")}
           label={t("Variable")}
           placeholder={t("Variable")}
-          options={variableOptions}
+          options={variables.data}
           onChange={updateVariable}
           selected={selected}
           multiple={multipleVariables}
