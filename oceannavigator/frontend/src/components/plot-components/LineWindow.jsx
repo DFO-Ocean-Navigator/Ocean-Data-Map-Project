@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Accordion, Button, Card, Nav, Row, Col, Form } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import ComboBox from "../ComboBox.jsx";
@@ -63,6 +63,13 @@ const LineWindow = (props) => {
     props.init?.show_profile || false
   );
 
+  useEffect(() => {
+    if (props.compareDatasets && showProfile) {
+      setShowProfile(false);
+      setProfileDistance(-1);
+    }
+  }, [props.compareDatasets]);
+
   const onSelect = (key) => {
     setSelected(parseInt(key));
   };
@@ -95,9 +102,9 @@ const LineWindow = (props) => {
     });
   };
 
-  const handleProfileCheck = (_, value) => {
-    setShowProfile(value);
-    setProfileDistance(value ? 0 : -1);
+  const handleProfileCheck = (e) => {
+    setShowProfile(e.target.checked);
+    setProfileDistance(e.target.checked ? 0 : -1);
   };
 
   const handleSliderChange = (x) => {
@@ -212,11 +219,12 @@ const LineWindow = (props) => {
           title={_("Limit Depth")}
           parameter={_("Depth")}
         />
-        <CheckBox
+        <Form.Check
           id="show_profile"
           checked={showProfile}
-          onUpdate={handleProfileCheck}
-          title={_("Extract Profile Plot")}
+          onChange={handleProfileCheck}
+          label={_("Extract Profile Plot")}
+          disabled={props.compareDatasets}
         />
         {showProfile && (
           <div className="slider-container">
@@ -230,7 +238,7 @@ const LineWindow = (props) => {
                 75: (((props.plotData.distance / 1000) * 3) / 4).toFixed(1),
                 100: (props.plotData.distance / 1000).toFixed(1),
               }}
-              onAfterChange={handleSliderChange}
+              onChangeComplete={handleSliderChange}
             />
           </div>
         )}
