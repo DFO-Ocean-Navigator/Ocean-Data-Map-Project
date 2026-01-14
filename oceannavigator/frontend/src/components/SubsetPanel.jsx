@@ -27,7 +27,7 @@ function SubsetPanel(props) {
       variable: [props.dataset.variable],
     });
   }, [props.dataset]);
-  
+
   const updateDataset = (key, value) => {
     setSubsetDataset((prevDataset) => ({
       ...prevDataset,
@@ -80,10 +80,12 @@ function SubsetPanel(props) {
       should_zip: zip ? 1 : 0,
     };
     showDepthSelector && (query["depth"] = subsetDataset.depth);
+    query = Object.keys(query)
+      .map((key) => `${key}=${encodeURIComponent(query[key])}`)
+      .join("&");
 
     window.location.href =
-      `/api/v2.0/subset/${subsetDataset.id}/${variables}?` +
-      JSON.stringify(query);
+      `/api/v2.0/subset/${subsetDataset.id}/${variables}?` + query;
   };
 
   const saveScript = (key) => {
