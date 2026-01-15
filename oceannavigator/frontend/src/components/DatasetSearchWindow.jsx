@@ -45,7 +45,7 @@ function filterDatasets(datasets, variables, filters) {
     }, []);
     datasetIds = [...new Set(datasetIds)];
     filteredDatasetIds = filteredDatasetIds.filter((id) =>
-      filters.depth === "3d"
+      filters.depth === "3D"
         ? datasetIds.includes(id)
         : !datasetIds.includes(id)
     );
