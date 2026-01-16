@@ -55,7 +55,7 @@ class TransectPlotter(LinePlotter):
                 break
 
     def load_data(self):
-        vars_to_load = self.variables
+        vars_to_load = self.variables.copy()
         if self.surface:
             vars_to_load.append(self.surface)
 

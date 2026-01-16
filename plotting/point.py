@@ -29,14 +29,10 @@ class PointPlotter(Plotter):
     def parse_names_points(self, names, points):
         if points is None or len(points) < 1:
             points = [[47.546667, -52.586667]]
-
-        if (
-            names is None
-            or len(names) == 0
-            or len(names) != len(points)
-            or names[0] is None
-        ):
-            names = ["(%1.4f, %1.4f)" % (float(l[0]), float(l[1])) for l in points]
+            
+        for i in range(len(names)):
+            if names[i] is None:                  
+                names[i] = "(%1.4f, %1.4f)" % (float(points[i][0]), float(points[i][1]))
 
         t = sorted(zip(names, points))
         self.names = [n for (n, p) in t]

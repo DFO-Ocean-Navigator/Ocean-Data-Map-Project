@@ -1,109 +1,55 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import React, { useState, useRef } from "react";
 import {
   Button,
   ButtonToolbar,
   Modal,
-  Alert,
   Dropdown,
   DropdownButton,
+  Spinner,
 } from "react-bootstrap";
 import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
+import { useGetPlotImage } from "../../remote/queries.js";
+
 const FAIL_IMAGE = require("../fail.js");
-const LOADING_IMAGE = require("../../images/spinner.gif").default;
 
-const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
-  const imagelinkRef = useRef(null);
-
-  // Local state
+const PlotImage = ({
+  plotType,
+  query,
+  permlink_subquery,
+  featureId,
+  action,
+  size,
+  dpi,
+  t,
+}) => {
+  const imagelinkRef = useRef();
   const [showImagelink, setShowImagelink] = useState(false);
-  const [fail, setFail] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [url, setUrl] = useState(LOADING_IMAGE);
-  const [queryString, setQueryString] = useState(null);
 
-  // Generate type and query object from props.query
-  const generateQuery = useCallback((q) => {
-    const base = { dataset: q.dataset, names: q.names };
-    if (q.plotTitle != null) base.plotTitle = q.plotTitle;
-    let newQuery = { ...base };
-    switch (q.type) {
-      case "profile":
-      case "ts":
-      case "sound":
-        newQuery = {
-          ...newQuery,
-          variable: q.variable,
-          station: q.point,
-          showmap: q.showmap,
-          time: q.time,
-        };
-        if (q.variable_range) newQuery.variable_range = q.variable_range;
-        if (q.compare_to) newQuery.compare_to = { ...q.compare_to };
-        break;
-      // ... handle other types similarly ...
-      case "track":
-        newQuery = {
-          ...newQuery,
-          variable: q.variable,
-          depth: q.depth,
-          track: q.track,
-          showmap: q.showmap,
-          latlon: q.latlon,
-          trackvariable: q.trackvariable,
-          starttime: q.starttime,
-          endtime: q.endtime,
-          track_quantum: q.track_quantum,
-        };
-        break;
-      default:
-        newQuery = { ...newQuery, ...q };
-    }
-    return [q.type, newQuery];
-  }, []);
+  const image = useGetPlotImage(featureId, plotType, query);
+
+  // Generate API script
+  const generateScript = (language) => {
+    const querystring = encodeURIComponent(JSON.stringify(query));
+
+    const scriptType = language.includes("Plot") ? "plot" : "csv";
+    const scriptLang = language.startsWith("python") ? "python" : "r";
+
+    window.location.href =
+      `${window.location.origin}/api/v2.0/generate_script?query=${querystring}` +
+      `&plot_type=${encodeURIComponent(plotType)}` +
+      `&lang=${encodeURIComponent(scriptLang)}` +
+      `&script_type=${encodeURIComponent(scriptType)}`;
+  };
 
   // Build URL from query
-  const urlFromQuery = useCallback(
-    (q) => {
-      const [type, qry] = generateQuery(q);
-      return `/api/v2.0/plot/${type}?query=${encodeURIComponent(
-        JSON.stringify(qry)
-      )}`;
-    },
-    [generateQuery]
-  );
-
-  // Load image when query changes
-  useEffect(() => {
-    const [type, qry] = generateQuery(query);
-    const qs = JSON.stringify(qry);
-    if (qs !== queryString) {
-      setLoading(true);
-      setFail(false);
-      setUrl(LOADING_IMAGE);
-      setErrorMessage(null);
-      setQueryString(qs);
-
-      axios
-        .get(`/api/v2.0/plot/${type}`, {
-          params: { query: qs, format: "json" },
-        })
-        .then((res) => {
-          setLoading(false);
-          setFail(false);
-          setUrl(res.data);
-        })
-        .catch(() => {
-          setLoading(false);
-          setFail(true);
-          setUrl(FAIL_IMAGE);
-        });
-    }
-  }, [query, generateQuery, queryString]);
+  const urlFromQuery = () => {
+    return `/api/v2.0/plot/${plotType}?query=${encodeURIComponent(
+      JSON.stringify(query)
+    )}`;
+  };
 
   // Toggle image link modal
   const toggleImageLink = () => setShowImagelink((prev) => !prev);
@@ -112,20 +58,9 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
   const saveImage = (format) => {
     let link = `${urlFromQuery(query)}&save=True&format=${format}`;
     if (!["odv", "csv"].includes(format)) {
-      link += `&size=${query.size}&dpi=${query.dpi}`;
+      link += `&size=${size}&dpi=${dpi}`;
     }
     window.location.href = link;
-  };
-
-  // Generate API script
-  const generateScript = (lang) => {
-    let [type, qry] = generateQuery(query);
-    const payload = encodeURIComponent(JSON.stringify(qry));
-    let scriptType = lang.includes("Plot") ? "plot" : "csv";
-    let scriptLang = lang.startsWith("python") ? "python" : "r";
-    window.location.href =
-      `${window.location.origin}/api/v2.0/generate_script?query=${payload}` +
-      `&plot_type=${type}&lang=${scriptLang}&script_type=${scriptType}`;
   };
 
   // Handle link actions
@@ -142,21 +77,25 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
     imagelinkRef.current.select();
   };
 
+  let imageElement = <Spinner animation="border" variant="primary" />;
+  if (image.status === "error") {
+    imageElement = <img src={FAIL_IMAGE} alt="Plot" />;
+  } else if (image.data) {
+    imageElement = <img src={image.data} alt="Plot" />;
+  }
+
   return (
     <div className="PlotImage">
-      <div className="RenderedImage">
-        <img src={url} alt="Plot" />
-      </div>
-      {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
+      <div className="RenderedImage">{imageElement}</div>
       <ButtonToolbar className="button-bar">
         <DropdownButton
           id="save"
           title={
             <span>
-              <Icon icon="save" /> {_("Save Image")}
+              <Icon icon="save" /> {t("Save Image")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={image.status === "pending" || image.status === "error"}
           onSelect={saveImage}
           drop="up"
         >
@@ -165,7 +104,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
               <Dropdown.Item
                 key={fmt}
                 eventKey={fmt}
-                disabled={fmt === "geotiff" && query.type != "map"}
+                disabled={fmt === "geotiff" && plotType != "map"}
               >
                 <Icon
                   icon={fmt.includes("tiff") ? "file-image-o" : "file-image-o"}
@@ -180,15 +119,15 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
               key={fmt}
               eventKey={fmt}
               disabled={
-                (fmt === "csv" && query.type === "hovmoller") ||
+                (fmt === "csv" && plotType === "hovmoller") ||
                 (fmt === "odv" &&
                   !["profile", "observation", "transect", "map"].includes(
-                    query.type
+                    plotType
                   ))
               }
             >
               <Icon icon="file-text-o" />{" "}
-              {_(fmt === "stats" ? "Statistics (csv)" : fmt.toUpperCase())}
+              {t(fmt === "stats" ? "Statistics (csv)" : fmt.toUpperCase())}
             </Dropdown.Item>
           ))}
         </DropdownButton>
@@ -197,18 +136,21 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           id="link"
           title={
             <span>
-              <Icon icon="link" /> {_("Get Link")}
+              <Icon icon="link" /> {t("Get Link")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={image.status === "pending" || image.status === "error"}
           onSelect={getLink}
           drop="up"
         >
           <Dropdown.Item eventKey="web">
-            <Icon icon="globe" /> {_("Web")}
+            <Icon icon="globe" /> {t("Web")}
           </Dropdown.Item>
-          <Dropdown.Item eventKey="image" disabled={fail}>
-            <Icon icon="file-image-o" /> {_("Image")}
+          <Dropdown.Item
+            eventKey="image"
+            disabled={image.status === "pending" || image.status === "error"}
+          >
+            <Icon icon="file-image-o" /> {t("Image")}
           </Dropdown.Item>
         </DropdownButton>
 
@@ -216,22 +158,29 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
           id="script"
           title={
             <span>
-              <Icon icon="file-code-o" /> {_("API Script")}
+              <Icon icon="file-code-o" /> {t("API Script")}
             </span>
           }
-          disabled={fail || loading}
+          disabled={image.status === "pending" || image.status === "error"}
           onSelect={generateScript}
           drop="up"
         >
-{["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
-  <Dropdown.Item key={key} eventKey={key} disabled={fail}>
-    <Icon icon="code" />{" "}
-    {key === "rPlot" && "R - PLOT"}
-    {key === "pythonPlot" && "Python 3 - PLOT"}
-    {key === "pythonCSV" && "Python 3 - CSV"}
-    {key === "rCSV" && "R - CSV"}
-  </Dropdown.Item>
-))}
+          {["rPlot", "pythonPlot", "pythonCSV", "rCSV"].map((key) => (
+            <Dropdown.Item
+              key={key}
+              eventKey={key}
+              disabled={
+                image.status === "pending" ||
+                image.status === "error" ||
+                (key.includes("CSV") && plotType === "hovmoller")
+              }
+            >
+              <Icon icon="code" /> {key === "rPlot" && "R - PLOT"}
+              {key === "pythonPlot" && "Python 3 - PLOT"}
+              {key === "pythonCSV" && "Python 3 - CSV"}
+              {key === "rCSV" && "R - CSV"}
+            </Dropdown.Item>
+          ))}
         </DropdownButton>
       </ButtonToolbar>
 
@@ -242,7 +191,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
         onEntered={onLinkModalEntered}
       >
         <Modal.Header closeButton>
-          <Modal.Title>{_("Share Link")}</Modal.Title>
+          <Modal.Title>{t("Share Link")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <textarea
@@ -250,7 +199,7 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
             readOnly
             value={`${window.location.origin}${urlFromQuery(
               query
-            )}&format=png&size=${query.size}&dpi=${query.dpi}`}
+            )}&format=png&size=${size}&dpi=${dpi}`}
           />
         </Modal.Body>
         <Modal.Footer>
@@ -260,16 +209,17 @@ const PlotImage = ({ query, permlink_subquery, action, t: _ }) => {
               document.execCommand("copy");
             }}
           >
-            <Icon icon="copy" /> {_("Copy")}
+            <Icon icon="copy" /> {t("Copy")}
           </Button>
           <Button onClick={toggleImageLink}>
-            <Icon icon="close" /> {_("Close")}
+            <Icon icon="close" /> {t("Close")}
           </Button>
         </Modal.Footer>
       </Modal>
     </div>
   );
 };
+
 //***********************************************************************
 PlotImage.propTypes = {
   query: PropTypes.object,
