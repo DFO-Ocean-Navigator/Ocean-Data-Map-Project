@@ -39,10 +39,10 @@ function variableSelector({
         // current variable not in new dataset - select first variable
         updateVariable("variable", variables.data[0].id);
       } else {
-        let testVariable = !Array.isArray(dataset.variable)
+        let datasetVariable = !Array.isArray(dataset.variable)
           ? [dataset.variable]
           : dataset.variable;
-        if (JSON.stringify(nextVariable) !== JSON.stringify(testVariable)) {
+        if (JSON.stringify(nextVariable) !== JSON.stringify(datasetVariable)) {
           // overwrite variable with data from new dataset if different
           updateVariable(
             "variable",
