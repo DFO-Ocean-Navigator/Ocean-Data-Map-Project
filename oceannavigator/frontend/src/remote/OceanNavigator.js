@@ -1,31 +1,31 @@
-// Cannot use async/awat syntax here since we still have clients
-// that use IE which doesn't support that.
-
-// const axios = require('axios');
 import axios from "axios";
-import { cacheAdapterEnhancer } from "axios-extensions";
-import adapter from "axios/lib/adapters/xhr";
 
 const instance = axios.create({
   headers: { "Cache-Control": "no-cache" },
-  adapter: cacheAdapterEnhancer(adapter),
 });
 
-export function GetDatasetsPromise() {
-  return instance.get("/api/v2.0/datasets");
+export async function GetDatasetsPromise() {
+  const response = await instance.get("/api/v2.0/datasets");
+  return response.data;
 }
 
-export function GetVariablesPromise(dataset) {
-  return instance.get(`/api/v2.0/dataset/${dataset}/variables`);
+export async function GetVariablesPromise(dataset, vectorsOnly) {
+  const response = await instance.get(
+    `/api/v2.0/dataset/${dataset}/variables${
+      vectorsOnly ? "?vectors_only=True" : ""
+    }`
+  );
+  return response.data;
 }
 
-export function GetTimestampsPromise(dataset, variable) {
-  return instance.get(
+export async function GetTimestampsPromise(dataset, variable) {
+  const response = await instance.get(
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps"
   );
+  return response.data;
 }
-export function GetDepthsPromise(dataset, variable) {
-  return instance.get(
+export async function GetDepthsPromise(dataset, variable) {
+  const response = await instance.get(
     "/api/v2.0/dataset/" + dataset + "/" + variable + "/depths",
     {
       params: {
@@ -33,13 +33,14 @@ export function GetDepthsPromise(dataset, variable) {
       },
     }
   );
+  return response.data;
 }
 
 //returns a complete list of variables for users to select
-export function GetAllVariablesPromise() {
-  return instance.get("/api/v2.0/datasets/variables/all");
+export async function GetAllVariablesPromise() {
+  const response = await instance.get("/api/v2.0/datasets/variables/all");
+  return response.data;
 }
-
 
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
@@ -58,7 +59,7 @@ export function GetClass4Promise() {
 }
 
 // Filter datasets by date
-export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
+export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   const params = new URLSearchParams({
     target_date: targetDate,
   });
@@ -67,11 +68,14 @@ export function FilterDatasetsByDatePromise(datasetIds, targetDate) {
     params.append("dataset_ids", datasetIds.join(","));
   }
 
-  return instance.get(`/api/v2.0/datasets/filter/date?${params.toString()}`);
+  const response = await instance.get(
+    `/api/v2.0/datasets/filter/date?${params.toString()}`
+  );
+  return response.data;
 }
 
 // Filter datasets by location
-export function FilterDatasetsByLocationPromise(
+export async function FilterDatasetsByLocationPromise(
   datasetIds,
   latitude,
   longitude
@@ -85,12 +89,26 @@ export function FilterDatasetsByLocationPromise(
     params.append("dataset_ids", datasetIds.join(","));
   }
 
-  return instance.get(
+  const response = await instance.get(
     `/api/v2.0/datasets/filter/location?${params.toString()}`
   );
+  return response.data;
 }
 
+export async function GetTrackTimeRangePromise(track) {
+  const response = await instance.get(
+    `/api/v2.0/observation/tracktimerange/${track}.json`
+  );
 
-export function GetTrackTimeRangePromise(track) {
-  return instance.get(`/api/v2.0/observation/tracktimerange/${track}.json`);
+  return response.data;
+}
+
+export async function GetPlotImagePromise(plotType, query) {
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/plot/${plotType}`,
+    params: { query: JSON.stringify(query), format: "json" },
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
 }

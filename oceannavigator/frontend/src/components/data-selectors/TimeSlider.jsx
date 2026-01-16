@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
@@ -15,39 +15,40 @@ import TimeSliderButton from "./TimeSliderButton.jsx";
 import { withTranslation } from "react-i18next";
 
 function TimeSlider(props) {
-  const [minTick, setMinTick] = useState(0);
-  const [maxTick, setMaxTick] = useState(1);
-  const [nTicks, setNTicks] = useState(48);
-  const [selectedIndex, setSelectedIndex] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [climatology, setClimatology] = useState(false);
 
+  const nTicksRef = useRef(20);
+
   useEffect(() => {
-    let newNTicks = 20;
-    if (props.dataset.quantum === "hour") {
-      newNTicks = 48;
-    } else if (props.timestamps.length < newNTicks) {
-      newNTicks = props.timestamps.length;
-    }
-    setMinTick(
-      props.timestamps.length < newNTicks
-        ? 0
-        : props.timestamps.length - newNTicks
-    );
-    setMaxTick(props.timestamps.length);
     let newIndex = props.timestamps.findIndex((timestamp) => {
       return timestamp.id === props.selected;
     });
-    setSelectedIndex(newIndex);
+    if (newIndex >= 0 && newIndex !== selectedIndex) {
+      let nTicks = 20;
+      if (props.dataset.quantum === "hour") {
+        nTicks = 48;
+      }
+      if (props.timestamps.length < nTicks) {
+        nTicks = props.timestamps.length;
+      }
 
-    if (props.dataset.id.includes("climatology")) {
-      setClimatology(true);
+      nTicksRef.current = nTicks;
+
+      setSelectedIndex(newIndex);
+
+      if (props.dataset.id.includes("climatology")) {
+        setClimatology(true);
+      }
     }
-
-    setNTicks(newNTicks);
-  }, [props.timestamps]);
+  }, [props.selected, props.timestamps, props.dataset.quantum]);
 
   useEffect(() => {
-    if (props.timestamps.length > 0) {
+    if (
+      props.timestamps.length > 0 &&
+      selectedIndex >= 0 &&
+      parseInt(props.timestamps[selectedIndex].id) !== props.selected
+    ) {
       props.onChange(props.id, parseInt(props.timestamps[selectedIndex].id));
     }
   }, [selectedIndex]);
@@ -123,8 +124,54 @@ function TimeSlider(props) {
     }
   };
 
+  const firstFrame = () => {
+    setSelectedIndex(0);
+  };
+
+  const lastFrame = () => {
+    setSelectedIndex(props.timestamps.length - 1);
+  };
+
+  const prevFrame = () => {
+    let newIdx = selectedIndex - nTicksRef.current;
+    if (newIdx < 0) {
+      newIdx = 0;
+    }
+    setSelectedIndex(newIdx);
+  };
+
+  const nextFrame = () => {
+    let newIdx = selectedIndex + nTicksRef.current;
+    if (newIdx >= props.timestamps.length) {
+      newIdx = props.timestamps.length - 1;
+    }
+    setSelectedIndex(newIdx);
+  };
+
+  const prevValue = () => {
+    let newIdx = selectedIndex > 0 ? selectedIndex - 1 : 0;
+    setSelectedIndex(newIdx);
+  };
+
+  const nextValue = () => {
+    let newIdx =
+      selectedIndex < props.timestamps.length - 1
+        ? selectedIndex + 1
+        : props.timestamps.length - 1;
+    setSelectedIndex(newIdx);
+  };
+
+  let minTick, maxTick;
+  if (props.timestamps.length < nTicksRef.current) {
+    minTick = 0;
+    maxTick = props.timestamps.length;
+  } else {
+    minTick = nTicksRef.current * Math.trunc(selectedIndex / nTicksRef.current);
+    maxTick = minTick + nTicksRef.current;
+  }
+
   const SliderHandle = () => {
-    if (selectedIndex < props.timestamps.length) {
+    if (selectedIndex >= 0 && selectedIndex < props.timestamps.length) {
       let time = new Date(props.timestamps[selectedIndex].value);
 
       return (
@@ -140,8 +187,6 @@ function TimeSlider(props) {
       );
     }
   };
-
-  const sliderRail = <div className="slider-rail" />;
 
   const ticks = props.timestamps
     .slice(minTick, maxTick)
@@ -183,68 +228,6 @@ function TimeSlider(props) {
       );
     });
 
-  const firstFrame = () => {
-    if (props.timestamps.length > nTicks) {
-      setMinTick(0);
-      setMaxTick(nTicks);
-    } else {
-      setMinTick(0);
-      setMaxTick(props.timestamps.length);
-    }
-  };
-
-  const lastFrame = () => {
-    if (props.timestamps.length - nTicks > 0) {
-      setMinTick(props.timestamps.length - nTicks);
-      setMaxTick(props.timestamps.length);
-    } else {
-      setMinTick(0);
-      setMaxTick(props.timestamps.length);
-    }
-  };
-
-  const prevFrame = () => {
-    if (minTick >= nTicks) {
-      setMinTick(minTick - nTicks);
-      setMaxTick(minTick);
-    } else if (props.timestamps.length > nTicks) {
-      setMinTick(0);
-      setMaxTick(nTicks);
-    } else {
-      setMin(0);
-      setMax(props.timestamps.length);
-    }
-  };
-
-  const nextFrame = () => {
-    if (props.timestamps.length - maxTick >= nTicks) {
-      setMinTick(maxTick);
-      setMaxTick(maxTick + nTicks);
-    } else if (props.timestamps.length - nTicks > 0) {
-      setMinTick(props.timestamps.length - nTicks);
-      setMaxTick(props.timestamps.length);
-    } else {
-      setMinTick(0);
-      setMaxTick(props.timestamps.length);
-    }
-  };
-
-  const prevValue = () => {
-    let newIdx = selectedIndex - 1;
-    if (newIdx < minTick) {
-      prevFrame();
-    }
-    setSelectedIndex(newIdx);
-  };
-
-  const nextValue = () => {
-    let newIdx = selectedIndex + 1;
-    if (newIdx >= maxTick) {
-      nextFrame();
-    }
-    setSelectedIndex(newIdx);
-  };
-
   let prevTime = null;
   let nextTime = null;
   let firstFrameTime = null;
@@ -262,17 +245,17 @@ function TimeSlider(props) {
         ? props.timestamps.length - 1
         : nextTimeIdx;
 
-    let prevFrameIdx = minTick - nTicks;
+    let prevFrameIdx = minTick - nTicksRef.current;
     prevFrameIdx = prevFrameIdx < 0 ? 0 : prevFrameIdx;
 
-    let nextFrameIdx = maxTick + nTicks;
+    let nextFrameIdx = maxTick + nTicksRef.current;
     nextFrameIdx =
       nextFrameIdx >= props.timestamps.length
         ? props.timestamps.length - 1
         : nextFrameIdx;
 
     prevTime = getFormattedTime(new Date(props.timestamps[prevTimeIdx].value));
-    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));        
+    nextTime = getFormattedTime(new Date(props.timestamps[nextTimeIdx].value));
     firstFrameTime = getFormattedTime(new Date(props.timestamps[0].value));
     lastFrameTime = getFormattedTime(
       new Date(props.timestamps[props.timestamps.length - 1].value)
@@ -308,7 +291,7 @@ function TimeSlider(props) {
         />
       </div>
       <div className="slider-container">
-        {sliderRail}
+        <div className="slider-rail" />
         {props.loading ? null : ticks}
       </div>
       <div className="button-container">
