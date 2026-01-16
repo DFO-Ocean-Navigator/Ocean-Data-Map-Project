@@ -27,7 +27,6 @@ function DepthSelector({
   }, [depths.status]);
 
   const updateDepth = (key, value) => {
-    value === "all" && setUpdateParent(false);
     updateDataset("depth", value);
   };
 

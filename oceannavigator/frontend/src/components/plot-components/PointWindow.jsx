@@ -79,7 +79,7 @@ const PointWindow = ({
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
-    if (value.variable) {
+    if (value.variable && value.depth !== "all") {
       if (!Array.isArray(value.variable)) {
         updateDataset("dataset", { ...value, variable: value.variable });
       } else if (value.variable.length === 1) {
