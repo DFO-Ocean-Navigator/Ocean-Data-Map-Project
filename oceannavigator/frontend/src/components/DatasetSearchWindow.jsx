@@ -3,43 +3,170 @@ import { Button, Row, Col, Form, Badge, Spinner } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import {
-  GetAllVariablesPromise,
-  FilterDatasetsByDatePromise,
-  FilterDatasetsByLocationPromise,
-} from "../remote/OceanNavigator.js";
+  useGetDatasets,
+  useGetAllVariables,
+  useDateFilter,
+  useLocationFilter,
+} from "../remote/queries.js";
+
+function filterDatasets(datasets, variables, filters) {
+  let filteredDatasetIds = datasets.data.map((ds) => ds.id);
+
+  // Filter by variable
+  if (filters.variable !== "any") {
+    const variableData = variables.data[filters.variable];
+    const datasetIds = variableData.map((entry) => entry.dataset_id);
+    filteredDatasetIds = datasetIds.filter((id) => datasetIds.includes(id));
+  }
+
+  // Filter by vector variable
+  if (filters.vectorVariable !== "none") {
+    const variableData = variables.data[filters.vectorVariable];
+    const datasetIds = variableData.reduce(
+      (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
+      []
+    );
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      datasetIds.includes(id)
+    );
+  }
+
+  // Filter by depth
+  if (filters.depth !== "all") {
+    let datasetIds = Object.values(variables.data).reduce((ids, ds) => {
+      ds.forEach((d) => {
+        if (d.depth) {
+          ids.push(d.dataset_id);
+        }
+      });
+      return ids;
+    }, []);
+    datasetIds = [...new Set(datasetIds)];
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      filters.depth === "3D"
+        ? datasetIds.includes(id)
+        : !datasetIds.includes(id)
+    );
+  }
+
+  // Filter by date
+  const dateFilterEnabled = !!filters.date;
+  const dateFiltered = useDateFilter(
+    filteredDatasetIds,
+    filters.date,
+    dateFilterEnabled
+  );
+  dateFiltered.data && (filteredDatasetIds = dateFiltered.data);
+
+  // Filter by location
+  const locationFilterEnabled =
+    filters.location[0] !== "" && filters.location[1] !== "";
+  const locationFiltered = useLocationFilter(
+    filteredDatasetIds,
+    filters.location,
+    locationFilterEnabled
+  );
+  locationFiltered.data && (filteredDatasetIds = locationFiltered.data);
+
+  const isLoading =
+    datasets.status === "pending" ||
+    variables.status === "pending" ||
+    (dateFilterEnabled && dateFiltered.status === "pending") ||
+    (locationFilterEnabled && locationFiltered.status === "pending");
+
+  return { ids: filteredDatasetIds, isLoading };
+}
+
+function generateFilterLabels(filters, updateFilters, t) {
+  let filterLabels = [];
+
+  if (filters.variable !== "any") {
+    filterLabels.push({
+      key: "variable",
+      label: `Variable: ${filters.variable}`,
+    });
+  }
+
+  if (filters.vectorVariable !== "none") {
+    filterLabels.push({
+      key: "vectorVariable",
+      label: `${t("Quiver")}: ${filters.vectorVariable}`,
+    });
+  }
+
+  if (filters.depth !== "all") {
+    filterLabels.push({
+      key: "depth",
+      label: `Depth dimension: ${filters.depth}`,
+    });
+  }
+
+  if (filters.date !== null) {
+    filterLabels.push({
+      key: "date",
+      label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
+    });
+  }
+
+  if (filters.location[0] && filters.location[1]) {
+    filterLabels.push({
+      key: "location",
+      label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
+    });
+  }
+
+  return filterLabels.map(({ key, label }) => (
+    <Badge key={key} bg="primary" className="d-flex align-items-center">
+      {label}
+      <button
+        type="button"
+        className="btn-close btn-close-white ms-2"
+        style={{ fontSize: "0.7em" }}
+        onClick={() => updateFilters(key)}
+      />
+    </Badge>
+  ));
+}
+
+function localToUTC(date) {
+  // Adjusts local datetime so that displayed time is consistent with UTC
+  if (date) {
+    const offset = date.getTimezoneOffset() * 60000;
+
+    return new Date(date.getTime() - offset);
+  }
+}
+
+function UTCToLocal(date) {
+  // Adjusts UTC datetime so that displayed time is consistent with local TZ
+  if (date) {
+    const currentLocalDate = new Date();
+    const offset = currentLocalDate.getTimezoneOffset() * 60000;
+    const newDate = new Date(date.getTime() + offset);
+
+    return newDate;
+  }
+}
 
 const DatasetSearchWindow = ({
-  datasets,
   filters,
   updateFilters,
-  updateDataset,
+  applyFilters,
   closeModal,
 }) => {
   const { t } = useTranslation();
-  const [filterLabels, setFilterLabels] = useState([]);
-  const [filteredDatasetIds, setFilteredDatasetIds] = useState(
-    datasets.map((ds) => ds.id)
-  );
-  const [variableDataMap, setVariableDataMap] = useState({});
   const [latitude, setLatitude] = useState(filters.location[0]);
   const [longitude, setLongitude] = useState(filters.location[1]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    const loadData = async () => {
-      const variablesResult = await GetAllVariablesPromise();
-      setVariableDataMap(variablesResult.data);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
+  const datasets = useGetDatasets();
+  const variables = useGetAllVariables();
 
-  useEffect(() => {
-    if (Object.keys(variableDataMap).length > 0) {
-      applyFilters();
-    }
-  }, [filters]);
+  const filteredDatasets = filterDatasets(datasets, variables, filters);
+
+  const updateFilterDate = (date) => {
+    let utcDate = localToUTC(date, false);
+    updateFilters("date", utcDate);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,140 +184,60 @@ const DatasetSearchWindow = ({
     return () => clearTimeout(timer);
   }, [latitude, longitude]);
 
-  const applyDataset = (id) => {
-    let variableId,
-      variableScale = null;
-    let variable = variableDataMap[filters.variable]?.filter(
-      (ds) => ds.dataset_id === id
-    )[0];
-    if (variable) {
-      variableId = variable.variable_id;
-      variableScale = variable.variable_scale;
-    }
-    let vectorVariable =
-      variableDataMap[filters.vectorVariable]?.filter(
-        (ds) => ds.dataset_id === id
-      )[0].variable_id ?? "none";
+  const clearFilters = () => {
+    setLatitude("");
+    setLongitude("");
+    updateFilters();
+  };
 
-    updateDataset(
-      id,
-      variableId,
-      true,
-      vectorVariable,
-      variableScale,
-      filters.date
-    );
+  const applyDataset = (datasetId) => {
+    let dataset = datasets.data.filter((d) => d.id === datasetId)[0];
+    dataset = {
+      id: dataset.id,
+      model_class: dataset.model_class,
+      quantum: dataset.quantum,
+      depth: 0,
+      quiverVariable: "none",
+      value: dataset.value,
+    };
+
+    let variable = variables.data[filters.variable]?.filter(
+      (ds) => ds.dataset_id === datasetId
+    )[0];
+
+    let vectorVariable = variables.data[filters.vectorVariable]?.filter(
+      (ds) => ds.dataset_id === datasetId
+    )[0];
+
+    variable &&
+      (dataset.variable = {
+        id: variable.variable_id,
+        value: filters.variable,
+        updateParent: true,
+      });
+    vectorVariable && (dataset.quiverVariable = vectorVariable.variable_id);
+
+    filters.date &&
+      (dataset.time = {
+        id: -1,
+        value: filters.date,
+        updateParent: true,
+      });
+
+    applyFilters(dataset);
     closeModal();
   };
 
-  const applyFilters = async () => {
-    setLoading(true);
-    let newFilteredIds = datasets.map((ds) => ds.id);
-    let newFilterLabels = [];
-
-    // Filter by variable
-    if (filters.variable !== "any") {
-      const variableData = variableDataMap[filters.variable];
-      const datasetIds = variableData.map((entry) => entry.dataset_id);
-      newFilteredIds = datasetIds.filter((id) => datasetIds.includes(id));
-      newFilterLabels.push({
-        key: "variable",
-        label: `Variable: ${filters.variable}`,
-      });
-    }
-
-    // Filter by vector variable
-    if (filters.vectorVariable !== "none") {
-      const variableData = variableDataMap[filters.vectorVariable];
-      const datasetIds = variableData.reduce(
-        (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
-        []
-      );
-      newFilteredIds = newFilteredIds.filter((id) => datasetIds.includes(id));
-      newFilterLabels.push({
-        key: "vectorVariable",
-        label: `${t("Quiver")}: ${filters.vectorVariable}`,
-      });
-    }
-
-    // Filter by depth
-    if (filters.depth !== "all") {
-      let datasetIds = Object.values(variableDataMap).reduce((ids, ds) => {
-        ds.forEach((d) => {
-          if (d.depth) {
-            ids.push(d.dataset_id);
-          }
-        });
-        return ids;
-      }, []);
-      datasetIds = [...new Set(datasetIds)];
-      newFilteredIds = newFilteredIds.filter((id) =>
-        filters.depth === "3d"
-          ? datasetIds.includes(id)
-          : !datasetIds.includes(id)
-      );
-      newFilterLabels.push({
-        key: "depth",
-        label: `Depth dimension: ${filters.depth}`,
-      });
-    }
-
-    // Filter by date
-    if (filters.date !== null) {
-      newFilterLabels.push({
-        key: "date",
-        label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
-      });
-      if (newFilteredIds.length > 0) {
-        let dateFilter = await FilterDatasetsByDatePromise(
-          newFilteredIds,
-          filters.date.toISOString()
-        );
-        newFilteredIds = await dateFilter.data;
-      }
-    }
-
-    // Filter by Location
-    if (filters.location[0] && filters.location[1]) {
-      if (newFilteredIds.length > 0) {
-        let locFiltered = await FilterDatasetsByLocationPromise(
-          newFilteredIds,
-          filters.location[0],
-          (parseFloat(filters.location[1]) + 360) % 360
-        );
-        newFilteredIds = await locFiltered.data;
-      }
-      newFilterLabels.push({
-        key: "location",
-        label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
-      });
-    }
-
-    newFilterLabels = newFilterLabels.map(({ key, label }) => (
-      <Badge key={key} bg="primary" className="d-flex align-items-center">
-        {label}
-        <button
-          type="button"
-          className="btn-close btn-close-white ms-2"
-          style={{ fontSize: "0.7em" }}
-          onClick={() => updateFilters(key)}
-        />
-      </Badge>
-    ));
-
-    setFilterLabels(newFilterLabels);
-    setFilteredDatasetIds(newFilteredIds);
-    setLoading(false);
-  };
+  const filterLabels = generateFilterLabels(filters, updateFilters, t);
 
   const depthOptions = [
     <option key="all" value="all">
       Any
     </option>,
-    <option key="3d" value="3d">
+    <option key="3D" value="3D">
       With depth dimension
     </option>,
-    <option key="2d" value="2d">
+    <option key="2D" value="2D">
       Without depth dimension
     </option>,
   ];
@@ -199,16 +246,16 @@ const DatasetSearchWindow = ({
     <option key="any" value="any">
       Any
     </option>,
-    ...Object.keys(variableDataMap).map((name) => (
+    ...Object.keys(variables.data).map((name) => (
       <option key={name} value={name}>
         {name}
       </option>
     )),
   ];
 
-  let vectorVariableOptions = Object.keys(variableDataMap).reduce(
+  let vectorVariableOptions = Object.keys(variables.data).reduce(
     (vars, name) => {
-      if (variableDataMap[name].some((d) => d.vector_variables)) {
+      if (variables.data[name].some((d) => d.vector_variables)) {
         vars.push(
           <option key={name} value={name}>
             {name}
@@ -224,8 +271,8 @@ const DatasetSearchWindow = ({
     ]
   );
 
-  let datasetCards = filteredDatasetIds.map((id) => {
-    let dataset = datasets.filter((ds) => ds.id == id)[0];
+  let datasetCards = filteredDatasets.ids.map((id) => {
+    let dataset = datasets.data.filter((ds) => ds.id == id)[0];
     return (
       <div key={id} className="card mb-2">
         <div className="card-body">
@@ -249,7 +296,7 @@ const DatasetSearchWindow = ({
 
   return (
     <>
-      {loading && (
+      {filteredDatasets.isLoading && (
         <div className="loading-overlay">
           <Spinner animation="border" variant="light">
             <span className="visually-hidden">Loading...</span>
@@ -265,11 +312,7 @@ const DatasetSearchWindow = ({
           ) : (
             <div className="text-muted me-2">{t("No active filters")}</div>
           )}
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            onClick={() => updateFilters()}
-          >
+          <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
             {t("Clear All")}
           </Button>
         </div>
@@ -319,8 +362,8 @@ const DatasetSearchWindow = ({
             <Form.Label className="d-block">Date</Form.Label>
             <DatePicker
               key="date"
-              selected={filters.date}
-              onChange={(d) => updateFilters("date", d)}
+              selected={UTCToLocal(filters.date)}
+              onChange={(d) => updateFilterDate(d)}
               className="form-control"
               placeholderText="Select date..."
               isClearable
@@ -367,7 +410,7 @@ const DatasetSearchWindow = ({
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h6 className="container-label">
-              {datasetCards.length} / {datasets.length} {t("Datasets")}
+              {datasetCards.length} / {datasets.data.length} {t("Datasets")}
             </h6>
           </div>
           <div className="dataset-list">{datasetCards}</div>
