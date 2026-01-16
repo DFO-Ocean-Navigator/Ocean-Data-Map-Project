@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
@@ -60,22 +60,33 @@ const PointWindow = ({
       variable: Array.isArray(dataset.variable)
         ? dataset.variable
         : [dataset.variable],
-      axisRange: dataset.hasOwnProperty('axisRange')
+      axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : { [dataset.variable.id]: null },
     }
   );
+  const [only2d, setOnly2d] = useState(false);
 
   const variables = useGetDatasetVariables(plotDataset);
 
-  const only2d =
-    variables.data.length > 0 &&
-    variables.data.every((v) => v.two_dimensional === true);
+  useEffect(() => {
+    const dataset2D =
+      variables.data.length > 0 &&
+      variables.data.every((v) => v.two_dimensional === true);
 
-  // should be in useEffect
-  if (only2d && selected !== TabEnum.MOORING) {
-    setSelected(TabEnum.MOORING);
-  }
+    if (dataset2D && selected !== TabEnum.MOORING) {
+      setSelected(TabEnum.MOORING);
+    }
+
+    if (
+      selected !== TabEnum.MOORING &&
+      plotDataset.variable[0].two_dimensional
+    ) {
+      let variable = variables.data.find((v) => v.two_dimensional === false);
+      handleDatasetUpdate("dataset", { ...plotDataset, variable: [variable] });
+    }
+    setOnly2d(dataset2D);
+  }, [plotDataset]);
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
