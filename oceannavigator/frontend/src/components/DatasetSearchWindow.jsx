@@ -9,8 +9,6 @@ import {
   useLocationFilter,
 } from "../remote/queries.js";
 
-
-
 function filterDatasets(datasets, variables, filters) {
   let filteredDatasetIds = datasets.data.map((ds) => ds.id);
 
@@ -166,10 +164,9 @@ const DatasetSearchWindow = ({
   const filteredDatasets = filterDatasets(datasets, variables, filters);
 
   const updateFilterDate = (date) => {
-    let utcDate = localToUTC(date, false)
-
-    updateFilters("date", utcDate)
-  }
+    let utcDate = localToUTC(date, false);
+    updateFilters("date", utcDate);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -186,6 +183,12 @@ const DatasetSearchWindow = ({
 
     return () => clearTimeout(timer);
   }, [latitude, longitude]);
+
+  const clearFilters = () => {
+    setLatitude("");
+    setLongitude("");
+    updateFilters();
+  };
 
   const applyDataset = (datasetId) => {
     let dataset = datasets.data.filter((d) => d.id === datasetId)[0];
@@ -309,11 +312,7 @@ const DatasetSearchWindow = ({
           ) : (
             <div className="text-muted me-2">{t("No active filters")}</div>
           )}
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            onClick={() => updateFilters()}
-          >
+          <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
             {t("Clear All")}
           </Button>
         </div>
