@@ -80,7 +80,8 @@ const PointWindow = ({
 
     if (
       selected !== TabEnum.MOORING &&
-      plotDataset.variable[0].two_dimensional
+      (plotDataset.variable[0]?.two_dimensional ||
+        plotDataset.variable?.two_dimensional)
     ) {
       let variable = variables.data.find((v) => v.two_dimensional === false);
       handleDatasetUpdate("dataset", { ...plotDataset, variable: [variable] });
@@ -267,12 +268,14 @@ const PointWindow = ({
       plotType = "profile";
       break;
     case TabEnum.CTD:
+      let tempId = variables.data.find((v) => /temp/i.test(v.value)).id;
+      let salId = variables.data.find((v) => /salin/i.test(v.value)).id;
       plotQuery = {
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
         time: plotDataset.time.id,
-        variable: `${hasTemp ? "votemper," : ""}${hasSal ? "vosaline" : ""}`,
+        variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
       };
       plotType = "profile";
       break;
