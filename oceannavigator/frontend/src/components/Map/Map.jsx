@@ -392,7 +392,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (map1&& props.dataset1.time.id >= 0) {
+    if (map1 && props.dataset1.time.id >= 0) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
