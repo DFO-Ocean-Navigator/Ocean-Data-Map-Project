@@ -79,9 +79,8 @@ const PointWindow = ({
     }
 
     if (
-      selected !== TabEnum.MOORING &&
-      (plotDataset.variable[0]?.two_dimensional ||
-        plotDataset.variable?.two_dimensional)
+      selected === TabEnum.PROFILE &&
+      plotDataset.variable[0]?.two_dimensional
     ) {
       let variable = variables.data.find((v) => v.two_dimensional === false);
       handleDatasetUpdate("dataset", { ...plotDataset, variable: [variable] });
@@ -238,8 +237,8 @@ const PointWindow = ({
   // temp/salinity check
   // Checks if the current dataset's variables contain Temperature
   // and Salinity. This is used to enable/disable some tabs.
-  const hasTemp = variables.data.some((v) => /temp/i.test(v.value));
-  const hasSal = variables.data.some((v) => /salin/i.test(v.value));
+  const hasTemp = variables.data.some((v) => v.id === "votemper");
+  const hasSal = variables.data.some((v) => v.id === "vosaline");
   const hasTempSal = hasTemp && hasSal;
 
   // Construct query for image
