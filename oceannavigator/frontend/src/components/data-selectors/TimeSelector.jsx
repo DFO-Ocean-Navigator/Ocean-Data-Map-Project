@@ -24,7 +24,12 @@ function TimeSelector({
       (ts) => ts.id === dataset.time.id && ts.value === dataset.time.value
     );
 
-    if (timestamps.data.length > 0 && timeIdx < 0) {
+    let starttimeIdx = timestamps.data.findIndex(
+      (ts) =>
+        ts.id === dataset.starttime.id && ts.value === dataset.starttime.value
+    );
+
+    if (timestamps.data.length > 0 && (timeIdx < 0 || starttimeIdx < 0)) {
       let time, starttime;
       let updateParent = dataset.time.updateParent || false;
       if (!dataset.time.value) {
@@ -34,8 +39,11 @@ function TimeSelector({
         updateParent = true;
       } else {
         // find timestamp nearest to previously selected
-        time = findNearestTime(dataset.time);
-        starttime = findNearestTime(dataset.starttime);
+        time = timeIdx >= 0 ? dataset.time : findNearestTime(dataset.time);
+        starttime =
+          starttimeIdx >= 0
+            ? dataset.starttime
+            : findNearestTime(dataset.starttime);
 
         if (time.id <= starttime.id) {
           timeIdx = timestamps.data.findIndex((ts) => ts.value === time.value);
