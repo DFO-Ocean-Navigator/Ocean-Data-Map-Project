@@ -9,6 +9,7 @@ import { useGetDatasetTimestamps } from "../../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
 function TimeSelector({
+  id,
   dataset,
   updateDataset,
   updateQueryStatus,
@@ -112,7 +113,7 @@ function TimeSelector({
       timeSelector = (
         <TimeSlider
           key="time"
-          id="time"
+          id={`${id}-time-slider`}
           dataset={dataset}
           timestamps={timestamps.data}
           selected={dataset.time.id}
@@ -126,7 +127,7 @@ function TimeSelector({
         <div>
           <TimePicker
             key="starttime"
-            id="starttime"
+            id={`${id}-starttime-picker`}
             state={dataset.starttime.id}
             title={t("Start Time (UTC)")}
             onUpdate={updateTime}
@@ -136,7 +137,7 @@ function TimeSelector({
           />
           <TimePicker
             key="time"
-            id="time"
+            id={`${id}-endtime-picker`}
             state={dataset.time.id}
             title={t("End Time (UTC)")}
             onUpdate={updateTime}
@@ -151,7 +152,7 @@ function TimeSelector({
       timeSelector = (
         <TimePicker
           key="time"
-          id="time"
+          id={`${id}-time-picker`}
           state={dataset.time.id}
           onUpdate={updateTime}
           title={t("Time (UTC)")}

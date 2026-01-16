@@ -169,57 +169,59 @@ function TimePicker(props) {
   let calendar = null;
   if (Object.keys(map).length > 0) {
     let selectedDate = new Date(map[props.state]);
-    switch (props.dataset.quantum) {
-      case "hour":
-      case "day":
-        buttonText = selectedDate.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
+    if (!isNaN(selectedDate.getTime())) {
+      switch (props.dataset.quantum) {
+        case "hour":
+        case "day":
+          buttonText = selectedDate.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
 
-        calendar = (
-          <DailyCalendar
-            selected={selectedDate}
-            availableDates={Object.values(map)}
-            onUpdate={handleCalendarInteraction}
-          />
-        );
-        break;
-      case "month":
-        buttonText = climatology
-          ? selectedDate.toLocaleDateString(undefined, {
-              month: "long",
-            })
-          : selectedDate.toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-            });
+          calendar = (
+            <DailyCalendar
+              selected={selectedDate}
+              availableDates={Object.values(map)}
+              onUpdate={handleCalendarInteraction}
+            />
+          );
+          break;
+        case "month":
+          buttonText = climatology
+            ? selectedDate.toLocaleDateString(undefined, {
+                month: "long",
+              })
+            : selectedDate.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+              });
 
-        calendar = (
-          <MonthlyCalendar
-            selected={selectedDate}
-            availableDates={Object.values(map)}
-            onUpdate={handleCalendarInteraction}
-            climatology={climatology}
-          />
-        );
-        break;
-      case "year":
-        buttonText = selectedDate.getUTCFullYear();
-        break;
-      case "season":
-        buttonText = getSeason(selectedDate);
+          calendar = (
+            <MonthlyCalendar
+              selected={selectedDate}
+              availableDates={Object.values(map)}
+              onUpdate={handleCalendarInteraction}
+              climatology={climatology}
+            />
+          );
+          break;
+        case "year":
+          buttonText = selectedDate.getUTCFullYear();
+          break;
+        case "season":
+          buttonText = getSeason(selectedDate);
 
-        calendar = (
-          <SeasonalCalendar
-            selected={selectedDate}
-            availableDates={Object.values(map)}
-            onUpdate={handleCalendarInteraction}
-            climatology={climatology}
-          />
-        );
-        break;
+          calendar = (
+            <SeasonalCalendar
+              selected={selectedDate}
+              availableDates={Object.values(map)}
+              onUpdate={handleCalendarInteraction}
+              climatology={climatology}
+            />
+          );
+          break;
+      }
     }
   }
 
