@@ -397,8 +397,8 @@ const LineWindow = (props) => {
     depth_limit: depthLimit,
     profile_distance: profileDistance,
     show_profile: showProfile,
-    depth_left: props.dataset_0.depth,
-    depth_right:props.dataset_1.depth,
+    depth_left: props.dataset0.depth,
+    depth_right:props.dataset1.depth,
     autoScale: autoScale,
   };
 

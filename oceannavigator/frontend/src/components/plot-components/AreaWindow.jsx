@@ -332,8 +332,8 @@ const AreaWindow = (props) => {
       surfacevariable: surfaceVariable,
       contour,
       quiver,
-      left_depth: props.dataset_0.depth,
-      right_depth: props.dataset_1.depth,
+      left_depth: props.dataset0.depth,
+      right_depth: props.dataset1.depth,
     };
 
     content = (

@@ -3,7 +3,7 @@ import ComboBox from "../ComboBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const AreaQuiverSelector = ({ state, subquery, dataset, id, title, children, onUpdate, t: _ }) => {
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
