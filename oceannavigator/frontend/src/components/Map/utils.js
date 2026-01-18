@@ -720,8 +720,9 @@ export const createFeatureTextStyle = (
     }),
   });
 };
+
 export const getDataSource = (dataset, mapSettings) => {
-  let scale = dataset.variable_scale;
+  let scale = dataset.variable.scale;
   if (Array.isArray(scale)) {
     scale = scale.join(",");
   }
@@ -730,8 +731,8 @@ export const getDataSource = (dataset, mapSettings) => {
   dataSource.url =
     "/api/v2.0/tiles" +
     `/${dataset.id}` +
-    `/${dataset.variable}` +
-    `/${dataset.time}` +
+    `/${dataset.variable.id}` +
+    `/${dataset.time.id}` +
     `/${dataset.depth}` +
     "/{z}/{x}/{y}" +
     `?projection=${mapSettings.projection}` +
@@ -750,7 +751,7 @@ export const getQuiverSource = (dataset, mapSettings) => {
       "/api/v2.0/tiles/quiver" +
       `/${dataset.id}` +
       `/${dataset.quiverVariable}` +
-      `/${dataset.time}` +
+      `/${dataset.time.id}` +
       `/${dataset.depth}` +
       `/${dataset.quiverDensity}` +
       "/{z}/{x}/{y}" +
@@ -818,7 +819,7 @@ const getLineDistance = (line) => {
 export const createPlotData = (selected, projection) => {
   let title, type, observation, distance;
   let id = selected[0].getId();
-  let name = selected.map(f => f.get("name"));
+  let name = selected.map((f) => f.get("name"));
   let coordinates = selected.map((feature) =>
     feature.getGeometry().getCoordinates()
   );
@@ -838,7 +839,7 @@ export const createPlotData = (selected, projection) => {
     id = selected[0].get("key");
     type = selected[0].get("type");
     coordinates = [id];
-    title = name
+    title = name;
   } else {
     type = selected[0].get("type");
     // Class4
@@ -857,11 +858,15 @@ export const createPlotData = (selected, projection) => {
       title = "Point - " + title.join(", ");
     } else if (type === "LineString") {
       coordinates = convertCoords(coordinates[0], projection);
-      title = `Line -  ${name && name[0]!==undefined ? name : coordinates.length + " Vertices"}`;
+      title = `Line -  ${
+        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+      }`;
       distance = getLineDistance(coordinates, projection);
     } else if (type === "Polygon") {
       coordinates = convertCoords(coordinates[0][0], projection);
-      title = `Area -  ${name && name[0]!==undefined? name : coordinates.length + " Vertices"}`;
+      title = `Area -  ${
+        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+      }`;
     }
   }
 

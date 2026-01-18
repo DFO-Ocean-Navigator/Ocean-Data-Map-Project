@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
@@ -51,6 +52,8 @@ function OceanNavigator(props) {
   const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -129,6 +132,7 @@ function OceanNavigator(props) {
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
+        queryClient.removeQueries({ queryKey: ["plotImage"] });
         break;
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
@@ -156,6 +160,10 @@ function OceanNavigator(props) {
         setPlotData((prevPlotData) =>
           prevPlotData.filter((plot) => plot.id !== arg.id)
         );
+        queryClient.removeQueries({
+          predicate: (q) =>
+            q.queryKey[0] === "plotImage" && q.queryKey[1].featureId === arg.id,
+        });
         break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);

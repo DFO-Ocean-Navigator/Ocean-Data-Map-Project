@@ -24,9 +24,9 @@ function AxisRange(props) {
 
   const updateParent = (newRange) => {
     if (auto) {
-      props.onUpdate("variable_range", [props.variable, null]);
+      props.onUpdate("axisRange", [props.variable.id, null]);
     } else {
-      props.onUpdate("variable_range", [props.variable, newRange]);
+      props.onUpdate("axisRange", [props.variable.id, newRange]);
     }
   };
 
@@ -42,22 +42,22 @@ function AxisRange(props) {
   const autoChanged = (e) => {
     setAuto(e.target.checked);
     if (e.target.checked) {
-      props.onUpdate("variable_range", [props.variable, null]);
+      props.onUpdate("axisRange", [props.variable.id, null]);
       setMin(props.range[0]);
       setMax(props.range[1]);
     } else {
-      props.onUpdate("variable_range", [props.variable, [min, max]]);
+      props.onUpdate("axisRange", [props.variable.id, [min, max]]);
     }
   };
 
   const handleResetButton = () => {
     clearTimeout(timerRef.current);
 
-    setMin(props.range[0]);
-    setMax(props.range[1]);
+    setMin(props.variable.scale[0]);
+    setMax(props.variable.scale[1]);
 
     timerRef.current = setTimeout(
-      updateParent([props.range[0], props.range[1]]),
+      updateParent([props.variable.scale[0], props.variable.scale[1]]),
       500
     );
   };
@@ -111,7 +111,7 @@ function AxisRange(props) {
 AxisRange.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
-  variable: PropTypes.string,
+  variable: PropTypes.object,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
 };

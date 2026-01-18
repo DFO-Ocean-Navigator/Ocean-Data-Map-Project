@@ -242,7 +242,7 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings,
         overlay,
         popupElement1,
-        mapView,
+        map0.getView(),
         layerData1,
         newLayerFeatureVector,
         obsDrawSource,
@@ -261,7 +261,6 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, select1);
-
       if (drawActions && drawActions.map0) {
         if (drawActions.map1 && newMap) {
           newMap.removeInteraction(drawActions.map1);
@@ -349,7 +348,7 @@ const Map = forwardRef((props, ref) => {
   }, [props.dataset1.id]);
 
   useEffect(() => {
-    if (props.dataset0.time >= 0) {
+    if (props.dataset0.time.id >= 0) {
       layerData0.setSource(
         new XYZ(getDataSource(props.dataset0, props.mapSettings))
       );
@@ -363,7 +362,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (props.dataset1.time >= 0) {
+    if (props.dataset1.time.id >= 0) {
       layerData1.setSource(
         new XYZ(getDataSource(props.dataset1, props.mapSettings))
       );
@@ -377,7 +376,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (map0) {
+    if (map0 && props.dataset0.time.id >= 0) {
       let quiverLayer = map0.getLayers().getArray()[7];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
@@ -393,7 +392,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (map1) {
+    if (map1 && props.dataset1.time.id >= 0) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
@@ -991,6 +990,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
     }
+    setDrawActions({ map0: null, map1: null });
   };
 
   const addAnnotationLabel = (text) => {
