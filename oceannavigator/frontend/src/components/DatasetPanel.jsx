@@ -22,6 +22,8 @@ function DatasetPanel({
   onUpdate,
   id,
   hasDepth,
+  subquery_variable_range,
+  subquery_depth,
   multipleVariables = false,
   showQuiverSelector = true,
   showTimeRange = false,
@@ -43,11 +45,11 @@ function DatasetPanel({
   const [loading, setLoading] = useState(true);
   const [updateParent, setUpdateParent] = useState(false);
   const [queryStatus, setQueryStatus] = useState(() =>
-    showVariableSelector ? { variables: "pending" } : {}
+    showVariableSelector ? { variables: "pending" } : {},
   );
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
-    DATASET_FILTER_DEFAULTS
+    DATASET_FILTER_DEFAULTS,
   );
 
   const datasetRef = useRef(dataset);
@@ -102,7 +104,7 @@ function DatasetPanel({
           attribution: value.attribution,
           default_location: value.default_location,
           id: value.id,
-          depth: 0,
+          depth: subquery_depth??0,
           model_class: value.model_class,
           quantum: value.quantum,
           value: value.value,
@@ -179,6 +181,7 @@ function DatasetPanel({
           variable={variable}
           range={dataset.axisRange[variable.id] || variable.scale}
           onUpdate={updateDataset}
+          variable_range={subquery_variable_range?.[dataset.variable]}
         />
       );
       axisRangeSelectors.push(rangeSelector);
