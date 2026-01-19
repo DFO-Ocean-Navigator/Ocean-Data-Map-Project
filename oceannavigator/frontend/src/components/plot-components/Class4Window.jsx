@@ -41,12 +41,19 @@ const Class4Window = ({
     }
   };
 
-  const plot_query = {
-    type: "class4",
+  const plotQuery = {
     class4type,
     dataset,
     forecast: forecast,
     class4id: plotData.id,
+    showmap,
+    climatology,
+    error,
+    models,
+  };
+
+  const permlink_subquery = {
+    forecast,
     showmap,
     climatology,
     error,
@@ -103,7 +110,7 @@ const Class4Window = ({
                 id="models"
                 state={models}
                 multiple
-                onUpdate={(_, value) => setModels(value[0])}
+                onUpdate={(_, value) => setModels(value[0] || [])}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
               />
@@ -130,17 +137,13 @@ const Class4Window = ({
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage
-            query={plot_query}
-            permlink_subquery={{
-              forecast,
-              showmap,
-              climatology,
-              error,
-              size: plotSize,
-              dpi: plotDpi,
-              models,
-            }}
+            plotType="class4"
+            query={plotQuery}
+            permlink_subquery={permlink_subquery}
+            featureId={plotData.id}
             action={action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>
