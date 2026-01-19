@@ -113,7 +113,7 @@ function TimeSelector({
       timeSelector = (
         <TimeSlider
           key="time"
-          id={`${id}-time-slider`}
+          id="time"
           dataset={dataset}
           timestamps={timestamps.data}
           selected={dataset.time.id}
@@ -127,7 +127,7 @@ function TimeSelector({
         <div>
           <TimePicker
             key="starttime"
-            id={`${id}-starttime-picker`}
+            id="starttime"
             state={dataset.starttime.id}
             title={t("Start Time (UTC)")}
             onUpdate={updateTime}
@@ -137,7 +137,7 @@ function TimeSelector({
           />
           <TimePicker
             key="time"
-            id={`${id}-endtime-picker`}
+            id="time"
             state={dataset.time.id}
             title={t("End Time (UTC)")}
             onUpdate={updateTime}
@@ -152,7 +152,7 @@ function TimeSelector({
       timeSelector = (
         <TimePicker
           key="time"
-          id={`${id}-time-picker`}
+          id="time"
           state={dataset.time.id}
           onUpdate={updateTime}
           title={t("Time (UTC)")}
