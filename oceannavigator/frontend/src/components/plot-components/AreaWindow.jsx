@@ -17,54 +17,59 @@ const AreaWindow = (props) => {
   const { t: _ } = props;
 
   // UI state
-  const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
+  const [currentTab, setCurrentTab] = useState(1);
 
   // Scale settings
   const [scale, setScale] = useState("auto");
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
+  const [autoScale, setAutoScale] = useState(true);
 
   // Colormap settings
-  const [leftColormap, setLeftColormap] = useState(
-    props.init?.leftColormap || "default"
-  );
-  const [rightColormap, setRightColormap] = useState(
-    props.init?.rightColormap || "default"
-  );
-  const [diffColormap, setDiffColormap] = useState(
-    props.init?.colormap_diff || "default"
-  );
+  const [leftColormap, setLeftColormap] = useState("default");
+  const [rightColormap, setRightColormap] = useState("default");
+  const [diffColormap, setDiffColormap] = useState("default");
 
   // Plot settings
-  const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
-  const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
-  const [plotTitle, setPlotTitle] = useState(props.init?.plotTitle);
+  const [plotSize, setPlotSize] = useState("10x7");
+  const [plotDpi, setPlotDpi] = useState(144);
+  const [plotTitle, setPlotTitle] = useState();
 
   // Map settings
-  const [showArea, setShowArea] = useState(props.init?.showarea ?? true);
-  const [bathymetry, setBathymetry] = useState(props.init?.bathymetry ?? true);
-  const [surfaceVariable, setSurfaceVariable] = useState(
-    props.init?.surfacevariable || "none"
-  );
+  const [showArea, setShowArea] = useState(true);
+  const [bathymetry, setBathymetry] = useState(true);
+  const [surfaceVariable, setSurfaceVariable] = useState("none");
 
   // Feature settings
-  const [quiver, setQuiver] = useState(
-    props.init?.quiver ?? {
-      variable: "none",
-      magnitude: "length",
-      colormap: "default",
-    }
-  );
+  const [quiver, setQuiver] = useState({
+    variable: "none",
+    magnitude: "length",
+    colormap: "default",
+  });
 
-  const [contour, setContour] = useState(
-    props.init?.contour || {
-      variable: "none",
-      colormap: "default",
-      levels: "auto",
-      legend: true,
-      hatch: false,
-    }
-  );
+  const [contour, setContour] = useState({
+    variable: "none",
+    colormap: "default",
+    levels: "auto",
+    legend: true,
+    hatch: false,
+  });
 
+ 
+  useEffect(() => {
+    if (!props.init) return;
+    setCurrentTab(props.init.currentTab);
+    setAutoScale(props.init.autoScale);
+    setLeftColormap(props.init.leftColormap);
+    setRightColormap(props.init.rightColormap);
+    setDiffColormap(props.init.colormap_diff);
+    setPlotSize(props.init.size);
+    setPlotDpi(props.init.dpi);
+    setPlotTitle(props.init.plotTitle);
+    setShowArea(props.init.showarea);
+    setBathymetry(props.init.bathymetry);
+    setSurfaceVariable(props.init.surfacevariable);
+    setQuiver(props.init.quiver);
+    setContour(props.init.contour);
+  }, [props.init]);
   // Sync scale when dataset0.variable changes
   useEffect(() => {
     if (!autoScale) {
@@ -354,9 +359,7 @@ const AreaWindow = (props) => {
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            
             {_("Map")}
-          
           </Nav.Link>
         </Nav.Item>
       </Nav>
