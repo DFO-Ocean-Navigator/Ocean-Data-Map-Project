@@ -33,7 +33,7 @@ const PointWindow = ({
   // UI state
   const [selected, setSelected] = useState(
     init?.selected ??
-      (plotData.observation ? TabEnum.OBSERVATION : TabEnum.PROFILE)
+      (plotData.observation ? TabEnum.OBSERVATION : TabEnum.PROFILE),
   );
 
   // Display settings
@@ -42,14 +42,14 @@ const PointWindow = ({
 
   // Data state
   const [observationVariable, setObservationVariable] = useState(
-    init?.observation_variable || [0]
+    init?.observation_variable || [0],
   );
 
   // Plot settings
   const [plotSize, setPlotSize] = useState(init?.size || "10x7");
   const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [plotTitles, setPlotTitles] = useState(
-    init?.plotTitles || Array(7).fill("")
+    init?.plotTitles || Array(7).fill(""),
   );
 
   // Dataset state - keep as single object due to complexity
@@ -62,7 +62,7 @@ const PointWindow = ({
       axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : { [dataset.variable.id]: null },
-    }
+    },
   );
   const [only2d, setOnly2d] = useState(false);
 
@@ -75,9 +75,7 @@ const PointWindow = ({
 
     if (dataset2D && selected !== TabEnum.MOORING) {
       setSelected(TabEnum.MOORING);
-    }
-
-    if (
+    } else if (
       selected === TabEnum.PROFILE &&
       plotDataset.variable[0]?.two_dimensional
     ) {
@@ -337,7 +335,7 @@ const PointWindow = ({
           >
             {" "}
             <img src="/plot/colormaps.png/" alt="" />{" "}
-          </ComboBox>
+          </ComboBox>,
         );
       break;
   }
@@ -353,7 +351,7 @@ const PointWindow = ({
     plotTitles,
     observation_variable: observationVariable,
     plotDataset,
-    names:names
+    names: names,
   };
 
   return (
