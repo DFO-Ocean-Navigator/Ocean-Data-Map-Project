@@ -242,18 +242,21 @@ class HovmollerPlotter(LinePlotter):
                 self.compare["colormap"],
                 self.compare["variable_unit"],
                 self.compare["variable_name"]  # gettext(self.compare["variable_name"])
-                + get_depth_label(self.compare["depth"], self.compare["depth_unit"]),
+                + get_depth_label(self.compare["depth_value"], self.compare["depth_unit"]),
                 #  gettext(
-                #     get_depth_label(self.compare["depth"], self.compare["depth_unit"])
+                #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),
             )
 
             # Difference plot
             if self.compare["variables"][0] == self.variables[0]:
-
                 data_difference = self.data - self.compare["data"]
-                vmin = np.amin(data_difference)
-                vmax = np.amax(data_difference)
+                if self.compare["scale_diff"]:
+                    vmin = self.compare["scale_diff"][0]
+                    vmax = self.compare["scale_diff"][1]
+                else:
+                    vmin = np.amin(data_difference)
+                    vmax = np.amax(data_difference)
 
                 self._hovmoller_plot(
                     gs,
@@ -273,11 +276,11 @@ class HovmollerPlotter(LinePlotter):
                     ]  # gettext(self.compare["variable_name"])
                     + " Difference"  # + gettext(" Difference")
                     + get_depth_label(
-                        self.compare["depth"], self.compare["depth_unit"]
+                        self.compare["depth_value"], self.compare["depth_unit"]
                     ),
                     # + gettext(
                     #     get_depth_label(
-                    #         self.compare["depth"], self.compare["depth_unit"]
+                    #         self.compare["depth_value"], self.compare["depth_unit"]
                     #     )
                     # ),
                 )

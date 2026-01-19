@@ -233,15 +233,15 @@ def list_class4_forecasts(class4_id: str, class4_type: str) -> List[dict]:
     result = [
         {
             "id": "best",
-            "name": "Best Estimate",
+            "value": "Best Estimate",
         }
     ]
 
     if len(set(forecast_date)) > 1:
         for idx, date in enumerate(forecast_date):
-            if result[-1]["name"] == date:
+            if result[-1]["value"] == date:
                 continue
-            result.append({"id": idx, "name": date})
+            result.append({"id": idx, "value": date})
 
     return result
 

@@ -128,7 +128,7 @@ const Map = forwardRef((props, ref) => {
   );
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
-  const [drawAction, setDrawAction] = useState();
+  const [drawActions, setDrawActions] = useState({ map0: null, map1: null });
   const mapRef0 = useRef();
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
@@ -137,6 +137,7 @@ const Map = forwardRef((props, ref) => {
   const [hoverSelect1, setHoverSelect1] = useState();
 
   useImperativeHandle(ref, () => ({
+    getViewInfo: getViewInfo,
     startFeatureDraw: startFeatureDraw,
     stopFeatureDraw: stopFeatureDraw,
     addAnnotationLabel: addAnnotationLabel,
@@ -208,22 +209,6 @@ const Map = forwardRef((props, ref) => {
 
     newMap.addControl(new MultiMapMousePosition());
 
-    newMap.on("moveend", function () {
-      const c = olProj
-        .transform(
-          newMapView.getCenter(),
-          props.mapSettings.projection,
-          "EPSG:4326"
-        )
-        .map(function (c) {
-          return c.toFixed(4);
-        });
-      props.updateMapState("center", c);
-      props.updateMapState("zoom", newMapView.getZoom());
-      const extent = newMapView.calculateExtent(newMap.getSize());
-      props.updateMapState("extent", extent);
-    });
-
     addDblClickPlot(newMap, newSelect0);
 
     let mapLayers = newMap.getLayers().getArray();
@@ -257,7 +242,7 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings,
         overlay,
         popupElement1,
-        mapView,
+        map0.getView(),
         layerData1,
         newLayerFeatureVector,
         obsDrawSource,
@@ -276,6 +261,15 @@ const Map = forwardRef((props, ref) => {
       }
 
       addDblClickPlot(newMap, select1);
+      if (drawActions && drawActions.map0) {
+        if (drawActions.map1 && newMap) {
+          newMap.removeInteraction(drawActions.map1);
+        }
+        const source = map0.getLayers().getArray()[5].getSource();
+        const mirroredDraw = getDrawAction(source, props.featureType);
+        newMap.addInteraction(mirroredDraw);
+        setDrawActions((prev) => ({ ...(prev || {}), map1: mirroredDraw }));
+      }
 
       let overlays = map0.getOverlays().getArray();
 
@@ -285,6 +279,14 @@ const Map = forwardRef((props, ref) => {
         }
       }
     } else if (map0) {
+      if (drawActions && drawActions.map1) {
+        if (map1) {
+          map1.removeInteraction(drawActions.map1);
+        }
+
+        setDrawActions((prev) => ({ ...(prev || {}), map1: null }));
+      }
+
       map0.getControls().item(0).setMap(map0); // change zoom control target
       map0.getControls().item(3).setMap(map0);
     }
@@ -346,7 +348,7 @@ const Map = forwardRef((props, ref) => {
   }, [props.dataset1.id]);
 
   useEffect(() => {
-    if (props.dataset0.time >= 0) {
+    if (props.dataset0.time.id >= 0) {
       layerData0.setSource(
         new XYZ(getDataSource(props.dataset0, props.mapSettings))
       );
@@ -360,7 +362,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (props.dataset1.time >= 0) {
+    if (props.dataset1.time.id >= 0) {
       layerData1.setSource(
         new XYZ(getDataSource(props.dataset1, props.mapSettings))
       );
@@ -374,7 +376,7 @@ const Map = forwardRef((props, ref) => {
   ]);
 
   useEffect(() => {
-    if (map0) {
+    if (map0 && props.dataset0.time.id >= 0) {
       let quiverLayer = map0.getLayers().getArray()[7];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
@@ -384,12 +386,13 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset0.id,
+    props.dataset0.time,
     props.dataset0.quiverVariable,
     props.dataset0.quiverDensity,
   ]);
 
   useEffect(() => {
-    if (map1) {
+    if (map1 && props.dataset1.time.id >= 0) {
       let quiverLayer = map1.getLayers().getArray()[7];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
@@ -399,22 +402,30 @@ const Map = forwardRef((props, ref) => {
     }
   }, [
     props.dataset1.id,
+    props.dataset1.time,
     props.dataset1.quiverVariable,
     props.dataset1.quiverDensity,
   ]);
 
   useEffect(() => {
-    if (drawAction) {
+    if (drawActions.map0 || drawActions.map1) {
       let source = map0.getLayers().getArray()[5].getSource();
-      let newDrawAction = getDrawAction(source, props.featureType);
-
-      removeMapInteractions(map0, "all");
-      map0.addInteraction(newDrawAction);
-      if (props.compareDatasets) {
-        removeMapInteractions(map1, "all");
-        map1.addInteraction(drawAction);
+      if (drawActions.map0) {
+        map0.removeInteraction(drawActions.map0);
       }
-      setDrawAction(newDrawAction);
+      if (drawActions.map1 && map1) {
+        map1.removeInteraction(drawActions.map1);
+      }
+      let newDrawAction0 = getDrawAction(source, props.featureType);
+      map0.addInteraction(newDrawAction0);
+      let newActions = { map0: newDrawAction0, map1: null };
+
+      if (props.compareDatasets && map1) {
+        let newDrawAction1 = getDrawAction(source, props.featureType);
+        map1.addInteraction(newDrawAction1);
+        newActions.map1 = newDrawAction1;
+      }
+      setDrawActions(newActions);
     }
   }, [props.featureType]);
 
@@ -571,6 +582,26 @@ const Map = forwardRef((props, ref) => {
     });
   };
 
+  const getViewInfo = () => {
+    const c = olProj
+      .transform(
+        map0.getView().getCenter(),
+        props.mapSettings.projection,
+        "EPSG:4326"
+      )
+      .map(function (c) {
+        return c.toFixed(4);
+      });
+
+    const extent = map0.getView().calculateExtent(map0.getSize());
+
+    return {
+      center: c,
+      zoom: map0.getView().getZoom(),
+      extent: extent,
+    };
+  };
+
   const getFeatures = () => {
     let selectedFeatures = select0
       .getFeatures()
@@ -645,7 +676,9 @@ const Map = forwardRef((props, ref) => {
   const undoFeature = () => {
     let features = featureVectorSource.getFeatures();
     features = features.filter(
-      (feature) => feature.get("class") !== "observation"
+      (feature) =>
+        feature.get("class") !== "observation" &&
+        feature.get("type") !== "class4"
     );
     if (features.length > 0) {
       featureVectorSource.removeFeatures([features[features.length - 1]]);
@@ -865,7 +898,6 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets) {
       removeMapInteractions(map1, "all");
     }
-
     let map0Layers = map0.getLayers().getArray();
 
     let newFeatureVectorSource = new VectorSource({
@@ -933,17 +965,20 @@ const Map = forwardRef((props, ref) => {
 
   const startFeatureDraw = () => {
     let source = map0.getLayers().getArray()[5].getSource();
-    let newDrawAction = getDrawAction(source, props.featureType);
+    let newDrawAction0 = getDrawAction(source, props.featureType);
     hoverSelect0.setActive(false);
-    if (props.compareDatasets && hoverSelect1 && hoverSelect1.setActive) {
-      hoverSelect1.setActive(false);
-    }
+    map0.addInteraction(newDrawAction0);
+    let newActions = { map0: newDrawAction0, map1: null };
+    if (props.compareDatasets && map1) {
+      let newDrawAction1 = getDrawAction(source, props.featureType);
 
-    map0.addInteraction(newDrawAction);
-    if (props.compareDatasets) {
-      map1.addInteraction(newDrawAction);
+      if (hoverSelect1 && hoverSelect1.setActive) {
+        hoverSelect1.setActive(false);
+      }
+      map1.addInteraction(newDrawAction1);
+      newActions.map1 = newDrawAction1;
     }
-    setDrawAction(newDrawAction);
+    setDrawActions(newActions);
   };
 
   const stopFeatureDraw = () => {
@@ -955,6 +990,7 @@ const Map = forwardRef((props, ref) => {
     if (props.compareDatasets && hoverSelect1) {
       hoverSelect1.setActive(true);
     }
+    setDrawActions({ map0: null, map1: null });
   };
 
   const addAnnotationLabel = (text) => {

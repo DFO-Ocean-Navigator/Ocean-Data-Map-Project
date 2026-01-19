@@ -1,280 +1,318 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button, Row, Col, Form, Badge } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Button, Row, Col, Form, Badge, Spinner } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import {
-  GetAllVariablesPromise,
-  FilterDatasetsByDatePromise,
-  FilterDatasetsByLocationPromise,
-} from "../remote/OceanNavigator.js";
+  useGetDatasets,
+  useGetAllVariables,
+  useDateFilter,
+  useLocationFilter,
+} from "../remote/queries.js";
 
-const LOADING_IMAGE = require("../images/spinner.gif").default;
+function filterDatasets(datasets, variables, filters) {
+  let filteredDatasetIds = datasets.data.map((ds) => ds.id);
 
-const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
+  // Filter by variable
+  if (filters.variable !== "any") {
+    const variableData = variables.data[filters.variable];
+    const datasetIds = variableData.map((entry) => entry.dataset_id);
+    filteredDatasetIds = datasetIds.filter((id) => datasetIds.includes(id));
+  }
+
+  // Filter by vector variable
+  if (filters.vectorVariable !== "none") {
+    const variableData = variables.data[filters.vectorVariable];
+    const datasetIds = variableData.reduce(
+      (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
+      []
+    );
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      datasetIds.includes(id)
+    );
+  }
+
+  // Filter by depth
+  if (filters.depth !== "all") {
+    let datasetIds = Object.values(variables.data).reduce((ids, ds) => {
+      ds.forEach((d) => {
+        if (d.depth) {
+          ids.push(d.dataset_id);
+        }
+      });
+      return ids;
+    }, []);
+    datasetIds = [...new Set(datasetIds)];
+    filteredDatasetIds = filteredDatasetIds.filter((id) =>
+      filters.depth === "3D"
+        ? datasetIds.includes(id)
+        : !datasetIds.includes(id)
+    );
+  }
+
+  // Filter by date
+  const dateFilterEnabled = !!filters.date;
+  const dateFiltered = useDateFilter(
+    filteredDatasetIds,
+    filters.date,
+    dateFilterEnabled
+  );
+  dateFiltered.data && (filteredDatasetIds = dateFiltered.data);
+
+  // Filter by location
+  const locationFilterEnabled =
+    filters.location[0] !== "" && filters.location[1] !== "";
+  const locationFiltered = useLocationFilter(
+    filteredDatasetIds,
+    filters.location,
+    locationFilterEnabled
+  );
+  locationFiltered.data && (filteredDatasetIds = locationFiltered.data);
+
+  const isLoading =
+    datasets.status === "pending" ||
+    variables.status === "pending" ||
+    (dateFilterEnabled && dateFiltered.status === "pending") ||
+    (locationFilterEnabled && locationFiltered.status === "pending");
+
+  return { ids: filteredDatasetIds, isLoading };
+}
+
+function generateFilterLabels(filters, updateFilters, t) {
+  let filterLabels = [];
+
+  if (filters.variable !== "any") {
+    filterLabels.push({
+      key: "variable",
+      label: `Variable: ${filters.variable}`,
+    });
+  }
+
+  if (filters.vectorVariable !== "none") {
+    filterLabels.push({
+      key: "vectorVariable",
+      label: `${t("Quiver")}: ${filters.vectorVariable}`,
+    });
+  }
+
+  if (filters.depth !== "all") {
+    filterLabels.push({
+      key: "depth",
+      label: `Depth dimension: ${filters.depth}`,
+    });
+  }
+
+  if (filters.date !== null) {
+    filterLabels.push({
+      key: "date",
+      label: `Date: ${new Date(filters.date).toLocaleDateString()}`,
+    });
+  }
+
+  if (filters.location[0] && filters.location[1]) {
+    filterLabels.push({
+      key: "location",
+      label: `Location: ${filters.location[0]}°, ${filters.location[1]}°`,
+    });
+  }
+
+  return filterLabels.map(({ key, label }) => (
+    <Badge key={key} bg="primary" className="d-flex align-items-center">
+      {label}
+      <button
+        type="button"
+        className="btn-close btn-close-white ms-2"
+        style={{ fontSize: "0.7em" }}
+        onClick={() => updateFilters(key)}
+      />
+    </Badge>
+  ));
+}
+
+function localToUTC(date) {
+  // Adjusts local datetime so that displayed time is consistent with UTC
+  if (date) {
+    const offset = date.getTimezoneOffset() * 60000;
+
+    return new Date(date.getTime() - offset);
+  }
+}
+
+function UTCToLocal(date) {
+  // Adjusts UTC datetime so that displayed time is consistent with local TZ
+  if (date) {
+    const currentLocalDate = new Date();
+    const offset = currentLocalDate.getTimezoneOffset() * 60000;
+    const newDate = new Date(date.getTime() + offset);
+
+    return newDate;
+  }
+}
+
+const DatasetSearchWindow = ({
+  filters,
+  updateFilters,
+  applyFilters,
+  closeModal,
+}) => {
   const { t } = useTranslation();
-  const [datasetDisplayed, setDatasetDisplayed] = useState(datasets);
-  const [variableDataMap, setVariableDataMap] = useState({});
-  const [locationInput, setLocationInput] = useState({
-    latitude: "",
-    longitude: "",
-  });
+  const [latitude, setLatitude] = useState(filters.location[0]);
+  const [longitude, setLongitude] = useState(filters.location[1]);
 
-  const FILTER_DEFAULTS = {
-    variable: "any",
-    vectorVariable: "none",
-    depth: null,
-    date: null,
-    latitude: "",
-    longitude: "",
+  const datasets = useGetDatasets();
+  const variables = useGetAllVariables();
+
+  const filteredDatasets = filterDatasets(datasets, variables, filters);
+
+  const updateFilterDate = (date) => {
+    let utcDate = localToUTC(date, false);
+    updateFilters("date", utcDate);
   };
 
-  const [filters, setFilters] = useState(FILTER_DEFAULTS);
-  const [loading, setLoading] = useState(false);
-
-  const depthOptions = [
-    { value: null, label: "Both 2D and 3D" },
-    { value: true, label: "Yes (variables with depth dimensions)" },
-    { value: false, label: "Surface variables only" },
-  ];
-
-  const variables = useMemo(() => {
-    if (Object.keys(variableDataMap).length === 0) return [];
-
-    return [
-      { value: "any", id: null, key: "any" },
-      ...Object.entries(variableDataMap).map(([variableName, datasets]) => ({
-        value: variableName,
-        id: `${datasets[0].variable_id}`,
-        key: `${variableName}-${datasets[0]?.variable_id}`,
-      })),
-    ];
-  }, [variableDataMap]);
-
-  const vectorVariables = useMemo(() => {
-    if (Object.keys(variableDataMap).length === 0) return [];
-
-    const vectorVariableMap = {};
-
-    Object.entries(variableDataMap).forEach(
-      ([variableName, datasetEntries]) => {
-        datasetEntries.forEach((entry) => {
-          if (entry.vector_variables === true) {
-            vectorVariableMap[variableName] = entry.variable_id;
-          }
-        });
-      }
-    );
-
-    return [
-      { value: "none", id: "none" },
-      ...Object.entries(vectorVariableMap).map(([name, id]) => ({
-        value: name,
-        id,
-      })),
-    ];
-  }, [variableDataMap]);
-
-  // Loads initial data from backend
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      const variablesResult = await GetAllVariablesPromise();
-      setVariableDataMap(variablesResult.data);
-      setLoading(false);
+    const timer = setTimeout(() => {
+      let newLat = parseFloat(latitude);
+      let newLon = parseFloat(longitude);
+
+      newLat =
+        !isNaN(newLat) && Math.abs(newLat) <= 90 ? newLat.toFixed(4) : "";
+      newLon =
+        !isNaN(newLon) && Math.abs(newLon) <= 360 ? newLon.toFixed(4) : "";
+
+      updateFilters("location", [newLat, newLon]);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [latitude, longitude]);
+
+  const clearFilters = () => {
+    setLatitude("");
+    setLongitude("");
+    updateFilters();
+  };
+
+  const applyDataset = (datasetId) => {
+    let dataset = datasets.data.filter((d) => d.id === datasetId)[0];
+    dataset = {
+      id: dataset.id,
+      model_class: dataset.model_class,
+      quantum: dataset.quantum,
+      depth: 0,
+      quiverVariable: "none",
+      value: dataset.value,
     };
 
-    loadData();
-  }, []);
+    let variable = variables.data[filters.variable]?.filter(
+      (ds) => ds.dataset_id === datasetId
+    )[0];
 
-  const getActiveFilters = () => {
-    const active = [];
-    if (filters.latitude !== "" && filters.longitude !== "") {
-      active.push({
-        key: "location",
-        label: `Location: ${filters.latitude}°, ${filters.longitude}°`,
+    let vectorVariable = variables.data[filters.vectorVariable]?.filter(
+      (ds) => ds.dataset_id === datasetId
+    )[0];
+
+    variable &&
+      (dataset.variable = {
+        id: variable.variable_id,
+        value: filters.variable,
+        updateParent: true,
       });
-    }
+    vectorVariable && (dataset.quiverVariable = vectorVariable.variable_id);
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (
-        key === "latitude" ||
-        key === "longitude" ||
-        value === FILTER_DEFAULTS[key]
-      ) {
-        return;
-      }
+    filters.date &&
+      (dataset.time = {
+        id: -1,
+        value: filters.date,
+        updateParent: true,
+      });
 
-      let label = "";
-      switch (key) {
-        case "vectorVariable":
-          label = `${t("Quiver")}: ${value}`;
-
-          break;
-        case "date":
-          label = `Date: ${new Date(value).toLocaleDateString()}`;
-
-          break;
-        default:
-          label = `${key}: ${String(value)}`;
-      }
-
-      active.push({ key, label });
-    });
-
-    return active;
+    applyFilters(dataset);
+    closeModal();
   };
 
-  // Client-side filtering logic
-  const applyFilters = async (newFilters) => {
-    let temp_dataset = [...datasets];
-    setLoading(true);
+  const filterLabels = generateFilterLabels(filters, updateFilters, t);
 
-    // Filter by variable
-    if (newFilters.variable !== "any") {
-      const variableData = variableDataMap[newFilters.variable] || [];
-      const datasetIdsWithVariable = variableData.map(
-        (entry) => entry.dataset_id
-      );
-      temp_dataset = temp_dataset.filter((obj) =>
-        datasetIdsWithVariable.includes(obj.id)
-      );
-    }
+  const depthOptions = [
+    <option key="all" value="all">
+      Any
+    </option>,
+    <option key="3D" value="3D">
+      With depth dimension
+    </option>,
+    <option key="2D" value="2D">
+      Without depth dimension
+    </option>,
+  ];
 
-    // Filter by vector variable
-    if (newFilters.vectorVariable !== "none") {
-      const variableData = variableDataMap[newFilters.vectorVariable] || [];
-      const datasetsWithVector = variableData
-        .map((entry) => {
-            const ds = datasets.find((d) => d.id === entry.dataset_id);
-          return entry.vector_variables === true && ds && ds.model_class !== "Nemo" ? ds.id : null;
-        })
-        .filter(Boolean);
-      temp_dataset = temp_dataset.filter((obj) =>
-        datasetsWithVector.includes(obj.id)
-      );
-    }
+  let variableOptions = [
+    <option key="any" value="any">
+      Any
+    </option>,
+    ...Object.keys(variables.data).map((name) => (
+      <option key={name} value={name}>
+        {name}
+      </option>
+    )),
+  ];
 
-    // Filter by depth
-    if (newFilters.depth !== null) {
-      const datasetsWithDepthRequirement = [];
-      Object.values(variableDataMap).forEach((variableEntries) => {
-        variableEntries.forEach((entry) => {
-          if (entry.depth === newFilters.depth) {
-            datasetsWithDepthRequirement.push(entry.dataset_id);
-          }
-        });
-      });
-      temp_dataset = temp_dataset.filter((obj) =>
-        datasetsWithDepthRequirement.includes(obj.id)
-      );
-    }
-
-    // Filter by date
-    if (newFilters.date !== null) {
-      const result = await FilterDatasetsByDatePromise(
-        temp_dataset.map((obj) => obj.id),
-        newFilters.date.toISOString()
-      );
-      if (Array.isArray(result.data)) {
-        temp_dataset = temp_dataset.filter((obj) =>
-          result.data.includes(obj.id)
+  let vectorVariableOptions = Object.keys(variables.data).reduce(
+    (vars, name) => {
+      if (variables.data[name].some((d) => d.vector_variables)) {
+        vars.push(
+          <option key={name} value={name}>
+            {name}
+          </option>
         );
       }
-    }
+      return vars;
+    },
+    [
+      <option key="none" value="none">
+        None
+      </option>,
+    ]
+  );
 
-    // Filter by Location
-    if (newFilters.latitude !== "" && newFilters.longitude !== "") {
-      let longitude = (newFilters.longitude + 360) % 360;
-      const result = await FilterDatasetsByLocationPromise(
-        temp_dataset.map((obj) => obj.id),
-        newFilters.latitude,
-        longitude
-      );
-      if (Array.isArray(result.data)) {
-        temp_dataset = temp_dataset.filter((obj) =>
-          result.data.includes(obj.id)
-        );
-      }
-    }
-
-    setDatasetDisplayed(temp_dataset);
-    setFilters(newFilters);
-    setLoading(false);
-  };
-
-  const handleFilterChange = (filterName, value) => {
-    const newFilters = { ...filters, [filterName]: value };
-    applyFilters(newFilters);
-  };
-
-  const removeFilter = (filterToRemove) => {
-    const newFilters = { ...filters };
-
-    switch (filterToRemove) {
-      case "variable":
-        newFilters.variable = FILTER_DEFAULTS.variable;
-        break;
-      case "vectorVariable":
-        newFilters.vectorVariable = FILTER_DEFAULTS.vectorVariable;
-        break;
-      case "depth":
-        newFilters.depth = FILTER_DEFAULTS.depth;
-        break;
-      case "date":
-        newFilters.date = FILTER_DEFAULTS.date;
-        break;
-      case "location":
-        newFilters.latitude = FILTER_DEFAULTS.latitude;
-        newFilters.longitude = FILTER_DEFAULTS.longitude;
-        setLocationInput({ latitude: "", longitude: "" });
-        break;
-    }
-
-    setFilters(newFilters);
-    applyFilters(newFilters);
-  };
-
-  const clearAllFilters = () => {
-    setFilters({ ...FILTER_DEFAULTS });
-    setLocationInput({
-      latitude: "",
-      longitude: "",
-    });
-    setDatasetDisplayed(datasets);
-  };
-
-  const activeFilters = getActiveFilters();
+  let datasetCards = filteredDatasets.ids.map((id) => {
+    let dataset = datasets.data.filter((ds) => ds.id == id)[0];
+    return (
+      <div key={id} className="card mb-2">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-start">
+            <div className="flex-grow-1">
+              <h6 className="card-title">{dataset.value}</h6>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => applyDataset(id)}
+              className="ms-2"
+            >
+              {t("Apply")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  });
 
   return (
     <>
+      {filteredDatasets.isLoading && (
+        <div className="loading-overlay">
+          <Spinner animation="border" variant="light">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </div>
+      )}
       {/* Active Filters */}
-      <div className="mb-3">
-        <h6>{t("Active Filters")}</h6>
+      <div className="active-filters">
+        <h6 className="container-label">{t("Active Filters")}</h6>
         <div className="d-flex flex-wrap gap-2 align-items-center">
-          {activeFilters.length > 0 ? (
-            activeFilters.map(({ key, label }) => (
-              <Badge
-                key={key}
-                bg="primary"
-                className="d-flex align-items-center"
-              >
-                {label}
-                <button
-                  type="button"
-                  className="btn-close btn-close-white ms-2"
-                  style={{ fontSize: "0.7em" }}
-                  onClick={() => removeFilter(key)}
-                />
-              </Badge>
-            ))
+          {filterLabels.length > 0 ? (
+            filterLabels
           ) : (
             <div className="text-muted me-2">{t("No active filters")}</div>
           )}
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            onClick={clearAllFilters}
-          >
+          <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
             {t("Clear All")}
           </Button>
         </div>
@@ -282,23 +320,16 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
 
       <Row>
         <Col md={4}>
-          <h5>{t("Filters")}</h5>
-
+          <h6 className="container-label">{t("Filters")}</h6>
           {/* Variable Filter */}
           <Form.Group className="mb-3">
             <Form.Label>{t("Variable")}</Form.Label>
             <Form.Select
-              value={filters.variable ?? ""}
-              onChange={(e) => {
-                const val = e.target.value || null;
-                handleFilterChange("variable", val);
-              }}
+              key="variable"
+              value={filters.variable}
+              onChange={(e) => updateFilters("variable", e.target.value)}
             >
-              {variables.map((opt) => (
-                <option key={opt.key || opt.value} value={opt.value}>
-                  {opt.value}
-                </option>
-              ))}
+              {variableOptions}
             </Form.Select>
           </Form.Group>
 
@@ -306,17 +337,11 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           <Form.Group className="mb-3">
             <Form.Label>{t("Quiver")}</Form.Label>
             <Form.Select
-              value={filters.vectorVariable ?? ""}
-              onChange={(e) => {
-                const val = e.target.value || null;
-                handleFilterChange("vectorVariable", val);
-              }}
+              key="vectorVariable"
+              value={filters.vectorVariable}
+              onChange={(e) => updateFilters("vectorVariable", e.target.value)}
             >
-              {vectorVariables.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.value}
-                </option>
-              ))}
+              {vectorVariableOptions}
             </Form.Select>
           </Form.Group>
 
@@ -324,25 +349,11 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           <Form.Group className="mb-3">
             <Form.Label>{t("With Depth Dimension")}</Form.Label>
             <Form.Select
-              value={
-                filters.depth === null || filters.depth === undefined
-                  ? ""
-                  : String(filters.depth)
-              }
-              onChange={(e) => {
-                const raw = e.target.value;
-                const val = raw === "" ? null : raw === "true" ? true : false;
-                handleFilterChange("depth", val);
-              }}
+              key="depth"
+              value={filters.depth}
+              onChange={(e) => updateFilters("depth", e.target.value)}
             >
-              {depthOptions.map((opt) => (
-                <option
-                  key={String(opt.value)}
-                  value={opt.value === null ? "" : String(opt.value)}
-                >
-                  {opt.label}
-                </option>
-              ))}
+              {depthOptions}
             </Form.Select>
           </Form.Group>
 
@@ -350,8 +361,9 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           <Form.Group className="mb-3">
             <Form.Label className="d-block">Date</Form.Label>
             <DatePicker
-              selected={filters.date}
-              onChange={(date) => handleFilterChange("date", date)}
+              key="date"
+              selected={UTCToLocal(filters.date)}
+              onChange={(d) => updateFilterDate(d)}
               className="form-control"
               placeholderText="Select date..."
               isClearable
@@ -366,142 +378,42 @@ const DatasetSearchWindow = ({ datasets, updateDataset, closeModal }) => {
           <Form.Group className="mb-3">
             <Form.Label>{t("Location")}</Form.Label>
             <Row>
-              <Col>
+              <Col className="latlon-column">
                 <Form.Control
+                  id="latitude"
+                  key="latitude"
                   type="number"
                   min={-90}
-                  max={+90}
+                  max={90}
                   placeholder="Latitude"
-                  value={locationInput.latitude || ""}
-                  onChange={(e) =>
-                    setLocationInput({
-                      ...locationInput,
-                      latitude: e.target.value,
-                    })
-                  }
-                  className={
-                    locationInput.latitude &&
-                    (parseFloat(locationInput.latitude) < -90 ||
-                      parseFloat(locationInput.latitude) > 90)
-                      ? "is-invalid"
-                      : ""
-                  }
+                  isInvalid={latitude < -90 || latitude > 90}
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
                 />
               </Col>
-              <Col>
+              <Col className="latlon-column">
                 <Form.Control
+                  id="longitude"
+                  key="longitude"
                   type="number"
                   min={-360}
                   max={360}
                   placeholder="Longitude"
-                  value={locationInput.longitude || ""}
-                  onChange={(e) =>
-                    setLocationInput({
-                      ...locationInput,
-                      longitude: e.target.value,
-                    })
-                  }
-                  className={
-                    locationInput.longitude &&
-                    (parseFloat(locationInput.longitude) < -360 ||
-                      parseFloat(locationInput.longitude) > 360)
-                      ? "is-invalid"
-                      : ""
-                  }
+                  isInvalid={longitude < -360 || longitude > 360}
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
                 />
               </Col>
             </Row>
-            <Button
-              variant="primary"
-              size="sm"
-              className="mt-2 w-100"
-              disabled={
-                !locationInput.latitude ||
-                !locationInput.longitude ||
-                parseFloat(locationInput.latitude) < -90 ||
-                parseFloat(locationInput.latitude) > 90 ||
-                parseFloat(locationInput.longitude) < -360 ||
-                parseFloat(locationInput.longitude) > 360
-              }
-              onClick={() => {
-                if (locationInput.latitude && locationInput.longitude) {
-                  const newFilters = {
-                    ...filters,
-                    latitude: parseFloat(locationInput.latitude),
-                    longitude: parseFloat(locationInput.longitude),
-                  };
-                  applyFilters(newFilters);
-                }
-              }}
-            >
-              {t("Search Location")}
-            </Button>
           </Form.Group>
         </Col>
-
         <Col md={8}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5>
-              ({datasetDisplayed.length}) / ({datasets.length}) {t("Datasets")}
-            </h5>
+            <h6 className="container-label">
+              {datasetCards.length} / {datasets.data.length} {t("Datasets")}
+            </h6>
           </div>
-
-          <div
-            className="dataset-list"
-            style={{ maxHeight: "500px", overflowY: "auto" }}
-          >
-            {loading && (
-              <div className="d-flex justify-content-center my-3">
-                <img src={LOADING_IMAGE} alt="Loading..." height={100} />
-              </div>
-            )}
-
-            {datasetDisplayed.map((dataset) => (
-              <div key={dataset.id} className="card mb-2">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div className="flex-grow-1">
-                      <h6 className="card-title">{dataset.value}</h6>
-                    </div>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => {
-                        const selectedVariableobj = variables.find(
-                          (v) => v.value === filters.variable
-                        );
-                        const selectedVariable = selectedVariableobj.id;
-
-                        const selectedVectorVariableObj = vectorVariables.find(
-                          (v) => v.value === filters.vectorVariable
-                        );
-                        const selectedVectorVariable =
-                          selectedVectorVariableObj.id;
-
-                        let selectedVariableScale = null;
-                        if (filters.variable != "any") {
-                          selectedVariableScale =
-                            variableDataMap[filters.variable][0].variable_scale;
-                        }
-
-                        updateDataset(
-                          dataset.id,
-                          selectedVariable || null,
-                          true,
-                          selectedVectorVariable || "none",
-                          selectedVariableScale || null
-                        );
-                        closeModal();
-                      }}
-                      className="ms-2"
-                    >
-                      {t("Apply")}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className="dataset-list">{datasetCards}</div>
         </Col>
       </Row>
     </>

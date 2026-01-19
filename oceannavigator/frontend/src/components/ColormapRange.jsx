@@ -14,7 +14,7 @@ function ColormapRange(props) {
   useEffect(() => {
     setMin(parseFloat(props.state[0]).toFixed(4));
     setMax(parseFloat(props.state[1]).toFixed(4));
-  }, [props])
+  }, [props]);
 
   useEffect(() => {
     let newMin = parseFloat(min).toFixed(4);
@@ -46,50 +46,47 @@ function ColormapRange(props) {
     }
   };
 
-  const autoChanged = (e) => {
-    setUseAuto(e.target.checked);
-
-    var scale = props.state;
-    if (typeof props.state === "string" || props.state instanceof String) {
-      scale = props.state.split(",");
-    }
-
-    if (e.target.checked) {
-      props.onUpdate(props.id, scale[0] + "," + scale[1] + ",auto");
-    } else {
-      props.onUpdate(props.id, scale[0] + "," + scale[1]);
-    }
-  };
-
   const handleDefaultButton = () => {
     setMin(props.default_scale[0]);
     setMax(props.default_scale[1]);
   };
 
   const getAutoScale = () => {
+    const mapViewInfo = props.mapRef.current?.getViewInfo();
+
+    const autourl =
+      "/api/v2.0/range/" +
+      props.dataset.id +
+      "/" +
+      props.dataset.variable.id +
+      "/" +
+      props.mapSettings.interpType +
+      "/" +
+      props.mapSettings.interpRadius +
+      "/" +
+      props.mapSettings.interpNeighbours +
+      "/" +
+      props.mapSettings.projection +
+      "/" +
+      mapViewInfo.extent.join(",") +
+      "/" +
+      props.dataset.depth +
+      "/" +
+      props.dataset.time.id;
+
     axios
-      .get(props.autourl)
+      .get(autourl)
       .then(function (data) {
         setMin(parseFloat(data.data.min).toFixed(4));
         setMax(parseFloat(data.data.max).toFixed(4));
       })
       .catch(function (r, status, err) {
-        console.error(props.autourl, status, err.toString());
+        console.error(autourl, status, err.toString());
       });
   };
 
-  const autoCheck = (
-    <Form.Check
-      type="checkbox"
-      id={props.id + "_auto"}
-      checked={useAuto}
-      onChange={autoChanged}
-      label={"Auto Range"}
-    />
-  );
-
   let autobuttons = null;
-  if (props.autourl) {
+  if (props.showAuto) {
     autobuttons = (
       <ButtonToolbar style={{ display: "inline-block", float: "right" }}>
         <Button name="default" onClick={handleDefaultButton}>
@@ -103,17 +100,19 @@ function ColormapRange(props) {
   }
 
   return (
-    <div className="ColormapRange" style={{ margin : props.auto ? '0px 0px' : '0px 5px'}}>
+    <div
+      className="ColormapRange"
+      style={{ margin: props.auto ? "0px 0px" : "0px 5px" }}
+    >
       <h1>{props.title}</h1>
-      {props.auto ? autoCheck : null}
       <table style={{ display: useAuto ? "none" : "table" }}>
         <tbody>
           <tr>
             <td>
-              <label htmlFor={props.id + "_min"}>{"Min:"}</label>
+              <label key={props.id + "_min"}>{"Min:"}</label>
             </td>
             <td>
-              <input 
+              <input
                 type="number"
                 className="range-input"
                 value={min}
@@ -124,7 +123,7 @@ function ColormapRange(props) {
           </tr>
           <tr>
             <td>
-              <label htmlFor={props.id + "_max"}>{"Max:"}</label>
+              <label key={props.id + "_max"}>{"Max:"}</label>
             </td>
             <td>
               <input
@@ -144,13 +143,16 @@ function ColormapRange(props) {
 }
 
 //***********************************************************************
-Range.propTypes = {
+ColormapRange.propTypes = {
   id: PropTypes.string,
   auto: PropTypes.bool,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
   state: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
-  autourl: PropTypes.string,
+  showAuto: PropTypes.bool,
+  dataset: PropTypes.object,
+  mapSettings: PropTypes.object,
+  mapRef: PropTypes.object
 };
 
 export default withTranslation()(ColormapRange);

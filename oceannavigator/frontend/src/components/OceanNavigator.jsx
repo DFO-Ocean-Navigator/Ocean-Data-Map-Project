@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
@@ -43,14 +44,16 @@ function OceanNavigator(props) {
     showDrawingTools: false,
     showObservationTools: false,
   });
-  const [mapState, setMapState] = useState({});
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
-  const [names, setNames] = useState([]);
+  const [names, setNames] = useState();
   const [observationArea, setObservationArea] = useState([]);
+  const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
@@ -58,7 +61,7 @@ function OceanNavigator(props) {
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
-          decodeURIComponent(window.location.search.replace("?query=", ""))
+          decodeURIComponent(window.location.search.replace("?query=", "")),
         );
 
         for (let key in query) {
@@ -83,7 +86,7 @@ function OceanNavigator(props) {
             mapRef.current.updateFeatureGeometry(
               feature.id,
               feature.type,
-              feature.coords
+              feature.coords,
             );
             if (feature.selected) {
               selectedIds.push(feature.id);
@@ -122,18 +125,21 @@ function OceanNavigator(props) {
         break;
       case "resetMap":
         mapRef.current.resetMap();
+        mapRef.current.selectFeatures([]);
         setPlotData([]);
         setSelectedFeatureIds([]);
         if (uiSettings.showDrawingTools) {
           mapRef.current.startFeatureDraw();
         }
+        queryClient.removeQueries({ queryKey: ["plotImage"] });
         break;
       case "plot":
         let newPlotData = mapRef.current.getPlotData();
         if (!newPlotData) break;
+        setNames(newPlotData.name);
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
-            (data) => data.id === newPlotData.id
+            (data) => data.id === newPlotData.id,
           );
           if (existingIdx > -1) {
             return prevPlotData.map((p, idx) => ({
@@ -151,8 +157,12 @@ function OceanNavigator(props) {
         break;
       case "closePlot":
         setPlotData((prevPlotData) =>
-          prevPlotData.filter((plot) => plot.id !== arg.id)
+          prevPlotData.filter((plot) => plot.id !== arg.id),
         );
+        queryClient.removeQueries({
+          predicate: (q) =>
+            q.queryKey[0] === "plotImage" && q.queryKey[1].featureId === arg.id,
+        });
         break;
       case "selectedFeatureIds":
         setSelectedFeatureIds(arg);
@@ -173,6 +183,11 @@ function OceanNavigator(props) {
           updateUI({ modalType: "observationSelect", showModal: true });
         }
         break;
+      case "setObsQuery":
+        if (arg) {
+          setObservationQuery(arg);
+        }
+        break;
       case "class4Type":
         setClass4Type(arg);
         break;
@@ -186,17 +201,16 @@ function OceanNavigator(props) {
     }
   };
 
-  const updateMapState = (key, value) => {
-    setMapState((prevMapState) => ({
-      ...prevMapState,
-      [key]: value,
-    }));
-  };
-
   const updateDataset0 = (key, value) => {
     switch (key) {
       case "dataset":
         setDataset0(value);
+        break;
+      case "variable_scale":
+        setDataset0((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset0((prevDataset) => ({
@@ -210,6 +224,12 @@ function OceanNavigator(props) {
     switch (key) {
       case "dataset":
         setDataset1(value);
+        break;
+      case "variable_scale":
+        setDataset1((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset1((prevDataset) => ({
@@ -340,22 +360,35 @@ function OceanNavigator(props) {
 
   return (
     <div className="OceanNavigator">
-      <ScaleViewer
-        dataset={dataset0}
-        mapSettings={mapSettings}
-        onUpdate={updateDataset0}
-        mapState={mapState}
-      />
-      {compareDatasets ? (
-        <ScaleViewer
-          dataset={dataset1}
-          mapSettings={mapSettings}
-          onUpdate={updateDataset0}
-          mapState={mapState}
-          right={true}
+      <div className="top-panel-components">
+        <div className="scale-viewer-container">
+          <ScaleViewer
+            dataset={dataset0}
+            mapSettings={mapSettings}
+            onUpdate={updateDataset0}
+            mapRef={mapRef}
+          />
+          {compareDatasets && (
+            <ScaleViewer
+              dataset={dataset1}
+              mapSettings={mapSettings}
+              onUpdate={updateDataset0}
+              mapRef={mapRef}
+              className="right"
+            />
+          )}
+        </div>
+
+        <MinimizedPlotBar plotData={plotData} action={action} />
+        <AnnotationButton
+          uiSettings={uiSettings}
+          updateUI={updateUI}
+          action={action}
         />
-      ) : null}
-      <MinimizedPlotBar plotData={plotData} action={action} />
+        <LinkButton action={action} />
+        <ToggleLanguage />
+      </div>
+
       <Map
         ref={mapRef}
         mapSettings={mapSettings}
@@ -366,7 +399,6 @@ function OceanNavigator(props) {
         action={action}
         updateMapSettings={updateMapSettings}
         updateUI={updateUI}
-        updateMapState={updateMapState}
         compareDatasets={compareDatasets}
       />
       <MapInputs
@@ -383,13 +415,6 @@ function OceanNavigator(props) {
         showCompare={true}
         featureType={featureType}
       />
-      <ToggleLanguage />
-      <AnnotationButton
-        uiSettings={uiSettings}
-        updateUI={updateUI}
-        action={action}
-      />
-      <LinkButton action={action} />
       <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
       <ActivePlotsContainer
         plotData={plotData}
@@ -403,6 +428,7 @@ function OceanNavigator(props) {
         action={action}
         compareDatasets={compareDatasets}
         setCompareDatasets={setCompareDatasets}
+        observationQuery={observationQuery}
         class4Type={class4Type}
         swapViews={swapViews}
       />

@@ -22,6 +22,7 @@ const ActivePlotsContainer = ({
   action,
   compareDatasets,
   setCompareDatasets,
+  observationQuery,
   class4Type,
   swapViews,
 }) => {
@@ -42,19 +43,20 @@ const ActivePlotsContainer = ({
       case "Point":
         return (
           <PointWindow
-            dataset_0={dataset0}
+            dataset={dataset0}
             plotData={plot}
             mapSettings={mapSettings}
             updateDataset={updateDataset0}
             init={subquery}
             action={action}
+            names={names}
           />
         );
       case "LineString":
         return (
           <LineWindow
-            dataset_0={dataset0}
-            dataset_1={dataset1}
+            dataset0={dataset0}
+            dataset1={dataset1}
             plotData={plot}
             mapSettings={mapSettings}
             names={names}
@@ -63,7 +65,7 @@ const ActivePlotsContainer = ({
             updateDataset1={updateDataset1}
             init={subquery}
             action={action}
-            dataset_compare={compareDatasets}
+            compareDatasets={compareDatasets}
             setCompareDatasets={setCompareDatasets}
             swapViews={swapViews}
           />
@@ -71,8 +73,8 @@ const ActivePlotsContainer = ({
       case "Polygon":
         return (
           <AreaWindow
-            dataset_0={dataset0}
-            dataset_1={dataset1}
+            dataset0={dataset0}
+            dataset1={dataset1}
             plotData={plot}
             mapSettings={mapSettings}
             names={names}
@@ -80,16 +82,17 @@ const ActivePlotsContainer = ({
             updateDataset1={updateDataset1}
             init={subquery}
             action={action}
-            dataset_compare={compareDatasets}
+            compareDatasets={compareDatasets}
             setCompareDatasets={setCompareDatasets}
             swapViews={swapViews}
           />
         );
-      case "track":
+      case "Track":
         return (
           <TrackWindow
             dataset={dataset0}
-            track={coordinates}
+            plotData={plot}
+            observationQuery={observationQuery}
             names={names}
             onUpdate={updateDataset0}
             init={subquery}
@@ -169,6 +172,7 @@ ActivePlotsContainer.propTypes = {
   action: PropTypes.func.isRequired,
   compareDatasets: PropTypes.bool,
   setCompareDatasets: PropTypes.func.isRequired,
+  observationQuery: PropTypes.object,
   class4Type: PropTypes.string,
 };
 
