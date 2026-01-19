@@ -72,7 +72,7 @@ function ColormapRange(props) {
       "/" +
       props.dataset.depth +
       "/" +
-      props.dataset.time;
+      props.dataset.time.id;
 
     axios
       .get(autourl)

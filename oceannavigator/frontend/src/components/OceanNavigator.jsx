@@ -61,7 +61,7 @@ function OceanNavigator(props) {
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
-          decodeURIComponent(window.location.search.replace("?query=", ""))
+          decodeURIComponent(window.location.search.replace("?query=", "")),
         );
 
         for (let key in query) {
@@ -86,7 +86,7 @@ function OceanNavigator(props) {
             mapRef.current.updateFeatureGeometry(
               feature.id,
               feature.type,
-              feature.coords
+              feature.coords,
             );
             if (feature.selected) {
               selectedIds.push(feature.id);
@@ -139,7 +139,7 @@ function OceanNavigator(props) {
         setNames(newPlotData.name);
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
-            (data) => data.id === newPlotData.id
+            (data) => data.id === newPlotData.id,
           );
           if (existingIdx > -1) {
             return prevPlotData.map((p, idx) => ({
@@ -157,7 +157,7 @@ function OceanNavigator(props) {
         break;
       case "closePlot":
         setPlotData((prevPlotData) =>
-          prevPlotData.filter((plot) => plot.id !== arg.id)
+          prevPlotData.filter((plot) => plot.id !== arg.id),
         );
         queryClient.removeQueries({
           predicate: (q) =>
@@ -206,6 +206,12 @@ function OceanNavigator(props) {
       case "dataset":
         setDataset0(value);
         break;
+      case "variable_scale":
+        setDataset0((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
+        break;
       default:
         setDataset0((prevDataset) => ({
           ...prevDataset,
@@ -218,6 +224,12 @@ function OceanNavigator(props) {
     switch (key) {
       case "dataset":
         setDataset1(value);
+        break;
+      case "variable_scale":
+        setDataset1((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset1((prevDataset) => ({
