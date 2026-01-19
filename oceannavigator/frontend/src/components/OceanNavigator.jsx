@@ -47,7 +47,7 @@ function OceanNavigator(props) {
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
-  const [names, setNames] = useState();
+  const [names, setNames] = useState([undefined]);
   const [observationArea, setObservationArea] = useState([]);
   const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
@@ -57,7 +57,6 @@ function OceanNavigator(props) {
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
-
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
@@ -93,12 +92,14 @@ function OceanNavigator(props) {
             }
           }
           mapRef.current.selectFeatures(selectedIds);
-          if (query.showModal) {
-            let newPlotData = mapRef.current.getPlotData();
-            setPlotData(newPlotData);
+          if (query.plotData) {
+            setSubquery(query.subquery);
+
+            action("updatePlots", query.plotData);
           }
-          updateUI({ modalType: query.modalType, showModal: query.showModal });
-          setSubquery(query.subquery);
+          if (query.subquery.names) {
+            setNames(query.subquery.names);
+          }
         }, 1000);
       } catch (err) {
         console.error(err);
@@ -195,7 +196,7 @@ function OceanNavigator(props) {
         setCompareDatasets((prevCompare) => !prevCompare);
         break;
       case "permalink":
-        setSubquery(null);
+        setSubquery(arg);
         setShowPermalink(true);
         break;
     }
@@ -274,6 +275,7 @@ function OceanNavigator(props) {
     query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
     query.features = mapRef.current.getFeatures();
+    query.plotData = plotData;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {

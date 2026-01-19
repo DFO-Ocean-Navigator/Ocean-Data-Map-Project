@@ -19,7 +19,7 @@ const LineWindow = (props) => {
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
   // Scale settings
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
   const [scaleDiff, setScaleDiff] = useState(props.init?.scale_diff || "auto");
 
   // Colormap settings
@@ -187,6 +187,7 @@ const LineWindow = (props) => {
         <ComboBox
           id="surfacevariable"
           state={surfaceVariable}
+          subquery={ props.init?.surfacevariable?true:false}
           onUpdate={(_, value) => {
             let variableName = value;
             if (Array.isArray(value) && value.length > 0) {
@@ -267,6 +268,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="line-window-dataset0-panel"
+          subquery_depth={props.init?.depth_left}
           onUpdate={props.updateDataset0}
           hasDepth={selected === 1}
           showQuiverSelector={false}
@@ -296,6 +298,7 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="line-window-dataset1-panel"
+          subquery_depth={props.init?.depth_right}
           onUpdate={props.updateDataset1}
           hasDepth={selected === 1}
           showQuiverSelector={false}
@@ -380,7 +383,7 @@ const LineWindow = (props) => {
   // Create permlink_subquery from current state
   const permlink_subquery = {
     selected,
-    scale_diff: scaleDiff.toString(),
+    scale_diff: scaleDiff,
     colormap: mainColormap.toString(),
     colormap_right: rightColormap.toString(),
     colormap_diff: diffColormap.toString(),
@@ -394,6 +397,9 @@ const LineWindow = (props) => {
     depth_limit: depthLimit,
     profile_distance: profileDistance,
     show_profile: showProfile,
+    depth_left: props.dataset0.depth,
+    depth_right:props.dataset1.depth,
+    autoScale: autoScale,
   };
 
   return (
