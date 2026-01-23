@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Accordion, Card, Row, Col, Nav } from "react-bootstrap";
 import ComboBox from "../ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
+import SelectBox from "../lib/SelectBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
@@ -28,8 +29,8 @@ const Class4Window = ({
       Array.isArray(value)
         ? value[0] || "none"
         : typeof value === "object" && value
-        ? value.id || value.value || "none"
-        : value || "none"
+          ? value.id || value.value || "none"
+          : value || "none",
     );
   };
 
@@ -110,17 +111,16 @@ const Class4Window = ({
                 id="models"
                 state={models}
                 multiple
-                onUpdate={(_, value) => setModels(value[0] || [])}
+                onUpdate={(_, value) => setModels(value)}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
               />
-              <ComboBox
+              <SelectBox
                 id="error"
-                state={error}
-                def=""
-                data={error_options}
-                title={_("Show Error")}
-                onUpdate={handleErrorUpdate}
+                selected={error}
+                options={error_options}
+                label={_("Show Error")}
+                onChange={handleErrorUpdate}
               />
               <Accordion>
                 <Accordion.Header>{_("Plot Options")}</Accordion.Header>
