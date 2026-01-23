@@ -29,7 +29,7 @@ const ContourSelector = ({
       });
       onUpdate(id, { ...state, ...patch });
     },
-    [id, onUpdate, state]
+    [id, onUpdate, state],
   );
 
   // Debounced levels change
@@ -40,7 +40,7 @@ const ContourSelector = ({
     setTypingTimeout(
       setTimeout(() => {
         handleUpdate("levels", val);
-      }, 500)
+      }, 500),
     );
   };
 
@@ -69,6 +69,7 @@ const ContourSelector = ({
         onUpdate={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables`}
         title={title}
+        includeNone={true}
       >
         {children}
       </ComboBox>
@@ -101,7 +102,7 @@ const ContourSelector = ({
             title={_("Colourmap")}
           >
             {_(
-              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable."
+              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
             )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
           </ComboBox>
