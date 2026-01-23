@@ -21,10 +21,12 @@ const AreaWindow = (props) => {
 
   // Scale settings
   const [scale, setScale] = useState("auto");
-  const [autoScale, setAutoScale] = useState(true);
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
 
   // Colormap settings
-  const [leftColormap, setLeftColormap] = useState("default");
+  const [leftColormap, setLeftColormap] = useState(
+    props.init?.leftColormap ?? "default",
+  );
   const [rightColormap, setRightColormap] = useState("default");
   const [diffColormap, setDiffColormap] = useState("default");
 
@@ -36,39 +38,34 @@ const AreaWindow = (props) => {
   // Map settings
   const [showArea, setShowArea] = useState(true);
   const [bathymetry, setBathymetry] = useState(true);
-  const [surfaceVariable, setSurfaceVariable] = useState("none");
 
   // Feature settings
-  const [quiver, setQuiver] = useState({
-    variable: "none",
-    magnitude: "length",
-    colormap: "default",
-  });
+  const [quiver, setQuiver] = useState(
+    props.init?.quiver ?? {
+      variable: "none",
+      magnitude: "length",
+      colormap: "default",
+    },
+  );
 
-  const [contour, setContour] = useState({
-    variable: "none",
-    colormap: "default",
-    levels: "auto",
-    legend: true,
-    hatch: false,
-  });
+  const [contour, setContour] = useState(
+    props.init?.contour ?? {
+      variable: "none",
+      colormap: "default",
+      levels: "auto",
+      legend: true,
+      hatch: false,
+    },
+  );
 
- 
   useEffect(() => {
     if (!props.init) return;
-    setCurrentTab(props.init.currentTab);
-    setAutoScale(props.init.autoScale);
-    setLeftColormap(props.init.leftColormap);
-    setRightColormap(props.init.rightColormap);
     setDiffColormap(props.init.colormap_diff);
     setPlotSize(props.init.size);
     setPlotDpi(props.init.dpi);
     setPlotTitle(props.init.plotTitle);
     setShowArea(props.init.showarea);
     setBathymetry(props.init.bathymetry);
-    setSurfaceVariable(props.init.surfacevariable);
-    setQuiver(props.init.quiver);
-    setContour(props.init.contour);
   }, [props.init]);
   // Sync scale when dataset0.variable changes
   useEffect(() => {
@@ -334,7 +331,6 @@ const AreaWindow = (props) => {
       plotTitle,
       showarea: showArea,
       bathymetry,
-      surfacevariable: surfaceVariable,
       contour,
       quiver,
       left_depth: props.dataset0.depth,
