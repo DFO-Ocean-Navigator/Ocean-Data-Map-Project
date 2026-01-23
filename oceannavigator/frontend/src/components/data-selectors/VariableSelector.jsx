@@ -98,7 +98,6 @@ function variableSelector({
       {stillHasVariablesToShow && (
         <SelectBox
           id={`dataset-selector-variable-selector-${id}`}
-          name={t("variable")}
           label={t("Variable")}
           placeholder={t("Variable")}
           options={variables.data}
@@ -109,7 +108,6 @@ function variableSelector({
           horizontalLayout={horizontalLayout}
         />
       )}
-      {/* {axisRange && axisRangeSelectors} */}
     </>
   );
 }

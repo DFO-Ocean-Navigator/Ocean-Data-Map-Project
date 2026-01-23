@@ -48,7 +48,6 @@ function QuiverSelector({
       <SelectBox
         id={`${id}-quiver-selector`}
         key="quiverVariable"
-        name="quiverVariable"
         label={t("Quiver")}
         placeholder={t("Quiver Variable")}
         options={quiverOptions}

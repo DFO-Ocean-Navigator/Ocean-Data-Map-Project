@@ -6,7 +6,6 @@ import fastEqual from "fast-deep-equal/es6/react";
 
 function SelectBox({
   id,
-  name,
   label,
   placeholder,
   options,
@@ -36,7 +35,6 @@ function SelectBox({
     <Form.Group controlId={`formgroup-${id}-selectbox`} as={FormGroup}>
       <Form.Label column>{label}</Form.Label>
       <Form.Select
-        name={name}
         placeholder={disabled ? "Loading..." : placeholder}
         onChange={(e) =>
           multiple
@@ -59,7 +57,6 @@ function SelectBox({
 
 SelectBox.propTypes = {
   id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   onChange: PropTypes.func.isRequired,
