@@ -24,43 +24,43 @@ const LineWindow = (props) => {
 
   // Colormap settings
   const [mainColormap, setMainColormap] = useState(
-    props.init?.colormap || "default"
+    props.init?.colormap || "default",
   );
   const [rightColormap, setRightColormap] = useState(
-    props.init?.colormap_right || "default"
+    props.init?.colormap_right || "default",
   );
   const [diffColormap, setDiffColormap] = useState(
-    props.init?.colormap_diff || "default"
+    props.init?.colormap_diff || "default",
   );
 
   // Plot settings
   const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
   const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
   const [plotTitles, setPlotTitles] = useState(
-    props.init?.plotTitles || Array(2).fill("")
+    props.init?.plotTitles || Array(2).fill(""),
   );
 
   // Map and display settings
   const [showMap, setShowMap] = useState(props.init?.showmap ?? true);
   const [surfaceVariable, setSurfaceVariable] = useState(
-    props.init?.surfacevariable || "none"
+    props.init?.surfacevariable || "none",
   );
   const [selectedPlots, setSelectedPlots] = useState(
-    props.init?.selectedPlots || [0, 1, 1]
+    props.init?.selectedPlots || [0, 1, 1],
   );
 
   // Transect-specific settings
   const [linearThresh, setLinearThresh] = useState(
-    props.init?.linearthresh || false
+    props.init?.linearthresh || false,
   );
   const [depthLimit, setDepthLimit] = useState(
-    props.init?.depth_limit || false
+    props.init?.depth_limit || false,
   );
   const [profileDistance, setProfileDistance] = useState(
-    props.init?.profile_distance || -1
+    props.init?.profile_distance || -1,
   );
   const [showProfile, setShowProfile] = useState(
-    props.init?.show_profile || false
+    props.init?.show_profile || false,
   );
 
   useEffect(() => {
@@ -188,18 +188,11 @@ const LineWindow = (props) => {
           id="surfacevariable"
           state={surfaceVariable}
           onUpdate={(_, value) => {
-            let variableName = value;
-            if (Array.isArray(value) && value.length > 0) {
-              variableName = value[0];
-            } else if (typeof value === "object" && value !== null) {
-              variableName = value.id || value.name || value.variable || "none";
-            } else if (typeof value !== "string") {
-              variableName = String(value) || "none";
-            }
-            setSurfaceVariable(variableName);
+            setSurfaceVariable(value);
           }}
           title={_("Surface Variable")}
           url={`/api/v2.0/dataset/${props.dataset0.id}/variables`}
+          includeNone={true}
         >
           {_("surfacevariable_help")}
         </ComboBox>
@@ -242,19 +235,18 @@ const LineWindow = (props) => {
             />
           </div>
         )}
-        {props.compareDatasets &&
-          props.dataset0.variable === props.dataset1.variable && (
-            <ComboBox
-              id="colormap_diff"
-              state={diffColormap}
-              onUpdate={(_, value) => setDiffColormap(value)}
-              title={_("Diff. Colourmap")}
-              url="/api/v2.0/plot/colormaps"
-            >
-              {_("colourmap_help")}
-              <img src="/plot/colormaps.png/" alt="" />
-            </ComboBox>
-          )}
+        {props.compareDatasets && (
+          <ComboBox
+            id="colormap_diff"
+            state={diffColormap}
+            onUpdate={(_, value) => setDiffColormap(value)}
+            title={_("Diff. Colourmap")}
+            url="/api/v2.0/plot/colormaps"
+          >
+            {_("colourmap_help")}
+            <img src="/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
       </Card.Body>
     </Card>
   );
