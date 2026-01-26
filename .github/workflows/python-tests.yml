@@ -46,7 +46,7 @@ jobs:
         show-channel-urls: true
         use-only-tar-bz2: true
     - name: Update environment
-      run: mamba env update -f config/mamba/environment.yml --name test --quiet
+      run: mamba env update -f config/conda/environment.yml --name test --quiet
     - name: Run tests (activate)
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
