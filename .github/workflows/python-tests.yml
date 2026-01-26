@@ -40,14 +40,22 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         python-version: 3.13.5
-        installer-url: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+        # installer-url: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+        installer-url: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
         allow-softlinks: true
         show-channel-urls: true
         use-only-tar-bz2: true
     - name: Update environment
-      run: mamba env update -f config/mamba/environment.yml --name test --quiet
-    - name: Run tests
+      run: mamba env update -f config/conda/environment.yml --name test --quiet
+    - name: Run tests (activate)
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
+        # initialize mamba for the current bash shell
+        eval "$(mamba shell hook --shell bash)"
         mamba activate test
+        # optional sanity checks
+        which python
+        python --version
         ./run_python_tests.sh
+      shell: bash -l {0}
+

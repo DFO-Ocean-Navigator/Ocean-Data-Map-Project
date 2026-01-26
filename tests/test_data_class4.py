@@ -62,4 +62,4 @@ class TestListClass4Forecasts:
         class4_id = "class4_20201214_GIOPS_CONCEPTS_3.0_profile_541"
         class4_type = "ocean_predict"
         result = data.class4.list_class4_forecasts(class4_id, class4_type)
-        assert result == [{"id": "best", "name": "Best Estimate"}]
+        assert result == [{"id": "best", "value": "Best Estimate"}]
