@@ -214,7 +214,6 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    # @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_plot_map_endpoint(self):
         response = self.client.get(self.api_links["plot_map"])
         assert response.status_code == 200
@@ -231,7 +230,6 @@ class TestAPIv2:
         response = self.client.get(self.api_links["plot_map_quiver_color_mag"])
         assert response.status_code == 200
 
-    # @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_plot_transect_endpoint(self):
         response = self.client.get(self.api_links["plot_transect"])
         assert response.status_code == 200
@@ -295,7 +293,6 @@ class TestAPIv2:
         for resp in response:
             assert resp.status_code == 200
 
-    # @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_kml_file_endpoint(self):
         response = []
 
@@ -336,7 +333,6 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    # #@unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_topo_endpoint(self):
         response = self.client.get(
             "/api/v2.0/tiles/topo/4/4/5?shaded_relief=false&projection=EPSG:3857"
@@ -344,7 +340,6 @@ class TestAPIv2:
 
         assert response.status_code == 200
 
-    #@unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_quiver_endpoint(self):
         response = self.client.get(
             "api/v2.0/tiles/quiver/giops_real/magwatervel/2212444800/0/1/3/2/2",
@@ -357,7 +352,6 @@ class TestAPIv2:
         assert response.headers["Content-Type"] == "application/json"
         assert len(data["features"]) == 38
 
-    #@unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_bath_endpoint(self):
         response = self.client.get("api/v2.0/tiles/bath/4/5/5?projection=EPSG:3857")
 

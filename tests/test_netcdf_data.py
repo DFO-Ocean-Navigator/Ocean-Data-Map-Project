@@ -311,7 +311,6 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(
                 set(variables[0].dimensions), {"depth", "time", "latitude", "longitude"}
             )
-
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
 
