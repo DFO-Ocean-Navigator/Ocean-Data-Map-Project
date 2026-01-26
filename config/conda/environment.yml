@@ -1,4 +1,4 @@
-name: test
+name: navigator
 channels:
   - conda-forge
 dependencies:
@@ -376,4 +376,4 @@ dependencies:
   - pip:
     - visvalingamwyatt==0.3.0
 
-# prefix: "/home/ubuntu/miniforge3/envs/navigator"
+prefix: "/home/ubuntu/miniforge3/envs/navigator"
