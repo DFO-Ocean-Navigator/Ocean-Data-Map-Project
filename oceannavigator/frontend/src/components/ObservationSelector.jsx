@@ -174,6 +174,11 @@ function ObservationSelector(props) {
       })
       .join("&");
     if (type == "track") {
+      props.action("setObsQuery", {
+        startDate,
+        endDate,
+        quantum,
+      });
       props.action("loadFeatures", "observation_tracks", result);
     } else {
       props.action("loadFeatures", "observation_points", result);
@@ -359,7 +364,7 @@ function ObservationSelector(props) {
           <Card.Title>Depth Filter</Card.Title>
           <Form.Check
             type="switch"
-            id="platform-toggle"
+            id="depth-toggle"
             onClick={() => {
               setDepthActive(!depthActive);
             }}

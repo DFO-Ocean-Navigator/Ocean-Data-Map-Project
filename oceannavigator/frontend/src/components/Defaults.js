@@ -1,15 +1,22 @@
 const DATASET_DEFAULTS = Object.freeze({
   id: "giops_day",
-  attribution: "",
+  model_class: "Mercator",
+  attribution: "The Canadian Centre for Meteorological and Environmental Prediction",
   quantum: "day",
   depth: 0,
-  time: -1,
-  starttime: -1,
-  variable: "votemper",
-  quiverVariable: "None",
+  time: { id: -1, value: "" },
+  starttime: { id: -1, value: "" },
+  variable: {
+    id: "votemper",
+    value: "Potential Temperature",
+    scale: [-5, 30],
+    interp: null,
+    two_dimensional: false,
+    vector_variable: false,
+  },
+  quiverVariable: "none",
   quiverDensity: 0,
-  variable_scale: [-5, 30],
-  variable_two_dimensional: false,
+  value: "GIOPS 10 Day Daily Mean Forecast 3D - LatLon"
 });
 
 const MAP_DEFAULTS = Object.freeze({
@@ -22,4 +29,12 @@ const MAP_DEFAULTS = Object.freeze({
   bathyContour: "etopo1",
 });
 
-export { DATASET_DEFAULTS, MAP_DEFAULTS };
+const DATASET_FILTER_DEFAULTS = {
+  variable: "any",
+  vectorVariable: "none",
+  depth: "all",
+  date: null,
+  location: ["", ""],
+};
+
+export { DATASET_DEFAULTS, MAP_DEFAULTS, DATASET_FILTER_DEFAULTS };

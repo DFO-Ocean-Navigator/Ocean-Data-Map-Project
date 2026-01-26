@@ -3,4 +3,15 @@ div.ComboBox {
     font-size: small;
     font-weight: bold;
   }
+  .combobox-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .combobox-help-button {
+    padding: 0;
+  }
+  .form-select {
+    margin-top: 2px;
+  }
 }

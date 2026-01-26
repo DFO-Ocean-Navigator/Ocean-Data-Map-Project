@@ -5,7 +5,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-import DatasetSelector from "./DatasetSelector.jsx";
+import DatasetPanel from "./DatasetPanel.jsx";
 import DrawingTools from "./DrawingTools.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 
@@ -35,9 +35,7 @@ function MapInputs(props) {
       overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
     >
       <Button
-        className={`hide-data-button ${
-          props.compareDatasets ? "hide-data-button-compare" : ""
-        }`}
+        className="hide-data-button"
         onClick={() => {
           props.updateMapSettings(
             "hideDataLayer",
@@ -56,9 +54,9 @@ function MapInputs(props) {
       {observationTools}
       <div className="dataset-selector-container">
         <div className={"map-inputs"}>
-          <DatasetSelector
-            key="map_inputs_dataset_0"
-            id="dataset_0"
+          <DatasetPanel
+            key="map-inputs-dataset0-panel"
+            id="map-inputs-dataset0-panel"
             mountedDataset={props.dataset0}
             onUpdate={props.updateDataset0}
             mapSettings={props.mapSettings}
@@ -67,15 +65,15 @@ function MapInputs(props) {
             showTimeSlider={!props.compareDatasets}
             showCompare={props.showCompare}
             compareDatasets={props.compareDatasets}
-            showSearchBtn={true}
+            datasetSearch={true}
           />
           {props.showCompare ? hideDataSwitch : null}
         </div>
         {props.compareDatasets ? (
           <div className={"map-inputs"}>
-            <DatasetSelector
-              key="map_inputs_dataset_1"
-              id="dataset_1"
+            <DatasetPanel
+              key="map-inputs-dataset1-panel"
+              id="map-inputs-dataset1-panel"
               mountedDataset={props.dataset1}
               onUpdate={props.updateDataset1}
               mapSettings={props.mapSettings}

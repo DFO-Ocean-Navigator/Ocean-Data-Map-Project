@@ -471,7 +471,8 @@ def get_all_variables():
                 "dataset_id": dataset_key,
                 "variable_id": variable,
                 "variable_scale": scale,
-                "vector_variables": variable in config.vector_variables,
+                "vector_variables": variable in config.vector_variables
+                and config.model_class == "Mercator",
                 "depth": has_depth,
             }
 

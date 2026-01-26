@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Accordion, Card, Row, Col } from "react-bootstrap";
-import ComboBox from "./ComboBox.jsx";
-import CheckBox from "./lib/CheckBox.jsx";
-import ImageSize from "./ImageSize.jsx";
+import { Accordion, Card, Row, Col, Nav } from "react-bootstrap";
+import ComboBox from "../ComboBox.jsx";
+import CheckBox from "../lib/CheckBox.jsx";
+import ImageSize from "../ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
@@ -19,46 +19,9 @@ const Class4Window = ({
   const [showmap, setShowmap] = useState(init.showmap || false);
   const [climatology, setClimatology] = useState(init.climatology || false);
   const [error, setError] = useState(init.error || "none");
-  const [size, setSize] = useState(init.size || "10x7");
-  const [dpi, setDpi] = useState(init.dpi || 144);
+  const [plotSize, setPlotSize] = useState(init?.size || "10x7");
+  const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [models, setModels] = useState(init.models || []);
-
-  const plot_query = {
-    type: "class4",
-    class4type,
-    dataset,
-    forecast: forecast === "Best Estimate" ? "best" : forecast,
-    class4id: plotData.id,
-    showmap,
-    climatology,
-    error,
-    size,
-    dpi,
-    models,
-  };
-
-  const error_options = [
-    { id: "none", value: _("None") },
-    { id: "observation", value: _("Value - Observation") },
-    { id: "climatology", value: _("Value - Climatology") },
-  ];
-  //multi-select handler
-  const handleModelsUpdate = (_, value) => {
-    const newModel =
-      Array.isArray(value) && value[0]
-        ? Array.isArray(value[0])
-          ? value[0][0]
-          : value[0]
-        : null;
-
-    if (newModel) {
-      setModels((prev) =>
-        prev.includes(newModel)
-          ? prev.filter((m) => m !== newModel)
-          : [...prev, newModel]
-      );
-    }
-  };
 
   const handleErrorUpdate = (_, value) => {
     setError(
@@ -69,10 +32,53 @@ const Class4Window = ({
         : value || "none"
     );
   };
+
+  const updatePlotSize = (key, value) => {
+    if (key === "size") {
+      setPlotSize(value);
+    } else if (key === "dpi") {
+      setPlotDpi(value);
+    }
+  };
+
+  const plotQuery = {
+    class4type,
+    dataset,
+    forecast: forecast,
+    class4id: plotData.id,
+    showmap,
+    climatology,
+    error,
+    models,
+  };
+
+  const permlink_subquery = {
+    forecast,
+    showmap,
+    climatology,
+    error,
+    size: plotSize,
+    dpi: plotDpi,
+    models,
+  };
+
+  const error_options = [
+    { id: "none", value: _("None") },
+    { id: "observation", value: _("Value - Observation") },
+    { id: "climatology", value: _("Value - Climatology") },
+  ];
+
   return (
-    <div className="Class4Window Window">
-      <Row>
-        <Col lg={2}>
+    <div className="Class4Window">
+      <Nav variant="tabs" activeKey={1}>
+        <Nav.Item>
+          <Nav.Link eventKey={1} disabled>
+            {_("Class4")}
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
+      <Row className="plot-window-container">
+        <Col className="settings-col" lg={2}>
           <Card>
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
@@ -104,7 +110,7 @@ const Class4Window = ({
                 id="models"
                 state={models}
                 multiple
-                onUpdate={handleModelsUpdate}
+                onUpdate={(_, value) => setModels(value[0] || [])}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
                 title={_("Additional Models")}
               />
@@ -121,8 +127,7 @@ const Class4Window = ({
                 <Accordion.Body>
                   <ImageSize
                     id="size"
-                    state={size}
-                    onUpdate={(_, value) => setSize(value)}
+                    onUpdate={updatePlotSize}
                     title={_("Saved Image Size")}
                   />
                 </Accordion.Body>
@@ -130,19 +135,15 @@ const Class4Window = ({
             </Card.Body>
           </Card>
         </Col>
-        <Col lg={10}>
+        <Col lg={10} className="plot-col">
           <PlotImage
-            query={plot_query}
-            permlink_subquery={{
-              forecast,
-              showmap,
-              climatology,
-              error,
-              size,
-              dpi,
-              models,
-            }}
+            plotType="class4"
+            query={plotQuery}
+            permlink_subquery={permlink_subquery}
+            featureId={plotData.id}
             action={action}
+            size={plotSize}
+            dpi={plotDpi}
           />
         </Col>
       </Row>

@@ -1,3 +1,4 @@
+@import "ActivePlotsContainer";
 @import "AnnotationButton";
 @import "AnnotationOverlay";
 @import "AnnotationTextWindow";
@@ -6,13 +7,16 @@
 @import "AxisRange";
 @import "Class4Calendar";
 @import "Class4Selector";
+@import "Class4Window";
 @import "ColormapRange";
 @import "ComboBox";
 @import "CustomPlotLabels";
 @import "DailyCalendar";
-@import "DatasetDropdown";
+@import "DatasetPanel";
+@import "DatasetSearchWindow";
 @import "DatasetSelector";
 @import "DrawingTools";
+@import "MinimizedPlotBar";
 @import "ModifyFeaturesWindow";
 @import "FeatureCard";
 @import "ImageSize";
@@ -28,6 +32,7 @@
 @import "ObservationSelector";
 @import "ObservationTools";
 @import "OceanNavigator";
+@import "PlotImage";
 @import "PointWindow";
 @import "PresetFeaturesWindow";
 @import "ScaleViewer";
@@ -39,5 +44,3 @@
 @import "TimeSlider";
 @import "ToggleLanguage";
 @import "TransectLimiter";
-@import "PlotWindowManager";
-@import "PlotComponents"

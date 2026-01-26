@@ -44,12 +44,14 @@ function MapTools(props) {
         showDrawingTools: false,
         showObservationTools: true,
       });
+      props.action("stopFeatureDraw");
     } else {
       props.updateUI({
         showAnnotationTools: false,
         showDrawingTools: false,
         showObservationTools: false,
       });
+      props.action("stopFeatureDraw");
     }
   };
 

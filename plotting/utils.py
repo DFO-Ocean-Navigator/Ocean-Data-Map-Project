@@ -107,8 +107,6 @@ def _map_plot(points, grid_loc, path=True, quiver=True):
 
     plot_projection = ccrs.Mercator(
         central_longitude=np.mean([minlon, maxlon]),
-        min_latitude=minlat,
-        max_latitude=maxlat,
     )
     pc_projection = ccrs.PlateCarree()
 
