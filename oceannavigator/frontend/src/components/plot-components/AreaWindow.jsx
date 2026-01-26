@@ -27,9 +27,6 @@ const AreaWindow = (props) => {
   const [leftColormap, setLeftColormap] = useState(
     props.init?.leftColormap || "default"
   );
-  const [rightColormap, setRightColormap] = useState(
-    props.init?.rightColormap || "default"
-  );
   const [diffColormap, setDiffColormap] = useState(
     props.init?.colormap_diff || "default"
   );
@@ -159,6 +156,19 @@ const AreaWindow = (props) => {
             onUpdate={(_, s) => setScale(s)}
           />
         )}
+        {props.compareDatasets && !autoScale && (
+          <ComboBox
+            id="colormap_diff"
+            state={diffColormap}
+            onUpdate={(_, value) => setDiffColormap(value)}
+            title={_("Diff. Colourmap")}
+            url="/api/v2.0/plot/colormaps"
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
+
         {/* End of Compare Datasets options */}
         <CheckBox
           id="bathymetry"
@@ -225,17 +235,19 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset0}
         />
-        <ComboBox
-          id="leftColormap"
-          state={leftColormap}
-          def="default"
-          onUpdate={(_, value) => setLeftColormap(value)}
-          url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
-        >
-          {_("colourmap_help")}
-          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-        </ComboBox>
+        {!props.compareDatasets && (
+          <ComboBox
+            id="leftColormap"
+            state={leftColormap}
+            def="default"
+            onUpdate={(_, value) => setLeftColormap(value)}
+            url="/api/v2.0/plot/colormaps"
+            title={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
       </Card.Body>
     </Card>
   );
@@ -252,16 +264,6 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset1}
         />
-        <ComboBox
-          id="rightColormap"
-          state={rightColormap}
-          def="default"
-          onUpdate={(_, value) => setRightColormap(value)}
-          url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
-        >
-          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-        </ComboBox>
       </Card.Body>
     </Card>
   );
@@ -284,7 +286,9 @@ const AreaWindow = (props) => {
       dataset: props.dataset0.id,
       scale: scale.toString(),
       name: props.names[0],
-      colormap: leftColormap.toString(),
+      colormap: props.compareDatasets
+        ? diffColormap.toString()
+        : leftColormap.toString(),
       time: props.dataset0.time.id,
       area,
       depth: props.dataset0.depth,
@@ -306,7 +310,6 @@ const AreaWindow = (props) => {
             depth: props.dataset1.depth,
             scale: "auto",
             scale_diff: scale?.toString(),
-            colormap: rightColormap.toString(),
             colormap_diff: diffColormap.toString(),
           },
         }),
@@ -317,7 +320,6 @@ const AreaWindow = (props) => {
       scale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
-      rightColormap: rightColormap.toString(),
       colormap_diff: diffColormap.toString(),
       size: plotSize,
       dpi: plotDpi,
@@ -347,7 +349,9 @@ const AreaWindow = (props) => {
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
+            
             {_("Map")}
+          
           </Nav.Link>
         </Nav.Item>
       </Nav>
