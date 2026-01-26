@@ -286,7 +286,6 @@ const AreaWindow = (props) => {
       dataset: props.dataset0.id,
       scale: scale.toString(),
       name: props.names[0],
-      type: "map",
       colormap: props.compareDatasets
         ? diffColormap.toString()
         : leftColormap.toString(),
