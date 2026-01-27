@@ -98,6 +98,7 @@ function variableSelector({
       {stillHasVariablesToShow && (
         <SelectBox
           id={`dataset-selector-variable-selector-${id}`}
+          optionId="variable"
           label={t("Variable")}
           placeholder={t("Variable")}
           options={variables.data}

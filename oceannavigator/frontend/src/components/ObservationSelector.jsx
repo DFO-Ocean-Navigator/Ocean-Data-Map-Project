@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ComboBox from "./ComboBox.jsx";
+import SelectBox from "./lib/SelectBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider from "rc-slider";
@@ -247,25 +247,26 @@ function ObservationSelector(props) {
             </div>
 
             {points && (
-              <ComboBox
+              <SelectBox
                 key="dataType"
                 id="dataType"
-                state={dataType}
-                title="Data Type"
-                onUpdate={(key, value) => setDataType(value)}
-                data={dataTypes}
-                alwaysShow
+                optionId="dataType"
+                selected={dataType}
+                label="Data Type"
+                onChange={(key, value) => setDataType(value)}
+                options={dataTypes}
               />
             )}
 
             {!points && (
-              <ComboBox
+              <SelectBox
                 key="quantum"
                 id="quantum"
-                state={quantum}
-                title="Track Simplification"
-                onUpdate={(key, value) => setQuantum(value)}
-                data={[
+                optionId="quantum"
+                selected={quantum}
+                label="Track Simplification"
+                onChange={(key, value) => setQuantum(value)}
+                options={[
                   { id: "minute", value: "Minute" },
                   { id: "hour", value: "Hour" },
                   { id: "day", value: "Day" },
@@ -273,7 +274,6 @@ function ObservationSelector(props) {
                   { id: "month", value: "Month" },
                   { id: "year", value: "Year" },
                 ]}
-                alwaysShow
               />
             )}
           </div>
@@ -330,23 +330,24 @@ function ObservationSelector(props) {
         </Card.Header>
         <Card.Body>
           <div className="inputs">
-            <ComboBox
+            <SelectBox
               key="platformType"
               id="platformType"
-              state={platformType}
-              title={__("Platform Type")}
-              onUpdate={(key, value) => setPlatformType(value)}
-              data={PLATFORMS}
+              optionId="platformType"
+              selected={platformType}
+              label={__("Platform Type")}
+              onChange={(key, value) => setPlatformType(value)}
+              options={PLATFORMS}
               multiple
             />
-            <ComboBox
+            <SelectBox
               key="metaKey"
               id="metaKey"
-              state={metaKey}
-              title="Metadata Key"
-              onUpdate={(key, value) => setMetaKey(value)}
-              data={keys}
-              alwaysShow
+              optionId="metaKey"
+              selected={metaKey}
+              label="Metadata Key"
+              onChange={(key, value) => setMetaKey(value)}
+              options={keys}
             />
             <div className="input" style={{ width: "30em" }}>
               <h1>Metadata Value</h1>

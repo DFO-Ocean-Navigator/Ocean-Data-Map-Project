@@ -33,6 +33,7 @@ function DepthSelector({
   return depths.data.length > 0 ? (
     <SelectBox
       id={`dataset-selector-depth-selector-${id}`}
+      optionId="depth"
       label={t("Depth")}
       placeholder={t("Depth")}
       options={
