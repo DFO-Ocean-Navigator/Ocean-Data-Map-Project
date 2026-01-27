@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Form, Row, Col } from "react-bootstrap";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import fastEqual from "fast-deep-equal/es6/react";
 
 function SelectBox({
   id,
+  optionId,
   label,
   placeholder,
   options,
@@ -16,6 +17,16 @@ function SelectBox({
   horizontalLayout = false,
   t: _,
 }) {
+  const handleChange = (e) => {
+    let nextSelected = e.target.value;
+    if (multiple) {
+      nextSelected = [];
+      for (let opt of e.target.options) {
+        if (opt.selected) nextSelected.push(opt.value);
+      }
+    }
+    onChange(e.target.name, nextSelected);
+  };
 
   const opts = Array.isArray(options)
     ? options.map((opt) => (
@@ -25,8 +36,7 @@ function SelectBox({
       ))
     : null;
 
-  const disabled =
-    loading || !Array.isArray(options) || options.length === 0;
+  const disabled = loading || !Array.isArray(options) || options.length === 0;
 
   // choose layout element
   const FormGroup = horizontalLayout ? Row : Col;
@@ -35,28 +45,23 @@ function SelectBox({
     <Form.Group controlId={`formgroup-${id}-selectbox`} as={FormGroup}>
       <Form.Label column>{label}</Form.Label>
       <Form.Select
+        name={optionId}
         placeholder={disabled ? "Loading..." : placeholder}
-        onChange={(e) =>
-          multiple
-            ? onChange(e.target.name, e.target.selectedOptions)
-            : onChange(e.target.name, e.target.value)
-        }
+        onChange={handleChange}
         disabled={disabled}
         value={selected}
         multiple={multiple}
-        className={
-          horizontalLayout ? "form-select-horizontal" : "form-select"
-        }
+        className={horizontalLayout ? "form-select-horizontal" : "form-select"}
       >
         {opts}
       </Form.Select>
-
     </Form.Group>
   );
 }
 
 SelectBox.propTypes = {
   id: PropTypes.string.isRequired,
+  optionId: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   onChange: PropTypes.func.isRequired,
@@ -73,5 +78,5 @@ SelectBox.propTypes = {
 };
 
 export default withTranslation()(
-  React.memo(SelectBox, (prev, next) => fastEqual(prev, next))
+  React.memo(SelectBox, (prev, next) => fastEqual(prev, next)),
 );
