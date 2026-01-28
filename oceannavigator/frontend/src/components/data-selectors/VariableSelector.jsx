@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-import SelectBox from "../lib/SelectBox.jsx";
+import ComboBox from "../ComboBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
@@ -96,16 +96,15 @@ function variableSelector({
   return (
     <>
       {stillHasVariablesToShow && (
-        <SelectBox
-          id={`dataset-selector-variable-selector-${id}`}
-          optionId="variable"
+        <ComboBox
+          key={`${id}-variable-selector`}
+          id="variable"
           label={t("Variable")}
           placeholder={t("Variable")}
           options={variables.data}
           onChange={updateVariable}
           selected={selected}
           multiple={multipleVariables}
-          loading={variables.isLoading}
           horizontalLayout={horizontalLayout}
         />
       )}

@@ -29,12 +29,12 @@ const AreaQuiverSelector = ({
   return (
     <div className="QuiverSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
+        selected={state.variable}
+        onChange={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
-        title={title}
+        label={title}
         includeNone={true}
       >
         {children}

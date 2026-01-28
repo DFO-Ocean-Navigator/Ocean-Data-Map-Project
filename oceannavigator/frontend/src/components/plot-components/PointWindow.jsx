@@ -209,10 +209,10 @@ const PointWindow = ({
           key="observation_variable"
           id="observation_variable"
           multiple
-          state={observationVariable}
+          selected={observationVariable}
           url={`/api/v2.0/observation/variables/station=${plotData.coordinates[0][2]}.json`}
-          title={_("Observation Variable")}
-          onUpdate={(_, value) => setObservationVariable(value)}
+          label={_("Observation Variable")}
+          onChange={(_, value) => setObservationVariable(value)}
         />
       );
     } else {
@@ -225,10 +225,10 @@ const PointWindow = ({
           key="observation_variable"
           id="observation_variable"
           multiple
-          state={observationVariable}
-          data={data}
-          title={_("Observation Variable")}
-          onUpdate={(_, value) => setObservationVariable(value)}
+          selected={observationVariable}
+          options={data}
+          label={_("Observation Variable")}
+          onChange={(_, value) => setObservationVariable(value)}
         />
       );
     }
@@ -329,10 +329,10 @@ const PointWindow = ({
           <ComboBox
             key="colormap"
             id="colormap"
-            state={colormap}
-            onUpdate={(_, value) => setColormap(value)}
+            selected={colormap}
+            onChange={(_, value) => setColormap(value)}
             url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            label={_("Colourmap")}
           >
             {" "}
             <img src="/plot/colormaps.png/" alt="" />{" "}

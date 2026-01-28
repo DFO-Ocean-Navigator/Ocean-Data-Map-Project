@@ -63,12 +63,12 @@ const ContourSelector = ({
   return (
     <div className="ContourSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
+        selected={state.variable}
+        onChange={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables`}
-        title={title}
+        label={title}
         includeNone={true}
       >
         {children}
@@ -94,12 +94,12 @@ const ContourSelector = ({
 
         {!state.hatch && (
           <ComboBox
+            key="colormap"
             id="colormap"
-            state={state.colormap}
-            def=""
-            onUpdate={handleUpdate}
+            selected={state.colormap}
+            onChange={handleUpdate}
             url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            label={_("Colourmap")}
           >
             {_(
               "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Form } from "react-bootstrap";
 import Slider from "rc-slider";
 
-import SelectBox from "../lib/SelectBox.jsx";
+import ComboBox from "../ComboBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
@@ -45,18 +45,17 @@ function QuiverSelector({
 
   return (
     <div className="quiver-options">
-      <SelectBox
-        id={`${id}-quiver-selector`}
-        key="quiverVariable"
-        optionId="quiverVariable"
+      <ComboBox
+        key={`${id}-quiver-selector`}
+        id="quiverVariable"
         label={t("Quiver")}
         placeholder={t("Quiver Variable")}
         options={quiverOptions}
         onChange={updateQuiver}
         selected={dataset.quiverVariable}
-        loading={quiverVariables.status === "pending"}
         horizontalLayout={horizontalLayout}
       />
+
       <Form.Label>Quiver Density</Form.Label>
       <Slider
         range

@@ -185,12 +185,13 @@ const LineWindow = (props) => {
       <Card.Header>{_("Transect Settings")}</Card.Header>
       <Card.Body>
         <ComboBox
+          key="surfacevariable"
           id="surfacevariable"
-          state={surfaceVariable}
-          onUpdate={(_, value) => {
+          selected={surfaceVariable}
+          onChange={(_, value) => {
             setSurfaceVariable(value);
           }}
-          title={_("Surface Variable")}
+          label={_("Surface Variable")}
           url={`/api/v2.0/dataset/${props.dataset0.id}/variables`}
           includeNone={true}
         >
@@ -237,10 +238,11 @@ const LineWindow = (props) => {
         )}
         {props.compareDatasets && (
           <ComboBox
+            key="colormap_diff"
             id="colormap_diff"
-            state={diffColormap}
-            onUpdate={(_, value) => setDiffColormap(value)}
-            title={_("Diff. Colourmap")}
+            selected={diffColormap}
+            onChange={(_, value) => setDiffColormap(value)}
+            label={_("Diff. Colourmap")}
             url="/api/v2.0/plot/colormaps"
           >
             {_("colourmap_help")}
@@ -269,10 +271,11 @@ const LineWindow = (props) => {
           mountedDataset={props.dataset0}
         />
         <ComboBox
+          key="colormap"
           id="colormap"
-          state={mainColormap}
-          onUpdate={(_, value) => setMainColormap(value)}
-          title={_("Colourmap")}
+          selected={mainColormap}
+          onChange={(_, value) => setMainColormap(value)}
+          label={_("Colourmap")}
           url="/api/v2.0/plot/colormaps"
         >
           {_("colourmap_help")}
@@ -298,10 +301,11 @@ const LineWindow = (props) => {
           mountedDataset={props.dataset1}
         />
         <ComboBox
+          key="rightColormap"
           id="colormap_right"
-          state={rightColormap}
-          onUpdate={(_, value) => setRightColormap(value)}
-          title={_("Colourmap")}
+          selected={rightColormap}
+          onChange={(_, value) => setRightColormap(value)}
+          label={_("Colourmap")}
           url="/api/v2.0/plot/colormaps"
         >
           {_("colourmap_help")}

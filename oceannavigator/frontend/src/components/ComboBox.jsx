@@ -1,213 +1,124 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
+import { useGetComboBoxQuery } from "../remote/queries.js";
+
 function ComboBox({
   id,
-  title,
-  url,
-  data: incomingData,
-  state: propState,
-  onUpdate,
+  label,
+  url = null,
+  options = [],
+  placeholder = "",
+  selected,
+  onChange,
   multiple = false,
+  includeNone = false,
   alwaysShow = false,
-  def = "",
+  horizontalLayout = false,
   children,
   t: _,
 }) {
-  const [optionsData, setOptionsData] = useState([]);
   const [showHelp, setShowHelp] = useState(false);
 
-  useEffect(() => {
-    populate();
-  }, [url, incomingData]);
-
-  function populate() {
-    if (url) {
-      axios
-        .get(url)
-        .then((res) => {
-          let list = res.data.slice();
-          const ids = list.map((d) => d.id);
-
-          if (
-            (propState === "" && typeof propState === "string") ||
-            propState === "none"
-          ) {
-            if (!ids.includes("none"))
-              list.unshift({ id: "none", value: _("None") });
-          }
-          setOptionsData(list);
-          normalizeAndNotify(list);
-        })
-        .catch((err) => console.error(url, err));
-    } else if (Array.isArray(incomingData)) {
-      setOptionsData(incomingData);
-      normalizeAndNotify(incomingData);
-    } else {
-      setOptionsData([]);
-    }
+  let optionsData = options;
+  if (options.length === 0 && url) {
+    const response = useGetComboBoxQuery(url);
+    optionsData = [...response.data];
   }
+  includeNone && optionsData.unshift({ id: "", value: _("None") });
 
-  function normalizeAndNotify(list) {
-    const a = list.map((d) => d.id);
-    let value = propState;
-    const f = parseFloat(value);
-    const notIn = Array.isArray(value)
-      ? value.some((v) => !a.includes(v) && !a.includes(parseFloat(v)))
-      : !a.includes(value) && !a.includes(f);
-
-    if (notIn || (propState === "" && list.length) || propState === "all") {
-      if (multiple) {
-        value =
-          propState === "all"
-            ? a
-            : Array.isArray(propState)
-            ? propState
-            : [propState];
-      }
-    } else {
-      if (list.length === 0) value = def;
-      else if (list.length === 1) value = list[0].id;
-      else if (multiple && !Array.isArray(propState)) value = [propState];
-      else value = propState;
-    }
-
-    if (!multiple && !a.includes(value) && !a.includes(f) && list.length) {
-      value = a.includes(0) ? 0 : a[0];
-    }
-    if (typeof onUpdate === "function") {
-      onUpdate(id, value);
-      const idx = a.indexOf(value);
-      if (idx !== -1) {
-        const d = list[idx];
-        for (let k in d) {
-          if (k !== "id" && k !== "value" && d[k] != null) {
-            onUpdate(id + "_" + k, d[k]);
-          }
-        }
-      }
-    }
-  }
-
-  function handleChange(e) {
-    let value = e.target.value;
+  const handleChange = (e) => {
+    let nextSelected = e.target.value;
     if (multiple) {
-      value = [];
+      nextSelected = [];
       for (let opt of e.target.options) {
-        if (opt.selected) value.push(opt.value);
+        if (opt.selected) nextSelected.push(opt.value);
       }
     }
-    if (typeof onUpdate === "function") {
-      const keys = [id],
-        vals = [value];
-      if (e.target.selectedIndex !== -1) {
-        const ds = e.target.options[e.target.selectedIndex].dataset;
-        for (let k in ds) {
-          keys.push(id + "_" + k);
-          vals.push(ds[k]);
-        }
-      }
-      onUpdate(keys, vals);
-    }
-  }
 
-  const openHelp = () => setShowHelp(true);
-  const closeHelp = () => setShowHelp(false);
+    onChange(id, nextSelected);
+  };
 
-  const opts = optionsData.map((o) => {
-    const attrs = { key: o.id, value: o.id };
-    for (let k in o) {
-      if (k !== "id" && k !== "value" && o[k] != null) {
-        attrs["data-" + k] = o[k];
-      }
-    }
-    return <option {...attrs}>{o.value}</option>;
-  });
+  const selectOptions = optionsData.map((opt) => (
+    <option key={`option-${opt.id}`} value={opt.id}>
+      {opt.value}
+    </option>
+  ));
 
-  // only render if >1 entry or alwaysShow
-  if (optionsData.length > 1 || alwaysShow) {
-    let value = propState;
-    if (multiple && value === "all") value = optionsData.map((d) => d.id);
-    if (multiple && !Array.isArray(value)) value = [value];
-    if (!multiple && Array.isArray(value)) value = value[0];
-
-    const hasHelp =
-      React.Children.count(children) > 0 ||
-      (optionsData.length > 1 && optionsData[optionsData.length - 1].help);
-
-    const helpBlocks =
-      optionsData.length > 1 && optionsData[optionsData.length - 1].help
-        ? optionsData.map((d) => (
-            <p key={d.id}>
-              <em>{d.value}</em>
-              <span dangerouslySetInnerHTML={{ __html: d.help }} />
-            </p>
-          ))
-        : null;
-
+  if (options.length > 1 || alwaysShow) {
+    const hasHelp = false;
+    const helpOptions = null;
     return (
       <div className="ComboBox input">
-         <div className="combobox-title-row">
-          <h1 className="combobox-title">{title}</h1>
-          {hasHelp && <Button
-            variant="link"
-            className="combobox-help-button"
-            onClick={openHelp}
-            aria-label={_("Open help for {{title}}", { title })}
-          >
-            {_("?")}
-          </Button>}
+        <div className="combobox-label-row">
+          <h1 className="combobox-label">{label}</h1>
+          {hasHelp && (
+            <Button
+              variant="link"
+              className="combobox-help-button"
+              onClick={() => setShowHelp(true)}
+              aria-label={_("Open help for {{label}}", { label })}
+            >
+              {_("?")}
+            </Button>
+          )}
         </div>
 
-        <Modal show={showHelp} onHide={closeHelp} dialogClassName="helpdialog">
+        <Modal
+          show={showHelp}
+          onHide={() => setShowHelp(false)}
+          dialogClassName="helpdialog"
+        >
           <Modal.Header closeButton>
-            <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
+            <Modal.Title>{_("titlehelp", { label })}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {children}
-            {helpBlocks}
+            {helpOptions}
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={closeHelp}>
-              <Icon icon="close" /> {_(`Close`)}
+            <Button onClick={() => setShowHelp(false)}>
+              <Icon icon="close" /> {_("Close")}
             </Button>
           </Modal.Footer>
         </Modal>
 
         <Form.Select
-          size={Math.min(10, multiple ? optionsData.length : 1)}
-          value={value}
+          className={
+            horizontalLayout ? "form-select-horizontal" : "form-select"
+          }
+          size={Math.min(10, multiple ? options.length : 1)}
+          placeholder={placeholder}
+          value={selected}
           onChange={handleChange}
           multiple={multiple}
         >
-          {opts}
+          {selectOptions}
         </Form.Select>
-
       </div>
     );
   }
-
-  return null;
 }
 
 ComboBox.propTypes = {
   id: PropTypes.string,
-  title: PropTypes.string,
+  label: PropTypes.string,
   url: PropTypes.string,
-  data: PropTypes.array,
-  state: PropTypes.oneOfType([
+  options: PropTypes.array,
+  selected: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
     PropTypes.array,
   ]),
-  onUpdate: PropTypes.func,
+  onChange: PropTypes.func,
   multiple: PropTypes.bool,
+  includeNone: PropTypes.bool,
   alwaysShow: PropTypes.bool,
-  def: PropTypes.string,
+  horizontalLayout: PropTypes.bool,
+  placeholder: PropTypes.string,
   children: PropTypes.node,
   t: PropTypes.func.isRequired,
 };

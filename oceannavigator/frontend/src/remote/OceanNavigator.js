@@ -13,14 +13,14 @@ export async function GetVariablesPromise(dataset, vectorsOnly) {
   const response = await instance.get(
     `/api/v2.0/dataset/${dataset}/variables${
       vectorsOnly ? "?vectors_only=True" : ""
-    }`
+    }`,
   );
   return response.data;
 }
 
 export async function GetTimestampsPromise(dataset, variable) {
   const response = await instance.get(
-    "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps"
+    "/api/v2.0/dataset/" + dataset + "/" + variable + "/timestamps",
   );
   return response.data;
 }
@@ -31,7 +31,7 @@ export async function GetDepthsPromise(dataset, variable) {
       params: {
         include_all_key: true,
       },
-    }
+    },
   );
   return response.data;
 }
@@ -69,7 +69,7 @@ export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   }
 
   const response = await instance.get(
-    `/api/v2.0/datasets/filter/date?${params.toString()}`
+    `/api/v2.0/datasets/filter/date?${params.toString()}`,
   );
   return response.data;
 }
@@ -78,7 +78,7 @@ export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
 export async function FilterDatasetsByLocationPromise(
   datasetIds,
   latitude,
-  longitude
+  longitude,
 ) {
   const params = new URLSearchParams({
     latitude: latitude.toString(),
@@ -90,14 +90,14 @@ export async function FilterDatasetsByLocationPromise(
   }
 
   const response = await instance.get(
-    `/api/v2.0/datasets/filter/location?${params.toString()}`
+    `/api/v2.0/datasets/filter/location?${params.toString()}`,
   );
   return response.data;
 }
 
 export async function GetTrackTimeRangePromise(track) {
   const response = await instance.get(
-    `/api/v2.0/observation/tracktimerange/${track}.json`
+    `/api/v2.0/observation/tracktimerange/${track}.json`,
   );
 
   return response.data;
@@ -108,6 +108,15 @@ export async function GetPlotImagePromise(plotType, query) {
     method: "get",
     url: `/api/v2.0/plot/${plotType}`,
     params: { query: JSON.stringify(query), format: "json" },
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
+}
+
+export async function GetComboBoxQuery(url) {
+  const queryConfig = {
+    method: "get",
+    url: url,
   };
   const response = await axios.request(queryConfig);
   return response.data;

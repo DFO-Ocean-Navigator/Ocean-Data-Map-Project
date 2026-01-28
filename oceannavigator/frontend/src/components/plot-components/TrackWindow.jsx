@@ -113,11 +113,10 @@ const TrackWindow = (props) => {
                   key="trackvariable"
                   id="trackvariable"
                   multiple
-                  state={trackvariable}
-                  def=""
-                  onUpdate={(_, value) => setTrackVariable(value.flat())}
+                  selected={trackvariable}
+                  onChange={(_, value) => setTrackVariable(value.flat())}
                   url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
-                  title={_("Observed Variable")}
+                  label={_("Observed Variable")}
                 >
                   <h1>Track Variable</h1>
                 </ComboBox>
@@ -149,9 +148,9 @@ const TrackWindow = (props) => {
                 <ComboBox
                   key="quantum"
                   id="quantum"
-                  state={quantum}
-                  title="Track Simplification"
-                  onUpdate={updateQuantum}
+                  selected={quantum}
+                  label="Track Simplification"
+                  onChange={updateQuantum}
                   data={[
                     { id: "minute", value: "Minute" },
                     { id: "hour", value: "Hour" },

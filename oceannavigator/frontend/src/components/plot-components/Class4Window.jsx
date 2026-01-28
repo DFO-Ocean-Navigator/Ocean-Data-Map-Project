@@ -84,12 +84,12 @@ const Class4Window = ({
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
+                key="forecast"
                 id="forecast"
-                state={forecast}
-                def=""
+                selected={forecast}
                 url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
-                title={_("Forecast")}
-                onUpdate={(_, value) => setForecast(value)}
+                label={_("Forecast")}
+                onChange={(_, value) => setForecast(value)}
               />
               <CheckBox
                 id="showmap"
@@ -108,14 +108,16 @@ const Class4Window = ({
                 {_("climatology_help")}
               </CheckBox>
               <ComboBox
+                key="models"
                 id="models"
-                state={models}
+                selected={models}
                 multiple
-                onUpdate={(_, value) => setModels(value)}
+                onChange={(_, value) => setModels(value)}
                 url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
-                title={_("Additional Models")}
+                label={_("Additional Models")}
               />
-              <SelectBox
+              <ComboBox
+                key="error"
                 id="error"
                 selected={error}
                 options={error_options}

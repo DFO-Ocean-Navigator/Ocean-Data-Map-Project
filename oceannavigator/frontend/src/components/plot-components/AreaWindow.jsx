@@ -226,12 +226,13 @@ const AreaWindow = (props) => {
           mountedDataset={props.dataset0}
         />
         <ComboBox
+          key="leftColormap"
           id="leftColormap"
-          state={leftColormap}
-          def="default"
-          onUpdate={(_, value) => setLeftColormap(value)}
+          selected={leftColormap}
+          placeholder="default"
+          onChange={(_, value) => setLeftColormap(value)}
           url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
+          label={_("Colourmap")}
         >
           {_("colourmap_help")}
           <img src="/api/v2.0/plot/colormaps.png/" alt="" />
@@ -253,12 +254,13 @@ const AreaWindow = (props) => {
           mountedDataset={props.dataset1}
         />
         <ComboBox
+          key="rightColormap"
           id="rightColormap"
-          state={rightColormap}
-          def="default"
-          onUpdate={(_, value) => setRightColormap(value)}
+          selected={rightColormap}
+          placeholder="default"
+          onChange={(_, value) => setRightColormap(value)}
           url="/api/v2.0/plot/colormaps"
-          title={_("Colourmap")}
+          label={_("Colourmap")}
         >
           <img src="/api/v2.0/plot/colormaps.png/" alt="" />
         </ComboBox>
