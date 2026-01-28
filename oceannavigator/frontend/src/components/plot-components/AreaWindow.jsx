@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Accordion, Button, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ContourSelector from "../ContourSelector.jsx";
@@ -235,19 +235,18 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset0}
         />
-        {!props.compareDatasets && (
-          <ComboBox
-            id="leftColormap"
-            state={leftColormap}
-            def="default"
-            onUpdate={(_, value) => setLeftColormap(value)}
-            url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
-          >
-            {_("colourmap_help")}
-            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-          </ComboBox>
-        )}
+        <ComboBox
+          key="leftColormap"
+          id="leftColormap"
+          selected={leftColormap}
+          placeholder="default"
+          onChange={(_, value) => setLeftColormap(value)}
+          url="/api/v2.0/plot/colormaps"
+          label={_("Colourmap")}
+        >
+          {_("colourmap_help")}
+          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+        </ComboBox>
       </Card.Body>
     </Card>
   );

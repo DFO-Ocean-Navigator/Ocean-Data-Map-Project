@@ -1,9 +1,17 @@
 import React from "react";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const AreaQuiverSelector = ({
+  state,
+  dataset,
+  id,
+  title,
+  children,
+  onUpdate,
+  t: _,
+}) => {
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
@@ -21,12 +29,13 @@ const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: 
   return (
     <div className="QuiverSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
+        selected={state.variable}
+        onChange={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
-        title={title}
+        label={title}
+        includeNone={true}
       >
         {children}
       </ComboBox>
@@ -49,6 +58,7 @@ const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: 
     </div>
   );
 };
+
 //***********************************************************************
 AreaQuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,

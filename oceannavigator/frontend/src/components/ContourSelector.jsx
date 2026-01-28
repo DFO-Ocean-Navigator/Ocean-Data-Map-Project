@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import ComboBox from "./ComboBox.jsx";
+import ComboBox from "./lib/ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
@@ -29,7 +29,7 @@ const ContourSelector = ({
       });
       onUpdate(id, { ...state, ...patch });
     },
-    [id, onUpdate, state]
+    [id, onUpdate, state],
   );
 
   // Debounced levels change
@@ -40,7 +40,7 @@ const ContourSelector = ({
     setTypingTimeout(
       setTimeout(() => {
         handleUpdate("levels", val);
-      }, 500)
+      }, 500),
     );
   };
 
@@ -63,12 +63,13 @@ const ContourSelector = ({
   return (
     <div className="ContourSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
+        selected={state.variable}
+        onChange={handleUpdate}
         url={`/api/v2.0/dataset/${dataset}/variables`}
-        title={title}
+        label={title}
+        includeNone={true}
       >
         {children}
       </ComboBox>
@@ -93,15 +94,15 @@ const ContourSelector = ({
 
         {!state.hatch && (
           <ComboBox
+            key="colormap"
             id="colormap"
-            state={state.colormap}
-            def=""
-            onUpdate={handleUpdate}
+            selected={state.colormap}
+            onChange={handleUpdate}
             url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            label={_("Colourmap")}
           >
             {_(
-              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable."
+              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
             )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
           </ComboBox>

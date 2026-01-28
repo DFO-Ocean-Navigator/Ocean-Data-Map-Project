@@ -8,6 +8,7 @@ import {
   GetPlotImagePromise,
   GetAllVariablesPromise,
   GetTrackTimeRangePromise,
+  GetComboBoxQuery,
   FilterDatasetsByDatePromise,
   FilterDatasetsByLocationPromise,
 } from "./OceanNavigator.js";
@@ -33,7 +34,7 @@ export function useGetAllVariables() {
 export function useGetDatasetVariables(
   dataset,
   enabled = true,
-  vectorsOnly = false
+  vectorsOnly = false,
 ) {
   const { data = [], status } = useQuery({
     queryKey: ["dataset", "variables", dataset.id, vectorsOnly],
@@ -96,7 +97,7 @@ export function useLocationFilter(datasetIds, location, enabled) {
       FilterDatasetsByLocationPromise(
         datasetIds,
         location[0],
-        (parseFloat(location[1]) + 360) % 360
+        (parseFloat(location[1]) + 360) % 360,
       ),
     enabled: enabled,
   });
@@ -107,6 +108,15 @@ export function useGetTrackTimeRange(trackId) {
   const { data = [], status } = useQuery({
     queryKey: ["observations", "trackTimeRange", trackId],
     queryFn: () => GetTrackTimeRangePromise(trackId),
+  });
+
+  return { data, status };
+}
+
+export function useGetComboBoxQuery(url) {
+  const { data = [], status } = useQuery({
+    queryKey: ["comboBox", url],
+    queryFn: () => GetComboBoxQuery(url),
   });
 
   return { data, status };
