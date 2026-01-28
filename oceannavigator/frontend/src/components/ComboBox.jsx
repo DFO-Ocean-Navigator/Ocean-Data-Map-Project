@@ -52,7 +52,9 @@ function ComboBox({
     const hasHelp = false;
     const helpOptions = null;
     return (
-      <div className="ComboBox input">
+      <div
+        className={`combobox combobox-${horizontalLayout ? "horizontal" : "vertical"}`}
+      >
         <div className="combobox-label-row">
           <h1 className="combobox-label">{label}</h1>
           {hasHelp && (

@@ -1,17 +1,33 @@
-div.ComboBox {
-  .combobox-title {
+div.combobox {
+  .combobox-label {
     font-size: small;
     font-weight: bold;
   }
-  .combobox-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .combobox-label-row {
+    margin: 10px 0px;
   }
   .combobox-help-button {
     padding: 0;
   }
   .form-select {
     margin-top: 2px;
+  }
+}
+
+.combobox-vertical {
+  width: 100%;
+}
+
+.combobox-horizontal {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  margin: 5px;
+  .combobox-label-row {
+    margin: 0px 10px;
+  }
+  .form-select {
+    margin-top: 0;
+    width: auto;
   }
 }

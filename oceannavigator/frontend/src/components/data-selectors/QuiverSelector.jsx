@@ -44,7 +44,7 @@ function QuiverSelector({
   }
 
   return (
-    <div className="quiver-options">
+    <div className="quiver-selector">
       <ComboBox
         key={`${id}-quiver-selector`}
         id="quiverVariable"
@@ -56,8 +56,9 @@ function QuiverSelector({
         horizontalLayout={horizontalLayout}
       />
 
-      <Form.Label>Quiver Density</Form.Label>
+      <Form.Label className="quiver-slider-label">Quiver Density</Form.Label>
       <Slider
+        className="quiver-slider"
         range
         allowCross={false}
         min={-1}
