@@ -1,9 +1,7 @@
 import React, { forwardRef } from "react";
 import PropTypes from "prop-types";
-import Dropdown from "react-bootstrap/Dropdown";
-import Form from "react-bootstrap/Form";
-import InputGroup from "react-bootstrap/InputGroup";
-import { Accordion, Row, Col } from "react-bootstrap";
+import { Accordion, Dropdown, Form } from "react-bootstrap";
+
 import { useGetDatasets } from "../../remote/queries";
 
 import { withTranslation } from "react-i18next";
@@ -19,15 +17,14 @@ const CustomToggle = React.forwardRef(
         onClick(e);
       }}
     >
-      <label className="dd-toggle-label">{children}</label>
-      <div className="dd-toggle-caret" />
+      <label className="dataset-selector-toggle-label">{children}</label>
     </button>
-  )
+  ),
 );
 
 const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   <button
-    className="dd-option-button"
+    className="dataset-selector-option-button"
     href=""
     ref={ref}
     onClick={(e) => {
@@ -39,12 +36,7 @@ const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   </button>
 ));
 
-function DatasetSelector({
-  updateDataset,
-  selected,
-  horizontalLayout,
-  t,
-}) {
+function DatasetSelector({ updateDataset, selected, horizontalLayout, t }) {
   const datasets = useGetDatasets();
 
   const selectHandler = (dataset) => {
@@ -74,7 +66,10 @@ function DatasetSelector({
           return d.subgroup === submenu;
         });
         options.push([
-          <label key={`label_${submenu}`} className="dd-subgroup-label">
+          <label
+            key={`label_${submenu}`}
+            className="dataset-selector-subgroup-label"
+          >
             {submenu}
           </label>,
           ...subDatasets.map((sd) => (
@@ -92,8 +87,10 @@ function DatasetSelector({
       dropdownItems.push(
         <Accordion id={`accordion_${menu}`} key={`accordion_${menu}`}>
           <Accordion.Header>{menu}</Accordion.Header>
-          <Accordion.Body className="dd-group">{options}</Accordion.Body>
-        </Accordion>
+          <Accordion.Body className="dataset-selector-group">
+            {options}
+          </Accordion.Body>
+        </Accordion>,
       );
     }
 
@@ -102,21 +99,24 @@ function DatasetSelector({
     })[0].value;
   }
 
-  const formLayout = horizontalLayout ? Row : Col;
-
   return (
-    <div className={`dd-group ${horizontalLayout ? "" : "vertical"}`}>
-      <InputGroup as={formLayout}>
-        <Form.Label column className="dd-label">
-          {t("Dataset")}
-        </Form.Label>
-        <Dropdown>
-          <Dropdown.Toggle className={"dd-toggle"} as={CustomToggle}>
-            {title}
-          </Dropdown.Toggle>
-          <Dropdown.Menu className="dd-menu">{dropdownItems}</Dropdown.Menu>
-        </Dropdown>
-      </InputGroup>
+    <div
+      className={`dataset-selector dataset-selector-${horizontalLayout ? "horizontal" : "vertical"}`}
+    >
+      <div className="dataset-selector-label-row">
+        <h1 className="dataset-selector-label"> {t("Dataset")}</h1>
+      </div>
+      <Dropdown>
+        <Dropdown.Toggle
+          className="form-select dataset-selector-toggle"
+          as={CustomToggle}
+        >
+          {title}
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="dataset-selector-menu">
+          {dropdownItems}
+        </Dropdown.Menu>
+      </Dropdown>
     </div>
   );
 }
