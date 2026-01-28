@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Accordion, Button, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ContourSelector from "../ContourSelector.jsx";

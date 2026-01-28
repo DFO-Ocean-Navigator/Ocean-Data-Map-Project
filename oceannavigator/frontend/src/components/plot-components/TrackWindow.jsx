@@ -4,7 +4,7 @@ import { Card, Col, Row, Nav } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PropTypes from "prop-types";

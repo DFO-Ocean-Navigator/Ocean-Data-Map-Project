@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import LocationInput from "../LocationInput.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";

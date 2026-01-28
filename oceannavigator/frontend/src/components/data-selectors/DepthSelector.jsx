@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetDepths } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-import Icon from "./lib/Icon.jsx";
+import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-import { useGetComboBoxQuery } from "../remote/queries.js";
+import { useGetComboBoxQuery } from "../../remote/queries.js";
 
 function ComboBox({
   id,
@@ -89,9 +89,7 @@ function ComboBox({
         </Modal>
 
         <Form.Select
-          className={
-            horizontalLayout ? "form-select-horizontal" : "form-select"
-          }
+          className={`combobox-select ${multiple ? "combobox-select-multiple" : ""}`}
           size={Math.min(10, multiple ? options.length : 1)}
           placeholder={placeholder}
           value={selected}

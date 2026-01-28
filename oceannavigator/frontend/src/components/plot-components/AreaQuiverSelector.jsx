@@ -1,5 +1,5 @@
 import React from "react";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
@@ -58,6 +58,7 @@ const AreaQuiverSelector = ({
     </div>
   );
 };
+
 //***********************************************************************
 AreaQuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,

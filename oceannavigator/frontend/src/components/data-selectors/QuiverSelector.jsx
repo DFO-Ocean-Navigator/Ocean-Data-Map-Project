@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Form } from "react-bootstrap";
 import Slider from "rc-slider";
 
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";

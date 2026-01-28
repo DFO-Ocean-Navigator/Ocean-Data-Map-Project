@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import ComboBox from "./ComboBox.jsx";
+import ComboBox from "./lib/ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";

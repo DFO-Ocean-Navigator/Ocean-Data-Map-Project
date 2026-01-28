@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import SelectBox from "./lib/SelectBox.jsx";
+import ComboBox from "./lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import Slider from "rc-slider";
@@ -247,10 +247,9 @@ function ObservationSelector(props) {
             </div>
 
             {points && (
-              <SelectBox
+              <ComboBox
                 key="dataType"
                 id="dataType"
-                optionId="dataType"
                 selected={dataType}
                 label="Data Type"
                 onChange={(key, value) => setDataType(value)}
@@ -259,10 +258,9 @@ function ObservationSelector(props) {
             )}
 
             {!points && (
-              <SelectBox
+              <ComboBox
                 key="quantum"
                 id="quantum"
-                optionId="quantum"
                 selected={quantum}
                 label="Track Simplification"
                 onChange={(key, value) => setQuantum(value)}
@@ -330,20 +328,18 @@ function ObservationSelector(props) {
         </Card.Header>
         <Card.Body>
           <div className="inputs">
-            <SelectBox
+            <ComboBox
               key="platformType"
               id="platformType"
-              optionId="platformType"
               selected={platformType}
               label={__("Platform Type")}
               onChange={(key, value) => setPlatformType(value)}
               options={PLATFORMS}
               multiple
             />
-            <SelectBox
+            <ComboBox
               key="metaKey"
               id="metaKey"
-              optionId="metaKey"
               selected={metaKey}
               label="Metadata Key"
               onChange={(key, value) => setMetaKey(value)}
