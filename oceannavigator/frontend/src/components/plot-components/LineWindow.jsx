@@ -11,6 +11,9 @@ import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+
+import { useGetDatasetVariables } from "../../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
 
 const LineWindow = (props) => {

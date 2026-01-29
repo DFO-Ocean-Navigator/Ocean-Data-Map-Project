@@ -4,6 +4,9 @@ div.combobox {
     font-weight: bold;
   }
   .combobox-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin: 10px 0px;
   }
   .combobox-help-button {

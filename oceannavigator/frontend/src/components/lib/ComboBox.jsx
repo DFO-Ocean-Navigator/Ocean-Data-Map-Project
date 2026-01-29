@@ -49,8 +49,21 @@ function ComboBox({
   ));
 
   if (selectOptions.length > 1 || alwaysShow) {
-    const hasHelp = false;
-    const helpOptions = null;
+    const hasHelp =
+      React.Children.count(children) > 0 ||
+      (selectOptions.length > 1 &&
+        selectOptions[selectOptions.length - 1].help);
+
+    const helpOptions =
+      selectOptions.length > 1 && selectOptions[selectOptions.length - 1].help
+        ? selectOptions.map((d) => (
+            <p key={d.id}>
+              <em>{d.value}</em>
+              <span dangerouslySetInnerHTML={{ __html: d.help }} />
+            </p>
+          ))
+        : null;
+
     return (
       <div
         className={`combobox combobox-${horizontalLayout ? "horizontal" : "vertical"}`}
@@ -75,7 +88,7 @@ function ComboBox({
           dialogClassName="helpdialog"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{_("titlehelp", { label })}</Modal.Title>
+            <Modal.Title>{_("titlehelp", { title: label })}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {children}
