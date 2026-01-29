@@ -63,6 +63,8 @@ const LineWindow = (props) => {
     props.init?.show_profile || false,
   );
 
+  const variables = useGetDatasetVariables(props.dataset0.id);
+
   useEffect(() => {
     if (props.compareDatasets && showProfile) {
       setShowProfile(false);
@@ -192,7 +194,7 @@ const LineWindow = (props) => {
             setSurfaceVariable(value);
           }}
           label={_("Surface Variable")}
-          url={`/api/v2.0/dataset/${props.dataset0.id}/variables`}
+          options={variables.data}
           includeNone={true}
         >
           {_("surfacevariable_help")}
@@ -302,7 +304,7 @@ const LineWindow = (props) => {
         />
         <ComboBox
           key="rightColormap"
-          id="colormap_right"
+          id="rightColormap"
           selected={rightColormap}
           onChange={(_, value) => setRightColormap(value)}
           label={_("Colourmap")}

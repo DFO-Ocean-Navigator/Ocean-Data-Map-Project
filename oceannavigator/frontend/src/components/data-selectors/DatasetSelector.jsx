@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 import PropTypes from "prop-types";
-import { Accordion, Dropdown, Form } from "react-bootstrap";
+import { Accordion, Dropdown } from "react-bootstrap";
 
 import { useGetDatasets } from "../../remote/queries";
 

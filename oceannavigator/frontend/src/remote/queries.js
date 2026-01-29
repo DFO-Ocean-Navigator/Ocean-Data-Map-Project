@@ -9,6 +9,10 @@ import {
   GetAllVariablesPromise,
   GetTrackTimeRangePromise,
   GetComboBoxQuery,
+  GetClass4ForecastsPromise,
+  GetClass4ModelsPromise,
+  GetObservationVariablesStationPromise,
+  GetObservationVariablesPlatformPromise,
   FilterDatasetsByDatePromise,
   FilterDatasetsByLocationPromise,
 } from "./OceanNavigator.js";
@@ -117,6 +121,44 @@ export function useGetComboBoxQuery(url) {
   const { data = [], status } = useQuery({
     queryKey: ["comboBox", url],
     queryFn: () => GetComboBoxQuery(url),
+  });
+
+  return { data, status };
+}
+
+export function useGetClass4Forecasts(class4Type, class4Id) {
+  const { data = [], status } = useQuery({
+    queryKey: ["class4", "forecasts", class4Type, class4Id],
+    queryFn: () => GetClass4ForecastsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationVariablesStation(stationId, enabled = true) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "variables", "station",stationId],
+    queryFn: () => GetObservationVariablesStationPromise(stationId),
+    enabled: enabled,
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationVariablesPlatform(platformId, enabled = true) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "variables", "platform", platformId],
+    queryFn: () => GetObservationVariablesPlatformPromise(platformId),
+    enabled: enabled,
+  });
+
+  return { data, status };
+}
+
+export function useGetClass4Models(class4Type, class4Id) {
+  const { data = [], status } = useQuery({
+    queryKey: ["class4", "models", class4Type, class4Id],
+    queryFn: () => GetClass4ModelsPromise(class4Type, class4Id),
   });
 
   return { data, status };

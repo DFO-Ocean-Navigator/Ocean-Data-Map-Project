@@ -188,7 +188,7 @@ const AreaWindow = (props) => {
           id="quiver"
           state={quiver}
           onUpdate={handleQuiverUpdate}
-          dataset={props.dataset0.id}
+          dataset={props.dataset0}
           title={_("Arrows")}
         >
           {_("arrows_help")}
@@ -199,7 +199,7 @@ const AreaWindow = (props) => {
           id="contour"
           state={contour}
           onUpdate={handleContourUpdate}
-          dataset={props.dataset0.id}
+          dataset={props.dataset0}
           title={_("Additional Contours")}
         >
           {_("contour_help")}

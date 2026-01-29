@@ -23,7 +23,7 @@ function ComboBox({
 }) {
   const [showHelp, setShowHelp] = useState(false);
 
-  let optionsData = options;
+  let optionsData = [...options];
   if (options.length === 0 && url) {
     const response = useGetComboBoxQuery(url);
     optionsData = [...response.data];
@@ -48,7 +48,7 @@ function ComboBox({
     </option>
   ));
 
-  if (options.length > 1 || alwaysShow) {
+  if (selectOptions.length > 1 || alwaysShow) {
     const hasHelp = false;
     const helpOptions = null;
     return (
@@ -90,7 +90,7 @@ function ComboBox({
 
         <Form.Select
           className={`combobox-select ${multiple ? "combobox-select-multiple" : ""}`}
-          size={Math.min(10, multiple ? options.length : 1)}
+          size={Math.min(10, multiple ? selectOptions.length : 1)}
           placeholder={placeholder}
           value={selected}
           onChange={handleChange}

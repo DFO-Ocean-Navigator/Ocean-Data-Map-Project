@@ -5,13 +5,19 @@ div.axis-range {
   .range-label {
     margin: 10px 0px;
     font-size: small;
+    font-weight: bold;
   }
 
   .range-table {
     display: flex;
+    margin: 5px;
   }
 
   .range-input {
     width: 90px;
+  }
+
+  .default-button-container {
+    padding: 2px;
   }
 }

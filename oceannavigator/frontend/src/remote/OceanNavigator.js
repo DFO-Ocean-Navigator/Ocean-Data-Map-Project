@@ -113,10 +113,46 @@ export async function GetPlotImagePromise(plotType, query) {
   return response.data;
 }
 
-export async function GetComboBoxQuery(url) {
+export async function GetComboBoxQueryPromise(url) {
   const queryConfig = {
     method: "get",
     url: url,
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
+}
+
+export async function GetClass4ForecastsPromise(class4Type, class4Id) {
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/class4/forecasts/${class4Type}?id=${class4Id}`,
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
+}
+
+export async function GetObservationVariablesStationPromise(stationId){
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/observation/variables/station=${stationId}.json`,
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
+}
+
+export async function GetObservationVariablesPlatformPromise(platformId){
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/observation/variables/platform=${platformId}.json`,
+  };
+  const response = await axios.request(queryConfig);
+  return response.data;
+}
+
+export async function GetClass4ModelsPromise(class4Type, class4Id) {
+  const queryConfig = {
+    method: "get",
+    url: `/api/v2.0/class4/models/${class4Type}?id=${class4Id}`,
   };
   const response = await axios.request(queryConfig);
   return response.data;

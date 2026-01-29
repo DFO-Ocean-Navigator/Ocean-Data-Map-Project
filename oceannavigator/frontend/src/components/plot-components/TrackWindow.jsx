@@ -9,7 +9,10 @@ import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PropTypes from "prop-types";
 import DatasetPanel from "../DatasetPanel.jsx";
-import { useGetTrackTimeRange } from "../../remote/queries.js";
+import {
+  useGetTrackTimeRange,
+  useGetObservationVariablesPlatform,
+} from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -25,6 +28,9 @@ const TrackWindow = (props) => {
   const [plotDpi, setPlotDpi] = useState(144);
 
   const trackTimeRange = useGetTrackTimeRange(props.plotData.id);
+  const observationVariables = useGetObservationVariablesPlatform(
+    props.plotData.id,
+  );
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
@@ -115,8 +121,9 @@ const TrackWindow = (props) => {
                   multiple
                   selected={trackvariable}
                   onChange={(_, value) => setTrackVariable(value.flat())}
-                  url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
+                  options={observationVariables.data}
                   label={_("Observed Variable")}
+                  alwaysShow={true}
                 >
                   <h1>Track Variable</h1>
                 </ComboBox>

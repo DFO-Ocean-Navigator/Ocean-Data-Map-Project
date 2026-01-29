@@ -7,6 +7,11 @@ import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
+import {
+  useGetClass4Forecasts,
+  useGetClass4Models,
+} from "../../remote/queries.js";
+
 const Class4Window = ({
   dataset,
   class4type,
@@ -22,6 +27,9 @@ const Class4Window = ({
   const [plotSize, setPlotSize] = useState(init?.size || "10x7");
   const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [models, setModels] = useState(init.models || []);
+
+  const class4Forecasts = useGetClass4Forecasts(class4type, plotData.id);
+  const class4Models = useGetClass4Models(class4type, plotData.id);
 
   const handleErrorUpdate = (_, value) => {
     setError(
@@ -86,7 +94,7 @@ const Class4Window = ({
                 key="forecast"
                 id="forecast"
                 selected={forecast}
-                url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
+                options={class4Forecasts.data}
                 label={_("Forecast")}
                 onChange={(_, value) => setForecast(value)}
               />
@@ -110,10 +118,10 @@ const Class4Window = ({
                 key="models"
                 id="models"
                 selected={models}
-                multiple
                 onChange={(_, value) => setModels(value)}
-                url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
+                options={class4Models.data}
                 label={_("Additional Models")}
+                multiple={true}
               />
               <ComboBox
                 key="error"

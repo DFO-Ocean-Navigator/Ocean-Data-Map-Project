@@ -2,6 +2,8 @@ import React, { useState, useCallback } from "react";
 import ComboBox from "./lib/ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
+
+import { useGetDatasetVariables } from "../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
 const ContourSelector = ({
@@ -17,6 +19,8 @@ const ContourSelector = ({
   const [levels, setLevels] = useState(state.levels || "-10,0,10");
   const auto = state.levels === "auto";
   const [typingTimeout, setTypingTimeout] = useState(null);
+
+  const variables = useGetDatasetVariables(dataset);
 
   // Helper to merge state
   const handleUpdate = useCallback(
@@ -59,7 +63,6 @@ const ContourSelector = ({
     }
   };
 
-  // Render
   return (
     <div className="ContourSelector input">
       <ComboBox
@@ -67,9 +70,10 @@ const ContourSelector = ({
         id="variable"
         selected={state.variable}
         onChange={handleUpdate}
-        url={`/api/v2.0/dataset/${dataset}/variables`}
+        options={variables.data}
         label={title}
         includeNone={true}
+        alwaysShow={true}
       >
         {children}
       </ComboBox>
@@ -138,7 +142,7 @@ const ContourSelector = ({
 
 ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
-  dataset: PropTypes.string.isRequired,
+  dataset: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
   title: PropTypes.string,
   children: PropTypes.node,
