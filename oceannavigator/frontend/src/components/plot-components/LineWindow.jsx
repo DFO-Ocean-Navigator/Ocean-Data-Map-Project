@@ -12,7 +12,10 @@ import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
-import { useGetDatasetVariables } from "../../remote/queries.js";
+import {
+  useGetColormaps,
+  useGetDatasetVariables,
+} from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -66,6 +69,7 @@ const LineWindow = (props) => {
     props.init?.show_profile || false,
   );
 
+  const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(props.dataset0.id);
 
   useEffect(() => {
@@ -248,7 +252,7 @@ const LineWindow = (props) => {
             selected={diffColormap}
             onChange={(_, value) => setDiffColormap(value)}
             label={_("Diff. Colourmap")}
-            url="/api/v2.0/plot/colormaps"
+            options={colormaps.data}
           >
             {_("colourmap_help")}
             <img src="/plot/colormaps.png/" alt="" />
@@ -281,7 +285,7 @@ const LineWindow = (props) => {
           selected={mainColormap}
           onChange={(_, value) => setMainColormap(value)}
           label={_("Colourmap")}
-          url="/api/v2.0/plot/colormaps"
+          options={colormaps.data}
         >
           {_("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />
@@ -311,7 +315,7 @@ const LineWindow = (props) => {
           selected={rightColormap}
           onChange={(_, value) => setRightColormap(value)}
           label={_("Colourmap")}
-          url="/api/v2.0/plot/colormaps"
+          options={colormaps.data}
         >
           {_("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />

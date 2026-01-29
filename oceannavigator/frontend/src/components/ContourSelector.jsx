@@ -3,7 +3,7 @@ import ComboBox from "./lib/ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
-import { useGetDatasetVariables } from "../remote/queries.js";
+import { useGetColormaps, useGetDatasetVariables } from "../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
 const ContourSelector = ({
@@ -20,6 +20,7 @@ const ContourSelector = ({
   const auto = state.levels === "auto";
   const [typingTimeout, setTypingTimeout] = useState(null);
 
+  const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(dataset);
 
   // Helper to merge state
@@ -102,7 +103,7 @@ const ContourSelector = ({
             id="colormap"
             selected={state.colormap}
             onChange={handleUpdate}
-            url="/api/v2.0/plot/colormaps"
+            options={colormaps.data}
             label={_("Colourmap")}
           >
             {_(

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   GetDatasetsPromise,
+  GetColormapsPromise,
   GetVariablesPromise,
   GetTimestampsPromise,
   GetDepthsPromise,
@@ -117,12 +118,11 @@ export function useGetTrackTimeRange(trackId) {
   return { data, status };
 }
 
-export function useGetComboBoxQuery(url) {
+export function useGetColormaps() {
   const { data = [], status } = useQuery({
-    queryKey: ["comboBox", url],
-    queryFn: () => GetComboBoxQuery(url),
+    queryKey: ["colormaps"],
+    queryFn: () => GetColormapsPromise(),
   });
-
   return { data, status };
 }
 
@@ -137,7 +137,7 @@ export function useGetClass4Forecasts(class4Type, class4Id) {
 
 export function useGetObservationVariablesStation(stationId, enabled = true) {
   const { data = [], status } = useQuery({
-    queryKey: ["observation", "variables", "station",stationId],
+    queryKey: ["observation", "variables", "station", stationId],
     queryFn: () => GetObservationVariablesStationPromise(stationId),
     enabled: enabled,
   });
@@ -159,6 +159,15 @@ export function useGetClass4Models(class4Type, class4Id) {
   const { data = [], status } = useQuery({
     queryKey: ["class4", "models", class4Type, class4Id],
     queryFn: () => GetClass4ModelsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetComboBoxQuery(url) {
+  const { data = [], status } = useQuery({
+    queryKey: ["comboBox", url],
+    queryFn: () => GetComboBoxQuery(url),
   });
 
   return { data, status };

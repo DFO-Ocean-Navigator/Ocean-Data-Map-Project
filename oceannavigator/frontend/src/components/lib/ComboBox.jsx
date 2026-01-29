@@ -9,7 +9,6 @@ import { useGetComboBoxQuery } from "../../remote/queries.js";
 function ComboBox({
   id,
   label,
-  url = null,
   options = [],
   placeholder = "",
   selected,
@@ -24,10 +23,6 @@ function ComboBox({
   const [showHelp, setShowHelp] = useState(false);
 
   let optionsData = [...options];
-  if (options.length === 0 && url) {
-    const response = useGetComboBoxQuery(url);
-    optionsData = [...response.data];
-  }
   includeNone && optionsData.unshift({ id: "", value: _("None") });
 
   const handleChange = (e) => {
@@ -42,21 +37,20 @@ function ComboBox({
     onChange(id, nextSelected);
   };
 
-  const selectOptions = optionsData.map((opt) => (
+  const optionElements = optionsData.map((opt) => (
     <option key={`option-${opt.id}`} value={opt.id}>
       {opt.value}
     </option>
   ));
 
-  if (selectOptions.length > 1 || alwaysShow) {
+  if (optionElements.length > 1 || alwaysShow) {
     const hasHelp =
       React.Children.count(children) > 0 ||
-      (selectOptions.length > 1 &&
-        selectOptions[selectOptions.length - 1].help);
+      (optionsData.length > 1 && optionsData[optionsData.length - 1].help);
 
     const helpOptions =
-      selectOptions.length > 1 && selectOptions[selectOptions.length - 1].help
-        ? selectOptions.map((d) => (
+      optionsData.length > 1 && optionsData[optionsData.length - 1].help
+        ? optionsData.map((d) => (
             <p key={d.id}>
               <em>{d.value}</em>
               <span dangerouslySetInnerHTML={{ __html: d.help }} />
@@ -103,13 +97,13 @@ function ComboBox({
 
         <Form.Select
           className={`combobox-select ${multiple ? "combobox-select-multiple" : ""}`}
-          size={Math.min(10, multiple ? selectOptions.length : 1)}
+          size={Math.min(10, multiple ? optionElements.length : 1)}
           placeholder={placeholder}
           value={selected}
           onChange={handleChange}
           multiple={multiple}
         >
-          {selectOptions}
+          {optionElements}
         </Form.Select>
       </div>
     );
@@ -117,16 +111,15 @@ function ComboBox({
 }
 
 ComboBox.propTypes = {
-  id: PropTypes.string,
-  label: PropTypes.string,
-  url: PropTypes.string,
-  options: PropTypes.array,
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  options: PropTypes.array.isRequired,
   selected: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
     PropTypes.array,
-  ]),
-  onChange: PropTypes.func,
+  ]).isRequired,
+  onChange: PropTypes.func.isRequired,
   multiple: PropTypes.bool,
   includeNone: PropTypes.bool,
   alwaysShow: PropTypes.bool,

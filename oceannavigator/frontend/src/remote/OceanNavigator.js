@@ -58,7 +58,11 @@ export function GetClass4Promise() {
   return instance.get("/api/v2.0/class4");
 }
 
-// Filter datasets by date
+export async function GetColormapsPromise() {
+  const response = await instance.get("/api/v2.0/plot/colormaps");
+  return response.data;
+}
+
 export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   const params = new URLSearchParams({
     target_date: targetDate,
@@ -74,7 +78,6 @@ export async function FilterDatasetsByDatePromise(datasetIds, targetDate) {
   return response.data;
 }
 
-// Filter datasets by location
 export async function FilterDatasetsByLocationPromise(
   datasetIds,
   latitude,
@@ -131,7 +134,7 @@ export async function GetClass4ForecastsPromise(class4Type, class4Id) {
   return response.data;
 }
 
-export async function GetObservationVariablesStationPromise(stationId){
+export async function GetObservationVariablesStationPromise(stationId) {
   const queryConfig = {
     method: "get",
     url: `/api/v2.0/observation/variables/station=${stationId}.json`,
@@ -140,7 +143,7 @@ export async function GetObservationVariablesStationPromise(stationId){
   return response.data;
 }
 
-export async function GetObservationVariablesPlatformPromise(platformId){
+export async function GetObservationVariablesPlatformPromise(platformId) {
   const queryConfig = {
     method: "get",
     url: `/api/v2.0/observation/variables/platform=${platformId}.json`,

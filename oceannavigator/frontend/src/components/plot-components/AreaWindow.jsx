@@ -11,6 +11,9 @@ import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import DatasetPanel from "../DatasetPanel.jsx";
 import SubsetPanel from "../SubsetPanel.jsx";
 import PropTypes from "prop-types";
+
+import { useGetColormaps } from "../../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
 
 const AreaWindow = (props) => {
@@ -25,10 +28,10 @@ const AreaWindow = (props) => {
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
-    props.init?.leftColormap || "default"
+    props.init?.leftColormap || "default",
   );
   const [diffColormap, setDiffColormap] = useState(
-    props.init?.colormap_diff || "default"
+    props.init?.colormap_diff || "default",
   );
 
   // Plot settings
@@ -40,7 +43,7 @@ const AreaWindow = (props) => {
   const [showArea, setShowArea] = useState(props.init?.showarea ?? true);
   const [bathymetry, setBathymetry] = useState(props.init?.bathymetry ?? true);
   const [surfaceVariable, setSurfaceVariable] = useState(
-    props.init?.surfacevariable || "none"
+    props.init?.surfacevariable || "none",
   );
 
   // Feature settings
@@ -49,7 +52,7 @@ const AreaWindow = (props) => {
       variable: "none",
       magnitude: "length",
       colormap: "default",
-    }
+    },
   );
 
   const [contour, setContour] = useState(
@@ -59,8 +62,10 @@ const AreaWindow = (props) => {
       levels: "auto",
       legend: true,
       hatch: false,
-    }
+    },
   );
+
+  const colormaps = useGetColormaps();
 
   // Sync scale when dataset0.variable changes
   useEffect(() => {
@@ -162,7 +167,7 @@ const AreaWindow = (props) => {
             state={diffColormap}
             onUpdate={(_, value) => setDiffColormap(value)}
             title={_("Diff. Colourmap")}
-            url="/api/v2.0/plot/colormaps"
+            options={colormaps.data}
           >
             {_("colourmap_help")}
             <img src="/api/v2.0/plot/colormaps.png/" alt="" />
@@ -241,7 +246,7 @@ const AreaWindow = (props) => {
           selected={leftColormap}
           placeholder="default"
           onChange={(_, value) => setLeftColormap(value)}
-          url="/api/v2.0/plot/colormaps"
+          options={colormaps.data}
           label={_("Colourmap")}
         >
           {_("colourmap_help")}
@@ -348,9 +353,7 @@ const AreaWindow = (props) => {
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            
             {_("Map")}
-          
           </Nav.Link>
         </Nav.Item>
       </Nav>
