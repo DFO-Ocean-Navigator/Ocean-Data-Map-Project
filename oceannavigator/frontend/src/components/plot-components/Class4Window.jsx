@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { Accordion, Card, Row, Col, Nav } from "react-bootstrap";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
+
+import {
+  useGetClass4Forecasts,
+  useGetClass4Models,
+} from "../../remote/queries.js";
 
 const Class4Window = ({
   dataset,
@@ -23,13 +28,16 @@ const Class4Window = ({
   const [plotDpi, setPlotDpi] = useState(init?.dpi || 144);
   const [models, setModels] = useState(init.models || []);
 
+  const class4Forecasts = useGetClass4Forecasts(class4type, plotData.id);
+  const class4Models = useGetClass4Models(class4type, plotData.id);
+
   const handleErrorUpdate = (_, value) => {
     setError(
       Array.isArray(value)
         ? value[0] || "none"
         : typeof value === "object" && value
-        ? value.id || value.value || "none"
-        : value || "none"
+          ? value.id || value.value || "none"
+          : value || "none",
     );
   };
 
@@ -83,12 +91,12 @@ const Class4Window = ({
             <Card.Header>{_("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
+                key="forecast"
                 id="forecast"
-                state={forecast}
-                def=""
-                url={`/api/v2.0/class4/forecasts/${class4type}?id=${plotData.id}`}
-                title={_("Forecast")}
-                onUpdate={(_, value) => setForecast(value)}
+                selected={forecast}
+                options={class4Forecasts.data}
+                label={_("Forecast")}
+                onChange={(_, value) => setForecast(value)}
               />
               <CheckBox
                 id="showmap"
@@ -107,20 +115,21 @@ const Class4Window = ({
                 {_("climatology_help")}
               </CheckBox>
               <ComboBox
+                key="models"
                 id="models"
-                state={models}
-                multiple
-                onUpdate={(_, value) => setModels(value[0] || [])}
-                url={`/api/v2.0/class4/models/${class4type}?id=${plotData.id}`}
-                title={_("Additional Models")}
+                selected={models}
+                onChange={(_, value) => setModels(value)}
+                options={class4Models.data}
+                label={_("Additional Models")}
+                multiple={true}
               />
               <ComboBox
+                key="error"
                 id="error"
-                state={error}
-                def=""
-                data={error_options}
-                title={_("Show Error")}
-                onUpdate={handleErrorUpdate}
+                selected={error}
+                options={error_options}
+                label={_("Show Error")}
+                onChange={handleErrorUpdate}
               />
               <Accordion>
                 <Accordion.Header>{_("Plot Options")}</Accordion.Header>

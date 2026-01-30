@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from "react";
-import ComboBox from "./ComboBox.jsx";
+import ComboBox from "./lib/ComboBox.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
+
+import { useGetColormaps, useGetDatasetVariables } from "../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
 const ContourSelector = ({
@@ -18,6 +20,9 @@ const ContourSelector = ({
   const auto = state.levels === "auto";
   const [typingTimeout, setTypingTimeout] = useState(null);
 
+  const colormaps = useGetColormaps();
+  const variables = useGetDatasetVariables(dataset);
+
   // Helper to merge state
   const handleUpdate = useCallback(
     (keys, values) => {
@@ -29,7 +34,7 @@ const ContourSelector = ({
       });
       onUpdate(id, { ...state, ...patch });
     },
-    [id, onUpdate, state]
+    [id, onUpdate, state],
   );
 
   // Debounced levels change
@@ -40,7 +45,7 @@ const ContourSelector = ({
     setTypingTimeout(
       setTimeout(() => {
         handleUpdate("levels", val);
-      }, 500)
+      }, 500),
     );
   };
 
@@ -59,16 +64,17 @@ const ContourSelector = ({
     }
   };
 
-  // Render
   return (
     <div className="ContourSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
-        url={`/api/v2.0/dataset/${dataset}/variables`}
-        title={title}
+        selected={state.variable}
+        onChange={handleUpdate}
+        options={variables.data}
+        label={title}
+        includeNone={true}
+        alwaysShow={true}
       >
         {children}
       </ComboBox>
@@ -93,15 +99,15 @@ const ContourSelector = ({
 
         {!state.hatch && (
           <ComboBox
+            key="colormap"
             id="colormap"
-            state={state.colormap}
-            def=""
-            onUpdate={handleUpdate}
-            url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            selected={state.colormap}
+            onChange={handleUpdate}
+            options={colormaps.data}
+            label={_("Colourmap")}
           >
             {_(
-              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable."
+              "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
             )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
           </ComboBox>
@@ -137,7 +143,7 @@ const ContourSelector = ({
 
 ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
-  dataset: PropTypes.string.isRequired,
+  dataset: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
   title: PropTypes.string,
   children: PropTypes.node,

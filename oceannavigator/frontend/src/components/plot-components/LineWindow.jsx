@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Accordion, Button, Card, Nav, Row, Col, Form } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
@@ -11,6 +11,12 @@ import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import PropTypes from "prop-types";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+
+import {
+  useGetColormaps,
+  useGetDatasetVariables,
+} from "../../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
 
 const LineWindow = (props) => {
@@ -24,44 +30,47 @@ const LineWindow = (props) => {
 
   // Colormap settings
   const [mainColormap, setMainColormap] = useState(
-    props.init?.colormap || "default"
+    props.init?.colormap || "default",
   );
   const [rightColormap, setRightColormap] = useState(
-    props.init?.colormap_right || "default"
+    props.init?.colormap_right || "default",
   );
   const [diffColormap, setDiffColormap] = useState(
-    props.init?.colormap_diff || "default"
+    props.init?.colormap_diff || "default",
   );
 
   // Plot settings
   const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
   const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
   const [plotTitles, setPlotTitles] = useState(
-    props.init?.plotTitles || Array(2).fill("")
+    props.init?.plotTitles || Array(2).fill(""),
   );
 
   // Map and display settings
   const [showMap, setShowMap] = useState(props.init?.showmap ?? true);
   const [surfaceVariable, setSurfaceVariable] = useState(
-    props.init?.surfacevariable || "none"
+    props.init?.surfacevariable || "none",
   );
   const [selectedPlots, setSelectedPlots] = useState(
-    props.init?.selectedPlots || [0, 1, 1]
+    props.init?.selectedPlots || [0, 1, 1],
   );
 
   // Transect-specific settings
   const [linearThresh, setLinearThresh] = useState(
-    props.init?.linearthresh || false
+    props.init?.linearthresh || false,
   );
   const [depthLimit, setDepthLimit] = useState(
-    props.init?.depth_limit || false
+    props.init?.depth_limit || false,
   );
   const [profileDistance, setProfileDistance] = useState(
-    props.init?.profile_distance || -1
+    props.init?.profile_distance || -1,
   );
   const [showProfile, setShowProfile] = useState(
-    props.init?.show_profile || false
+    props.init?.show_profile || false,
   );
+
+  const colormaps = useGetColormaps();
+  const variables = useGetDatasetVariables(props.dataset0.id);
 
   useEffect(() => {
     if (props.compareDatasets && showProfile) {
@@ -185,21 +194,15 @@ const LineWindow = (props) => {
       <Card.Header>{_("Transect Settings")}</Card.Header>
       <Card.Body>
         <ComboBox
+          key="surfacevariable"
           id="surfacevariable"
-          state={surfaceVariable}
-          onUpdate={(_, value) => {
-            let variableName = value;
-            if (Array.isArray(value) && value.length > 0) {
-              variableName = value[0];
-            } else if (typeof value === "object" && value !== null) {
-              variableName = value.id || value.name || value.variable || "none";
-            } else if (typeof value !== "string") {
-              variableName = String(value) || "none";
-            }
-            setSurfaceVariable(variableName);
+          selected={surfaceVariable}
+          onChange={(_, value) => {
+            setSurfaceVariable(value);
           }}
-          title={_("Surface Variable")}
-          url={`/api/v2.0/dataset/${props.dataset0.id}/variables`}
+          label={_("Surface Variable")}
+          options={variables.data}
+          includeNone={true}
         >
           {_("surfacevariable_help")}
         </ComboBox>
@@ -242,19 +245,19 @@ const LineWindow = (props) => {
             />
           </div>
         )}
-        {props.compareDatasets &&
-          props.dataset0.variable === props.dataset1.variable && (
-            <ComboBox
-              id="colormap_diff"
-              state={diffColormap}
-              onUpdate={(_, value) => setDiffColormap(value)}
-              title={_("Diff. Colourmap")}
-              url="/api/v2.0/plot/colormaps"
-            >
-              {_("colourmap_help")}
-              <img src="/plot/colormaps.png/" alt="" />
-            </ComboBox>
-          )}
+        {props.compareDatasets && (
+          <ComboBox
+            key="colormap_diff"
+            id="colormap_diff"
+            selected={diffColormap}
+            onChange={(_, value) => setDiffColormap(value)}
+            label={_("Diff. Colourmap")}
+            options={colormaps.data}
+          >
+            {_("colourmap_help")}
+            <img src="/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
       </Card.Body>
     </Card>
   );
@@ -277,11 +280,12 @@ const LineWindow = (props) => {
           mountedDataset={props.dataset0}
         />
         <ComboBox
+          key="colormap"
           id="colormap"
-          state={mainColormap}
-          onUpdate={(_, value) => setMainColormap(value)}
-          title={_("Colourmap")}
-          url="/api/v2.0/plot/colormaps"
+          selected={mainColormap}
+          onChange={(_, value) => setMainColormap(value)}
+          label={_("Colourmap")}
+          options={colormaps.data}
         >
           {_("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />
@@ -306,11 +310,12 @@ const LineWindow = (props) => {
           mountedDataset={props.dataset1}
         />
         <ComboBox
-          id="colormap_right"
-          state={rightColormap}
-          onUpdate={(_, value) => setRightColormap(value)}
-          title={_("Colourmap")}
-          url="/api/v2.0/plot/colormaps"
+          key="rightColormap"
+          id="rightColormap"
+          selected={rightColormap}
+          onChange={(_, value) => setRightColormap(value)}
+          label={_("Colourmap")}
+          options={colormaps.data}
         >
           {_("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />
