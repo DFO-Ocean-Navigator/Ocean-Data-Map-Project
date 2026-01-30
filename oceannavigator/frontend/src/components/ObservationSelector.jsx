@@ -48,7 +48,7 @@ function ObservationSelector(props) {
   const [metaKeys, setMetaKeys] = useState([]);
   const [metaValues, setMetaValues] = useState([]);
   const [startDate, setStartDate] = useState(
-    new Date(new Date().setDate(new Date().getDate() - 30))
+    new Date(new Date().setDate(new Date().getDate() - 30)),
   );
   const [endDate, setEndDate] = useState(new Date());
   const [metaKey, setMetaKey] = useState("");
@@ -106,7 +106,7 @@ function ObservationSelector(props) {
   const fetchMetaValues = () => {
     if (metaKey) {
       const url = `/api/v2.0/observation/meta_values/${platformType.join(
-        ","
+        ",",
       )}/${metaKey}.json`;
       axios
         .get(url)
@@ -186,137 +186,127 @@ function ObservationSelector(props) {
   };
 
   return (
-    <div className="ObservationSelector">
+    <div className="observation-selector">
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Observation Type</Card.Title>
         </Card.Header>
-        <Card.Body>
-          <div className="input">
-            <Form.Group>
-              <Form.Check
-                type="radio"
-                inline
-                name="type"
-                id="point-check"
-                label="Points"
-                defaultChecked={true}
-                onChange={(e) => setPoints(e.target.value == "on")}
-              />
-              <Form.Check
-                type="radio"
-                inline
-                name="type"
-                id="line-check"
-                label="Tracks"
-                onChange={(e) => setPoints(e.target.value != "on")}
-              />
-            </Form.Group>
-          </div>
+        <Card.Body className="obs-card-body">
+          <Form.Group>
+            <Form.Check
+              type="radio"
+              inline
+              name="type"
+              id="point-check"
+              label="Points"
+              defaultChecked={true}
+              onChange={(e) => setPoints(e.target.value == "on")}
+            />
+            <Form.Check
+              type="radio"
+              inline
+              name="type"
+              id="line-check"
+              label="Tracks"
+              onChange={(e) => setPoints(e.target.value != "on")}
+            />
+          </Form.Group>
         </Card.Body>
       </Card>
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Date &amp; Variable Filters</Card.Title>
         </Card.Header>
-        <Card.Body>
-          <div className="inputs">
-            <div className="datepicker input">
-              <h1>Start Date</h1>
-              <DatePicker
-                id="startDate"
-                dateFormat="yyyy-MM-dd"
-                selected={startDate}
-                popperPlacement="top"
-                onChange={(newDate) => setStartDate(newDate)}
-                maxDate={endDate}
-              />
-            </div>
-            <div className="datepicker input">
-              <h1>End Date</h1>
-              <DatePicker
-                id="endDate"
-                dateFormat="yyyy-MM-dd"
-                selected={endDate}
-                popperPlacement="top"
-                onChange={(newDate) => setEndDate(newDate)}
-                maxDate={new Date()}
-                minDate={startDate}
-              />
-            </div>
-
-            {points && (
-              <ComboBox
-                key="dataType"
-                id="dataType"
-                selected={dataType}
-                label="Data Type"
-                onChange={(key, value) => setDataType(value)}
-                options={dataTypes}
-              />
-            )}
-
-            {!points && (
-              <ComboBox
-                key="quantum"
-                id="quantum"
-                selected={quantum}
-                label="Track Simplification"
-                onChange={(key, value) => setQuantum(value)}
-                options={[
-                  { id: "minute", value: "Minute" },
-                  { id: "hour", value: "Hour" },
-                  { id: "day", value: "Day" },
-                  { id: "week", value: "Week" },
-                  { id: "month", value: "Month" },
-                  { id: "year", value: "Year" },
-                ]}
-              />
-            )}
+        <Card.Body className="obs-card-body">
+          <div>
+            <h1 className="obs-input-label">Start Date</h1>
+            <DatePicker
+              id="startDate"
+              dateFormat="yyyy-MM-dd"
+              selected={startDate}
+              popperPlacement="top"
+              onChange={(newDate) => setStartDate(newDate)}
+              maxDate={endDate}
+            />
           </div>
+          <div>
+            <h1 className="obs-input-label">End Date</h1>
+            <DatePicker
+              id="endDate"
+              dateFormat="yyyy-MM-dd"
+              selected={endDate}
+              popperPlacement="top"
+              onChange={(newDate) => setEndDate(newDate)}
+              maxDate={new Date()}
+              minDate={startDate}
+            />
+          </div>
+
+          {points && (
+            <ComboBox
+              key="dataType"
+              id="dataType"
+              selected={dataType}
+              label="Data Type"
+              onChange={(key, value) => setDataType(value)}
+              options={dataTypes}
+            />
+          )}
+
+          {!points && (
+            <ComboBox
+              key="quantum"
+              id="quantum"
+              selected={quantum}
+              label="Track Simplification"
+              onChange={(key, value) => setQuantum(value)}
+              options={[
+                { id: "minute", value: "Minute" },
+                { id: "hour", value: "Hour" },
+                { id: "day", value: "Day" },
+                { id: "week", value: "Week" },
+                { id: "month", value: "Month" },
+                { id: "year", value: "Year" },
+              ]}
+            />
+          )}
         </Card.Body>
       </Card>
 
       {props.area.length == 1 && (
         <Card className="obs-card">
-          <Card.Header>
+          <Card.Header className="obs-card-header">
             <Card.Title>Search Radius</Card.Title>
           </Card.Header>
-          <Card.Body>
-            <div className="inputs">
-              <div className="input" style={{ width: "100%" }}>
-                <h1>
-                  Search Radius (km) around ({props.area[0][0].toFixed(4)}
-                  ,&nbsp;
-                  {props.area[0][1].toFixed(4)})
-                </h1>
-                <div style={{ width: "95%", margin: "0 auto" }}>
-                  <Slider
-                    range
-                    allowCross={false}
-                    min={0}
-                    max={250}
-                    marks={{
-                      0: "0km",
-                      50: "50km",
-                      100: "100km",
-                      150: "150km",
-                      200: "200km",
-                      250: "250km",
-                    }}
-                    defaultValue={radius}
-                    onChange={(x) => setRadius(x)}
-                  />
-                </div>
-              </div>
-            </div>
+          <Card.Body className="obs-card-body slider-container">
+            <h1 className="obs-input-label">
+              Search Radius (km) around ({props.area[0][0].toFixed(4)}
+              ,&nbsp;
+              {props.area[0][1].toFixed(4)})
+            </h1>
+              <Slider
+                range
+                allowCross={false}
+                min={0}
+                max={250}
+                marks={{
+                  0: "0km",
+                  50: "50km",
+                  100: "100km",
+                  150: "150km",
+                  200: "200km",
+                  250: "250km",
+                }}
+                defaultValue={radius}
+                onChange={(x) => setRadius(x)}
+              />
           </Card.Body>
         </Card>
       )}
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Platform Filters</Card.Title>
           <Form.Check
             type="switch"
@@ -326,38 +316,37 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <Card.Body>
-          <div className="inputs">
-            <ComboBox
-              key="platformType"
-              id="platformType"
-              selected={platformType}
-              label={__("Platform Type")}
-              onChange={(key, value) => setPlatformType(value)}
-              options={PLATFORMS}
-              multiple
+        <Card.Body className="obs-card-body">
+          <ComboBox
+            key="platformType"
+            id="platformType"
+            selected={platformType}
+            label={__("Platform Type")}
+            onChange={(key, value) => setPlatformType(value)}
+            options={PLATFORMS}
+            multiple
+          />
+          <ComboBox
+            key="metaKey"
+            id="metaKey"
+            selected={metaKey}
+            label="Metadata Key"
+            onChange={(key, value) => setMetaKey(value)}
+            options={keys}
+          />
+          <div>
+            <h1 className="obs-input-label">Metadata Value</h1>
+            <Autocomplete
+              className="obs-autocomplete"
+              suggestions={metaValues}
+              onChange={(newValue) => setMetaValue(newValue)}
             />
-            <ComboBox
-              key="metaKey"
-              id="metaKey"
-              selected={metaKey}
-              label="Metadata Key"
-              onChange={(key, value) => setMetaKey(value)}
-              options={keys}
-            />
-            <div className="input" style={{ width: "30em" }}>
-              <h1>Metadata Value</h1>
-              <Autocomplete
-                suggestions={metaValues}
-                onChange={(newValue) => setMetaValue(newValue)}
-              />
-            </div>
           </div>
         </Card.Body>
       </Card>
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Depth Filter</Card.Title>
           <Form.Check
             type="switch"
@@ -367,19 +356,17 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <div className="inputs">
-          <div className="slider-container">
-            <Slider
-              range
-              allowCross={false}
-              min={parseInt(Object.keys(STD_DEPTHS).slice(0)[0])}
-              max={parseInt(Object.keys(STD_DEPTHS).slice(-1)[0])}
-              marks={STD_DEPTHS}
-              defaultValue={depthRange}
-              onChange={(x) => setDepthRange(x)}
-            />
-          </div>
-        </div>
+        <Card.Body className="obs-card slider-container">
+          <Slider
+            range
+            allowCross={false}
+            min={parseInt(Object.keys(STD_DEPTHS).slice(0)[0])}
+            max={parseInt(Object.keys(STD_DEPTHS).slice(-1)[0])}
+            marks={STD_DEPTHS}
+            defaultValue={depthRange}
+            onChange={(x) => setDepthRange(x)}
+          />
+        </Card.Body>
       </Card>
       <Button
         variant="primary"

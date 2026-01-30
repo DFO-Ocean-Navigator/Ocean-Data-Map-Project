@@ -6,6 +6,7 @@ body {
     border: 1px solid #999;
     padding: 0.5rem;
     width: 300px;
+    margin: 10px 0px 0px 5px;
   }
   
   .no-suggestions {
@@ -21,8 +22,11 @@ body {
     max-height: 143px;
     overflow-y: auto;
     padding-left: 0;
-    width: calc(300px + 1rem);
+    width: 300px;
+    position: absolute;
     z-index: 10;
+    margin-left: 5px;
+    background-color: #fff;
   }
   
   .suggestions li {
@@ -32,7 +36,7 @@ body {
   .suggestion-active,
   .suggestions li:hover {
     background-color: #008cba;
-    color: #fae042;
+    color: #fff;
     cursor: pointer;
     font-weight: 700;
   }
