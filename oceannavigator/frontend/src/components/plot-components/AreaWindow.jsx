@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Accordion, Button, Card, Col, Form, Row, Nav } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import ColormapRange from "../ColormapRange.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ContourSelector from "../ContourSelector.jsx";
@@ -11,6 +11,9 @@ import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import DatasetPanel from "../DatasetPanel.jsx";
 import SubsetPanel from "../SubsetPanel.jsx";
 import PropTypes from "prop-types";
+
+import { useGetColormaps } from "../../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
 
 const AreaWindow = (props) => {
@@ -25,10 +28,11 @@ const AreaWindow = (props) => {
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
-    props.init?.leftColormap ?? "default",
+    props.init?.leftColormap || "default",
   );
-  const [rightColormap, setRightColormap] = useState("default");
-  const [diffColormap, setDiffColormap] = useState("default");
+  const [diffColormap, setDiffColormap] = useState(
+    props.init?.colormap_diff || "default",
+  );
 
   // Plot settings
   const [plotSize, setPlotSize] = useState("10x7");
@@ -38,6 +42,9 @@ const AreaWindow = (props) => {
   // Map settings
   const [showArea, setShowArea] = useState(true);
   const [bathymetry, setBathymetry] = useState(true);
+  const [surfaceVariable, setSurfaceVariable] = useState(
+    props.init?.surfacevariable || "none"
+  );
 
   // Feature settings
   const [quiver, setQuiver] = useState(
@@ -57,6 +64,8 @@ const AreaWindow = (props) => {
       hatch: false,
     },
   );
+
+  const colormaps = useGetColormaps();
 
   useEffect(() => {
     if (!props.init) return;
@@ -164,10 +173,10 @@ const AreaWindow = (props) => {
         {props.compareDatasets && !autoScale && (
           <ComboBox
             id="colormap_diff"
-            state={diffColormap}
-            onUpdate={(_, value) => setDiffColormap(value)}
-            title={_("Diff. Colourmap")}
-            url="/api/v2.0/plot/colormaps"
+            selected={diffColormap}
+            onChange={(_, value) => setDiffColormap(value)}
+            label={_("Diff. Colourmap")}
+            options={colormaps.data}
           >
             {_("colourmap_help")}
             <img src="/api/v2.0/plot/colormaps.png/" alt="" />
@@ -193,7 +202,7 @@ const AreaWindow = (props) => {
           id="quiver"
           state={quiver}
           onUpdate={handleQuiverUpdate}
-          dataset={props.dataset0.id}
+          dataset={props.dataset0}
           subquery={props.init?.quiver ? true : false}
           title={_("Arrows")}
         >
@@ -205,8 +214,8 @@ const AreaWindow = (props) => {
           id="contour"
           state={contour}
           onUpdate={handleContourUpdate}
-          dataset={props.dataset0.id}
-          subquery={props.init?.contour ? true : false}
+          dataset={props.dataset0}
+           subquery={props.init?.contour ? true : false}
           title={_("Additional Contours")}
         >
           {_("contour_help")}
@@ -245,12 +254,13 @@ const AreaWindow = (props) => {
         />
         {!props.compareDatasets && (
           <ComboBox
+            key="leftColormap"
             id="leftColormap"
-            state={leftColormap}
-            def="default"
-            onUpdate={(_, value) => setLeftColormap(value)}
-            url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            selected={leftColormap}
+            placeholder="default"
+            onChange={(_, value) => setLeftColormap(value)}
+            options={colormaps.data}
+            label={_("Colourmap")}
           >
             {_("colourmap_help")}
             <img src="/api/v2.0/plot/colormaps.png/" alt="" />
@@ -360,9 +370,7 @@ const AreaWindow = (props) => {
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            
             {_("Map")}
-          
           </Nav.Link>
         </Nav.Item>
       </Nav>

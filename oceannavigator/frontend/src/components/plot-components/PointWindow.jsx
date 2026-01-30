@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import LocationInput from "../LocationInput.jsx";
 import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import DatasetPanel from "../DatasetPanel.jsx";
 import PropTypes from "prop-types";
-import { useGetDatasetVariables } from "../../remote/queries.js";
+import {
+  useGetDatasetVariables,
+  useGetObservationVariablesStation,
+} from "../../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
 const TabEnum = {
@@ -67,6 +70,10 @@ const PointWindow = ({
   const [only2d, setOnly2d] = useState(false);
 
   const variables = useGetDatasetVariables(plotDataset);
+  const observationVariables = useGetObservationVariablesStation(
+    plotData.id,
+    plotData.observation && typeof plotData.id === "number",
+  );
 
   useEffect(() => {
     const dataset2D =
@@ -155,36 +162,34 @@ const PointWindow = ({
   );
 
   // Rendered across all tabs
-  const global = (
-    <Card key="globalSettings" variant="primary">
-      <Card.Header>{_("Global Settings")}</Card.Header>
-      <Card.Body className="global-settings-card">
-        <DatasetPanel
-          subquery_variable_range={init?.dataset_0?.variable_range}
-          subquery_depth={init?.dataset_0?.depth}
-          id="point-window-dataset-panel"
-          onUpdate={handleDatasetUpdate}
-          showQuiverSelector={false}
-          showVariableRange={false}
-          showAxisRange={showAxisRange}
-          showTimeRange={showTimeRange}
-          showDepthSelector={showDepthSelector}
-          mapSettings={mapSettings}
-          hasDepth={only3d}
-          showVariableSelector={showVarSelector}
-          showAllDepths={showDepthSelector}
-          multipleVariables={multipleVariables}
-          mountedDataset={plotDataset}
-        />
-        <CheckBox
-          id="showmap"
-          checked={showMap}
-          onUpdate={(_, value) => setShowMap(value)}
-          title={_("Show Location")}
-        >
-          {_("showmap_help")}
-        </CheckBox>
-        {/* {plotData.coordinates.length === 1 && (
+  let inputs = [
+    <>
+      <DatasetPanel
+        subquery_variable_range={init?.dataset_0?.variable_range}
+        subquery_depth={init?.dataset_0?.depth}
+        id="point-window-dataset-panel"
+        onUpdate={handleDatasetUpdate}
+        showQuiverSelector={false}
+        showVariableRange={false}
+        showAxisRange={showAxisRange}
+        showTimeRange={showTimeRange}
+        showDepthSelector={showDepthSelector}
+        mapSettings={mapSettings}
+        hasDepth={only3d}
+        showVariableSelector={showVarSelector}
+        showAllDepths={showDepthSelector}
+        multipleVariables={multipleVariables}
+        mountedDataset={plotDataset}
+      />
+      <CheckBox
+        id="showmap"
+        checked={showMap}
+        onUpdate={(_, value) => setShowMap(value)}
+        title={_("Show Location")}
+      >
+        {_("showmap_help")}
+      </CheckBox>
+      {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
             state={plotData.coordinates}
@@ -192,26 +197,26 @@ const PointWindow = ({
             onUpdate={handlePointsUpdate}
           />
         )} */}
-        <Accordion>
-          <Accordion.Header>{_("Plot Options")}</Accordion.Header>
-          <Accordion.Body>{plotOptions}</Accordion.Body>
-        </Accordion>
-      </Card.Body>
-    </Card>
-  );
+      <Accordion>
+        <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+        <Accordion.Body>{plotOptions}</Accordion.Body>
+      </Accordion>
+    </>,
+  ];
 
-  let observationVariableElem = null;
+  let observationVariableSelector = null;
   if (plotData.observation) {
     if (typeof plotData.id === "number") {
-      observationVariableElem = (
+      observationVariableSelector = (
         <ComboBox
           key="observation_variable"
           id="observation_variable"
           multiple
-          state={observationVariable}
-          url={`/api/v2.0/observation/variables/station=${plotData.coordinates[0][2]}.json`}
-          title={_("Observation Variable")}
-          onUpdate={(_, value) => setObservationVariable(value)}
+          selected={observationVariable}
+          options={observationVariables.data}
+          label={_("Observation Variable")}
+          onChange={(_, value) => setObservationVariable(value)}
+          alwaysShow={true}
         />
       );
     } else {
@@ -219,15 +224,16 @@ const PointWindow = ({
         id: i,
         value: o.replace(/ \[.*\]/, ""),
       }));
-      observationVariableElem = (
+      observationVariableSelector = (
         <ComboBox
           key="observation_variable"
           id="observation_variable"
           multiple
-          state={observationVariable}
-          data={data}
-          title={_("Observation Variable")}
-          onUpdate={(_, value) => setObservationVariable(value)}
+          selected={observationVariable}
+          options={data}
+          label={_("Observation Variable")}
+          onChange={(_, value) => setObservationVariable(value)}
+          alwaysShow={true}
         />
       );
     }
@@ -246,7 +252,6 @@ const PointWindow = ({
     dataset: plotDataset.id,
     names: names,
   };
-  let inputs = [global];
   let axisRange = Array.isArray(plotDataset.variable)
     ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
     : plotDataset.axisRange[plotDataset.variable.id];
@@ -302,7 +307,7 @@ const PointWindow = ({
         observation_variable: observationVariable,
       };
       plotType = "observation";
-      inputs.push(observationVariableElem);
+      inputs.unshift(observationVariableSelector);
       break;
     case TabEnum.MOORING:
       plotQuery = {
@@ -328,10 +333,10 @@ const PointWindow = ({
           <ComboBox
             key="colormap"
             id="colormap"
-            state={colormap}
-            onUpdate={(_, value) => setColormap(value)}
+            selected={colormap}
+            onChange={(_, value) => setColormap(value)}
             url="/api/v2.0/plot/colormaps"
-            title={_("Colourmap")}
+            label={_("Colourmap")}
           >
             {" "}
             <img src="/plot/colormaps.png/" alt="" />{" "}
@@ -391,7 +396,10 @@ const PointWindow = ({
       </Nav>
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
-          {inputs}
+          <Card key="globalSettings" variant="primary">
+            <Card.Header>{_("Global Settings")}</Card.Header>
+            <Card.Body className="global-settings-card">{inputs}</Card.Body>
+          </Card>
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage
