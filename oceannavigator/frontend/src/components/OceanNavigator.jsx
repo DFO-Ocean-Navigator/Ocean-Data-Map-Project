@@ -22,6 +22,7 @@ import Class4Selector from "./Class4Selector.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
+import ReportWindow from "./Reportwindow.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -271,8 +272,8 @@ function OceanNavigator(props) {
     // We have a request from Point/Line/AreaWindow component.
 
     query.subquery = subquery;
-    query.showModal = uiSettings.showModal;
     query.modalType = uiSettings.modalType;
+    query.showModal = false;
     query.features = mapRef.current.getFeatures();
 
     // We have a request from the Permalink component.
@@ -304,6 +305,17 @@ function OceanNavigator(props) {
   let modalSize = "lg";
 
   switch (uiSettings.modalType) {
+    case "report":
+      modalBodyContent = (
+        <ReportWindow
+          generatePermLink={generatePermLink}
+          compareDatasets={compareDatasets}
+          updateUI={updateUI}
+        />
+      );
+      modalTitle = __("Report Bug");
+      break;
+
     case "presetFeatures":
       modalBodyContent = <PresetFeaturesWindow action={action} />;
       modalTitle = "Preset Features";
