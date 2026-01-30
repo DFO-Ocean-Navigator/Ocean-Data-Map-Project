@@ -212,6 +212,12 @@ function OceanNavigator(props) {
       case "dataset":
         setDataset0(value);
         break;
+      case "variable_scale":
+        setDataset0((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
+        break;
       default:
         setDataset0((prevDataset) => ({
           ...prevDataset,
@@ -224,6 +230,12 @@ function OceanNavigator(props) {
     switch (key) {
       case "dataset":
         setDataset1(value);
+        break;
+      case "variable_scale":
+        setDataset1((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset1((prevDataset) => ({
