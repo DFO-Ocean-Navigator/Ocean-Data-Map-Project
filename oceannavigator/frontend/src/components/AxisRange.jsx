@@ -56,7 +56,7 @@ function AxisRange(props) {
 
     timerRef.current = setTimeout(
       updateParent([props.variable.scale[0], props.variable.scale[1]]),
-      500
+      500,
     );
   };
 
@@ -93,8 +93,8 @@ function AxisRange(props) {
                 disabled={auto}
               />
             </td>
-            <td>
-              <Button name="default" onClick={handleResetButton}>
+            <td className="default-button-container">
+              <Button name="default" size="sm" onClick={handleResetButton}>
                 <FontAwesomeIcon icon={faRotateLeft} />
               </Button>
             </td>
