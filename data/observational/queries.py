@@ -378,25 +378,31 @@ def get_stations(
     """
     Queries for stations, given the optional query filters.
     """
-    return (
-        __build_station_query(
-            session=session,
-            variable=variable,
-            mindepth=mindepth,
-            maxdepth=maxdepth,
-            minlat=minlat,
-            maxlat=maxlat,
-            minlon=minlon,
-            maxlon=maxlon,
-            starttime=starttime,
-            endtime=endtime,
-            platform_types=platform_types,
-            meta_key=meta_key,
-            meta_value=meta_value,
-        )
-        .join(Platform)
-        .all()
+    return __build_station_query(
+        session=session,
+        variable=variable,
+        mindepth=mindepth,
+        maxdepth=maxdepth,
+        minlat=minlat,
+        maxlat=maxlat,
+        minlon=minlon,
+        maxlon=maxlon,
+        starttime=starttime,
+        endtime=endtime,
+        platform_types=platform_types,
+        meta_key=meta_key,
+        meta_value=meta_value,
+    ).all()
+
+
+def get_station_time_range(session: Session):
+
+    query = session.query(
+        func.min(Station.time),
+        func.max(Station.time),
     )
+
+    return query.one()
 
 
 def __get_bounding_latlon(lat, lon, distance):

@@ -25,6 +25,7 @@ function Autocomplete(props) {
     setFilteredSuggestions([]);
     setShowSuggestions(false);
     setUserInput(e.currentTarget.innerText);
+    props.onChange(e.currentTarget.innerText)
   };
 
   const onKeyDown = (e) => {

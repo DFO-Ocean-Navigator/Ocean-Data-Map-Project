@@ -140,6 +140,12 @@ export async function GetObservationDatatypes() {
   return response.data;
 }
 
+export async function GetObservationTimeRange() {
+  const response = await axios.get("/api/v2.0/observation/time_range");
+
+  return response.data;
+}
+
 export async function GetObservationMetaKeys(platformType) {
   const response = await axios.get(
     `/api/v2.0/observation/meta_keys/${platformType}.json`,

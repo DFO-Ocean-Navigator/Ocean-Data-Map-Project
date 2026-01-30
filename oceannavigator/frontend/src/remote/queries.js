@@ -13,6 +13,7 @@ import {
   GetClass4ForecastsPromise,
   GetClass4ModelsPromise,
   GetObservationDatatypes,
+  GetObservationTimeRange,
   GetObservationMetaKeys,
   GetObservationMetaValues,
   GetObservationVariablesStationPromise,
@@ -133,6 +134,15 @@ export function useGetClass4Forecasts(class4Type, class4Id) {
   const { data = [], status } = useQuery({
     queryKey: ["class4", "forecasts", class4Type, class4Id],
     queryFn: () => GetClass4ForecastsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationTimeRange() {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "timerange"],
+    queryFn: () => GetObservationTimeRange(),
   });
 
   return { data, status };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ComboBox from "./lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import {
   useGetObservationDatatypes,
+  useGetObservationTimeRange,
   useGetObservationMetaKeys,
   useGetObservationMetaValues,
 } from "../remote/queries.js";
@@ -65,6 +66,7 @@ function ObservationSelector(props) {
   const [quantum, setQuantum] = useState("day");
   const [radius, setRadius] = useState(50);
 
+  const timerange = useGetObservationTimeRange();
   const datatypes = useGetObservationDatatypes();
   const metaKeys = useGetObservationMetaKeys(platformType);
   const metaValues = useGetObservationMetaValues(
@@ -76,6 +78,19 @@ function ObservationSelector(props) {
   const metaKeyOptions = metaKeys.data.map(function (o) {
     return { id: o, value: o };
   });
+
+  const minCalendarDate = new Date(timerange.data.start_time);
+  const maxCalendarDate = new Date(timerange.data.end_time);
+
+  useEffect(() => {
+    if (!isNaN(maxCalendarDate.getTime())) {
+      const nextStart = new Date(
+        new Date(maxCalendarDate) - 5 * 24 * 60 * 60 * 1000,
+      );
+      setStartDate(nextStart);
+      setEndDate(maxCalendarDate);
+    }
+  }, [timerange.data]);
 
   const getSelection = () => {
     const newSelection = {
@@ -180,6 +195,7 @@ function ObservationSelector(props) {
               selected={startDate}
               popperPlacement="top"
               onChange={(newDate) => setStartDate(newDate)}
+              minDate={minCalendarDate}
               maxDate={endDate}
             />
           </div>
@@ -191,8 +207,8 @@ function ObservationSelector(props) {
               selected={endDate}
               popperPlacement="top"
               onChange={(newDate) => setEndDate(newDate)}
-              maxDate={new Date()}
               minDate={startDate}
+              maxDate={maxCalendarDate}
             />
           </div>
 
