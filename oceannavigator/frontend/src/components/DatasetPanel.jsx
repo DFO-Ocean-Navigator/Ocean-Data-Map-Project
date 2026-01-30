@@ -167,28 +167,19 @@ function DatasetPanel({
   ) : null;
 
   let axisRangeSelectors = [];
-  let isAuto=true;
   if (showAxisRange) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
       : [dataset.variable];
     for (let variable of axisVariables) {
-      if(dataset.axisRange[variable.id] != null)
-      {
-        isAuto =
-        JSON.stringify(dataset.axisRange[variable.id]) ===
-          JSON.stringify(variable.scale);
-
-      }
       let rangeSelector = (
         <AxisRange
           key={variable.id + "_axis_range"}
           id={variable.id + "_axis_range"}
           title={variable.value + " Range"}
           variable={variable}
-          range={dataset.axisRange[variable.id] || variable.scale}
+          range={dataset.axisRange[variable.id]}
           onUpdate={updateDataset}
-          auto={isAuto}
         />
       );
       axisRangeSelectors.push(rangeSelector);

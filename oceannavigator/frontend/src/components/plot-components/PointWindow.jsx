@@ -165,7 +165,6 @@ const PointWindow = ({
   let inputs = [
     <>
       <DatasetPanel
-        subquery_variable_range={init?.dataset_0?.variable_range}
         subquery_depth={init?.dataset_0?.depth}
         id="point-window-dataset-panel"
         onUpdate={handleDatasetUpdate}
