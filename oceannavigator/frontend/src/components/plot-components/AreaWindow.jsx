@@ -164,9 +164,9 @@ const AreaWindow = (props) => {
         {props.compareDatasets && !autoScale && (
           <ComboBox
             id="colormap_diff"
-            state={diffColormap}
-            onUpdate={(_, value) => setDiffColormap(value)}
-            title={_("Diff. Colourmap")}
+            selected={diffColormap}
+            onChange={(_, value) => setDiffColormap(value)}
+            label={_("Diff. Colourmap")}
             options={colormaps.data}
           >
             {_("colourmap_help")}
@@ -240,18 +240,20 @@ const AreaWindow = (props) => {
           mapSettings={props.mapSettings}
           mountedDataset={props.dataset0}
         />
-        <ComboBox
-          key="leftColormap"
-          id="leftColormap"
-          selected={leftColormap}
-          placeholder="default"
-          onChange={(_, value) => setLeftColormap(value)}
-          options={colormaps.data}
-          label={_("Colourmap")}
-        >
-          {_("colourmap_help")}
-          <img src="/api/v2.0/plot/colormaps.png/" alt="" />
-        </ComboBox>
+        {!props.compareDatasets && (
+          <ComboBox
+            key="leftColormap"
+            id="leftColormap"
+            selected={leftColormap}
+            placeholder="default"
+            onChange={(_, value) => setLeftColormap(value)}
+            options={colormaps.data}
+            label={_("Colourmap")}
+          >
+            {_("colourmap_help")}
+            <img src="/api/v2.0/plot/colormaps.png/" alt="" />
+          </ComboBox>
+        )}
       </Card.Body>
     </Card>
   );
