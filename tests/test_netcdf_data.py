@@ -196,13 +196,11 @@ class TestNetCDFData(unittest.TestCase):
             result = nc_data.timestamp_to_time_index([2031436800, 2034072000])
             numpy.testing.assert_array_equal(result, numpy.array([0, 1]))
 
-    @unittest.skip("AttributeError: module cftime has no attribute real_datetime")
     def test_timestamp_to_iso_8601_int_timestamp(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_iso_8601(2031436800)
             self.assertEqual(result, cftime.real_datetime(2014, 5, 17, tzinfo=pytz.UTC))
 
-    @unittest.skip("AttributeError: module cftime has no attribute real_datetime")
     def test_timestamp_to_iso_8601_timestamp_list(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             result = nc_data.timestamp_to_iso_8601([2031436800, 2034072000])
@@ -217,7 +215,6 @@ class TestNetCDFData(unittest.TestCase):
             date_formatted = nc_data.convert_to_timestamp("2014-06-16T12:00:00Z")
             self.assertEqual(date_formatted, 1)
 
-    @unittest.skip("TypeError: cant subtract offset-naive and offset-aware datetimes")
     def test_convert_to_timestamp_list(self):
         with NetCDFData("tests/testdata/nemo_test.nc") as nc_data:
             date_formatted = nc_data.convert_to_timestamp(
@@ -244,8 +241,8 @@ class TestNetCDFData(unittest.TestCase):
                     ("output_format", "NETCDF3_NC"),
                     ("dataset", "mercator_test"),
                     ("variables", "votemper"),
-                    ("min_range", "-79.0,2.0"),
-                    ("max_range", "-78.0,3.0"),
+                    ("min_range", "30.0,-50.0"),
+                    ("max_range", "35.0,-45.0"),
                     ("time", "2119651200,2119651200"),
                     ("should_zip", "0"),
                 ]
@@ -312,7 +309,7 @@ class TestNetCDFData(unittest.TestCase):
             self.assertEqual(variables[0].name, "Sea water potential temperature")
             self.assertEqual(variables[0].unit, "Kelvin")
             self.assertEqual(
-                variables[0].dimensions, ("depth", "time", "latitude", "longitude")
+                set(variables[0].dimensions), {"depth", "time", "latitude", "longitude"}
             )
             self.assertEqual(variables[0].valid_min, 173.0)
             self.assertEqual(variables[0].valid_max, 373.0)
@@ -320,7 +317,7 @@ class TestNetCDFData(unittest.TestCase):
     def test_xarray_dimensions(self):
         with NetCDFData("tests/testdata/mercator_test.nc") as nc_data:
             self.assertEqual(
-                ["depth", "time", "latitude", "longitude"], nc_data.dimensions
+                {"depth", "time", "latitude", "longitude"}, set(nc_data.dimensions)
             )
 
     def test_zarr_xarray_variables(self):

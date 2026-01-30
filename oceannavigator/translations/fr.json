@@ -332,7 +332,7 @@
     "surfacevariable_help": "variablesurface_aide",
     "there are no datapoints in the area you selected.                                                 you may have selected a area on land or you may                                                 have an ara that is smallenough to fit between                                                 the datapoints try selection a different area or                                                 a larger area": "Aucune donnée pour cette région.                                                 peut-être vous avez choisi une région sur terre, ou                                                 une région suffisamment petite d'être entre                                                 les données. Essayer une autre région ou                                                 une région plus grande",
     "there are no datapoints in the area you selected.                                             You may have selected a area on land or you may                                             have an ara that is too small.                                             Try selection a different area or                                             a larger area": "Aucune donnée pour cette région.                                                 peut-être vous avez choisi une région sur terre, ou                                                 une région suffisamment petite d'être entre                                                 les données. Essayer une autre région ou                                                 une région plus grande",
-    "titlehelp": "titreaide",
+    "titlehelp": "{{title}} Aide",
     "variable_name": "nom_variable"
 
 }

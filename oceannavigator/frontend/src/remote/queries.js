@@ -2,12 +2,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   GetDatasetsPromise,
+  GetColormapsPromise,
   GetVariablesPromise,
   GetTimestampsPromise,
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
   GetTrackTimeRangePromise,
+  GetComboBoxQuery,
+  GetClass4ForecastsPromise,
+  GetClass4ModelsPromise,
+  GetObservationVariablesStationPromise,
+  GetObservationVariablesPlatformPromise,
   FilterDatasetsByDatePromise,
   FilterDatasetsByLocationPromise,
 } from "./OceanNavigator.js";
@@ -33,7 +39,7 @@ export function useGetAllVariables() {
 export function useGetDatasetVariables(
   dataset,
   enabled = true,
-  vectorsOnly = false
+  vectorsOnly = false,
 ) {
   const { data = [], status } = useQuery({
     queryKey: ["dataset", "variables", dataset.id, vectorsOnly],
@@ -96,7 +102,7 @@ export function useLocationFilter(datasetIds, location, enabled) {
       FilterDatasetsByLocationPromise(
         datasetIds,
         location[0],
-        (parseFloat(location[1]) + 360) % 360
+        (parseFloat(location[1]) + 360) % 360,
       ),
     enabled: enabled,
   });
@@ -107,6 +113,61 @@ export function useGetTrackTimeRange(trackId) {
   const { data = [], status } = useQuery({
     queryKey: ["observations", "trackTimeRange", trackId],
     queryFn: () => GetTrackTimeRangePromise(trackId),
+  });
+
+  return { data, status };
+}
+
+export function useGetColormaps() {
+  const { data = [], status } = useQuery({
+    queryKey: ["colormaps"],
+    queryFn: () => GetColormapsPromise(),
+  });
+  return { data, status };
+}
+
+export function useGetClass4Forecasts(class4Type, class4Id) {
+  const { data = [], status } = useQuery({
+    queryKey: ["class4", "forecasts", class4Type, class4Id],
+    queryFn: () => GetClass4ForecastsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationVariablesStation(stationId, enabled = true) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "variables", "station", stationId],
+    queryFn: () => GetObservationVariablesStationPromise(stationId),
+    enabled: enabled,
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationVariablesPlatform(platformId, enabled = true) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "variables", "platform", platformId],
+    queryFn: () => GetObservationVariablesPlatformPromise(platformId),
+    enabled: enabled,
+  });
+
+  return { data, status };
+}
+
+export function useGetClass4Models(class4Type, class4Id) {
+  const { data = [], status } = useQuery({
+    queryKey: ["class4", "models", class4Type, class4Id],
+    queryFn: () => GetClass4ModelsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetComboBoxQuery(url) {
+  const { data = [], status } = useQuery({
+    queryKey: ["comboBox", url],
+    queryFn: () => GetComboBoxQuery(url),
   });
 
   return { data, status };
