@@ -22,7 +22,6 @@ function DatasetPanel({
   onUpdate,
   id,
   hasDepth,
-  subquery_variable_range,
   subquery_depth,
   multipleVariables = false,
   showQuiverSelector = true,
@@ -104,7 +103,7 @@ function DatasetPanel({
           attribution: value.attribution,
           default_location: value.default_location,
           id: value.id,
-          depth: subquery_depth??0,
+          depth: subquery_depth ?? 0,
           model_class: value.model_class,
           quantum: value.quantum,
           value: value.value,
@@ -168,11 +167,19 @@ function DatasetPanel({
   ) : null;
 
   let axisRangeSelectors = [];
+  let isAuto=true;
   if (showAxisRange) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
       : [dataset.variable];
     for (let variable of axisVariables) {
+      if(dataset.axisRange[variable.id] != null)
+      {
+        isAuto =
+        JSON.stringify(dataset.axisRange[variable.id]) ===
+          JSON.stringify(variable.scale);
+
+      }
       let rangeSelector = (
         <AxisRange
           key={variable.id + "_axis_range"}
@@ -181,7 +188,7 @@ function DatasetPanel({
           variable={variable}
           range={dataset.axisRange[variable.id] || variable.scale}
           onUpdate={updateDataset}
-          variable_range={subquery_variable_range?.[dataset.variable]}
+          auto={isAuto}
         />
       );
       axisRangeSelectors.push(rangeSelector);
