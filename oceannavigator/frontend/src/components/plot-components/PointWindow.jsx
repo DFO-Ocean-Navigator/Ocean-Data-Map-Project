@@ -165,7 +165,6 @@ const PointWindow = ({
   let inputs = [
     <>
       <DatasetPanel
-        subquery_depth={init?.dataset_0?.depth}
         id="point-window-dataset-panel"
         onUpdate={handleDatasetUpdate}
         showQuiverSelector={false}
