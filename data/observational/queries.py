@@ -396,6 +396,9 @@ def get_stations(
 
 
 def get_station_time_range(session: Session):
+    """
+    Queries for the fist and last stations time values
+    """
 
     query = session.query(
         func.min(Station.time),
