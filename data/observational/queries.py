@@ -525,12 +525,13 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
         .distinct()
         .join(Platform)
         .filter(Platform.type.in_(platform_types))
-        .filter(PlatformMetadata.key == key)
         .order_by(PlatformMetadata.value)
-        .all()
     )
 
-    data = [item[0] for item in data]
+    if key != "Any":
+        data.filter(PlatformMetadata.key == key)
+
+    data = [item[0] for item in data.all()]
     return data
 
 
