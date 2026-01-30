@@ -8,10 +8,13 @@ import ImageSize from "../ImageSize.jsx";
 import CustomPlotLabels from "../CustomPlotLabels.jsx";
 import DatasetPanel from "../DatasetPanel.jsx";
 import PropTypes from "prop-types";
+
 import {
+  useGetColormaps,
   useGetDatasetVariables,
   useGetObservationVariablesStation,
 } from "../../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
 
 const TabEnum = {
@@ -70,6 +73,7 @@ const PointWindow = ({
   );
   const [only2d, setOnly2d] = useState(false);
 
+  const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(plotDataset);
   const observationVariables = useGetObservationVariablesStation(
     plotData.id,
@@ -164,47 +168,6 @@ const PointWindow = ({
     </>
   );
 
-  // Rendered across all tabs
-  let inputs = [
-    <>
-      <DatasetPanel
-        id="point-window-dataset-panel"
-        onUpdate={handleDatasetUpdate}
-        showQuiverSelector={false}
-        showVariableRange={false}
-        showAxisRange={showAxisRange}
-        showTimeRange={showTimeRange}
-        showDepthSelector={showDepthSelector}
-        mapSettings={mapSettings}
-        hasDepth={only3d}
-        showVariableSelector={showVarSelector}
-        showAllDepths={showDepthSelector}
-        multipleVariables={multipleVariables}
-        mountedDataset={plotDataset}
-      />
-      <CheckBox
-        id="showmap"
-        checked={showMap}
-        onUpdate={(_, value) => setShowMap(value)}
-        title={_("Show Location")}
-      >
-        {_("showmap_help")}
-      </CheckBox>
-      {/* {plotData.coordinates.length === 1 && (
-          <LocationInput
-            id="points"
-            state={plotData.coordinates}
-            title={_("Location")}
-            onUpdate={handlePointsUpdate}
-          />
-        )} */}
-      <Accordion>
-        <Accordion.Header>{_("Plot Options")}</Accordion.Header>
-        <Accordion.Body>{plotOptions}</Accordion.Body>
-      </Accordion>
-    </>,
-  ];
-
   let observationVariableSelector = null;
   if (plotData.observation) {
     if (typeof plotData.id === "number") {
@@ -239,6 +202,63 @@ const PointWindow = ({
       );
     }
   }
+
+  const inputs = (
+    <>
+      {observationVariableSelector}
+      <DatasetPanel
+        key="point-window-dataset-panel"
+        id="point-window-dataset-panel"
+        onUpdate={handleDatasetUpdate}
+        showQuiverSelector={false}
+        showVariableRange={false}
+        showAxisRange={showAxisRange}
+        showTimeRange={showTimeRange}
+        showDepthSelector={showDepthSelector}
+        mapSettings={mapSettings}
+        hasDepth={only3d}
+        showVariableSelector={showVarSelector}
+        showAllDepths={showDepthSelector}
+        multipleVariables={multipleVariables}
+        mountedDataset={plotDataset}
+      />
+      <CheckBox
+        key="showmap"
+        id="showmap"
+        checked={showMap}
+        onUpdate={(_, value) => setShowMap(value)}
+        title={_("Show Location")}
+      >
+        {_("showmap_help")}
+      </CheckBox>
+      {/* {plotData.coordinates.length === 1 && (
+          <LocationInput
+            id="points"
+            state={plotData.coordinates}
+            title={_("Location")}
+            onUpdate={handlePointsUpdate}
+          />
+        )} */}
+      <Accordion key="plot-options">
+        <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+        <Accordion.Body>{plotOptions}</Accordion.Body>
+      </Accordion>
+      {selected == TabEnum.MOORING && plotDataset.depth === "all" && (
+        <ComboBox
+          key="colormap"
+          id="colormap"
+          selected={colormap}
+          options={colormaps.data}
+          onChange={(_, value) => setColormap(value)}
+          url="/api/v2.0/plot/colormaps"
+          label={_("Colourmap")}
+        >
+          {" "}
+          <img src="/plot/colormaps.png/" alt="" />{" "}
+        </ComboBox>
+      )}
+    </>
+  );
 
   // temp/salinity check
   // Checks if the current dataset's variables contain Temperature
@@ -308,7 +328,6 @@ const PointWindow = ({
         observation_variable: observationVariable,
       };
       plotType = "observation";
-      inputs.unshift(observationVariableSelector);
       break;
     case TabEnum.MOORING:
       plotQuery = {
@@ -328,21 +347,6 @@ const PointWindow = ({
         neighbours: mapSettings.interpNeighbours,
       };
       plotType = "timeseries";
-      if (plotDataset.depth === "all")
-        // Add Colormap selector
-        inputs.push(
-          <ComboBox
-            key="colormap"
-            id="colormap"
-            selected={colormap}
-            onChange={(_, value) => setColormap(value)}
-            url="/api/v2.0/plot/colormaps"
-            label={_("Colourmap")}
-          >
-            {" "}
-            <img src="/plot/colormaps.png/" alt="" />{" "}
-          </ComboBox>,
-        );
       break;
   }
 
