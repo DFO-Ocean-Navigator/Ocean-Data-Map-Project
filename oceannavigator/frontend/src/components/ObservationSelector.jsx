@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ComboBox from "./lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
@@ -9,8 +9,13 @@ import Autocomplete from "./lib/Autocomplete.jsx";
 import "rc-slider/assets/index.css";
 import "react-datepicker/dist/react-datepicker.css";
 
+import {
+  useGetObservationDatatypes,
+  useGetObservationMetaKeys,
+  useGetObservationMetaValues,
+} from "../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
-import axios from "axios";
 
 const STD_DEPTHS = {
   0: "0m",
@@ -45,82 +50,30 @@ const PLATFORMS = [
 ];
 
 function ObservationSelector(props) {
-  const [metaKeys, setMetaKeys] = useState([]);
-  const [metaValues, setMetaValues] = useState([]);
   const [startDate, setStartDate] = useState(
     new Date(new Date().setDate(new Date().getDate() - 30)),
   );
   const [endDate, setEndDate] = useState(new Date());
-  const [metaKey, setMetaKey] = useState("");
+  const [metaKey, setMetaKey] = useState("Any");
   const [metaValue, setMetaValue] = useState("");
   const [platformType, setPlatformType] = useState(PLATFORMS.map((x) => x.id));
   const [platformActive, setPlatformActive] = useState(false);
   const [depthActive, setDepthActive] = useState(false);
-  const [dataTypes, setDataTypes] = useState([]);
   const [dataType, setDataType] = useState("sea_water_temperature");
   const [depthRange, setDepthRange] = useState([0, 5]);
   const [points, setPoints] = useState(true);
   const [quantum, setQuantum] = useState("day");
   const [radius, setRadius] = useState(50);
 
-  useEffect(() => {
-    fetchDataTypes();
-    fetchMetaKeys();
-  }, []);
+  const datatypes = useGetObservationDatatypes();
+  const metaKeys = useGetObservationMetaKeys(platformType);
+  const metaValues = useGetObservationMetaValues(
+    platformType,
+    metaKey,
+    metaKey !== "",
+  );
 
-  useEffect(() => {
-    fetchMetaValues();
-  }, [metaKey]);
-
-  const fetchDataTypes = () => {
-    const url = `/api/v2.0/observation/datatypes.json`;
-    axios
-      .get(url)
-      .then(function (response) {
-        setDataTypes(response.data);
-      })
-      .catch(function (error) {
-        console.error(url, error.message, error.response);
-      });
-  };
-
-  const fetchMetaKeys = () => {
-    const url = `/api/v2.0/observation/meta_keys/${platformType}.json`;
-    axios
-      .get(url)
-      .then(function (response) {
-        let data = response.data;
-        data.unshift("Any");
-        if (response.data.length > 0) {
-          setMetaKey(data[0]);
-        } else {
-          setMetaKey("");
-        }
-        setMetaKeys(data);
-      })
-      .catch(function (error) {
-        console.error(url, error.message, error.response);
-      });
-  };
-
-  const fetchMetaValues = () => {
-    if (metaKey) {
-      const url = `/api/v2.0/observation/meta_values/${platformType.join(
-        ",",
-      )}/${metaKey}.json`;
-      axios
-        .get(url)
-        .then(function (response) {
-          setMetaValues(response.data);
-          setMetaValue("");
-        })
-        .catch(function (error) {
-          console.error(url, error.message, error.response);
-        });
-    }
-  };
-
-  const keys = metaKeys.map(function (o) {
+  const metaKeyOptions = metaKeys.data.map(function (o) {
     return { id: o, value: o };
   });
 
@@ -250,7 +203,8 @@ function ObservationSelector(props) {
               selected={dataType}
               label="Data Type"
               onChange={(key, value) => setDataType(value)}
-              options={dataTypes}
+              options={datatypes.data}
+              alwaysShow
             />
           )}
 
@@ -285,22 +239,22 @@ function ObservationSelector(props) {
               ,&nbsp;
               {props.area[0][1].toFixed(4)})
             </h1>
-              <Slider
-                range
-                allowCross={false}
-                min={0}
-                max={250}
-                marks={{
-                  0: "0km",
-                  50: "50km",
-                  100: "100km",
-                  150: "150km",
-                  200: "200km",
-                  250: "250km",
-                }}
-                defaultValue={radius}
-                onChange={(x) => setRadius(x)}
-              />
+            <Slider
+              range
+              allowCross={false}
+              min={0}
+              max={250}
+              marks={{
+                0: "0km",
+                50: "50km",
+                100: "100km",
+                150: "150km",
+                200: "200km",
+                250: "250km",
+              }}
+              defaultValue={radius}
+              onChange={(x) => setRadius(x)}
+            />
           </Card.Body>
         </Card>
       )}
@@ -325,6 +279,7 @@ function ObservationSelector(props) {
             onChange={(key, value) => setPlatformType(value)}
             options={PLATFORMS}
             multiple
+            alwaysShow
           />
           <ComboBox
             key="metaKey"
@@ -332,16 +287,18 @@ function ObservationSelector(props) {
             selected={metaKey}
             label="Metadata Key"
             onChange={(key, value) => setMetaKey(value)}
-            options={keys}
+            options={metaKeyOptions}
           />
-          <div>
-            <h1 className="obs-input-label">Metadata Value</h1>
-            <Autocomplete
-              className="obs-autocomplete"
-              suggestions={metaValues}
-              onChange={(newValue) => setMetaValue(newValue)}
-            />
-          </div>
+          {metaKeyOptions.length > 1 && (
+            <div>
+              <h1 className="obs-input-label">Metadata Value</h1>
+              <Autocomplete
+                className="obs-autocomplete"
+                suggestions={metaValues.data}
+                onChange={(newValue) => setMetaValue(newValue)}
+              />
+            </div>
+          )}
         </Card.Body>
       </Card>
 
