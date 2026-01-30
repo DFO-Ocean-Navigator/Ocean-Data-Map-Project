@@ -526,7 +526,7 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
     Queries for Platform Metadata values, given a list of platform types and
     the key
     """
-    data = (
+    query = (
         session.query(PlatformMetadata.value)
         .distinct()
         .join(Platform)
@@ -535,9 +535,9 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
     )
 
     if key != "Any":
-        data.filter(PlatformMetadata.key == key)
+        query = query.filter(PlatformMetadata.key == key)
 
-    data = [item[0] for item in data.all()]
+    data = [item[0] for item in query.all()]
     return data
 
 

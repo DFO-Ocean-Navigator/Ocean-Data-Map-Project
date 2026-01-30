@@ -286,7 +286,9 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <Card.Body className="obs-card-body">
+        <Card.Body
+          className={`obs-card-body ${!platformActive ? "obs-card-disabled" : ""}`}
+        >
           <ComboBox
             key="platformType"
             id="platformType"
@@ -329,7 +331,9 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <Card.Body className="obs-card slider-container">
+        <Card.Body
+          className={`obs-card-body ${!depthActive ? "obs-card-disabled" : ""} slider-container`}
+        >
           <Slider
             range
             allowCross={false}
