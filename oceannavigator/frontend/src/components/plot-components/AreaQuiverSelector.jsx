@@ -7,7 +7,6 @@ import { withTranslation } from "react-i18next";
 
 const AreaQuiverSelector = ({
   state,
-  subquery,
   dataset,
   id,
   title,
@@ -38,7 +37,6 @@ const AreaQuiverSelector = ({
         key="variable"
         id="variable"
         selected={state.variable}
-        subquery={subquery}
         options={variables.data}
         onChange={handleUpdate}
         label={title}
@@ -72,7 +70,6 @@ AreaQuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,
   dataset: PropTypes.object.isRequired,
   title: PropTypes.string,
-  subquery: PropTypes.bool,
   state: PropTypes.shape({
     variable: PropTypes.string,
     magnitude: PropTypes.string,

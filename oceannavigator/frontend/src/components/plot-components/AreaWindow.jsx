@@ -43,7 +43,7 @@ const AreaWindow = (props) => {
   const [showArea, setShowArea] = useState(true);
   const [bathymetry, setBathymetry] = useState(true);
   const [surfaceVariable, setSurfaceVariable] = useState(
-    props.init?.surfacevariable || "none"
+    props.init?.surfacevariable || "none",
   );
 
   // Feature settings
@@ -203,7 +203,6 @@ const AreaWindow = (props) => {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset0}
-          subquery={props.init?.quiver ? true : false}
           title={_("Arrows")}
         >
           {_("arrows_help")}
@@ -215,7 +214,6 @@ const AreaWindow = (props) => {
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset0}
-           subquery={props.init?.contour ? true : false}
           title={_("Additional Contours")}
         >
           {_("contour_help")}
@@ -245,7 +243,6 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="area-window-dataset0-panel"
-          subquery_depth={props.init?.left_depth}
           onUpdate={props.updateDataset0}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -276,7 +273,6 @@ const AreaWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="area-window-dataset1-panel"
-          subquery_depth={props.init?.right_depth}
           onUpdate={props.updateDataset1}
           showQuiverSelector={false}
           showVariableRange={false}
@@ -346,10 +342,9 @@ const AreaWindow = (props) => {
       plotTitle,
       showarea: showArea,
       bathymetry,
-      contour,
+      surfacevariable: surfaceVariable,
       quiver,
-      left_depth: props.dataset0.depth,
-      right_depth: props.dataset1.depth,
+      contour,
     };
 
     content = (

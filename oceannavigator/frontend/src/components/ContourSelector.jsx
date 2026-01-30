@@ -10,7 +10,6 @@ const ContourSelector = ({
   state,
   dataset,
   id,
-  subquery,
   title,
   children,
   onUpdate,
@@ -71,7 +70,6 @@ const ContourSelector = ({
         key="variable"
         id="variable"
         selected={state.variable}
-        subquery={subquery}
         onChange={handleUpdate}
         options={variables.data}
         label={title}
@@ -147,7 +145,6 @@ ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
   dataset: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,
-  subquery: PropTypes.bool,
   title: PropTypes.string,
   children: PropTypes.node,
   onUpdate: PropTypes.func.isRequired,

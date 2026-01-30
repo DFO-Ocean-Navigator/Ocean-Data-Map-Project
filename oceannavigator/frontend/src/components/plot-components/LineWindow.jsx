@@ -197,7 +197,6 @@ const LineWindow = (props) => {
           key="surfacevariable"
           id="surfacevariable"
           selected={surfaceVariable}
-          subquery={ props.init?.surfacevariable?true:false}
           onChange={(_, value) => {
             setSurfaceVariable(value);
           }}
@@ -271,7 +270,6 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="line-window-dataset0-panel"
-          subquery_depth={props.init?.depth_left}
           onUpdate={props.updateDataset0}
           hasDepth={selected === 1}
           showQuiverSelector={false}
@@ -302,7 +300,6 @@ const LineWindow = (props) => {
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="line-window-dataset1-panel"
-          subquery_depth={props.init?.depth_right}
           onUpdate={props.updateDataset1}
           hasDepth={selected === 1}
           showQuiverSelector={false}
@@ -402,8 +399,6 @@ const LineWindow = (props) => {
     depth_limit: depthLimit,
     profile_distance: profileDistance,
     show_profile: showProfile,
-    depth_left: props.dataset0.depth,
-    depth_right:props.dataset1.depth,
     autoScale: autoScale,
   };
 

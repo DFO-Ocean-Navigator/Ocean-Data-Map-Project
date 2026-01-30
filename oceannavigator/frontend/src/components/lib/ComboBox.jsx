@@ -18,7 +18,6 @@ function ComboBox({
   alwaysShow = false,
   horizontalLayout = false,
   children,
-  subquery=false,
   t: _,
 }) {
   const [showHelp, setShowHelp] = useState(false);
