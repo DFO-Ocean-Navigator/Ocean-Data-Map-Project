@@ -20,11 +20,11 @@ const AreaWindow = (props) => {
   const { t: _ } = props;
 
   // UI state
-  const [currentTab, setCurrentTab] = useState(props.init?.currentTab || 1);
+  const [currentTab, setCurrentTab] = useState(1);
 
   // Scale settings
-  const [scale, setScale] = useState(props.init?.scale || "auto");
-  const [autoScale, setAutoScale] = useState(props.init?.autoScale || true);
+  const [scale, setScale] = useState("auto");
+  const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
 
   // Colormap settings
   const [leftColormap, setLeftColormap] = useState(
@@ -35,20 +35,20 @@ const AreaWindow = (props) => {
   );
 
   // Plot settings
-  const [plotSize, setPlotSize] = useState(props.init?.size || "10x7");
-  const [plotDpi, setPlotDpi] = useState(props.init?.dpi || 144);
-  const [plotTitle, setPlotTitle] = useState(props.init?.plotTitle);
+  const [plotSize, setPlotSize] = useState("10x7");
+  const [plotDpi, setPlotDpi] = useState(144);
+  const [plotTitle, setPlotTitle] = useState();
 
   // Map settings
-  const [showArea, setShowArea] = useState(props.init?.showarea ?? true);
-  const [bathymetry, setBathymetry] = useState(props.init?.bathymetry ?? true);
+  const [showArea, setShowArea] = useState(true);
+  const [bathymetry, setBathymetry] = useState(true);
   const [surfaceVariable, setSurfaceVariable] = useState(
     props.init?.surfacevariable || "none",
   );
 
   // Feature settings
   const [quiver, setQuiver] = useState(
-    props.init?.quiver || {
+    props.init?.quiver ?? {
       variable: "none",
       magnitude: "length",
       colormap: "default",
@@ -56,7 +56,7 @@ const AreaWindow = (props) => {
   );
 
   const [contour, setContour] = useState(
-    props.init?.contour || {
+    props.init?.contour ?? {
       variable: "none",
       colormap: "default",
       levels: "auto",
@@ -67,12 +67,21 @@ const AreaWindow = (props) => {
 
   const colormaps = useGetColormaps();
 
+  useEffect(() => {
+    if (!props.init) return;
+    setDiffColormap(props.init.colormap_diff);
+    setPlotSize(props.init.size);
+    setPlotDpi(props.init.dpi);
+    setPlotTitle(props.init.plotTitle);
+    setShowArea(props.init.showarea);
+    setBathymetry(props.init.bathymetry);
+  }, [props.init]);
   // Sync scale when dataset0.variable changes
   useEffect(() => {
     if (!autoScale) {
-      setScale(props.dataset0.variable.scale);
+      setScale(props.init?.scale ?? props.dataset0.variable.scale);
     }
-  }, [props.dataset0.variable]);
+  }, []);
 
   const handleQuiverUpdate = (key, value) => {
     setQuiver(typeof value === "object" ? { ...quiver, ...value } : value);
@@ -324,6 +333,7 @@ const AreaWindow = (props) => {
     const permlink_subquery = {
       currentTab,
       scale,
+      autoScale,
       scale_diff: scale.toString(),
       leftColormap: leftColormap.toString(),
       colormap_diff: diffColormap.toString(),

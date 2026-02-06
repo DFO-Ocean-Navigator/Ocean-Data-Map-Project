@@ -38,9 +38,8 @@ const PointWindow = ({
 }) => {
   // UI state
   const [selected, setSelected] = useState(
-    init?.selected || plotData.observation
-      ? TabEnum.OBSERVATION
-      : TabEnum.PROFILE,
+    init?.selected ??
+      (plotData.observation ? TabEnum.OBSERVATION : TabEnum.PROFILE),
   );
 
   // Display settings
@@ -87,9 +86,7 @@ const PointWindow = ({
 
     if (dataset2D && selected !== TabEnum.MOORING) {
       setSelected(TabEnum.MOORING);
-    }
-
-    if (
+    } else if (
       selected === TabEnum.PROFILE &&
       plotDataset.variable[0]?.two_dimensional
     ) {
@@ -341,7 +338,7 @@ const PointWindow = ({
         depth: plotDataset.depth,
         starttime: plotDataset.starttime.id,
         endtime: plotDataset.time.id,
-        colormap: colormap,
+        colormap: colormap.toString(),
         interp: mapSettings.interpType,
         radius: mapSettings.interpRadius,
         neighbours: mapSettings.interpNeighbours,
@@ -361,6 +358,7 @@ const PointWindow = ({
     plotTitles,
     observation_variable: observationVariable,
     plotDataset,
+    names: names,
   };
 
   return (

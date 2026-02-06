@@ -43,11 +43,11 @@ function DatasetPanel({
   const [loading, setLoading] = useState(true);
   const [updateParent, setUpdateParent] = useState(false);
   const [queryStatus, setQueryStatus] = useState(() =>
-    showVariableSelector ? { variables: "pending" } : {}
+    showVariableSelector ? { variables: "pending" } : {},
   );
   const [showDatasetSearch, setShowDatasetSearch] = useState(false);
   const [datasetSearchFilters, setDatasetSearchFilters] = useState(
-    DATASET_FILTER_DEFAULTS
+    DATASET_FILTER_DEFAULTS,
   );
 
   const datasetRef = useRef(dataset);
@@ -177,7 +177,7 @@ function DatasetPanel({
           id={variable.id + "_axis_range"}
           title={variable.value + " Range"}
           variable={variable}
-          range={dataset.axisRange[variable.id] || variable.scale}
+          range={dataset.axisRange[variable.id]}
           onUpdate={updateDataset}
         />
       );
