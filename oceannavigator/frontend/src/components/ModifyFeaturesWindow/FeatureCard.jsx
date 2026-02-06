@@ -35,6 +35,7 @@ function FeatureCard(props) {
 
     setFeatureType(newType);
     updateFeatureGeometry(coordinates, newType);
+    props.setSelected(props.feature.id, featureType, false);
   };
 
   const removeCoord = (index) => {
@@ -183,6 +184,7 @@ function FeatureCard(props) {
     <div className="feature-card">
       <div className="card-header">
         <Form.Check
+        disabled={coordinateAlerts!=0 || coordinates[0][0]==="" || coordinates[0][1]===""}
           onChange={(e) => {
             props.setSelected(props.feature.id, featureType, e.target.checked);
           }}
