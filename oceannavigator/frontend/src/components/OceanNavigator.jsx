@@ -417,7 +417,6 @@ function OceanNavigator(props) {
         updateMapSettings={updateMapSettings}
         updateUI={updateUI}
         compareDatasets={compareDatasets}
-        mapView={mapView}
       />
       <MapInputs
         dataset0={dataset0}

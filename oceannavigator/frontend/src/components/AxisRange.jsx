@@ -43,8 +43,6 @@ function AxisRange(props) {
     setAuto(e.target.checked);
     if (e.target.checked) {
       props.onUpdate("axisRange", [props.variable.id, null]);
-      setMin(props.variable.scale[0]);
-      setMax(props.variable.scale[1]);
     } else {
       props.onUpdate("axisRange", [props.variable.id, [min, max]]);
     }
