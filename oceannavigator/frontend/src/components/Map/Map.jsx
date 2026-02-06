@@ -321,7 +321,7 @@ const Map = forwardRef((props, ref) => {
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
-      if (props.compareDatasets) {
+      if (props.compareDatasets && map1) {
         map1.setView(newMapView);
       }
     }
