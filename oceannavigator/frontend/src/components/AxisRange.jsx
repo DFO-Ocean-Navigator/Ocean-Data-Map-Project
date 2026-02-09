@@ -8,9 +8,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withTranslation } from "react-i18next";
 
 function AxisRange(props) {
-  const [auto, setAuto] = useState(true);
-  const [min, setMin] = useState(props.range[0]);
-  const [max, setMax] = useState(props.range[1]);
+  const [auto, setAuto] = useState(props.range?false:true)
+  const [min, setMin] = useState(props.range?props.range[0]:props.variable.scale[0]);
+  const [max, setMax] = useState(props.range?props.range[1]:props.variable.scale[1]);
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ function AxisRange(props) {
 
     timerRef.current = setTimeout(
       updateParent([props.variable.scale[0], props.variable.scale[1]]),
-      500
+      500,
     );
   };
 
@@ -93,8 +93,8 @@ function AxisRange(props) {
                 disabled={auto}
               />
             </td>
-            <td>
-              <Button name="default" onClick={handleResetButton}>
+            <td className="default-button-container">
+              <Button name="default" size="sm" onClick={handleResetButton}>
                 <FontAwesomeIcon icon={faRotateLeft} />
               </Button>
             </td>

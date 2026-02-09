@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
-import SelectBox from "../lib/SelectBox.jsx";
-
+import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetDepths } from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
@@ -31,9 +30,9 @@ function DepthSelector({
   };
 
   return depths.data.length > 0 ? (
-    <SelectBox
-      id={`dataset-selector-depth-selector-${id}`}
-      name={"depth"}
+    <ComboBox
+      key={`${id}-depth-selector`}
+      id="depth"
       label={t("Depth")}
       placeholder={t("Depth")}
       options={
@@ -47,11 +46,9 @@ function DepthSelector({
             // when depth == "bottom" or "all"
             depth = dataset.depth;
           }
-
           return d.id === depth;
         })[0].id
       }
-      loading={depths.isLoading}
       horizontalLayout={horizontalLayout}
     />
   ) : null;
