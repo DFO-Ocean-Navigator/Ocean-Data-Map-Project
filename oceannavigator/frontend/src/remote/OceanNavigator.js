@@ -134,6 +134,39 @@ export async function GetClass4ForecastsPromise(class4Type, class4Id) {
   return response.data;
 }
 
+export async function GetObservationDatatypes() {
+  const response = await axios.get("/api/v2.0/observation/datatypes.json");
+
+  return response.data;
+}
+
+export async function GetObservationTimeRange() {
+  const response = await axios.get("/api/v2.0/observation/time_range");
+
+  return response.data;
+}
+
+export async function GetObservationMetaKeys(platformType) {
+  const response = await axios.get(
+    `/api/v2.0/observation/meta_keys/${platformType}.json`,
+  );
+
+  let data = response.data
+  data.unshift("Any")
+
+  return response.data;
+}
+
+export async function GetObservationMetaValues(platformType, metaKey) {
+  const response = await axios.get(
+    `/api/v2.0/observation/meta_values/${platformType.join(
+      ",",
+    )}/${metaKey}.json`,
+  );
+
+  return response.data;
+}
+
 export async function GetObservationVariablesStationPromise(stationId) {
   const queryConfig = {
     method: "get",
