@@ -73,11 +73,11 @@ const MAX_ZOOM = {
 
 proj4.defs(
   "EPSG:32661",
-  "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
 );
 proj4.defs(
   "EPSG:3031",
-  "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
 );
 olProj4.register(proj4);
 
@@ -119,12 +119,12 @@ const Map = forwardRef((props, ref) => {
     new TileLayer({
       preload: 1,
       zIndex: 1,
-    })
+    }),
   );
   const [layerData1, setLayerData1] = useState(
     new TileLayer({
       preload: 1,
-    })
+    }),
   );
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
@@ -174,7 +174,7 @@ const Map = forwardRef((props, ref) => {
       projection,
       4,
       MIN_ZOOM[projection],
-      MAX_ZOOM[projection]
+      MAX_ZOOM[projection],
     );
 
     let newFeatureVectorSource = new VectorSource({
@@ -185,7 +185,7 @@ const Map = forwardRef((props, ref) => {
 
     let newLayerFeatureVector = createFeatureVectorLayer(
       newFeatureVectorSource,
-      props.mapSettings
+      props.mapSettings,
     );
 
     const newObsDrawSource = new VectorSource({ features: [] });
@@ -199,7 +199,7 @@ const Map = forwardRef((props, ref) => {
       newLayerFeatureVector,
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
-      mapRef0
+      mapRef0,
     );
 
     const newSelect0 = createSelect();
@@ -236,7 +236,7 @@ const Map = forwardRef((props, ref) => {
 
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
-        props.mapSettings
+        props.mapSettings,
       );
 
       newMap = createMap(
@@ -248,7 +248,7 @@ const Map = forwardRef((props, ref) => {
         newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
-        mapRef1
+        mapRef1,
       );
 
       map0.getControls().item(0).setMap(newMap); // change zoom control target
@@ -318,11 +318,11 @@ const Map = forwardRef((props, ref) => {
         "EPSG:3857",
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
-        MAX_ZOOM[props.mapSettings.projection]
+        MAX_ZOOM[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
-      if (props.compareDatasets) {
+      if (props.compareDatasets && map1) {
         map1.setView(newMapView);
       }
     }
@@ -340,7 +340,7 @@ const Map = forwardRef((props, ref) => {
         "EPSG:3857",
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
-        MAX_ZOOM[props.mapSettings.projection]
+        MAX_ZOOM[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       map1.setView(newMapView);
@@ -351,7 +351,7 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     if (props.dataset0.time.id >= 0) {
       layerData0.setSource(
-        new XYZ(getDataSource(props.dataset0, props.mapSettings))
+        new XYZ(getDataSource(props.dataset0, props.mapSettings)),
       );
     }
   }, [
@@ -365,7 +365,7 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     if (props.dataset1.time.id >= 0) {
       layerData1.setSource(
-        new XYZ(getDataSource(props.dataset1, props.mapSettings))
+        new XYZ(getDataSource(props.dataset1, props.mapSettings)),
       );
     }
   }, [
@@ -475,6 +475,22 @@ const Map = forwardRef((props, ref) => {
     props.mapSettings.topoShadedRelief,
   ]);
 
+  useEffect(() => {
+    if (props.mapSettings.mapView) {
+      const newCenter = [...props.mapSettings.mapView.center];
+      const newZoom = [props.mapSettings.mapView.zoom];
+      const newMapView = createMapView(
+        newCenter,
+        props.mapSettings.projection,
+        newZoom,
+        MIN_ZOOM[props.mapSettings.projection],
+        MAX_ZOOM[props.mapSettings.projection],
+      );
+      map0.setView(newMapView);
+      map1 && map1.setView(newMapView);
+    }
+  }, [props.mapSettings.mapView,map1]);
+
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
@@ -492,7 +508,7 @@ const Map = forwardRef((props, ref) => {
           feat,
           "#000",
           "#ffffff",
-          props.mapSettings
+          props.mapSettings,
         );
         if (textStyle && feat.get("type") !== "class4") styles.push(textStyle);
 
@@ -510,11 +526,11 @@ const Map = forwardRef((props, ref) => {
 
     if (e.selected.length === 0 || e.selected[0]?.get("type") === "Point") {
       selected = Array.from(
-        new Set([...e.selected, ...features0, ...features1])
+        new Set([...e.selected, ...features0, ...features1]),
       ).filter(
         (feature) =>
           feature.get("type") === "Point" &&
-          feature.getId() !== e.deselected[0]?.getId()
+          feature.getId() !== e.deselected[0]?.getId(),
       );
     }
 
@@ -549,7 +565,7 @@ const Map = forwardRef((props, ref) => {
           feature,
           "#000",
           "#ffffff",
-          props.mapSettings
+          props.mapSettings,
         );
 
         if (feature.get("type") === "Point") {
@@ -588,7 +604,7 @@ const Map = forwardRef((props, ref) => {
       .transform(
         map0.getView().getCenter(),
         props.mapSettings.projection,
-        "EPSG:4326"
+        "EPSG:4326",
       )
       .map(function (c) {
         return c.toFixed(4);
@@ -615,7 +631,7 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) =>
         feature.get("type") !== "class4" &&
-        feature.get("class") !== "observation"
+        feature.get("class") !== "observation",
     );
     features.sort((a, b) => a.ol_uid.localeCompare(b.ol_uid));
     features = features.map((feature) => {
@@ -635,7 +651,7 @@ const Map = forwardRef((props, ref) => {
         return olProj.transform(
           coord,
           props.mapSettings.projection,
-          "EPSG:4326"
+          "EPSG:4326",
         );
       });
 
@@ -679,7 +695,7 @@ const Map = forwardRef((props, ref) => {
     features = features.filter(
       (feature) =>
         feature.get("class") !== "observation" &&
-        feature.get("type") !== "class4"
+        feature.get("type") !== "class4",
     );
     if (features.length > 0) {
       featureVectorSource.removeFeatures([features[features.length - 1]]);
@@ -779,13 +795,13 @@ const Map = forwardRef((props, ref) => {
       return featureVectorSource.getFeatureById(id);
     });
     let coordinates = toCombine.map((feature) =>
-      feature.getGeometry().getCoordinates()
+      feature.getGeometry().getCoordinates(),
     );
 
     let idx = features.reduce(
       (result, feat, idx) =>
         featureIds.includes(feat.getId()) ? result.concat(idx) : result,
-      []
+      [],
     );
     idx.sort();
 
@@ -794,7 +810,7 @@ const Map = forwardRef((props, ref) => {
     newFeature.setProperties({ type: "LineString" });
     features.splice(idx[0], 1, newFeature);
     features = features.filter(
-      (feature) => !featureIds.includes(feature.getId())
+      (feature) => !featureIds.includes(feature.getId()),
     );
     featureVectorSource.clear();
     featureVectorSource.addFeatures(features);
@@ -880,7 +896,7 @@ const Map = forwardRef((props, ref) => {
                   "<span>" +
                   "RMS Error: " +
                   feat.get("error").toPrecision(3) +
-                  "</span>"
+                  "</span>",
               );
             }
             if (id) {
@@ -947,7 +963,7 @@ const Map = forwardRef((props, ref) => {
       map0,
       obsDrawSource,
       props.mapSettings.projection,
-      props.action
+      props.action,
     );
     map0.addInteraction(newDrawAction);
     //event listener to re-enable hover when drawing ends
@@ -968,7 +984,7 @@ const Map = forwardRef((props, ref) => {
       map0,
       obsDrawSource,
       props.mapSettings.projection,
-      props.action
+      props.action,
     );
     map0.addInteraction(newDrawAction);
     newDrawAction.on("drawend", () => {
@@ -1067,7 +1083,7 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief
+      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -1084,7 +1100,7 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.projection,
       DEF_ZOOM[props.mapSettings.projection],
       MIN_ZOOM[props.mapSettings.projection],
-      MAX_ZOOM[props.mapSettings.projection]
+      MAX_ZOOM[props.mapSettings.projection],
     );
 
     map.setView(newMapView);
@@ -1104,7 +1120,7 @@ const Map = forwardRef((props, ref) => {
         tilePixelRatio: 8,
         url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
         projection: props.mapSettings.projection,
-      })
+      }),
     );
 
     mapLayers[4].setSource(
@@ -1114,7 +1130,7 @@ const Map = forwardRef((props, ref) => {
         tilePixelRatio: 8,
         url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
         projection: props.mapSettings.projection,
-      })
+      }),
     );
 
     let bathySource = null;
@@ -1143,7 +1159,7 @@ const Map = forwardRef((props, ref) => {
         map.getEventPixel(e.originalEvent),
         function (feature, layer) {
           return feature;
-        }
+        },
       );
       let selected = select.getFeatures().getArray();
       if (selected.includes(feature)) {
@@ -1159,7 +1175,7 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief
+      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -1182,7 +1198,7 @@ const Map = forwardRef((props, ref) => {
           tilePixelRatio: 8,
           url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
           projection: props.mapSettings.projection,
-        })
+        }),
       );
 
       mapLayers[2].setSource(
@@ -1191,7 +1207,7 @@ const Map = forwardRef((props, ref) => {
           tileGrid: vectorTileGrid,
           url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
           projection: props.mapSettings.projection,
-        })
+        }),
       );
     }
   };
@@ -1220,7 +1236,7 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief
+      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {

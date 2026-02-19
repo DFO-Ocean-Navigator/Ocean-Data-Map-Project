@@ -378,25 +378,34 @@ def get_stations(
     """
     Queries for stations, given the optional query filters.
     """
-    return (
-        __build_station_query(
-            session=session,
-            variable=variable,
-            mindepth=mindepth,
-            maxdepth=maxdepth,
-            minlat=minlat,
-            maxlat=maxlat,
-            minlon=minlon,
-            maxlon=maxlon,
-            starttime=starttime,
-            endtime=endtime,
-            platform_types=platform_types,
-            meta_key=meta_key,
-            meta_value=meta_value,
-        )
-        .join(Platform)
-        .all()
+    return __build_station_query(
+        session=session,
+        variable=variable,
+        mindepth=mindepth,
+        maxdepth=maxdepth,
+        minlat=minlat,
+        maxlat=maxlat,
+        minlon=minlon,
+        maxlon=maxlon,
+        starttime=starttime,
+        endtime=endtime,
+        platform_types=platform_types,
+        meta_key=meta_key,
+        meta_value=meta_value,
+    ).all()
+
+
+def get_station_time_range(session: Session):
+    """
+    Queries for the fist and last stations time values
+    """
+
+    query = session.query(
+        func.min(Station.time),
+        func.max(Station.time),
     )
+
+    return query.one()
 
 
 def __get_bounding_latlon(lat, lon, distance):
@@ -520,17 +529,18 @@ def get_meta_values(session: Session, platform_types: List[str], key: str) -> Li
     Queries for Platform Metadata values, given a list of platform types and
     the key
     """
-    data = (
+    query = (
         session.query(PlatformMetadata.value)
         .distinct()
         .join(Platform)
         .filter(Platform.type.in_(platform_types))
-        .filter(PlatformMetadata.key == key)
         .order_by(PlatformMetadata.value)
-        .all()
     )
 
-    data = [item[0] for item in data]
+    if key != "Any":
+        query = query.filter(PlatformMetadata.key == key)
+
+    data = [item[0] for item in query.all()]
     return data
 
 

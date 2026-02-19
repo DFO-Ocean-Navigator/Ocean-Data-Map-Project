@@ -9,8 +9,14 @@ import Autocomplete from "./lib/Autocomplete.jsx";
 import "rc-slider/assets/index.css";
 import "react-datepicker/dist/react-datepicker.css";
 
+import {
+  useGetObservationDatatypes,
+  useGetObservationTimeRange,
+  useGetObservationMetaKeys,
+  useGetObservationMetaValues,
+} from "../remote/queries.js";
+
 import { withTranslation } from "react-i18next";
-import axios from "axios";
 
 const STD_DEPTHS = {
   0: "0m",
@@ -45,84 +51,46 @@ const PLATFORMS = [
 ];
 
 function ObservationSelector(props) {
-  const [metaKeys, setMetaKeys] = useState([]);
-  const [metaValues, setMetaValues] = useState([]);
   const [startDate, setStartDate] = useState(
-    new Date(new Date().setDate(new Date().getDate() - 30))
+    new Date(new Date().setDate(new Date().getDate() - 30)),
   );
   const [endDate, setEndDate] = useState(new Date());
-  const [metaKey, setMetaKey] = useState("");
+  const [metaKey, setMetaKey] = useState("Any");
   const [metaValue, setMetaValue] = useState("");
   const [platformType, setPlatformType] = useState(PLATFORMS.map((x) => x.id));
   const [platformActive, setPlatformActive] = useState(false);
   const [depthActive, setDepthActive] = useState(false);
-  const [dataTypes, setDataTypes] = useState([]);
   const [dataType, setDataType] = useState("sea_water_temperature");
   const [depthRange, setDepthRange] = useState([0, 5]);
   const [points, setPoints] = useState(true);
   const [quantum, setQuantum] = useState("day");
   const [radius, setRadius] = useState(50);
 
-  useEffect(() => {
-    fetchDataTypes();
-    fetchMetaKeys();
-  }, []);
+  const timerange = useGetObservationTimeRange();
+  const datatypes = useGetObservationDatatypes();
+  const metaKeys = useGetObservationMetaKeys(platformType);
+  const metaValues = useGetObservationMetaValues(
+    platformType,
+    metaKey,
+    metaKey !== "",
+  );
 
-  useEffect(() => {
-    fetchMetaValues();
-  }, [metaKey]);
-
-  const fetchDataTypes = () => {
-    const url = `/api/v2.0/observation/datatypes.json`;
-    axios
-      .get(url)
-      .then(function (response) {
-        setDataTypes(response.data);
-      })
-      .catch(function (error) {
-        console.error(url, error.message, error.response);
-      });
-  };
-
-  const fetchMetaKeys = () => {
-    const url = `/api/v2.0/observation/meta_keys/${platformType}.json`;
-    axios
-      .get(url)
-      .then(function (response) {
-        let data = response.data;
-        data.unshift("Any");
-        if (response.data.length > 0) {
-          setMetaKey(data[0]);
-        } else {
-          setMetaKey("");
-        }
-        setMetaKeys(data);
-      })
-      .catch(function (error) {
-        console.error(url, error.message, error.response);
-      });
-  };
-
-  const fetchMetaValues = () => {
-    if (metaKey) {
-      const url = `/api/v2.0/observation/meta_values/${platformType.join(
-        ","
-      )}/${metaKey}.json`;
-      axios
-        .get(url)
-        .then(function (response) {
-          setMetaValues(response.data);
-          setMetaValue("");
-        })
-        .catch(function (error) {
-          console.error(url, error.message, error.response);
-        });
-    }
-  };
-
-  const keys = metaKeys.map(function (o) {
+  const metaKeyOptions = metaKeys.data.map(function (o) {
     return { id: o, value: o };
   });
+
+  const minCalendarDate = new Date(timerange.data.start_time);
+  const maxCalendarDate = new Date(timerange.data.end_time);
+
+  useEffect(() => {
+    if (!isNaN(maxCalendarDate.getTime())) {
+      const nextStart = new Date(
+        new Date(maxCalendarDate) - 5 * 24 * 60 * 60 * 1000,
+      );
+      setStartDate(nextStart);
+      setEndDate(maxCalendarDate);
+    }
+  }, [timerange.data]);
 
   const getSelection = () => {
     const newSelection = {
@@ -186,137 +154,129 @@ function ObservationSelector(props) {
   };
 
   return (
-    <div className="ObservationSelector">
+    <div className="observation-selector">
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Observation Type</Card.Title>
         </Card.Header>
-        <Card.Body>
-          <div className="input">
-            <Form.Group>
-              <Form.Check
-                type="radio"
-                inline
-                name="type"
-                id="point-check"
-                label="Points"
-                defaultChecked={true}
-                onChange={(e) => setPoints(e.target.value == "on")}
-              />
-              <Form.Check
-                type="radio"
-                inline
-                name="type"
-                id="line-check"
-                label="Tracks"
-                onChange={(e) => setPoints(e.target.value != "on")}
-              />
-            </Form.Group>
-          </div>
+        <Card.Body className="obs-card-body">
+          <Form.Group>
+            <Form.Check
+              type="radio"
+              inline
+              name="type"
+              id="point-check"
+              label="Points"
+              defaultChecked={true}
+              onChange={(e) => setPoints(e.target.value == "on")}
+            />
+            <Form.Check
+              type="radio"
+              inline
+              name="type"
+              id="line-check"
+              label="Tracks"
+              onChange={(e) => setPoints(e.target.value != "on")}
+            />
+          </Form.Group>
         </Card.Body>
       </Card>
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Date &amp; Variable Filters</Card.Title>
         </Card.Header>
-        <Card.Body>
-          <div className="inputs">
-            <div className="datepicker input">
-              <h1>Start Date</h1>
-              <DatePicker
-                id="startDate"
-                dateFormat="yyyy-MM-dd"
-                selected={startDate}
-                popperPlacement="top"
-                onChange={(newDate) => setStartDate(newDate)}
-                maxDate={endDate}
-              />
-            </div>
-            <div className="datepicker input">
-              <h1>End Date</h1>
-              <DatePicker
-                id="endDate"
-                dateFormat="yyyy-MM-dd"
-                selected={endDate}
-                popperPlacement="top"
-                onChange={(newDate) => setEndDate(newDate)}
-                maxDate={new Date()}
-                minDate={startDate}
-              />
-            </div>
-
-            {points && (
-              <ComboBox
-                key="dataType"
-                id="dataType"
-                selected={dataType}
-                label="Data Type"
-                onChange={(key, value) => setDataType(value)}
-                options={dataTypes}
-              />
-            )}
-
-            {!points && (
-              <ComboBox
-                key="quantum"
-                id="quantum"
-                selected={quantum}
-                label="Track Simplification"
-                onChange={(key, value) => setQuantum(value)}
-                options={[
-                  { id: "minute", value: "Minute" },
-                  { id: "hour", value: "Hour" },
-                  { id: "day", value: "Day" },
-                  { id: "week", value: "Week" },
-                  { id: "month", value: "Month" },
-                  { id: "year", value: "Year" },
-                ]}
-              />
-            )}
+        <Card.Body className="obs-card-body">
+          <div>
+            <h1 className="obs-input-label">Start Date</h1>
+            <DatePicker
+              id="startDate"
+              dateFormat="yyyy-MM-dd"
+              selected={startDate}
+              popperPlacement="top"
+              onChange={(newDate) => setStartDate(newDate)}
+              minDate={minCalendarDate}
+              maxDate={endDate}
+            />
           </div>
+          <div>
+            <h1 className="obs-input-label">End Date</h1>
+            <DatePicker
+              id="endDate"
+              dateFormat="yyyy-MM-dd"
+              selected={endDate}
+              popperPlacement="top"
+              onChange={(newDate) => setEndDate(newDate)}
+              minDate={startDate}
+              maxDate={maxCalendarDate}
+            />
+          </div>
+
+          {points && (
+            <ComboBox
+              key="dataType"
+              id="dataType"
+              selected={dataType}
+              label="Data Type"
+              onChange={(key, value) => setDataType(value)}
+              options={datatypes.data}
+              alwaysShow
+            />
+          )}
+
+          {!points && (
+            <ComboBox
+              key="quantum"
+              id="quantum"
+              selected={quantum}
+              label="Track Simplification"
+              onChange={(key, value) => setQuantum(value)}
+              options={[
+                { id: "minute", value: "Minute" },
+                { id: "hour", value: "Hour" },
+                { id: "day", value: "Day" },
+                { id: "week", value: "Week" },
+                { id: "month", value: "Month" },
+                { id: "year", value: "Year" },
+              ]}
+            />
+          )}
         </Card.Body>
       </Card>
 
       {props.area.length == 1 && (
         <Card className="obs-card">
-          <Card.Header>
+          <Card.Header className="obs-card-header">
             <Card.Title>Search Radius</Card.Title>
           </Card.Header>
-          <Card.Body>
-            <div className="inputs">
-              <div className="input" style={{ width: "100%" }}>
-                <h1>
-                  Search Radius (km) around ({props.area[0][0].toFixed(4)}
-                  ,&nbsp;
-                  {props.area[0][1].toFixed(4)})
-                </h1>
-                <div style={{ width: "95%", margin: "0 auto" }}>
-                  <Slider
-                    range
-                    allowCross={false}
-                    min={0}
-                    max={250}
-                    marks={{
-                      0: "0km",
-                      50: "50km",
-                      100: "100km",
-                      150: "150km",
-                      200: "200km",
-                      250: "250km",
-                    }}
-                    defaultValue={radius}
-                    onChange={(x) => setRadius(x)}
-                  />
-                </div>
-              </div>
-            </div>
+          <Card.Body className="obs-card-body slider-container">
+            <h1 className="obs-input-label">
+              Search Radius (km) around ({props.area[0][0].toFixed(4)}
+              ,&nbsp;
+              {props.area[0][1].toFixed(4)})
+            </h1>
+            <Slider
+              range
+              allowCross={false}
+              min={0}
+              max={250}
+              marks={{
+                0: "0km",
+                50: "50km",
+                100: "100km",
+                150: "150km",
+                200: "200km",
+                250: "250km",
+              }}
+              defaultValue={radius}
+              onChange={(x) => setRadius(x)}
+            />
           </Card.Body>
         </Card>
       )}
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Platform Filters</Card.Title>
           <Form.Check
             type="switch"
@@ -326,38 +286,42 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <Card.Body>
-          <div className="inputs">
-            <ComboBox
-              key="platformType"
-              id="platformType"
-              selected={platformType}
-              label={__("Platform Type")}
-              onChange={(key, value) => setPlatformType(value)}
-              options={PLATFORMS}
-              multiple
-            />
-            <ComboBox
-              key="metaKey"
-              id="metaKey"
-              selected={metaKey}
-              label="Metadata Key"
-              onChange={(key, value) => setMetaKey(value)}
-              options={keys}
-            />
-            <div className="input" style={{ width: "30em" }}>
-              <h1>Metadata Value</h1>
+        <Card.Body
+          className={`obs-card-body ${!platformActive ? "obs-card-disabled" : ""}`}
+        >
+          <ComboBox
+            key="platformType"
+            id="platformType"
+            selected={platformType}
+            label={__("Platform Type")}
+            onChange={(key, value) => setPlatformType(value)}
+            options={PLATFORMS}
+            multiple
+            alwaysShow
+          />
+          <ComboBox
+            key="metaKey"
+            id="metaKey"
+            selected={metaKey}
+            label="Metadata Key"
+            onChange={(key, value) => setMetaKey(value)}
+            options={metaKeyOptions}
+          />
+          {metaKeyOptions.length > 1 && (
+            <div>
+              <h1 className="obs-input-label">Metadata Value</h1>
               <Autocomplete
-                suggestions={metaValues}
+                className="obs-autocomplete"
+                suggestions={metaValues.data}
                 onChange={(newValue) => setMetaValue(newValue)}
               />
             </div>
-          </div>
+          )}
         </Card.Body>
       </Card>
 
       <Card className="obs-card">
-        <Card.Header>
+        <Card.Header className="obs-card-header">
           <Card.Title>Depth Filter</Card.Title>
           <Form.Check
             type="switch"
@@ -367,19 +331,19 @@ function ObservationSelector(props) {
             }}
           />
         </Card.Header>
-        <div className="inputs">
-          <div className="slider-container">
-            <Slider
-              range
-              allowCross={false}
-              min={parseInt(Object.keys(STD_DEPTHS).slice(0)[0])}
-              max={parseInt(Object.keys(STD_DEPTHS).slice(-1)[0])}
-              marks={STD_DEPTHS}
-              defaultValue={depthRange}
-              onChange={(x) => setDepthRange(x)}
-            />
-          </div>
-        </div>
+        <Card.Body
+          className={`obs-card-body ${!depthActive ? "obs-card-disabled" : ""} slider-container`}
+        >
+          <Slider
+            range
+            allowCross={false}
+            min={parseInt(Object.keys(STD_DEPTHS).slice(0)[0])}
+            max={parseInt(Object.keys(STD_DEPTHS).slice(-1)[0])}
+            marks={STD_DEPTHS}
+            defaultValue={depthRange}
+            onChange={(x) => setDepthRange(x)}
+          />
+        </Card.Body>
       </Card>
       <Button
         variant="primary"
