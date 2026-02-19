@@ -94,3 +94,9 @@ data/calculated_parser/parsetab.py
 node_modules/
 oceannavigator/frontend/public/
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
