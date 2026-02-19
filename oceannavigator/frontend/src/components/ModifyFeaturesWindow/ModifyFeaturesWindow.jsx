@@ -19,6 +19,12 @@ function ModifyFeaturesWindow(props) {
     let features = props.mapRef.current.getFeatures();
     setMapFeatures(features);
   }, [props.selectedFeatureIds]);
+  
+  useEffect(() => {
+    return () => {
+      props.mapRef.current.removeEmptyFeatures();
+    };
+  }, []);
 
   const addFeature = () => {
     let newFeature = {
