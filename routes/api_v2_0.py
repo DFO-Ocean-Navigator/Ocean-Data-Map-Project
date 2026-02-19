@@ -1202,6 +1202,25 @@ def mbt(
     )
 
 
+@router.get("/observation/time_range")
+def observation_time_range(db: Session = Depends(get_db)):
+    """
+    Returns the current observations time range.
+    """
+    time_range = ob_queries.get_station_time_range(db)
+
+    response = {
+        "start_time": time_range[0].isoformat(),
+        "end_time": time_range[1].isoformat(),
+    }
+
+    return JSONResponse(
+        response,
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+    return
+
+
 @router.get("/observation/datatypes.json")
 def observation_datatypes(db: Session = Depends(get_db)):
     """

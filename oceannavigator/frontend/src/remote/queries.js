@@ -12,6 +12,10 @@ import {
   GetComboBoxQuery,
   GetClass4ForecastsPromise,
   GetClass4ModelsPromise,
+  GetObservationDatatypes,
+  GetObservationTimeRange,
+  GetObservationMetaKeys,
+  GetObservationMetaValues,
   GetObservationVariablesStationPromise,
   GetObservationVariablesPlatformPromise,
   FilterDatasetsByDatePromise,
@@ -130,6 +134,43 @@ export function useGetClass4Forecasts(class4Type, class4Id) {
   const { data = [], status } = useQuery({
     queryKey: ["class4", "forecasts", class4Type, class4Id],
     queryFn: () => GetClass4ForecastsPromise(class4Type, class4Id),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationTimeRange() {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "timerange"],
+    queryFn: () => GetObservationTimeRange(),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationDatatypes() {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "datatypes"],
+    queryFn: () => GetObservationDatatypes(),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationMetaKeys(platformType) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "metaKeys", platformType],
+    queryFn: () => GetObservationMetaKeys(platformType),
+  });
+
+  return { data, status };
+}
+
+export function useGetObservationMetaValues(platformType, metaKey, enabled) {
+  const { data = [], status } = useQuery({
+    queryKey: ["observation", "metaValues", platformType, metaKey],
+    queryFn: () => GetObservationMetaValues(platformType, metaKey),
+    enabled
   });
 
   return { data, status };
