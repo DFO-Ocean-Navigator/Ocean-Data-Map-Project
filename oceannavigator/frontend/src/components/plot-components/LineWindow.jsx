@@ -209,7 +209,7 @@ const LineWindow = (props) => {
         <TransectLimiter
           id="linearthresh"
           state={linearThresh}
-          onUpdate={(_, value) => setLinearThresh(value)}
+          onUpdate={(value) => setLinearThresh(value)}
           title={_("Exponential Plot")}
           parameter={_("Linear Threshold")}
         >
@@ -218,7 +218,7 @@ const LineWindow = (props) => {
         <TransectLimiter
           id="depth_limit"
           state={depthLimit}
-          onUpdate={(_, value) => setDepthLimit(value)}
+          onUpdate={(value) => setDepthLimit(value)}
           title={_("Limit Depth")}
           parameter={_("Depth")}
         />
