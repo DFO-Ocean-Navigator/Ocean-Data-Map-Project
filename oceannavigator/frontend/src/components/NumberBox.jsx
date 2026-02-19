@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Button } from "react-bootstrap";
-import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-const NumberBox = ({ id, title, state: propState, onUpdate, children, t: _ }) => {
+const NumberBox = ({state: propState, onUpdate, t: _ }) => {
   const [value, setValue] = useState(propState);
-  const [showHelp, setShowHelp] = useState(false);
   const timeoutRef = useRef(null);
 
   // Sync propState to local value
@@ -15,7 +12,7 @@ const NumberBox = ({ id, title, state: propState, onUpdate, children, t: _ }) =>
   }, [propState]);
 
   const updateParent = () => {
-    onUpdate(id, value);
+    onUpdate(value);
   };
 
   const changed = (newVal) => {
@@ -35,34 +32,8 @@ const NumberBox = ({ id, title, state: propState, onUpdate, children, t: _ }) =>
     }
   };
 
-  const hasHelp = React.Children.count(children) > 0;
-
   return (
     <div className="NumberBox">
-      <h1 className="numberbox-title">
-        {title}
-        {hasHelp && (
-          <span className="help-button" onClick={() => setShowHelp(true)}>
-            ?
-          </span>
-        )}
-      </h1>
-
-      <Modal
-        show={showHelp}
-        onHide={() => setShowHelp(false)}
-        dialogClassName="helpdialog"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{children}</Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => setShowHelp(false)}>
-            <Icon icon="close" /> {_("Close")}
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       <table className="numberbox-table">
         <tbody>
