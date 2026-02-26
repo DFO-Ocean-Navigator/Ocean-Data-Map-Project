@@ -25,6 +25,7 @@ from data.sqlite_database import SQLiteDatabase
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
+from oceannavigator.settings import get_settings
 
 
 class NetCDFData(Data):
@@ -129,17 +130,21 @@ class NetCDFData(Data):
             self._dataset_open = False
 
     def __get_ic_repo(self, dataset_key: str) -> Repository:
+        settings = get_settings()
+        storage_type = settings.icechunk_storage
+        store_config = settings.icechunk_storage_config
 
-        storage_config = s3_storage(
-            bucket="icechunk",
-            prefix=dataset_key,
-            region="us-east-1",
-            access_key_id="admin",
-            secret_access_key="password",
-            endpoint_url="http://142.130.249.35:9000",
-            allow_http=True,
-            force_path_style=True,
-        )
+        if storage_type == "s3":
+            storage_config = s3_storage(
+                bucket=store_config["bucket"],
+                prefix=dataset_key,
+                region="us-east-1",
+                access_key_id=store_config["user"],
+                secret_access_key=store_config["password"],
+                endpoint_url=store_config["url"],
+                allow_http=True,
+                force_path_style=True,
+            )
 
         return Repository.open(
             storage_config, authorize_virtual_chunk_access={"file:///data/": None}
