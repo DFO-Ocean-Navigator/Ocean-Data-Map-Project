@@ -74,7 +74,7 @@ dependencies:
   - dask-core=2025.7.0=pyhe01879c_1
   - dav1d=1.2.1=hd590300_0
   - dbus=1.16.2=h3c4dab8_0
-  - debugpy=1.8.17=py313h5d5ffb9_1
+  - debugpy=1.8.19=py313hb7f33ac_0
   - decorator=5.2.1=pyhd8ed1ab_0
   - deprecated=1.2.18=pyhd8ed1ab_0
   - distributed=2025.7.0=pyhe01879c_0
@@ -134,15 +134,16 @@ dependencies:
   - imagecodecs=2025.3.30=py313h8b391ee_2
   - imageio=2.37.0=pyhfb79c49_0
   - importlib-metadata=8.7.0=pyhe01879c_1
+  - iniconfig=2.3.0=pyhd8ed1ab_0
   - ipykernel=7.1.0=pyha191276_0
-  - ipython=9.8.0=pyh53cf698_0
+  - ipython=9.9.0=pyh53cf698_0
   - ipython_pygments_lexers=1.1.1=pyhd8ed1ab_0
   - jasper=4.2.8=he3c4edf_0
   - jedi=0.19.2=pyhd8ed1ab_1
   - jinja2=3.1.6=pyhd8ed1ab_0
   - jmespath=1.0.1=pyhd8ed1ab_1
   - json-c=0.18=h6688a6e_0
-  - jupyter_client=8.6.3=pyhd8ed1ab_1
+  - jupyter_client=8.8.0=pyhcf101f3_0
   - jupyter_core=5.9.1=pyhc90fa1f_0
   - jxrlib=1.1=hd590300_3
   - keyutils=1.6.1=h166bdaf_0
@@ -284,6 +285,7 @@ dependencies:
   - pip=25.1.1=pyh145f28c_0
   - pixman=0.46.4=h537e5f6_0
   - platformdirs=4.3.8=pyhe01879c_0
+  - pluggy=1.6.0=pyhf9edf01_1
   - ply=3.11=pyhd8ed1ab_3
   - pooch=1.8.2=pyhd8ed1ab_1
   - priority=2.0.0=pyhd8ed1ab_1
@@ -310,6 +312,7 @@ dependencies:
   - pyside6=6.9.1=py313h7dabd7a_0
   - pysocks=1.7.1=pyha55dd90_7
   - pystac=1.13.0=pyhd8ed1ab_0
+  - pytest=9.0.2=pyhcf101f3_0
   - python=3.13.5=hec9711d_102_cp313
   - python-dateutil=2.9.0.post0=pyhe01879c_2
   - python-dotenv=1.1.1=pyhe01879c_0
@@ -371,7 +374,7 @@ dependencies:
   - uvloop=0.21.0=py313h536fd9c_1
   - watchfiles=1.1.0=py313h920b4c0_0
   - wayland=1.24.0=h3e06ad9_0
-  - wcwidth=0.2.14=pyhd8ed1ab_0
+  - wcwidth=0.4.0=pyhd8ed1ab_0
   - websockets=15.0.1=py313h536fd9c_0
   - wrapt=1.17.2=py313h536fd9c_0
   - wsproto=1.2.0=pyhd8ed1ab_1
@@ -412,4 +415,4 @@ dependencies:
   - zstd=1.5.7=hb8e6e7a_2
   - pip:
       - visvalingamwyatt==0.3.0
-prefix: /home/ubuntu/miniforge3/envs/navigator
+prefix: /home/ubuntu/onav-cloud/tools/miniforge3/envs/navigator
