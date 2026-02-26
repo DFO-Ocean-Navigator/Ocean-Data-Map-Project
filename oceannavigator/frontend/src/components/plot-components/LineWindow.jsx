@@ -70,7 +70,7 @@ const LineWindow = (props) => {
   );
 
   const colormaps = useGetColormaps();
-  const variables = useGetDatasetVariables(props.dataset0.id);
+  const variables = useGetDatasetVariables(props.dataset0);
 
   useEffect(() => {
     if (props.compareDatasets && showProfile) {

@@ -927,36 +927,14 @@ class NetCDFData(Data):
         elif url == "icechunk":
             var_list = []
             for var in list(self.dataset.data_vars):
-                name = var
-                units = (
-                    self.dataset.variables[var].attrs["units"]
-                    if self.dataset.variables[var].attrs["units"]
-                    else None
-                )
-                long_name = (
-                    self.dataset.variables[var].attrs["long_name"]
-                    if self.dataset.variables[var].attrs["long_name"]
-                    else name
-                )
-                valid_min = (
-                    self.dataset.variables[var].attrs["valid_min"]
-                    if self.dataset.variables[var].attrs["valid_min"]
-                    else None
-                )
-                valid_max = (
-                    self.dataset.variables[var].attrs["valid_max"]
-                    if self.dataset.variables[var].attrs["valid_max"]
-                    else None
-                )
-
                 var_list.append(
                     Variable(
-                        name,
-                        long_name,
-                        units,
-                        list(self.dataset[name].dims),
-                        valid_min,
-                        valid_max,
+                        var,
+                        self.dataset.variables[var].attrs.get("long_name") or var,
+                        self.dataset.variables[var].attrs.get("units"),
+                        list(self.dataset[var].dims),
+                        self.dataset.variables[var].attrs.get("valid_min"),
+                        self.dataset.variables[var].attrs.get("valid_max"),
                     )
                 )
 
@@ -1081,9 +1059,16 @@ class NetCDFData(Data):
         repo = self.__get_ic_repo(dataset_key)
         session = repo.readonly_session(branch="main")
 
-        dataset = xarray.open_zarr(
-            session.store, consolidated=False, decode_times=False
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Numcodecs codecs are not in the Zarr version 3 specification*",
+                category=UserWarning,
+            )
+
+            dataset = xarray.open_zarr(
+                session.store, consolidated=False, decode_times=False
+            )
 
         if variable and isinstance(variable, str):
             variable = [variable]
