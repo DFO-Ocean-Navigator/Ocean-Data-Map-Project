@@ -1,15 +1,23 @@
+.time-slider {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 5px;
+}
+
 .time-slider-container {
   position: relative;
-  max-width: 1500px;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-content: center;
   justify-content: center;
   align-items: center;
+  width: 85%;
   height: 100%;
-  width: 100%;
-  margin: 250px 250px;
 }
 .scroll-container {
   display: flex;
@@ -21,10 +29,9 @@
   -ms-overflow-style: none;
   position: absolute;
   top: 0px;
-  border: 1px solid black;
 }
 
-.container::-webkit-scrollbar {
+.scroll-container::-webkit-scrollbar {
   display: none;
 }
 
@@ -34,23 +41,19 @@
   align-items: center;
   width: 35px;
   z-index: 1;
-  // margin-right: 20px;
-  // border: 2px solid #008cba;
-  // background-color: aqua;
 }
 
 .slider-minor-tick {
-  height: 18px;
+  height: 15px;
   width: 1px;
   vertical-align: middle;
   background-color: #008cba;
   margin: 0px 20px;
-  top: 4px;
   position: relative;
 }
 
 .slider-major-tick {
-  height: 25px;
+  height: 15px;
   width: 3px;
   vertical-align: middle;
   background-color: #008cba;
@@ -58,7 +61,7 @@
 }
 
 .slider-major-tick-text {
-  position: relative;
+  position: absolute;
   display: inline-block;
   color: #008cba;
   text-align: center;
@@ -66,40 +69,47 @@
   font-weight: bold;
   white-space: nowrap;
   top: 25px;
+  font-size: 12px;
 }
 
 .custom-scrollbars__scrollbar {
-  position: absolute;
-  top: 20px;
   width: 100%;
 }
 
 .custom-scrollbars__track-and-thumb {
-  display: block;
-  height: 100%; /* must have some height */
-  position: relative;
+  height: 100%;
   width: 100%;
 }
 
 .custom-scrollbars__track {
-  background-color: #8f8f8f;
+  background-color: #008cba;
   // border-radius: 12px;
   bottom: 0;
   cursor: pointer;
   position: absolute;
-  top: 0;
+  top: 5px;
   width: 100%;
-  height: 50px;
-  z-index: 0;
+  height: 3px;
+  z-index: 11;
 }
 
 .custom-scrollbars__thumb {
-  border: 4px solid #ff0000;
-  border-radius: 15px;
+  border: 3px solid #ff0000;
+  border-radius: 13px;
   background-color: #fff;
   position: absolute;
-  width: 15px;
-  height: 15px;
-  top: -5px;
-  z-index: 3;
+  width: 13px;
+  height: 13px;
+  top: 1px;
+  z-index: 12;
+}
+
+.slider-button {
+  color: #008cba;
+  background-color: #fff;
+  border: none;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+  pointer-events: "none";
 }

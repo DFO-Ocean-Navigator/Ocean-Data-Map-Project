@@ -22,12 +22,12 @@ function TimeSelector({
 
   useEffect(() => {
     let timeIdx = timestamps.data.findIndex(
-      (ts) => ts.id === dataset.time.id && ts.value === dataset.time.value
+      (ts) => ts.id === dataset.time.id && ts.value === dataset.time.value,
     );
 
     let starttimeIdx = timestamps.data.findIndex(
       (ts) =>
-        ts.id === dataset.starttime.id && ts.value === dataset.starttime.value
+        ts.id === dataset.starttime.id && ts.value === dataset.starttime.value,
     );
 
     if (timestamps.data.length > 0 && (timeIdx < 0 || starttimeIdx < 0)) {
@@ -36,7 +36,10 @@ function TimeSelector({
       if (!dataset.time.value) {
         // no timestamp previously selected, so select the latest one
         time = timestamps.data[timestamps.data.length - 1];
-        starttime = timestamps.data[timestamps.data.length - 21];
+        starttime =
+          timestamps.data.length > 21
+            ? timestamps.data[timestamps.data.length - 21]
+            : timestamps.data[0];
         updateParent = true;
       } else {
         // find timestamp nearest to previously selected
@@ -116,7 +119,7 @@ function TimeSelector({
           id="time"
           dataset={dataset}
           timestamps={timestamps.data}
-          selected={dataset.time.id}
+          selected={dataset.time}
           onChange={updateTime}
           loading={timestamps.isLoading}
         />
