@@ -56,6 +56,9 @@ function TimeSlider(props) {
 
   useEffect(() => {
     updateTickContainerWidth();
+    if (props.dataset.id.includes("climatology")) {
+      setClimatology(true);
+    }
   }, [props.dataset, props.timestamps]);
 
   useEffect(() => {
@@ -303,6 +306,20 @@ function TimeSlider(props) {
     }
     formatter["timeZone"] = "UTC";
     return time.toLocaleDateString(props.i18n.language, formatter);
+  };
+
+  const getSeason = (time) => {
+    // assumes timestamp is not on boundary
+    let year = time.getFullYear();
+    if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
+      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+    } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
+      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
+    } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
+      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
+    } else {
+      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
+    }
   };
 
   const scrollbarTicks = useMemo(
