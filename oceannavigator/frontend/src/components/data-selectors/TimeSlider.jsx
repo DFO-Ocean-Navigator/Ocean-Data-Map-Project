@@ -135,9 +135,10 @@ function TimeSlider(props) {
   };
 
   const updateContentScroll = (tickIndex) => {
+    // scroll to position of currently selected tick
     const contentScrollLeft = contentRef.current.scrollLeft;
     const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
-    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
+    const tickPosX = (tickIndex + 1.5) * tickWidth;
 
     if (
       tickPosX < contentScrollLeft ||
@@ -306,12 +307,17 @@ function TimeSlider(props) {
   };
 
   // generate the left and right navigation buttons
+  const nVisibleTicks = scrollTrackRef.current
+    ? Math.round(
+        scrollTrackRef.current.getBoundingClientRect().width / tickWidth,
+      )
+    : 1;
   const leftButtonIcons = [
     <ChevronBarLeft />,
     <ChevronDoubleLeft />,
     <ChevronLeft />,
   ];
-  const leftButtons = [0, selectedIndex - 20, selectedIndex - 1].map(
+  const leftButtons = [0, selectedIndex - nVisibleTicks, selectedIndex - 1].map(
     (index, i) => (
       <TimeSliderNavButton
         key={`left-button-${i}`}
@@ -330,7 +336,7 @@ function TimeSlider(props) {
   ];
   const rightButtons = [
     selectedIndex + 1,
-    selectedIndex + 20,
+    selectedIndex + nVisibleTicks,
     props.timestamps.length - 1,
   ].map((index, i) => (
     <TimeSliderNavButton
