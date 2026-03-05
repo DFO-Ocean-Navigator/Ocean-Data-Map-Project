@@ -113,3 +113,15 @@
   border-radius: 50%;
   pointer-events: "none";
 }
+
+.slider-button:hover {
+  background-color: #008cba;
+  height: 36px;
+  width: 36px;
+  border-radius: 50%;
+}
+
+.slider-button:disabled {
+  color: grey;
+  background-color: #fff;
+}

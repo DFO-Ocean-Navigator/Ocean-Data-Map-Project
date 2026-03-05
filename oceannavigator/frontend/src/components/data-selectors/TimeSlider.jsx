@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {
@@ -10,18 +11,35 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import TimeSliderButton from "./TimeSliderButton.jsx";
-
 import { withTranslation } from "react-i18next";
 
 const thumbWidth = 13;
 const trackOffset = 50;
 
+function TimeSliderButton(props) {
+  return (
+    <OverlayTrigger
+      placement="top"
+      overlay={<Tooltip>{props.tooltipText}</Tooltip>}
+    >
+      <span>
+        <Button
+          className="slider-button"
+          onClick={props.onClick}
+          disabled={props.disabled}
+        >
+          {props.icon}
+        </Button>
+      </span>
+    </OverlayTrigger>
+  );
+}
+
 function TimeSlider(props) {
   const [sliderTicks, setSliderTicks] = useState([]);
   const [thumbLeft, setThumbLeft] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSpeed, setScrollSpeed] = useState(0);
-
   const [tickWidth, setTickWidth] = useState(35);
 
   const contentRef = useRef(null);
@@ -70,22 +88,25 @@ function TimeSlider(props) {
   }, [props.dataset, props.timestamps]);
 
   useEffect(() => {
-    let selectedIndex = props.timestamps.findIndex(
+    if (props.timestamps.length === 0) return;
+    let nextSelectedIndex = props.timestamps.findIndex(
       (ts) => ts.id === props.selected.id,
     );
 
-    const contentScrollLeft = contentRef.current.scrollLeft;
-    const tickOffset = tickWidth / 2;
-    const thumbOffset = thumbWidth / 2;
-    let nextThumbPosX =
-      selectedIndex * tickWidth +
-      tickOffset +
-      trackOffset -
-      contentScrollLeft -
-      thumbOffset;
-
-    setThumbLeft(nextThumbPosX);
+    if (nextSelectedIndex !== selectedIndex) {
+      setSelectedIndex(nextSelectedIndex);
+    }
   }, [props.selected]);
+
+  useEffect(() => {
+    if (props.timestamps.length === 0) return;
+    updateContentScroll(selectedIndex);
+    updateThumbPosition(selectedIndex);
+    let nextSelected = props.timestamps[selectedIndex].id;
+    if (nextSelected !== props.selected.id) {
+      props.onChange(props.id, nextSelected);
+    }
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (scrollSpeed === 0) return;
@@ -112,18 +133,30 @@ function TimeSlider(props) {
     return time.getUTCHours() === 0 || time.getUTCHours() === 12;
   };
 
-  const getFormattedTime = (time) => {
-    let formatter = {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hourCycle: "h23",
-    };
+  const updateContentScroll = (tickIndex) => {
+    const contentScrollLeft = contentRef.current.scrollLeft;
+    const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
+    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
 
-    formatter["timeZone"] = "UTC";
-    return time.toLocaleDateString(props.i18n.language, formatter);
+    if (
+      tickPosX < contentScrollLeft ||
+      tickPosX > contentScrollLeft + trackWidth
+    ) {
+      contentRef.current.scrollBy({
+        left: tickPosX - (contentScrollLeft + trackWidth / 2),
+        behavior: "instant",
+      });
+    }
+  };
+
+  const updateThumbPosition = (tickIndex) => {
+    const contentScrollLeft = contentRef.current.scrollLeft;
+    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
+
+    let nextThumbPosX =
+      tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
+
+    setThumbLeft(nextThumbPosX);
   };
 
   const handleThumbMousedown = (e) => {
@@ -155,20 +188,13 @@ function TimeSlider(props) {
           tickIndex = props.timestamps.length - 1;
         if (tickIndex < 0) tickIndex = 0;
 
-        let nextSelected = props.timestamps[tickIndex].id;
-        if (nextSelected !== props.selected.id) {
-          props.onChange(props.id, nextSelected);
-        }
+        setSelectedIndex(tickIndex);
+
+        // reset scroll speed
+        setScrollSpeed(0);
 
         // update the position of the thumb to snap to the nearest tick
-        let nextThumbPosX =
-          tickIndex * tickWidth +
-          tickOffset +
-          trackOffset -
-          contentScrollLeft -
-          thumbOffset;
-
-        setThumbLeft(nextThumbPosX);
+        updateThumbPosition(tickIndex);
 
         draggingRef.current = false;
       }
@@ -215,35 +241,93 @@ function TimeSlider(props) {
     [draggingRef.current, thumbLeft, tickWidth],
   );
 
-  let prevTime = null;
-  let nextTime = null;
-  let firstFrameTime = null;
-  let lastFrameTime = null;
-  let prevFrameTime = null;
-  let nextFrameTime = null;
+  const getFormattedTime = (timestr) => {
+    let time = timestr;
+    if (!(time instanceof Date)) time = new Date(timestr);
+    if (isNaN(time)) {
+      return "";
+    }
+
+    let formatter = {};
+    switch (props.dataset.quantum) {
+      case "season":
+        return getSeason(time);
+      case "hour":
+        formatter = {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hourCycle: "h23",
+        };
+        break;
+      case "day":
+        formatter = {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+        };
+        break;
+      case "month":
+        formatter = climatology
+          ? { month: "long" }
+          : {
+              year: "numeric",
+              month: "short",
+            };
+        break;
+      case "year":
+        formatter = {
+          year: "numeric",
+        };
+        break;
+    }
+    formatter["timeZone"] = "UTC";
+    return time.toLocaleDateString(props.i18n.language, formatter);
+  };
+
+  const leftButtonIcons = [
+    <ChevronBarLeft />,
+    <ChevronDoubleLeft />,
+    <ChevronLeft />,
+  ];
+  const leftButtons = [0, selectedIndex - 20, selectedIndex - 1].map(
+    (index, i) => (
+      <TimeSliderButton
+        key={`left-button-${i}`}
+        tooltipText={getFormattedTime(props.timestamps[index]?.value)}
+        onClick={() => setSelectedIndex(index)}
+        disabled={index === selectedIndex || index < 0 || props.loading}
+        icon={leftButtonIcons[i]}
+      />
+    ),
+  );
+
+  const rightButtonIcons = [
+    <ChevronRight />,
+    <ChevronDoubleRight />,
+    <ChevronBarRight />,
+  ];
+  const rightButtons = [0, selectedIndex - 20, selectedIndex - 1].map(
+    (index, i) => (
+      <TimeSliderButton
+        key={`right-button-${i}`}
+        tooltipText={getFormattedTime(props.timestamps[index]?.value)}
+        onClick={() => setSelectedIndex(index)}
+        disabled={
+          index === selectedIndex ||
+          index >= props.timestamps.length ||
+          props.loading
+        }
+        icon={rightButtonIcons[i]}
+      />
+    ),
+  );
 
   return (
-    <div className="time-slider">
-      <div className="button-container">
-        <TimeSliderButton
-          tooltipText={firstFrameTime}
-          // onClick={firstFrame}
-          // disabled={minTick === 0 || props.loading}
-          icon={<ChevronBarLeft />}
-        />
-        <TimeSliderButton
-          tooltipText={prevFrameTime}
-          // onClick={prevFrame}
-          // disabled={minTick === 0 || props.loading}
-          icon={<ChevronDoubleLeft />}
-        />
-        <TimeSliderButton
-          tooltipText={prevTime}
-          // onClick={prevValue}
-          // disabled={selectedIndex === 0 || props.loading}
-          icon={<ChevronLeft />}
-        />
-      </div>
+    <div ref={sliderRef} className="time-slider">
+      <div className="button-container">{leftButtons}</div>
       <div className="time-slider-container">
         <div className="scroll-container" ref={contentRef}>
           {sliderTicks}
@@ -259,7 +343,8 @@ function TimeSlider(props) {
               placement="top"
               overlay={
                 <Tooltip id={`handle-tooltip`}>
-                  {getFormattedTime(new Date(props.selected.value))}
+                  {props.timestamps.length > 0 &&
+                    getFormattedTime(props.selected.value)}
                 </Tooltip>
               }
             >
@@ -276,28 +361,7 @@ function TimeSlider(props) {
           </div>
         </div>
       </div>
-      <div className="button-container">
-        <TimeSliderButton
-          tooltipText={nextTime}
-          // onClick={nextValue}
-          // disabled={
-          //   selectedIndex === props.timestamps.length - 1 || props.loading
-          // }
-          icon={<ChevronRight />}
-        />
-        <TimeSliderButton
-          tooltipText={nextFrameTime}
-          // onClick={nextFrame}
-          // disabled={maxTick === props.timestamps.length || props.loading}
-          icon={<ChevronDoubleRight />}
-        />
-        <TimeSliderButton
-          tooltipText={lastFrameTime}
-          // onClick={lastFrame}
-          // disabled={maxTick === props.timestamps.length || props.loading}
-          icon={<ChevronBarRight />}
-        />
-      </div>
+      <div className="button-container">{rightButtons}</div>
     </div>
   );
 }
