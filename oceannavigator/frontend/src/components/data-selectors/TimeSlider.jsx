@@ -49,12 +49,7 @@ function TimeSlider(props) {
   const draggingRef = useRef(false);
 
   useEffect(() => {
-    let nextTickWidth =
-      Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
-      props.timestamps.length;
-    if (nextTickWidth < 35 || Number.isNaN(nextTickWidth)) nextTickWidth = 35;
-    setTickWidth(nextTickWidth);
-
+    updateTickContainerWidth();
     const ticks = props.timestamps.map((timestamp) => {
       let time = new Date(timestamp.value);
       let tickLabel = null;
@@ -130,35 +125,50 @@ function TimeSlider(props) {
     };
   }, [handleThumbMousemove, handleThumbMouseup, props]);
 
-  const setMajorTick = (time) => {
-    return time.getUTCHours() === 0 || time.getUTCHours() === 12;
-  };
-
   const updateContentScroll = (tickIndex) => {
-    // scroll to position of currently selected tick
-    const contentScrollLeft = contentRef.current.scrollLeft;
-    const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
-    const tickPosX = (tickIndex + 1.5) * tickWidth;
+      // scroll to position of currently selected tick
+      const contentScrollLeft = contentRef.current.scrollLeft;
+      const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
+      const tickPosX = (tickIndex + 1.5) * tickWidth;
 
-    if (
-      tickPosX < contentScrollLeft ||
-      tickPosX > contentScrollLeft + trackWidth
-    ) {
-      contentRef.current.scrollBy({
-        left: tickPosX - (contentScrollLeft + trackWidth / 2),
-        behavior: "instant",
-      });
-    }
-  };
+      if (
+        tickPosX < contentScrollLeft ||
+        tickPosX > contentScrollLeft + trackWidth
+      ) {
+        contentRef.current.scrollBy({
+          left: tickPosX - (contentScrollLeft + trackWidth / 2),
+          behavior: "instant",
+        });
+      }
+    };
 
   const updateThumbPosition = (tickIndex) => {
-    const contentScrollLeft = contentRef.current.scrollLeft;
-    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
+      const contentScrollLeft = contentRef.current.scrollLeft;
+      const tickPosX = tickIndex * tickWidth + tickWidth / 2;
 
-    let nextThumbPosX =
-      tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
+      let nextThumbPosX =
+        tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
 
-    setThumbLeft(nextThumbPosX);
+      setThumbLeft(nextThumbPosX);
+  };
+
+  const setMajorTick = (time) => {
+    switch (props.dataset.quantum) {
+      case "hour":
+        return time.getUTCHours() === 0 || time.getUTCHours() === 12;
+      case "day":
+        return time.getUTCHours() === 0;
+    }
+    return true;
+  };
+
+  const updateTickContainerWidth = () => {
+    let nextTickWidth =
+      Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
+      props.timestamps.length;
+    if (nextTickWidth < 35 || !Number.isFinite(nextTickWidth))
+      nextTickWidth = 35;
+    setTickWidth(nextTickWidth);
   };
 
   const getNearestTickIndex = (posX) => {
@@ -183,12 +193,12 @@ function TimeSlider(props) {
   };
 
   const handleScrollClick = (e) => {
-    // Update the selected index when a user clicks on the scroll area
-    e.preventDefault();
-    e.stopPropagation();
-    const tickIndex = getNearestTickIndex(e.clientX);
-    setSelectedIndex(tickIndex);
-  };
+      // Update the selected index when a user clicks on the scroll area
+      e.preventDefault();
+      e.stopPropagation();
+      const tickIndex = getNearestTickIndex(e.clientX);
+      setSelectedIndex(tickIndex);
+    };
 
   const handleThumbMousedown = (e) => {
     // Start dragging the thumb when the user clicks on it
@@ -354,7 +364,7 @@ function TimeSlider(props) {
 
   return (
     <div className="time-slider">
-      <div className="button-container">{leftButtons}</div>
+      <div className="nav-button-container">{leftButtons}</div>
       <div className="time-slider-container">
         <div
           className="slider-content-container"
@@ -365,10 +375,7 @@ function TimeSlider(props) {
         </div>
         <div className="slider-scrollbar">
           <div className="slider-track-and-thumb">
-            <div
-              className="slider-track"
-              ref={scrollTrackRef}
-            ></div>
+            <div className="slider-track" ref={scrollTrackRef}></div>
             <OverlayTrigger
               key={`handle-overlay`}
               placement="top"
@@ -392,7 +399,7 @@ function TimeSlider(props) {
           </div>
         </div>
       </div>
-      <div className="button-container">{rightButtons}</div>
+      <div className="nav-button-container">{rightButtons}</div>
     </div>
   );
 }

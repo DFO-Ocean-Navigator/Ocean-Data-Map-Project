@@ -104,6 +104,12 @@
   z-index: 12;
 }
 
+.nav-button-container {
+  min-width: 108px;
+  display: flex;
+  flex-direction: row;
+}
+
 .slider-nav-button {
   color: #008cba;
   background-color: #fff;
