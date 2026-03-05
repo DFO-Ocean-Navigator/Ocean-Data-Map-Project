@@ -52,7 +52,7 @@ function TimeSlider(props) {
     let nextTickWidth =
       Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
       props.timestamps.length;
-    if (nextTickWidth < 35) nextTickWidth = 35;
+    if (nextTickWidth < 35 || Number.isNaN(nextTickWidth)) nextTickWidth = 35;
     setTickWidth(nextTickWidth);
 
     const ticks = props.timestamps.map((timestamp) => {
@@ -357,16 +357,16 @@ function TimeSlider(props) {
       <div className="button-container">{leftButtons}</div>
       <div className="time-slider-container">
         <div
-          className="scroll-container"
+          className="slider-content-container"
           ref={contentRef}
           onClick={handleScrollClick}
         >
           {sliderTicks}
         </div>
-        <div className="custom-scrollbars__scrollbar">
-          <div className="custom-scrollbars__track-and-thumb">
+        <div className="slider-scrollbar">
+          <div className="slider-track-and-thumb">
             <div
-              className="custom-scrollbars__track"
+              className="slider-track"
               ref={scrollTrackRef}
             ></div>
             <OverlayTrigger
@@ -380,7 +380,7 @@ function TimeSlider(props) {
               }
             >
               <div
-                className="custom-scrollbars__thumb"
+                className="slider-thumb"
                 ref={scrollThumbRef}
                 onMouseDown={handleThumbMousedown}
                 style={{
