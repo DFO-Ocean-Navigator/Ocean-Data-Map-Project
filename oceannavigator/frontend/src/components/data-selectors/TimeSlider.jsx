@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -37,7 +43,6 @@ function TimeSliderNavButton(props) {
 }
 
 function TimeSlider(props) {
-  const [sliderTicks, setSliderTicks] = useState([]);
   const [thumbLeft, setThumbLeft] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSpeed, setScrollSpeed] = useState(0);
@@ -47,40 +52,10 @@ function TimeSlider(props) {
   const scrollTrackRef = useRef(null);
   const scrollThumbRef = useRef(null);
   const draggingRef = useRef(false);
+  const observer = useRef(null);
 
   useEffect(() => {
     updateTickContainerWidth();
-    const ticks = props.timestamps.map((timestamp) => {
-      let time = new Date(timestamp.value);
-      let tickLabel = null;
-      let tickClass = "slider-minor-tick";
-      let tooltipLabel = getFormattedTime(time);
-      if (setMajorTick(time)) {
-        tickLabel = tooltipLabel;
-        tickClass = "slider-major-tick";
-      }
-      return (
-        <OverlayTrigger
-          key={`overlay-${timestamp.id}`}
-          placement="top"
-          overlay={
-            <Tooltip id={`tooltip-${timestamp.id}`}>{tooltipLabel}</Tooltip>
-          }
-        >
-          <div
-            key={`span-${timestamp.id}`}
-            className="tick-container"
-            style={{
-              width: `${tickWidth}px`,
-            }}
-          >
-            <div className={tickClass} />
-            <span className="slider-major-tick-text">{tickLabel}</span>
-          </div>
-        </OverlayTrigger>
-      );
-    });
-    setSliderTicks(ticks);
   }, [props.dataset, props.timestamps]);
 
   useEffect(() => {
@@ -125,31 +100,45 @@ function TimeSlider(props) {
     };
   }, [handleThumbMousemove, handleThumbMouseup, props]);
 
-  const updateContentScroll = (tickIndex) => {
-      // scroll to position of currently selected tick
-      const contentScrollLeft = contentRef.current.scrollLeft;
-      const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
-      const tickPosX = (tickIndex + 1.5) * tickWidth;
+  useEffect(() => {
+    if (scrollTrackRef.current) {
+      observer.current = new ResizeObserver(() => {
+        updateTickContainerWidth();
+        updateContentScroll(selectedIndex);
+        updateThumbPosition(selectedIndex);
+      });
+      observer.current.observe(scrollTrackRef.current);
+      return () => {
+        observer.current?.unobserve(scrollTrackRef.current);
+      };
+    }
+  }, [props.timestamps, tickWidth, selectedIndex]);
 
-      if (
-        tickPosX < contentScrollLeft ||
-        tickPosX > contentScrollLeft + trackWidth
-      ) {
-        contentRef.current.scrollBy({
-          left: tickPosX - (contentScrollLeft + trackWidth / 2),
-          behavior: "instant",
-        });
-      }
-    };
+  const updateContentScroll = (tickIndex) => {
+    // scroll to position of currently selected tick
+    const contentScrollLeft = contentRef.current.scrollLeft;
+    const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
+    const tickPosX = (tickIndex + 1.5) * tickWidth;
+
+    if (
+      tickPosX < contentScrollLeft ||
+      tickPosX > contentScrollLeft + trackWidth
+    ) {
+      contentRef.current.scrollBy({
+        left: tickPosX - (contentScrollLeft + trackWidth / 2),
+        behavior: "instant",
+      });
+    }
+  };
 
   const updateThumbPosition = (tickIndex) => {
-      const contentScrollLeft = contentRef.current.scrollLeft;
-      const tickPosX = tickIndex * tickWidth + tickWidth / 2;
+    const contentScrollLeft = contentRef.current.scrollLeft;
+    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
 
-      let nextThumbPosX =
-        tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
+    let nextThumbPosX =
+      tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
 
-      setThumbLeft(nextThumbPosX);
+    setThumbLeft(nextThumbPosX);
   };
 
   const setMajorTick = (time) => {
@@ -193,12 +182,12 @@ function TimeSlider(props) {
   };
 
   const handleScrollClick = (e) => {
-      // Update the selected index when a user clicks on the scroll area
-      e.preventDefault();
-      e.stopPropagation();
-      const tickIndex = getNearestTickIndex(e.clientX);
-      setSelectedIndex(tickIndex);
-    };
+    // Update the selected index when a user clicks on the scroll area
+    e.preventDefault();
+    e.stopPropagation();
+    const tickIndex = getNearestTickIndex(e.clientX);
+    setSelectedIndex(tickIndex);
+  };
 
   const handleThumbMousedown = (e) => {
     // Start dragging the thumb when the user clicks on it
@@ -316,6 +305,44 @@ function TimeSlider(props) {
     return time.toLocaleDateString(props.i18n.language, formatter);
   };
 
+  const scrollbarTicks = useMemo(
+    () =>
+      props.timestamps.map((timestamp) => {
+        let time = new Date(timestamp.value);
+        let tickLabel = null;
+        let tickClass = "slider-minor-tick";
+        let tooltipLabel = getFormattedTime(time);
+        if (setMajorTick(time)) {
+          tickLabel = tooltipLabel;
+          tickClass = "slider-major-tick";
+        }
+
+        return (
+          <OverlayTrigger
+            key={`overlay-${timestamp.id}`}
+            placement="top"
+            overlay={
+              <Tooltip id={`tooltip-${timestamp.id}`}>{tooltipLabel}</Tooltip>
+            }
+          >
+            <div
+              key={`span-${timestamp.id}`}
+              className="tick-container"
+              style={{
+                width: `${tickWidth}px`,
+                minWidth: `${tickWidth}px`,
+                maxWidth: `${tickWidth}px`,
+              }}
+            >
+              <div className={tickClass} />
+              <span className="slider-major-tick-text">{tickLabel}</span>
+            </div>
+          </OverlayTrigger>
+        );
+      }),
+    [props.timestamps, tickWidth],
+  );
+
   // generate the left and right navigation buttons
   const nVisibleTicks = scrollTrackRef.current
     ? Math.round(
@@ -371,7 +398,7 @@ function TimeSlider(props) {
           ref={contentRef}
           onClick={handleScrollClick}
         >
-          {sliderTicks}
+          {scrollbarTicks}
         </div>
         <div className="slider-scrollbar">
           <div className="slider-track-and-thumb">
