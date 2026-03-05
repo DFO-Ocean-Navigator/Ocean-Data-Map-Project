@@ -104,7 +104,7 @@
   z-index: 12;
 }
 
-.slider-button {
+.slider-nav-button {
   color: #008cba;
   background-color: #fff;
   border: none;
@@ -114,14 +114,14 @@
   pointer-events: "none";
 }
 
-.slider-button:hover {
+.slider-nav-button:hover {
   background-color: #008cba;
   height: 36px;
   width: 36px;
   border-radius: 50%;
 }
 
-.slider-button:disabled {
+.slider-nav-button:disabled {
   color: grey;
   background-color: #fff;
 }

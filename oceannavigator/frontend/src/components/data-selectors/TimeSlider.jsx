@@ -16,15 +16,16 @@ import { withTranslation } from "react-i18next";
 const thumbWidth = 13;
 const trackOffset = 50;
 
-function TimeSliderButton(props) {
+function TimeSliderNavButton(props) {
   return (
     <OverlayTrigger
       placement="top"
+      trigger={props.disabled ? null : ["hover", "focus"]}
       overlay={<Tooltip>{props.tooltipText}</Tooltip>}
     >
       <span>
         <Button
-          className="slider-button"
+          className="slider-nav-button"
           onClick={props.onClick}
           disabled={props.disabled}
         >
@@ -159,35 +160,50 @@ function TimeSlider(props) {
     setThumbLeft(nextThumbPosX);
   };
 
+  const getNearestTickIndex = (posX) => {
+    const tickOffset = tickWidth / 2;
+    const thumbOffset = thumbWidth / 2;
+
+    const contentScrollLeft = contentRef.current.scrollLeft;
+    const trackLeft = scrollTrackRef.current.getBoundingClientRect().x;
+
+    // calculate the position of the thumb relative to the content
+    // by accounting for the track's position, current scroll, and offsets
+    const contentPos =
+      contentScrollLeft + (posX - trackLeft) - trackOffset - tickOffset;
+
+    // determine the index of the next timestamp
+    let tickIndex = Math.round((contentPos + thumbOffset) / tickWidth);
+    if (tickIndex >= props.timestamps.length)
+      tickIndex = props.timestamps.length - 1;
+    if (tickIndex < 0) tickIndex = 0;
+
+    return tickIndex;
+  };
+
+  const handleScrollClick = (e) => {
+    // Update the selected index when a user clicks on the scroll area
+    e.preventDefault();
+    e.stopPropagation();
+    const tickIndex = getNearestTickIndex(e.clientX);
+    setSelectedIndex(tickIndex);
+  };
+
   const handleThumbMousedown = (e) => {
+    // Start dragging the thumb when the user clicks on it
     e.preventDefault();
     e.stopPropagation();
     draggingRef.current = true;
   };
 
   const handleThumbMouseup = useCallback(
+    // Stop dragging the thumb when the user releases the mouse button and snap to the nearest tick
     (e) => {
       e.preventDefault();
       e.stopPropagation();
       if (draggingRef.current) {
-        const tickOffset = tickWidth / 2;
-        const thumbOffset = thumbWidth / 2;
-
-        const posX = e.clientX;
-        const contentScrollLeft = contentRef.current.scrollLeft;
-        const trackLeft = scrollTrackRef.current.getBoundingClientRect().x;
-
-        // calculate the position of the thumb relative to the content
-        // by accounting for the track's position, current scroll, and offsets
-        const contentPos =
-          contentScrollLeft + (posX - trackLeft) - trackOffset - tickOffset;
-
-        // determine the index of the next timestamp
-        let tickIndex = Math.round((contentPos + thumbOffset) / tickWidth);
-        if (tickIndex >= props.timestamps.length)
-          tickIndex = props.timestamps.length - 1;
-        if (tickIndex < 0) tickIndex = 0;
-
+        // determine nearest tick index
+        const tickIndex = getNearestTickIndex(e.clientX);
         setSelectedIndex(tickIndex);
 
         // reset scroll speed
@@ -203,6 +219,7 @@ function TimeSlider(props) {
   );
 
   const handleThumbMousemove = useCallback(
+    // scroll the content when dragging the thumb
     (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -242,6 +259,7 @@ function TimeSlider(props) {
   );
 
   const getFormattedTime = (timestr) => {
+    // format a timestamp string based on the dataset's quantum and climatology settings
     let time = timestr;
     if (!(time instanceof Date)) time = new Date(timestr);
     if (isNaN(time)) {
@@ -287,6 +305,7 @@ function TimeSlider(props) {
     return time.toLocaleDateString(props.i18n.language, formatter);
   };
 
+  // generate the left and right navigation buttons
   const leftButtonIcons = [
     <ChevronBarLeft />,
     <ChevronDoubleLeft />,
@@ -294,7 +313,7 @@ function TimeSlider(props) {
   ];
   const leftButtons = [0, selectedIndex - 20, selectedIndex - 1].map(
     (index, i) => (
-      <TimeSliderButton
+      <TimeSliderNavButton
         key={`left-button-${i}`}
         tooltipText={getFormattedTime(props.timestamps[index]?.value)}
         onClick={() => setSelectedIndex(index)}
@@ -309,27 +328,33 @@ function TimeSlider(props) {
     <ChevronDoubleRight />,
     <ChevronBarRight />,
   ];
-  const rightButtons = [0, selectedIndex - 20, selectedIndex - 1].map(
-    (index, i) => (
-      <TimeSliderButton
-        key={`right-button-${i}`}
-        tooltipText={getFormattedTime(props.timestamps[index]?.value)}
-        onClick={() => setSelectedIndex(index)}
-        disabled={
-          index === selectedIndex ||
-          index >= props.timestamps.length ||
-          props.loading
-        }
-        icon={rightButtonIcons[i]}
-      />
-    ),
-  );
+  const rightButtons = [
+    selectedIndex + 1,
+    selectedIndex + 20,
+    props.timestamps.length - 1,
+  ].map((index, i) => (
+    <TimeSliderNavButton
+      key={`right-button-${i}`}
+      tooltipText={getFormattedTime(props.timestamps[index]?.value)}
+      onClick={() => setSelectedIndex(index)}
+      disabled={
+        index === selectedIndex ||
+        index >= props.timestamps.length ||
+        props.loading
+      }
+      icon={rightButtonIcons[i]}
+    />
+  ));
 
   return (
-    <div ref={sliderRef} className="time-slider">
+    <div className="time-slider">
       <div className="button-container">{leftButtons}</div>
       <div className="time-slider-container">
-        <div className="scroll-container" ref={contentRef}>
+        <div
+          className="scroll-container"
+          ref={contentRef}
+          onClick={handleScrollClick}
+        >
           {sliderTicks}
         </div>
         <div className="custom-scrollbars__scrollbar">
