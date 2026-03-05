@@ -236,11 +236,11 @@ function TimeSlider(props) {
 
         // set scroll speed based on proximity to track edges
         let speed = 0;
-        if (!scrollDir && posX < trackLeft + 30) {
+        if (!scrollDir && posX < trackLeft + thumbWidth) {
           speed = -15;
         } else if (!scrollDir && posX < trackLeft + 60) {
           speed = -5;
-        } else if (scrollDir && posX > trackRight - 30) {
+        } else if (scrollDir && posX > trackRight - thumbWidth) {
           speed = 15;
         } else if (scrollDir && posX > trackRight - 60) {
           speed = 5;
