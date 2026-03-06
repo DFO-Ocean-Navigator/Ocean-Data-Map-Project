@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
   useMemo,
+  memo,
 } from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
@@ -22,7 +23,7 @@ import { withTranslation } from "react-i18next";
 const thumbWidth = 13;
 const trackOffset = 50;
 
-function TimeSliderNavButton(props) {
+const TimeSliderNavButton = memo((props) => {
   return (
     <OverlayTrigger
       placement="top"
@@ -40,7 +41,7 @@ function TimeSliderNavButton(props) {
       </span>
     </OverlayTrigger>
   );
-}
+});
 
 function TimeSlider(props) {
   const [thumbLeft, setThumbLeft] = useState(0);
@@ -75,7 +76,7 @@ function TimeSlider(props) {
   useEffect(() => {
     if (props.timestamps.length === 0) return;
     updateContentScroll(selectedIndex);
-    updateThumbPosition(selectedIndex);
+    // updateThumbPosition(selectedIndex);
     let nextSelected = props.timestamps[selectedIndex].id;
     if (nextSelected !== props.selected.id) {
       props.onChange(props.id, nextSelected);
@@ -108,7 +109,6 @@ function TimeSlider(props) {
       observer.current = new ResizeObserver(() => {
         updateTickContainerWidth();
         updateContentScroll(selectedIndex);
-        updateThumbPosition(selectedIndex);
       });
       observer.current.observe(scrollTrackRef.current);
       return () => {
@@ -119,7 +119,7 @@ function TimeSlider(props) {
 
   const updateContentScroll = (tickIndex) => {
     // scroll to position of currently selected tick
-    const contentScrollLeft = contentRef.current.scrollLeft;
+    let contentScrollLeft = contentRef.current.scrollLeft;
     const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
     const tickPosX = (tickIndex + 1.5) * tickWidth;
 
@@ -127,21 +127,17 @@ function TimeSlider(props) {
       tickPosX < contentScrollLeft ||
       tickPosX > contentScrollLeft + trackWidth
     ) {
+      contentScrollLeft = tickPosX - (contentScrollLeft + trackWidth / 2)
       contentRef.current.scrollBy({
-        left: tickPosX - (contentScrollLeft + trackWidth / 2),
+        left: contentScrollLeft,
         behavior: "instant",
       });
     }
-  };
-
-  const updateThumbPosition = (tickIndex) => {
-    const contentScrollLeft = contentRef.current.scrollLeft;
-    const tickPosX = tickIndex * tickWidth + tickWidth / 2;
 
     let nextThumbPosX =
-      tickPosX + trackOffset - contentScrollLeft - thumbWidth / 2;
+      tickPosX + trackOffset - tickWidth - contentScrollLeft - thumbWidth / 2;
 
-    setThumbLeft(nextThumbPosX);
+    setThumbLeft(nextThumbPosX);    
   };
 
   const setMajorTick = (time) => {
@@ -213,12 +209,12 @@ function TimeSlider(props) {
         setScrollSpeed(0);
 
         // update the position of the thumb to snap to the nearest tick
-        updateThumbPosition(tickIndex);
+        updateContentScroll(tickIndex);
 
         draggingRef.current = false;
       }
     },
-    [draggingRef.current, thumbLeft, tickWidth],
+    [thumbLeft, tickWidth],
   );
 
   const handleThumbMousemove = useCallback(
@@ -258,7 +254,7 @@ function TimeSlider(props) {
         setThumbLeft(nextThumbPosX - trackLeft);
       }
     },
-    [draggingRef.current, thumbLeft, tickWidth],
+    [thumbLeft, tickWidth],
   );
 
   const getFormattedTime = (timestr) => {
