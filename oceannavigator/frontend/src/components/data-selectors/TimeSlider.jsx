@@ -49,6 +49,8 @@ function TimeSlider(props) {
   const [scrollSpeed, setScrollSpeed] = useState(0);
   const [tickWidth, setTickWidth] = useState(35);
 
+  const tickRefs = useRef([]);
+  const minTickWidthRef = useRef(35);
   const contentRef = useRef(null);
   const scrollTrackRef = useRef(null);
   const scrollThumbRef = useRef(null);
@@ -56,14 +58,14 @@ function TimeSlider(props) {
   const observer = useRef(null);
 
   useEffect(() => {
-    updateTickContainerWidth();
-    if (props.dataset.id.includes("climatology")) {
-      setClimatology(true);
-    }
-  }, [props.dataset, props.timestamps]);
+    minTickWidthRef.current = 35;
+    tickRefs.current = [];
+    updateTickContainerWidth()
+  }, [props.dataset.id, props.timestamps]);
 
   useEffect(() => {
     if (props.timestamps.length === 0) return;
+
     let nextSelectedIndex = props.timestamps.findIndex(
       (ts) => ts.id === props.selected.id,
     );
@@ -76,12 +78,20 @@ function TimeSlider(props) {
   useEffect(() => {
     if (props.timestamps.length === 0) return;
     updateContentScroll(selectedIndex);
-    // updateThumbPosition(selectedIndex);
     let nextSelected = props.timestamps[selectedIndex].id;
     if (nextSelected !== props.selected.id) {
       props.onChange(props.id, nextSelected);
     }
   }, [selectedIndex]);
+
+  useEffect(() => {
+    if (checkTickOverlaps()) {
+      minTickWidthRef.current = tickWidth + 10;
+      updateTickContainerWidth();
+    }
+
+    updateContentScroll(selectedIndex);
+  }, [tickWidth]);
 
   useEffect(() => {
     if (scrollSpeed === 0) return;
@@ -91,7 +101,7 @@ function TimeSlider(props) {
       }
     }, 16);
     return () => clearInterval(interval);
-  }, [scrollSpeed, draggingRef.current]);
+  }, [scrollSpeed]);
 
   useEffect(() => {
     document.addEventListener("mousemove", handleThumbMousemove);
@@ -102,12 +112,20 @@ function TimeSlider(props) {
       document.removeEventListener("mouseup", handleThumbMouseup);
       document.removeEventListener("mouseleave", handleThumbMouseup);
     };
-  }, [handleThumbMousemove, handleThumbMouseup, props]);
+  }, [props, handleThumbMousemove, handleThumbMouseup]);
 
   useEffect(() => {
     if (scrollTrackRef.current) {
       observer.current = new ResizeObserver(() => {
-        updateTickContainerWidth();
+        if (props.timestamps.length === 0) return;
+
+        let contentWidth =
+          props.timestamps.length * tickWidth + 2 * trackOffset;
+        let trackWidth = scrollTrackRef.current.scrollWidth;
+        if (contentWidth < trackWidth) {
+          updateTickContainerWidth();
+        }
+
         updateContentScroll(selectedIndex);
       });
       observer.current.observe(scrollTrackRef.current);
@@ -116,6 +134,29 @@ function TimeSlider(props) {
       };
     }
   }, [props.timestamps, tickWidth, selectedIndex]);
+
+  const checkTickOverlaps = () => {
+    const tickElements = tickRefs.current;
+
+    const isOverlapping = (element1, element2) => {
+      const rect1 = element1.getBoundingClientRect();
+      const rect2 = element2.getBoundingClientRect();
+
+      const overlap = rect1.right + 5 > rect2.left;
+
+      return overlap;
+    };
+
+    for (let i = 0; i < tickElements.length; i++) {
+      for (let j = i + 1; j < tickElements.length; j++) {
+        if (isOverlapping(tickElements[i], tickElements[j])) {
+          console.log(`Overlap detected between element ${i} and ${j}`);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
 
   const updateContentScroll = (tickIndex) => {
     // scroll to position of currently selected tick
@@ -127,17 +168,17 @@ function TimeSlider(props) {
       tickPosX < contentScrollLeft ||
       tickPosX > contentScrollLeft + trackWidth
     ) {
-      contentScrollLeft = tickPosX - (contentScrollLeft + trackWidth / 2)
       contentRef.current.scrollBy({
-        left: contentScrollLeft,
+        left: tickPosX - trackWidth / 2,
         behavior: "instant",
       });
+      contentScrollLeft = contentRef.current.scrollLeft;
     }
 
     let nextThumbPosX =
       tickPosX + trackOffset - tickWidth - contentScrollLeft - thumbWidth / 2;
 
-    setThumbLeft(nextThumbPosX);    
+    setThumbLeft(nextThumbPosX);
   };
 
   const setMajorTick = (time) => {
@@ -154,8 +195,11 @@ function TimeSlider(props) {
     let nextTickWidth =
       Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
       props.timestamps.length;
-    if (nextTickWidth < 35 || !Number.isFinite(nextTickWidth))
-      nextTickWidth = 35;
+    if (
+      nextTickWidth < minTickWidthRef.current ||
+      !Number.isFinite(nextTickWidth)
+    )
+      nextTickWidth = minTickWidthRef.current;
     setTickWidth(nextTickWidth);
   };
 
@@ -208,9 +252,6 @@ function TimeSlider(props) {
         // reset scroll speed
         setScrollSpeed(0);
 
-        // update the position of the thumb to snap to the nearest tick
-        updateContentScroll(tickIndex);
-
         draggingRef.current = false;
       }
     },
@@ -237,11 +278,11 @@ function TimeSlider(props) {
         let speed = 0;
         if (!scrollDir && posX < trackLeft + thumbWidth) {
           speed = -15;
-        } else if (!scrollDir && posX < trackLeft + 60) {
+        } else if (!scrollDir && posX < trackLeft + 70) {
           speed = -5;
         } else if (scrollDir && posX > trackRight - thumbWidth) {
           speed = 15;
-        } else if (scrollDir && posX > trackRight - 60) {
+        } else if (scrollDir && posX > trackRight - 70) {
           speed = 5;
         }
         setScrollSpeed(speed);
@@ -265,10 +306,12 @@ function TimeSlider(props) {
       return "";
     }
 
+    const isClimatology = props.dataset.id.includes("climatology");
+
     let formatter = {};
     switch (props.dataset.quantum) {
       case "season":
-        return getSeason(time);
+        return getSeason(time, isClimatology);
       case "hour":
         formatter = {
           year: "numeric",
@@ -287,7 +330,7 @@ function TimeSlider(props) {
         };
         break;
       case "month":
-        formatter = climatology
+        formatter = isClimatology
           ? { month: "long" }
           : {
               year: "numeric",
@@ -304,17 +347,23 @@ function TimeSlider(props) {
     return time.toLocaleDateString(props.i18n.language, formatter);
   };
 
-  const getSeason = (time) => {
+  const getSeason = (time, isClimatology) => {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
-      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+      return isClimatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
     } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
-      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
+      return isClimatology ? __("Spring") : `${__("Spring")} ${year}`;
     } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
-      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
+      return isClimatology ? __("Summer") : `${__("Summer")} ${year}`;
     } else {
-      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
+      return isClimatology ? __("Fall") : `${__("Fall")} ${year}`;
+    }
+  };
+
+  const setTickLabelRef = (tick) => {
+    if (tick && !tickRefs.current.includes(tick)) {
+      tickRefs.current.push(tick);
     }
   };
 
@@ -322,12 +371,13 @@ function TimeSlider(props) {
     () =>
       props.timestamps.map((timestamp) => {
         let time = new Date(timestamp.value);
-        let tickLabel = null;
+        let tickLabel, tickLabelRef;
         let tickClass = "slider-minor-tick";
         let tooltipLabel = getFormattedTime(time);
         if (setMajorTick(time)) {
           tickLabel = tooltipLabel;
           tickClass = "slider-major-tick";
+          tickLabelRef = setTickLabelRef;
         }
 
         return (
@@ -348,7 +398,9 @@ function TimeSlider(props) {
               }}
             >
               <div className={tickClass} />
-              <span className="slider-major-tick-text">{tickLabel}</span>
+              <span className="slider-major-tick-text" ref={tickLabelRef}>
+                {tickLabel}
+              </span>
             </div>
           </OverlayTrigger>
         );
