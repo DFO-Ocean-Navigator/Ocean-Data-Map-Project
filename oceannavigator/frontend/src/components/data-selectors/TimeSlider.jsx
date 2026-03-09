@@ -49,8 +49,6 @@ function TimeSlider(props) {
   const [scrollSpeed, setScrollSpeed] = useState(0);
   const [tickWidth, setTickWidth] = useState(35);
 
-  const tickRefs = useRef([]);
-  const minTickWidthRef = useRef(35);
   const contentRef = useRef(null);
   const scrollTrackRef = useRef(null);
   const scrollThumbRef = useRef(null);
@@ -58,19 +56,8 @@ function TimeSlider(props) {
   const observer = useRef(null);
 
   useEffect(() => {
-    minTickWidthRef.current = 35;
-    tickRefs.current = [];
     updateTickContainerWidth();
   }, [props.dataset.id]);
-
-  useEffect(() => {
-    if (checkTickOverlaps()) {
-      minTickWidthRef.current = tickWidth + 10;
-      updateTickContainerWidth();
-    }
-
-    updateContentScroll(selectedIndex);
-  }, [props.timestamps, tickWidth]);
 
   useEffect(() => {
     if (props.timestamps.length === 0) return;
@@ -118,11 +105,7 @@ function TimeSlider(props) {
     observer.current = new ResizeObserver(() => {
       if (props.timestamps.length === 0) return;
 
-      let contentWidth = props.timestamps.length * tickWidth + 2 * trackOffset;
-      let trackWidth = scrollTrackRef.current.scrollWidth;
-      if (contentWidth < trackWidth) {
-        updateTickContainerWidth();
-      }
+      updateTickContainerWidth();
 
       updateContentScroll(selectedIndex);
     });
@@ -133,29 +116,6 @@ function TimeSlider(props) {
       observer.current?.unobserve(scrollTrackRef.current);
     };
   }, [props, tickWidth, selectedIndex]);
-
-  const checkTickOverlaps = () => {
-    const tickElements = tickRefs.current;
-
-    const isOverlapping = (element1, element2) => {
-      const rect1 = element1.getBoundingClientRect();
-      const rect2 = element2.getBoundingClientRect();
-
-      const overlap = rect1.right + 5 > rect2.left;
-
-      return overlap;
-    };
-
-    for (let i = 0; i < tickElements.length; i++) {
-      for (let j = i + 1; j < tickElements.length; j++) {
-        if (isOverlapping(tickElements[i], tickElements[j])) {
-          console.log(`Overlap detected between element ${i} and ${j}`);
-          return true;
-        }
-      }
-    }
-    return false;
-  };
 
   const updateContentScroll = (tickIndex) => {
     // scroll to position of currently selected tick
@@ -183,21 +143,21 @@ function TimeSlider(props) {
     switch (props.dataset.quantum) {
       case "hour":
         return time.getUTCHours() === 0 || time.getUTCHours() === 12;
-      case "day":
-        return time.getUTCHours() === 0;
     }
     return true;
   };
 
   const updateTickContainerWidth = () => {
+    let minTickWidth = 70;
+    if (props.dataset.quantum === "hour" && props.dataset.id !== "giops_day") {
+      minTickWidth = 35;
+    }
+
     let nextTickWidth =
       Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
       props.timestamps.length;
-    if (
-      nextTickWidth < minTickWidthRef.current ||
-      !Number.isFinite(nextTickWidth)
-    )
-      nextTickWidth = minTickWidthRef.current;
+    if (nextTickWidth < minTickWidth || !Number.isFinite(nextTickWidth))
+      nextTickWidth = minTickWidth;
     setTickWidth(nextTickWidth);
   };
 
@@ -359,23 +319,16 @@ function TimeSlider(props) {
     }
   };
 
-  const setTickLabelRef = (tick) => {
-    if (tick && !tickRefs.current.includes(tick)) {
-      tickRefs.current.push(tick);
-    }
-  };
-
   const scrollbarTicks = useMemo(
     () =>
       props.timestamps.map((timestamp) => {
         let time = new Date(timestamp.value);
-        let tickLabel, tickLabelRef;
+        let tickLabel;
         let tickClass = "slider-minor-tick";
         let tooltipLabel = getFormattedTime(time);
         if (setMajorTick(time)) {
           tickLabel = tooltipLabel;
           tickClass = "slider-major-tick";
-          tickLabelRef = setTickLabelRef;
         }
 
         return (
@@ -396,9 +349,7 @@ function TimeSlider(props) {
               }}
             >
               <div className={tickClass} />
-              <span className="slider-major-tick-text" ref={tickLabelRef}>
-                {tickLabel}
-              </span>
+              <span className="slider-major-tick-text">{tickLabel}</span>
             </div>
           </OverlayTrigger>
         );
