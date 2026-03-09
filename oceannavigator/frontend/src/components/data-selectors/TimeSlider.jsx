@@ -133,7 +133,7 @@ function TimeSlider(props) {
         observer.current?.unobserve(scrollTrackRef.current);
       };
     }
-  }, [props.timestamps, tickWidth, selectedIndex]);
+  }, [props, tickWidth, selectedIndex]);
 
   const checkTickOverlaps = () => {
     const tickElements = tickRefs.current;
