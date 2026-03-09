@@ -61,7 +61,16 @@ function TimeSlider(props) {
     minTickWidthRef.current = 35;
     tickRefs.current = [];
     updateTickContainerWidth();
-  }, [props.dataset.id, props.timestamps]);
+  }, [props.dataset.id]);
+
+  useEffect(() => {
+    if (checkTickOverlaps()) {
+      minTickWidthRef.current = tickWidth + 10;
+      updateTickContainerWidth();
+    }
+
+    updateContentScroll(selectedIndex);
+  }, [props.timestamps, tickWidth]);
 
   useEffect(() => {
     if (props.timestamps.length === 0) return;
@@ -83,15 +92,6 @@ function TimeSlider(props) {
       props.onChange(props.id, nextSelected);
     }
   }, [selectedIndex]);
-
-  useEffect(() => {
-    if (checkTickOverlaps()) {
-      minTickWidthRef.current = tickWidth + 10;
-      updateTickContainerWidth();
-    }
-
-    updateContentScroll(selectedIndex);
-  }, [tickWidth]);
 
   useEffect(() => {
     if (scrollSpeed === 0) return;
@@ -288,8 +288,8 @@ function TimeSlider(props) {
         // update the thumb position to follow the mouse, but constrain it within the track bounds
         let nextThumbPosX = posX;
         if (nextThumbPosX < trackLeft) nextThumbPosX = trackLeft;
-        if (nextThumbPosX > trackRight - 15)
-          nextThumbPosX = trackRight - tickWidth / 2 + 2;
+        if (nextThumbPosX > trackRight - thumbWidth)
+          nextThumbPosX = trackRight - thumbWidth;
         setThumbLeft(nextThumbPosX - trackLeft);
       }
     },
