@@ -27,8 +27,7 @@ const TimeSliderNavButton = memo((props) => {
   return (
     <OverlayTrigger
       placement="top"
-      trigger={props.disabled ? null : ["hover", "focus"]}
-      overlay={<Tooltip>{props.tooltipText}</Tooltip>}
+      overlay={props.disabled ? <></> : <Tooltip>{props.tooltipText}</Tooltip>}
     >
       <span>
         <Button
