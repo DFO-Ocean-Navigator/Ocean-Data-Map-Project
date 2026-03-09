@@ -60,7 +60,7 @@ function TimeSlider(props) {
   useEffect(() => {
     minTickWidthRef.current = 35;
     tickRefs.current = [];
-    updateTickContainerWidth()
+    updateTickContainerWidth();
   }, [props.dataset.id, props.timestamps]);
 
   useEffect(() => {
@@ -115,24 +115,23 @@ function TimeSlider(props) {
   }, [props, handleThumbMousemove, handleThumbMouseup]);
 
   useEffect(() => {
-    if (scrollTrackRef.current) {
-      observer.current = new ResizeObserver(() => {
-        if (props.timestamps.length === 0) return;
+    observer.current = new ResizeObserver(() => {
+      if (props.timestamps.length === 0) return;
 
-        let contentWidth =
-          props.timestamps.length * tickWidth + 2 * trackOffset;
-        let trackWidth = scrollTrackRef.current.scrollWidth;
-        if (contentWidth < trackWidth) {
-          updateTickContainerWidth();
-        }
+      let contentWidth = props.timestamps.length * tickWidth + 2 * trackOffset;
+      let trackWidth = scrollTrackRef.current.scrollWidth;
+      if (contentWidth < trackWidth) {
+        updateTickContainerWidth();
+      }
 
-        updateContentScroll(selectedIndex);
-      });
+      updateContentScroll(selectedIndex);
+    });
+
+    if (scrollTrackRef.current)
       observer.current.observe(scrollTrackRef.current);
-      return () => {
-        observer.current?.unobserve(scrollTrackRef.current);
-      };
-    }
+    return () => {
+      observer.current?.unobserve(scrollTrackRef.current);
+    };
   }, [props, tickWidth, selectedIndex]);
 
   const checkTickOverlaps = () => {
@@ -162,21 +161,20 @@ function TimeSlider(props) {
     // scroll to position of currently selected tick
     let contentScrollLeft = contentRef.current.scrollLeft;
     const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
-    const tickPosX = (tickIndex + 1.5) * tickWidth;
+    const tickPosX = (tickIndex + 0.5) * tickWidth + trackOffset;
 
     if (
       tickPosX < contentScrollLeft ||
       tickPosX > contentScrollLeft + trackWidth
     ) {
-      contentRef.current.scrollBy({
+      contentRef.current.scroll({
         left: tickPosX - trackWidth / 2,
         behavior: "instant",
       });
       contentScrollLeft = contentRef.current.scrollLeft;
     }
 
-    let nextThumbPosX =
-      tickPosX + trackOffset - tickWidth - contentScrollLeft - thumbWidth / 2;
+    let nextThumbPosX = tickPosX - contentScrollLeft - thumbWidth / 2;
 
     setThumbLeft(nextThumbPosX);
   };
