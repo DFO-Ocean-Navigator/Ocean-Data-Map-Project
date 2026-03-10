@@ -382,6 +382,17 @@ class VariableConfig:
             return [self._variable.valid_min, self._variable.valid_max]
         else:
             return [0, 100]
+        
+    @property
+    def map_colors(self) -> list | None:
+        """
+        Returns colors associated with each variable if present from dataset config file
+        """
+        try:
+            map_colors = self.__get_attribute('map_colors')
+            return map_colors
+        except KeyError:
+            return None
 
     @property
     def is_hidden(self) -> bool:
