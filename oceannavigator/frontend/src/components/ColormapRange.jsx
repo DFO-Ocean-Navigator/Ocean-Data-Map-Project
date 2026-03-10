@@ -118,6 +118,7 @@ function ColormapRange(props) {
                 value={min}
                 onChange={(e) => changed("min", e)}
                 step={0.1}
+                disabled={props.state[1] - props.state[0] == 1 ? true : false}
               />
             </td>
           </tr>
@@ -132,6 +133,7 @@ function ColormapRange(props) {
                 value={max}
                 onChange={(e) => changed("max", e)}
                 step={0.1}
+                disabled={props.state[1] - props.state[0] == 1 ? true : false}
               />
             </td>
           </tr>
@@ -152,7 +154,7 @@ ColormapRange.propTypes = {
   showAuto: PropTypes.bool,
   dataset: PropTypes.object,
   mapSettings: PropTypes.object,
-  mapRef: PropTypes.object
+  mapRef: PropTypes.object,
 };
 
 export default withTranslation()(ColormapRange);
