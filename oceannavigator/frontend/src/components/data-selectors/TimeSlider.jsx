@@ -107,7 +107,7 @@ function TimeSlider(props) {
       observer.current = new ResizeObserver(() => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(() => {
-          const trackWidth = scrollTrackRef.current.scrollWidth;
+          const trackWidth = scrollTrackRef.current?.scrollWidth;
           if (trackWidth !== scrollTrackWidthRef.current) {
             updateTickContainerWidth();
 
@@ -120,7 +120,8 @@ function TimeSlider(props) {
       observer.current.observe(scrollTrackRef.current);
       return () => {
         clearTimeout(resizeTimer);
-        observer.current?.unobserve(scrollTrackRef.current);
+        if (scrollTrackRef.current)
+          observer.current?.unobserve(scrollTrackRef.current);
       };
     }
   }, [props, tickWidth, selectedIndex]);
