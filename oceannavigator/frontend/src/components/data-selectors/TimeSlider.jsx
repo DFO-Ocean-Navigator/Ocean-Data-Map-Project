@@ -205,6 +205,7 @@ function TimeSlider(props) {
         // determine nearest tick index
         const tickIndex = getNearestTickIndex(e.clientX);
         setSelectedIndex(tickIndex);
+        updateContentScroll(tickIndex);
 
         // reset scroll speed
         setScrollSpeed(0);
