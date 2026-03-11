@@ -44,12 +44,13 @@ const TimeSliderNavButton = memo((props) => {
 
 function TimeSlider(props) {
   const [thumbLeft, setThumbLeft] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState();
   const [scrollSpeed, setScrollSpeed] = useState(0);
-  const [tickWidth, setTickWidth] = useState(35);
+  const [tickWidth, setTickWidth] = useState(70);
 
   const contentRef = useRef(null);
   const scrollTrackRef = useRef(null);
+  const scrollTrackWidthRef = useRef(0);
   const scrollThumbRef = useRef(null);
   const draggingRef = useRef(false);
   const observer = useRef(null);
@@ -71,7 +72,7 @@ function TimeSlider(props) {
   }, [props.selected]);
 
   useEffect(() => {
-    if (props.timestamps.length === 0) return;
+    if (props.timestamps.length === 0 || !selectedIndex) return;
     updateContentScroll(selectedIndex);
     let nextSelected = props.timestamps[selectedIndex].id;
     if (nextSelected !== props.selected.id) {
@@ -101,23 +102,33 @@ function TimeSlider(props) {
   }, [props, handleThumbMousemove, handleThumbMouseup]);
 
   useEffect(() => {
-    observer.current = new ResizeObserver(() => {
-      if (props.timestamps.length === 0) return;
+    if (contentRef.current && scrollTrackRef.current) {
+      let resizeTimer;
+      observer.current = new ResizeObserver(() => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const trackWidth = scrollTrackRef.current.scrollWidth;
+          if (trackWidth !== scrollTrackWidthRef.current) {
+            updateTickContainerWidth();
 
-      updateTickContainerWidth();
+            updateContentScroll(selectedIndex);
+            scrollTrackWidthRef.current = trackWidth;
+          }
+        }, 250);
+      });
 
-      updateContentScroll(selectedIndex);
-    });
-
-    if (scrollTrackRef.current)
       observer.current.observe(scrollTrackRef.current);
-    return () => {
-      observer.current?.unobserve(scrollTrackRef.current);
-    };
+      return () => {
+        clearTimeout(resizeTimer);
+        observer.current?.unobserve(scrollTrackRef.current);
+      };
+    }
   }, [props, tickWidth, selectedIndex]);
 
   const updateContentScroll = (tickIndex) => {
     // scroll to position of currently selected tick
+    if (!contentRef.current) return;
+
     let contentScrollLeft = contentRef.current.scrollLeft;
     const trackWidth = scrollTrackRef.current.getBoundingClientRect().width;
     const tickPosX = (tickIndex + 0.5) * tickWidth + trackOffset;
@@ -147,6 +158,8 @@ function TimeSlider(props) {
   };
 
   const updateTickContainerWidth = () => {
+    if (!scrollTrackRef.current || props.timestamps.length === 0) return;
+
     let minTickWidth = 70;
     if (props.dataset.quantum === "hour" && props.dataset.id !== "giops_day") {
       minTickWidth = 35;
@@ -157,6 +170,7 @@ function TimeSlider(props) {
       props.timestamps.length;
     if (nextTickWidth < minTickWidth || !Number.isFinite(nextTickWidth))
       nextTickWidth = minTickWidth;
+
     setTickWidth(nextTickWidth);
   };
 
