@@ -3,6 +3,7 @@ import itertools
 import multiprocessing
 import os
 import sys
+from pathlib import PosixPath
 
 import gsw
 import numpy as np
@@ -17,6 +18,21 @@ parent = os.path.dirname(os.path.dirname(current))
 sys.path.append(parent)
 
 from data.observational import DataType, Platform, Sample, Station
+
+"""
+QC Flag meanings:
+    0: "no_qc_performed",
+    1: "good_data",
+    2: "probably_good_data",
+    3: "bad_data_that_are_potentially_correctable",
+    4: "bad_data",
+    5: "value_changed",
+    6: "value_below_detection",
+    7: "nominal_value",
+    8: "interpolated_value",
+    9: "missing_value"
+Only use data with values 1, 2, 5, 7 or 8
+"""
 
 
 def get_platform_variables(platform_type):
@@ -101,32 +117,40 @@ def format_attrs(attrs):
 
 
 def import_obs_data(file, variables, platform_type):
-    ds = xr.open_dataset(file).drop_duplicates("TIME")
+    ds = xr.open_dataset(file).drop_duplicates("TIME").sel(TIME=slice("2020-01-01",None))
 
     variables = [v for v in variables if v in ds.variables]
-    if len(variables) == 0:
+    qc_variables = [var for var in ds.data_vars if 'QC' in var]
+    if len(variables) == 0 or len(ds.TIME) == 0:
         return pd.DataFrame(), {}, []
 
     if platform_type == "DB":
         ds = fix_drifter_depths(ds)
 
     df = (
-        ds[["TIME", "LATITUDE", "LONGITUDE", *variables]]
+        ds[["TIME", "LATITUDE", "LONGITUDE", *variables, *qc_variables]]
         .to_dataframe()
         .reset_index()
     )
 
+    # filter out bad data based on QC values
+    for qc_var in qc_variables:
+        if "TIME" in qc_var or "POSITION" in qc_var:
+            df = df[~df[qc_var].isin([0, 3, 4, 6, 9])]
+        else:
+            idx = df.loc[df[qc_var].isin([0, 3, 4, 6, 9])].index
+            var = qc_var.replace("_QC", "")
+            df.loc[idx, var] = np.nan
+
+    df.drop(columns=qc_variables, inplace=True)
+
     # calculate depths if missing
     if "DEPTH" not in ds.variables and "DEPH" not in ds.variables and "PRES" in ds.variables:
+        df = df.dropna(subset="PRES", ignore_index=True)
         if "DEPTH" not in df.columns:
             df["DEPTH"] = 0.0
-        df["DEPTH"] = df["DEPTH"].astype(float)
-        for idx, row in df.iterrows():
-            depth = gsw.conversions.z_from_p(
-                -row.PRES,
-                row.LATITUDE,
-            )
-            df.loc[idx, "DEPTH"] = depth
+        df = df.astype({"DEPTH": "float64"})
+        df.loc[:, "DEPTH"] = gsw.conversions.z_from_p(-df["PRES"], df["LATITUDE"])
     elif "DEPH" in ds.variables:
         df["DEPTH"] = df["DEPH"]
 
@@ -177,52 +201,62 @@ def add_datatypes(engine, variables, var_metadata):
 
         for variable in var_metadata:
             if variable["key"] not in db_datatype_keys:
-                dt = DataType(
-                    key=variable["key"],
-                    name=variable["name"],
-                    unit=variable["unit"],
-                )
-                session.add(dt)
+                try:
+                    dt = DataType(
+                        key=variable["key"],
+                        name=variable["name"],
+                        unit=variable["unit"],
+                    )
+                    session.add(dt)
+                except IntegrityError as e:
+                    print("Error committing datatype.")
+                    print(e)
+                    session.rollback()
 
         session.commit()
 
 
 def add_platform(engine, attrs, platform_type):
-    platform_schema = None
-
-    match platform_type:
-        case "GL":
-            platform_schema = Platform.Type.glider
-        case "DB":
-            platform_schema = Platform.Type.drifter
-        case "PF":
-            platform_schema = Platform.Type.argo
-        case "CT":
-            platform_schema = Platform.Type.mission
-
-    platform = Platform(type=platform_schema, unique_id=f"{attrs["Platform Code"]}")
-    platform.attrs = attrs
 
     with Session(engine) as session:
-        try:
-            session.add(platform)
-            session.commit()
-            platform_id = platform.id
-        except IntegrityError as e:
-            print("Error committing platform.")
-            print(e)
-            session.rollback()
+        stmt = select(Platform.id).where(
+            Platform.unique_id == attrs["Platform Code"]
+        )
+        platform_id = session.execute(stmt).first()
 
-            stmt = select(Platform.id).where(
-                Platform.unique_id == attrs["Platform Code"]
-            )
-            platform_id = session.execute(stmt).first()[0]
+    if platform_id is not None:
+        platform_id = platform_id[0]
+    else:
+        platform_schema = None
+
+        match platform_type:
+            case "GL":
+                platform_schema = Platform.Type.glider
+            case "DB":
+                platform_schema = Platform.Type.drifter
+            case "PF":
+                platform_schema = Platform.Type.argo
+            case "CT":
+                platform_schema = Platform.Type.mission
+
+        platform = Platform(type=platform_schema, unique_id=f"{attrs["Platform Code"]}")
+        platform.attrs = attrs
+
+        with Session(engine) as session:
+            try:
+                session.add(platform)
+                session.commit()
+                platform_id = platform.id
+            except IntegrityError as e:
+                print("Error committing platform.")
+                print(e)
+                session.rollback()
 
     return platform_id
 
 
 def add_stations(df, engine):
-    station_df = df[["platform_id", "time", "latitude", "longitude"]]
+    station_df = df[["platform_id", "time", "latitude", "longitude"]].copy()
     station_df.drop_duplicates(inplace=True)
 
     with Session(engine) as session:
@@ -231,12 +265,10 @@ def add_stations(df, engine):
             con=session.connection(),
             if_exists="append",
             index=False,
-            chunksize=100,
             method=insert_stations,
         )
 
-        station_df["station_id"] = None
-
+        station_df = station_df.assign(station_id=None)
         station_df = station_df.apply(get_station_ids, axis=1, session=session)
 
         df = pd.merge(df, station_df)
@@ -253,12 +285,12 @@ def add_samples(df, engine):
             con=session.connection(),
             if_exists="append",
             index=False,
-            chunksize=100,
             method=insert_samples,
+            chunksize=10000
         )
 
 
-def import_cmems_obs(uri, file_list, platform_type):
+def import_cmems_obs(uri : str, file_list : list | PosixPath | str, platform_type : str):
 
     engine = create_engine(
         uri,
@@ -266,26 +298,30 @@ def import_cmems_obs(uri, file_list, platform_type):
         pool_recycle=3600,
     )
 
-    if isinstance(file_list, str):
+    if isinstance(file_list, str) | isinstance(file_list, PosixPath):
         file_list = [file_list]
 
     variables = get_platform_variables(platform_type)
 
     for file in file_list:
-        print(f"Importing file: {file}")
-        df, attrs, var_metadata = import_obs_data(file, variables, platform_type)
-        if len(df) == 0:
-            print(f"No valid variables found in file: {file}. Skipping.")
-            continue
+        try:
+            print(f"Importing file: {file}")
+            df, attrs, var_metadata = import_obs_data(file, variables, platform_type)
+            if len(df) == 0:
+                print(f"No valid variables found in file: {file}. Skipping.")
+                continue
 
-        add_datatypes(engine, variables, var_metadata)
+            add_datatypes(engine, variables, var_metadata)
 
-        platform_id = add_platform(engine, attrs, platform_type)
-        df["platform_id"] = platform_id
+            platform_id = add_platform(engine, attrs, platform_type)
+            df["platform_id"] = platform_id
 
-        df = add_stations(df, engine)
-        add_samples(df, engine)
-
+            df = add_stations(df, engine)
+            add_samples(df, engine)
+        except Exception as e:
+            print(f"Error importing file: {file}")
+            print(e)
+            raise
     engine.dispose()
 
 
