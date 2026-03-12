@@ -146,7 +146,6 @@ function TimeSlider(props) {
     }
 
     let nextThumbPosX = tickPosX - contentScrollLeft - thumbWidth / 2;
-
     setThumbLeft(nextThumbPosX);
   };
 
@@ -228,7 +227,7 @@ function TimeSlider(props) {
         draggingRef.current = false;
       }
     },
-    [thumbLeft, tickWidth],
+    [tickWidth],
   );
 
   const handleThumbMousemove = useCallback(
@@ -241,11 +240,12 @@ function TimeSlider(props) {
         const trackRect = scrollTrackRef.current.getBoundingClientRect();
         const trackLeft = trackRect.x;
         const trackRight = trackRect.x + trackRect.width;
-        const thumbLeft = scrollThumbRef.current.getBoundingClientRect().x;
+        const currentThumbLeft =
+          scrollThumbRef.current.getBoundingClientRect().x;
 
         // get current mouse position and determine scroll direction
         const posX = e.clientX;
-        const scrollDir = posX - thumbLeft > 0;
+        const scrollDir = posX - currentThumbLeft > 0;
 
         // set scroll speed based on proximity to track edges
         let speed = 0;
@@ -268,7 +268,7 @@ function TimeSlider(props) {
         setThumbLeft(nextThumbPosX - trackLeft);
       }
     },
-    [thumbLeft, tickWidth],
+    [tickWidth],
   );
 
   const getFormattedTime = (timestr) => {
@@ -372,6 +372,30 @@ function TimeSlider(props) {
     [props.timestamps, tickWidth],
   );
 
+  const sliderThumb =
+    props.timestamps.length === 0 ? null : (
+      <OverlayTrigger
+        key={`handle-overlay`}
+        placement="top"
+        overlay={
+          <Tooltip id={`handle-tooltip`}>
+            {props.timestamps.length > 0 &&
+              getFormattedTime(props.selected.value)}
+          </Tooltip>
+        }
+      >
+        <div
+          className="slider-thumb"
+          ref={scrollThumbRef}
+          onMouseDown={handleThumbMousedown}
+          style={{
+            left: `${thumbLeft}px`,
+            cursor: draggingRef.current ? "grabbing" : "grab",
+          }}
+        ></div>
+      </OverlayTrigger>
+    );
+
   // generate the left and right navigation buttons
   const nVisibleTicks = scrollTrackRef.current
     ? Math.round(
@@ -432,26 +456,7 @@ function TimeSlider(props) {
         <div className="slider-scrollbar">
           <div className="slider-track-and-thumb">
             <div className="slider-track" ref={scrollTrackRef}></div>
-            <OverlayTrigger
-              key={`handle-overlay`}
-              placement="top"
-              overlay={
-                <Tooltip id={`handle-tooltip`}>
-                  {props.timestamps.length > 0 &&
-                    getFormattedTime(props.selected.value)}
-                </Tooltip>
-              }
-            >
-              <div
-                className="slider-thumb"
-                ref={scrollThumbRef}
-                onMouseDown={handleThumbMousedown}
-                style={{
-                  left: `${thumbLeft}px`,
-                  cursor: draggingRef.current ? "grabbing" : "grab",
-                }}
-              ></div>
-            </OverlayTrigger>
+            {sliderThumb}
           </div>
         </div>
       </div>
