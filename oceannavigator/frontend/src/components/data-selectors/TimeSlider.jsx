@@ -57,7 +57,7 @@ function TimeSlider(props) {
 
   useEffect(() => {
     updateTickContainerWidth();
-  }, [props.dataset.id]);
+  }, [props.timestamps.length]);
 
   useEffect(() => {
     if (props.timestamps.length === 0) return;
@@ -124,7 +124,7 @@ function TimeSlider(props) {
           observer.current?.unobserve(scrollTrackRef.current);
       };
     }
-  }, [props, tickWidth, selectedIndex]);
+  }, [selectedIndex]);
 
   const updateContentScroll = (tickIndex) => {
     // scroll to position of currently selected tick
