@@ -18,31 +18,31 @@ import {
   ChevronDoubleRight,
 } from "react-bootstrap-icons";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const thumbWidth = 13;
 const trackOffset = 50;
 
-const TimeSliderNavButton = memo((props) => {
+const TimeSliderNavButton = memo(({ tooltipText, onClick, disabled, icon }) => {
   return (
     <OverlayTrigger
       placement="top"
-      overlay={props.disabled ? <></> : <Tooltip>{props.tooltipText}</Tooltip>}
+      overlay={disabled ? <></> : <Tooltip>{tooltipText}</Tooltip>}
     >
       <span>
         <Button
           className="slider-nav-button"
-          onClick={props.onClick}
-          disabled={props.disabled}
+          onClick={onClick}
+          disabled={disabled}
         >
-          {props.icon}
+          {icon}
         </Button>
       </span>
     </OverlayTrigger>
   );
 });
 
-function TimeSlider(props) {
+function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   const [thumbLeft, setThumbLeft] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState();
   const [scrollSpeed, setScrollSpeed] = useState(0);
@@ -55,28 +55,28 @@ function TimeSlider(props) {
   const draggingRef = useRef(false);
   const observer = useRef(null);
 
+  const { t, i18n } = useTranslation();
+
   useEffect(() => {
     updateTickContainerWidth();
-  }, [props.timestamps.length]);
+  }, [timestamps.length]);
 
   useEffect(() => {
-    if (props.timestamps.length === 0) return;
+    if (timestamps.length === 0) return;
 
-    let nextSelectedIndex = props.timestamps.findIndex(
-      (ts) => ts.id === props.selected.id,
-    );
+    let nextSelectedIndex = timestamps.findIndex((ts) => ts.id === selected.id);
 
     if (nextSelectedIndex !== selectedIndex) {
       setSelectedIndex(nextSelectedIndex);
     }
-  }, [props.selected]);
+  }, [selected]);
 
   useEffect(() => {
-    if (props.timestamps.length === 0 || !selectedIndex) return;
+    if (timestamps.length === 0 || !selectedIndex) return;
     updateContentScroll(selectedIndex);
-    let nextSelected = props.timestamps[selectedIndex].id;
-    if (nextSelected !== props.selected.id) {
-      props.onChange(props.id, nextSelected);
+    let nextSelected = timestamps[selectedIndex].id;
+    if (nextSelected !== selected.id) {
+      onChange(id, nextSelected);
     }
   }, [selectedIndex]);
 
@@ -99,7 +99,7 @@ function TimeSlider(props) {
       document.removeEventListener("mouseup", handleThumbMouseup);
       document.removeEventListener("mouseleave", handleThumbMouseup);
     };
-  }, [props, handleThumbMousemove, handleThumbMouseup]);
+  }, [handleThumbMousemove, handleThumbMouseup]);
 
   useEffect(() => {
     if (contentRef.current && scrollTrackRef.current) {
@@ -150,7 +150,7 @@ function TimeSlider(props) {
   };
 
   const setMajorTick = (time) => {
-    switch (props.dataset.quantum) {
+    switch (dataset.quantum) {
       case "hour":
         return time.getUTCHours() === 0 || time.getUTCHours() === 12;
     }
@@ -158,16 +158,16 @@ function TimeSlider(props) {
   };
 
   const updateTickContainerWidth = () => {
-    if (!scrollTrackRef.current || props.timestamps.length === 0) return;
+    if (!scrollTrackRef.current || timestamps.length === 0) return;
 
     let minTickWidth = 70;
-    if (props.dataset.quantum === "hour" && props.dataset.id !== "giops_day") {
+    if (dataset.quantum === "hour" && dataset.id !== "giops_day") {
       minTickWidth = 35;
     }
 
     let nextTickWidth =
       Math.floor(scrollTrackRef.current.offsetWidth - 2 * trackOffset) /
-      props.timestamps.length;
+      timestamps.length;
     if (nextTickWidth < minTickWidth || !Number.isFinite(nextTickWidth))
       nextTickWidth = minTickWidth;
 
@@ -188,8 +188,7 @@ function TimeSlider(props) {
 
     // determine the index of the next timestamp
     let tickIndex = Math.round((contentPos + thumbOffset) / tickWidth);
-    if (tickIndex >= props.timestamps.length)
-      tickIndex = props.timestamps.length - 1;
+    if (tickIndex >= timestamps.length) tickIndex = timestamps.length - 1;
     if (tickIndex < 0) tickIndex = 0;
 
     return tickIndex;
@@ -279,10 +278,10 @@ function TimeSlider(props) {
       return "";
     }
 
-    const isClimatology = props.dataset.id.includes("climatology");
+    const isClimatology = dataset.id.includes("climatology");
 
     let formatter = {};
-    switch (props.dataset.quantum) {
+    switch (dataset.quantum) {
       case "season":
         return getSeason(time, isClimatology);
       case "hour":
@@ -317,26 +316,26 @@ function TimeSlider(props) {
         break;
     }
     formatter["timeZone"] = "UTC";
-    return time.toLocaleDateString(props.i18n.language, formatter);
+    return time.toLocaleDateString(i18n.language, formatter);
   };
 
   const getSeason = (time, isClimatology) => {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
-      return isClimatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+      return isClimatology ? t("Winter") : `${t("Winter")} ${year - 1}`;
     } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
-      return isClimatology ? __("Spring") : `${__("Spring")} ${year}`;
+      return isClimatology ? t("Spring") : `${t("Spring")} ${year}`;
     } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
-      return isClimatology ? __("Summer") : `${__("Summer")} ${year}`;
+      return isClimatology ? t("Summer") : `${t("Summer")} ${year}`;
     } else {
-      return isClimatology ? __("Fall") : `${__("Fall")} ${year}`;
+      return isClimatology ? t("Fall") : `${t("Fall")} ${year}`;
     }
   };
 
   const scrollbarTicks = useMemo(
     () =>
-      props.timestamps.map((timestamp) => {
+      timestamps.map((timestamp) => {
         let time = new Date(timestamp.value);
         let tickLabel;
         let tickClass = "slider-minor-tick";
@@ -369,18 +368,17 @@ function TimeSlider(props) {
           </OverlayTrigger>
         );
       }),
-    [props.timestamps, tickWidth],
+    [timestamps, tickWidth],
   );
 
   const sliderThumb =
-    props.timestamps.length === 0 ? null : (
+    timestamps.length === 0 ? null : (
       <OverlayTrigger
         key={`handle-overlay`}
         placement="top"
         overlay={
           <Tooltip id={`handle-tooltip`}>
-            {props.timestamps.length > 0 &&
-              getFormattedTime(props.selected.value)}
+            {timestamps.length > 0 && getFormattedTime(selected.value)}
           </Tooltip>
         }
       >
@@ -411,9 +409,9 @@ function TimeSlider(props) {
     (index, i) => (
       <TimeSliderNavButton
         key={`left-button-${i}`}
-        tooltipText={getFormattedTime(props.timestamps[index]?.value)}
+        tooltipText={getFormattedTime(timestamps[index]?.value)}
         onClick={() => setSelectedIndex(index)}
-        disabled={index === selectedIndex || index < 0 || props.loading}
+        disabled={index === selectedIndex || index < 0}
         icon={leftButtonIcons[i]}
       />
     ),
@@ -427,17 +425,13 @@ function TimeSlider(props) {
   const rightButtons = [
     selectedIndex + 1,
     selectedIndex + nVisibleTicks,
-    props.timestamps.length - 1,
+    timestamps.length - 1,
   ].map((index, i) => (
     <TimeSliderNavButton
       key={`right-button-${i}`}
-      tooltipText={getFormattedTime(props.timestamps[index]?.value)}
+      tooltipText={getFormattedTime(timestamps[index]?.value)}
       onClick={() => setSelectedIndex(index)}
-      disabled={
-        index === selectedIndex ||
-        index >= props.timestamps.length ||
-        props.loading
-      }
+      disabled={index === selectedIndex || index >= timestamps.length}
       icon={rightButtonIcons[i]}
     />
   ));
@@ -465,4 +459,4 @@ function TimeSlider(props) {
   );
 }
 
-export default withTranslation()(TimeSlider);
+export default TimeSlider;
