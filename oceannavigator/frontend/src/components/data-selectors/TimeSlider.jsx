@@ -2,7 +2,6 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useCallback,
   useMemo,
   memo,
 } from "react";
@@ -65,11 +64,10 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     if (timestamps.length === 0) return;
 
     let nextSelectedIndex = timestamps.findIndex((ts) => ts.id === selected.id);
-
-    if (nextSelectedIndex !== selectedIndex) {
+    if (nextSelectedIndex > 0 && nextSelectedIndex !== selectedIndex) {
       setSelectedIndex(nextSelectedIndex);
     }
-  }, [selected]);
+  }, [timestamps.length, selected]);
 
   useEffect(() => {
     if (timestamps.length === 0 || !selectedIndex) return;
@@ -99,7 +97,7 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
       document.removeEventListener("mouseup", handleThumbMouseup);
       document.removeEventListener("mouseleave", handleThumbMouseup);
     };
-  }, [handleThumbMousemove, handleThumbMouseup]);
+  }, [timestamps, tickWidth]);
 
   useEffect(() => {
     if (contentRef.current && scrollTrackRef.current) {
@@ -209,66 +207,58 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     draggingRef.current = true;
   };
 
-  const handleThumbMouseup = useCallback(
+  const handleThumbMouseup = (e) => {
     // Stop dragging the thumb when the user releases the mouse button and snap to the nearest tick
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (draggingRef.current) {
-        // determine nearest tick index
-        const tickIndex = getNearestTickIndex(e.clientX);
-        setSelectedIndex(tickIndex);
-        updateContentScroll(tickIndex);
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggingRef.current) {
+      // determine nearest tick index
+      const tickIndex = getNearestTickIndex(e.clientX);
+      setSelectedIndex(tickIndex);
+      updateContentScroll(tickIndex);
 
-        // reset scroll speed
-        setScrollSpeed(0);
+      // reset scroll speed
+      setScrollSpeed(0);
 
-        draggingRef.current = false;
-      }
-    },
-    [tickWidth],
-  );
-
-  const handleThumbMousemove = useCallback(
+      draggingRef.current = false;
+    }
+  };
+  const handleThumbMousemove = (e) => {
     // scroll the content when dragging the thumb
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (draggingRef.current) {
-        // get current position of scroll elements
-        const trackRect = scrollTrackRef.current.getBoundingClientRect();
-        const trackLeft = trackRect.x;
-        const trackRight = trackRect.x + trackRect.width;
-        const currentThumbLeft =
-          scrollThumbRef.current.getBoundingClientRect().x;
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggingRef.current) {
+      // get current position of scroll elements
+      const trackRect = scrollTrackRef.current.getBoundingClientRect();
+      const trackLeft = trackRect.x;
+      const trackRight = trackRect.x + trackRect.width;
+      const currentThumbLeft = scrollThumbRef.current.getBoundingClientRect().x;
 
-        // get current mouse position and determine scroll direction
-        const posX = e.clientX;
-        const scrollDir = posX - currentThumbLeft > 0;
+      // get current mouse position and determine scroll direction
+      const posX = e.clientX;
+      const scrollDir = posX - currentThumbLeft > 0;
 
-        // set scroll speed based on proximity to track edges
-        let speed = 0;
-        if (!scrollDir && posX < trackLeft + thumbWidth) {
-          speed = -15;
-        } else if (!scrollDir && posX < trackLeft + 70) {
-          speed = -5;
-        } else if (scrollDir && posX > trackRight - thumbWidth) {
-          speed = 15;
-        } else if (scrollDir && posX > trackRight - 70) {
-          speed = 5;
-        }
-        setScrollSpeed(speed);
-
-        // update the thumb position to follow the mouse, but constrain it within the track bounds
-        let nextThumbPosX = posX;
-        if (nextThumbPosX < trackLeft) nextThumbPosX = trackLeft;
-        if (nextThumbPosX > trackRight - thumbWidth)
-          nextThumbPosX = trackRight - thumbWidth;
-        setThumbLeft(nextThumbPosX - trackLeft);
+      // set scroll speed based on proximity to track edges
+      let speed = 0;
+      if (!scrollDir && posX < trackLeft + thumbWidth) {
+        speed = -15;
+      } else if (!scrollDir && posX < trackLeft + 70) {
+        speed = -5;
+      } else if (scrollDir && posX > trackRight - thumbWidth) {
+        speed = 15;
+      } else if (scrollDir && posX > trackRight - 70) {
+        speed = 5;
       }
-    },
-    [tickWidth],
-  );
+      setScrollSpeed(speed);
+
+      // update the thumb position to follow the mouse, but constrain it within the track bounds
+      let nextThumbPosX = posX;
+      if (nextThumbPosX < trackLeft) nextThumbPosX = trackLeft;
+      if (nextThumbPosX > trackRight - thumbWidth)
+        nextThumbPosX = trackRight - thumbWidth;
+      setThumbLeft(nextThumbPosX - trackLeft);
+    }
+  };
 
   const getFormattedTime = (timestr) => {
     // format a timestamp string based on the dataset's quantum and climatology settings
