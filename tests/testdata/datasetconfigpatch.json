@@ -50,6 +50,25 @@
         }
     },
 
+    "giops_icechunk": {
+        "group": "GIOPS Forecast",    
+        "url": "icechunk",
+        "name": "GIOPS 10 Day Daily Mean Forecast 3D - LatLon",
+        "quantum": "hour",
+        "type": "forecast",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Mercator",
+        "enabled": true,
+        "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
+        "lat_var_key": "latitude",
+        "lon_var_key": "longitude",
+        "help": "./data-help/giops-10day.html",
+        "vector_variables": ["magwatervel"],
+        "variables": {
+            "votemper": { "name": "Potential Temperature", "units": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "valid_min": -100, "valid_max": 100 }
+        }
+    },  
+
     "nemo_sqlite3": {
         "enabled": 1,
         "name": "Nemo SQLITE3",
