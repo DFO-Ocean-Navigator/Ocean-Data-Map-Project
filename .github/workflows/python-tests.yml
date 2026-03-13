@@ -45,13 +45,13 @@ jobs:
         show-channel-urls: true
         use-only-tar-bz2: true
     - name: Update environment
-      run: conda env update -f config/conda/environment.yml --name test --quiet
+      run: mamba env update -f config/conda/environment.yml --name test --quiet
     - name: Run tests (activate)
       run: |
         echo PROJ_LIB=$CONDA_BASE/share/proj >> $GITHUB_ENV
-        # initialize conda for the current bash shell
-        eval "$(conda shell hook --shell bash)"
-        conda activate test
+        # initialize mamba for the current bash shell
+        eval "$(mamba shell hook --shell bash)"
+        mamba activate test
         # optional sanity checks
         which python
         python --version
