@@ -1,0 +1,30 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+@EXPLICIT
+https://repo.anaconda.com/pkgs/main/linux-64/_libgcc_mutex-0.1-main.conda
+https://conda.anaconda.org/anaconda/linux-64/ca-certificates-2019.11.27-0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libgfortran-ng-7.3.0-hdf63c60_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/libstdcxx-ng-9.1.0-hdf63c60_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/libgcc-ng-9.1.0-hdf63c60_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/bzip2-1.0.8-h7b6447c_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/freeglut-3.0.0-hf484d3e_5.conda
+https://conda.anaconda.org/conda-forge/linux-64/jpeg-9c-h14c3975_1001.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libglu-9.0.0-hf484d3e_1.conda
+https://repo.anaconda.com/pkgs/main/linux-64/ncurses-6.1-he6710b0_1.conda
+https://repo.anaconda.com/pkgs/main/linux-64/zlib-1.2.11-h7b6447c_3.conda
+https://repo.anaconda.com/pkgs/main/linux-64/hdf4-4.2.13-h3ca952b_2.conda
+https://conda.anaconda.org/conda-forge/linux-64/hdf5-1.10.5-nompi_h3c11f04_1104.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/jasper-2.0.14-h07fcdf6_1.conda
+https://repo.anaconda.com/pkgs/main/linux-64/libedit-3.1.20181209-hc058e9b_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/libpng-1.6.37-hbc83047_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/libssh2-1.8.2-h1ba5d50_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/readline-7.0-h7b6447c_5.conda
+https://repo.anaconda.com/pkgs/main/linux-64/tk-8.6.8-hbc83047_0.conda
+https://repo.anaconda.com/pkgs/main/linux-64/g2clib-1.6.0-h8a8886c_5.conda
+https://repo.anaconda.com/pkgs/main/linux-64/krb5-1.16.1-h173b8e3_7.conda
+https://repo.anaconda.com/pkgs/main/linux-64/sqlite-3.30.1-h7b6447c_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libcurl-7.67.0-h20c2e04_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/curl-7.67.0-hbc83047_0.tar.bz2
+https://conda.anaconda.org/conda-forge/linux-64/libnetcdf-4.7.1-nompi_h94020b1_102.tar.bz2
+https://conda.anaconda.org/conda-forge/linux-64/netcdf-cxx4-4.3.1-nompi_h781a7a2_101.tar.bz2

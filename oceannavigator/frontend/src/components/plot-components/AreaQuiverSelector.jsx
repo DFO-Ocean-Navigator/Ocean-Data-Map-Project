@@ -1,9 +1,22 @@
 import React from "react";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import PropTypes from "prop-types";
+
+import { useGetDatasetVariables } from "../../remote/queries.js";
 import { withTranslation } from "react-i18next";
 
-const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: _ }) => {
+const AreaQuiverSelector = ({
+  state,
+  dataset,
+  id,
+  title,
+  children,
+  onUpdate,
+  t: _,
+}) => {
+
+  const variables = useGetDatasetVariables(dataset, true, true);
+
   const handleUpdate = (key, value) => {
     const keys = Array.isArray(key) ? key : [key];
     const vals = Array.isArray(value) ? value : [value];
@@ -21,12 +34,14 @@ const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: 
   return (
     <div className="QuiverSelector input">
       <ComboBox
+        key="variable"
         id="variable"
-        state={state.variable}
-        def=""
-        onUpdate={handleUpdate}
-        url={`/api/v2.0/dataset/${dataset}/variables?vectors_only=True`}
-        title={title}
+        selected={state.variable}
+        options={variables.data}
+        onChange={handleUpdate}
+        label={title}
+        includeNone={true}
+        alwaysShow={true}
       >
         {children}
       </ComboBox>
@@ -49,10 +64,11 @@ const AreaQuiverSelector = ({ state, dataset, id, title, children, onUpdate, t: 
     </div>
   );
 };
+
 //***********************************************************************
 AreaQuiverSelector.propTypes = {
   id: PropTypes.string.isRequired,
-  dataset: PropTypes.string.isRequired,
+  dataset: PropTypes.object.isRequired,
   title: PropTypes.string,
   state: PropTypes.shape({
     variable: PropTypes.string,

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source /home/ubuntu/onav-cloud/etc/ocean-navigator-env.sh
+
 CODE_VER=$(git status | head -1 | awk '{print $NF}')
 $(sed -i "s/CODE_VERSION/$CODE_VER/g" oceannavigator/frontend/index.html)
 

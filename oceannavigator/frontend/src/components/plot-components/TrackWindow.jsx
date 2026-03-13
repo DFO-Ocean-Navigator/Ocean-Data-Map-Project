@@ -4,12 +4,15 @@ import { Card, Col, Row, Nav } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 
 import PlotImage from "./PlotImage.jsx";
-import ComboBox from "../ComboBox.jsx";
+import ComboBox from "../lib/ComboBox.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PropTypes from "prop-types";
 import DatasetPanel from "../DatasetPanel.jsx";
-import { useGetTrackTimeRange } from "../../remote/queries.js";
+import {
+  useGetTrackTimeRange,
+  useGetObservationVariablesPlatform,
+} from "../../remote/queries.js";
 
 import { withTranslation } from "react-i18next";
 
@@ -25,6 +28,9 @@ const TrackWindow = (props) => {
   const [plotDpi, setPlotDpi] = useState(144);
 
   const trackTimeRange = useGetTrackTimeRange(props.plotData.id);
+  const observationVariables = useGetObservationVariablesPlatform(
+    props.plotData.id,
+  );
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
@@ -113,11 +119,11 @@ const TrackWindow = (props) => {
                   key="trackvariable"
                   id="trackvariable"
                   multiple
-                  state={trackvariable}
-                  def=""
-                  onUpdate={(_, value) => setTrackVariable(value.flat())}
-                  url={`/api/v2.0/observation/variables/platform=${props.plotData.id}.json`}
-                  title={_("Observed Variable")}
+                  selected={trackvariable}
+                  onChange={(_, value) => setTrackVariable(value.flat())}
+                  options={observationVariables.data}
+                  label={_("Observed Variable")}
+                  alwaysShow={true}
                 >
                   <h1>Track Variable</h1>
                 </ComboBox>
@@ -149,9 +155,9 @@ const TrackWindow = (props) => {
                 <ComboBox
                   key="quantum"
                   id="quantum"
-                  state={quantum}
-                  title="Track Simplification"
-                  onUpdate={updateQuantum}
+                  selected={quantum}
+                  label="Track Simplification"
+                  onChange={updateQuantum}
                   data={[
                     { id: "minute", value: "Minute" },
                     { id: "hour", value: "Hour" },

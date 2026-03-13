@@ -48,21 +48,21 @@ function OceanNavigator(props) {
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
   const [featureType, setFeatureType] = useState("Point");
-  const [names, setNames] = useState();
+  const [names, setNames] = useState([undefined]);
   const [observationArea, setObservationArea] = useState([]);
   const [observationQuery, setObservationQuery] = useState({});
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
+  const [mapView, setMapView] = useState();
 
   const queryClient = useQueryClient();
 
   useEffect(() => {
     ReactGA.ga("send", "pageview");
-
     if (window.location.search.length > 0) {
       try {
         const query = JSON.parse(
-          decodeURIComponent(window.location.search.replace("?query=", ""))
+          decodeURIComponent(window.location.search.replace("?query=", "")),
         );
 
         for (let key in query) {
@@ -77,30 +77,36 @@ function OceanNavigator(props) {
             case "mapSettings":
               setMapSettings(query.mapSettings);
               break;
+            case "features":
+              setTimeout(() => {
+                let selectedIds = [];
+                for (let feature of query.features) {
+                  mapRef.current.addNewFeature(feature.id);
+                  mapRef.current.updateFeatureGeometry(
+                    feature.id,
+                    feature.type,
+                    feature.coords,
+                  );
+                  if (feature.selected) {
+                    selectedIds.push(feature.id);
+                  }
+                }
+                mapRef.current.selectFeatures(selectedIds);
+                if (query.plotData) {
+                  setSubquery(query.subquery);
+
+                  action("updatePlots", query.plotData);
+                }
+                if (query.subquery?.names) {
+                  setNames(query.subquery.names);
+                }
+              }, 1000);
+              break;
+
+            case "mapView":
+              setMapView(query.mapView);
           }
         }
-
-        setTimeout(() => {
-          let selectedIds = [];
-          for (let feature of query.features) {
-            mapRef.current.addNewFeature(feature.id);
-            mapRef.current.updateFeatureGeometry(
-              feature.id,
-              feature.type,
-              feature.coords
-            );
-            if (feature.selected) {
-              selectedIds.push(feature.id);
-            }
-          }
-          mapRef.current.selectFeatures(selectedIds);
-          if (query.showModal) {
-            let newPlotData = mapRef.current.getPlotData();
-            setPlotData(newPlotData);
-          }
-          updateUI({ modalType: query.modalType, showModal: query.showModal });
-          setSubquery(query.subquery);
-        }, 1000);
       } catch (err) {
         console.error(err);
       }
@@ -140,7 +146,7 @@ function OceanNavigator(props) {
         setNames(newPlotData.name);
         setPlotData((prevPlotData) => {
           const existingIdx = prevPlotData.findIndex(
-            (data) => data.id === newPlotData.id
+            (data) => data.id === newPlotData.id,
           );
           if (existingIdx > -1) {
             return prevPlotData.map((p, idx) => ({
@@ -158,7 +164,7 @@ function OceanNavigator(props) {
         break;
       case "closePlot":
         setPlotData((prevPlotData) =>
-          prevPlotData.filter((plot) => plot.id !== arg.id)
+          prevPlotData.filter((plot) => plot.id !== arg.id),
         );
         queryClient.removeQueries({
           predicate: (q) =>
@@ -196,7 +202,7 @@ function OceanNavigator(props) {
         setCompareDatasets((prevCompare) => !prevCompare);
         break;
       case "permalink":
-        setSubquery(null);
+        setSubquery(arg);
         setShowPermalink(true);
         break;
     }
@@ -206,6 +212,12 @@ function OceanNavigator(props) {
     switch (key) {
       case "dataset":
         setDataset0(value);
+        break;
+      case "variable_scale":
+        setDataset0((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset0((prevDataset) => ({
@@ -219,6 +231,12 @@ function OceanNavigator(props) {
     switch (key) {
       case "dataset":
         setDataset1(value);
+        break;
+      case "variable_scale":
+        setDataset1((prev) => ({
+          ...prev,
+          variable: { ...prev.variable, scale: value },
+        }));
         break;
       default:
         setDataset1((prevDataset) => ({
@@ -263,20 +281,34 @@ function OceanNavigator(props) {
     query.modalType = uiSettings.modalType;
     query.showModal = false;
     query.features = mapRef.current.getFeatures();
+    query.plotData = plotData;
 
     // We have a request from the Permalink component.
     for (let setting in permalinkSettings) {
       if (permalinkSettings[setting] === true) {
         switch (setting) {
           case "dataset0":
-            query.dataset0 = dataset0;
+            query.dataset0 = { ...dataset0 };
             break;
           case "dataset1":
-            query.dataset1 = dataset1;
+            query.dataset1 = { ...dataset1 };
             query.compareDatasets = compareDatasets;
             break;
           case "mapSettings":
-            query.mapSettings = mapSettings;
+            query.mapSettings = { ...mapSettings };
+            break;
+          case "features":
+            query.features = mapRef.current.getFeatures();
+            break;
+          case "mapView":
+            query.mapSettings ??= {
+              projection: "EPSG:3857",
+              basemap: "topo",
+              extent: [],
+              hideDataLayer: false,
+              ...MAP_DEFAULTS,
+            };
+            query.mapSettings.mapView = mapRef.current.getViewInfo();
             break;
         }
       }

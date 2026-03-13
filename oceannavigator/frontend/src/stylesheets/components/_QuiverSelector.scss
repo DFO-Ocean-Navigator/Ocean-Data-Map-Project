@@ -1,0 +1,23 @@
+div.quiver-selector {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+
+  .quiver-slider-label {
+    font-size: 10pt;
+    margin: 5px;
+    font-weight: bold;
+    text-wrap: nowrap;
+  }
+
+  .quiver-slider {
+    width: 80px;
+    margin: 10px;
+
+    .rc-slider-mark-text {
+      top: -30px;
+      font-size: medium;
+    }
+  }
+}
