@@ -2,14 +2,19 @@
 
 import datetime
 import json
+import os
+import shutil
 import unittest
 from unittest.mock import patch
 
 import cftime
 import netCDF4
 import numpy
+import pytest
 import pytz
 import xarray
+from icechunk import local_filesystem_storage, Repository
+from icechunk.xarray import to_icechunk
 
 from data.netcdf_data import NetCDFData
 
@@ -17,6 +22,27 @@ from data.netcdf_data import NetCDFData
 class TestNetCDFData(unittest.TestCase):
     with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
         patch_dataset_config_ret_val = json.load(dataPatch)
+
+    @pytest.fixture(scope="class", autouse=True)
+    def setUp_teardown(self):
+
+        ic_repo_config = json.loads(os.environ["ONAV_ICECHUNK_STORAGE_CONFIG"])
+        repo_path = f"{ic_repo_config["path"]}/giops_icechunk"
+        if os.path.exists(repo_path):
+            shutil.rmtree(repo_path)
+
+        storage_config = local_filesystem_storage(repo_path)
+        repo = Repository.create(storage_config)
+        session = repo.writable_session("main")
+
+        with xarray.open_dataset("tests/testdata/giops_test.nc") as ds:
+            to_icechunk(ds, session)
+
+        session.commit("Initialized GIOPS test repository.")
+
+        yield
+        if os.path.exists(repo_path):
+            shutil.rmtree(repo_path)
 
     def test_init(self):
         nc_data = NetCDFData("tests/testdata/nemo_test.nc")
@@ -273,14 +299,14 @@ class TestNetCDFData(unittest.TestCase):
         with NetCDFData("icechunk", **kwargs) as nc_data:
             variables = nc_data.variables
 
-            self.assertEqual(variables[0].key, "votemper")
-            self.assertEqual(variables[0].name, "Sea water potential temperature")
-            self.assertEqual(variables[0].unit, "Kelvin")
+            self.assertIn("votemper", variables)
+            self.assertEqual(variables["votemper"].key, "votemper")
+            self.assertEqual(variables["votemper"].name, "Temperature")
+            self.assertEqual(variables["votemper"].unit, "degrees_C")
             self.assertEqual(
-                variables[0].dimensions, ["time", "depth", "latitude", "longitude"]
+                variables["votemper"].dimensions,
+                ["time", "depth", "latitude", "longitude"],
             )
-            self.assertEqual(variables[0].valid_min, 173.0)
-            self.assertEqual(variables[0].valid_max, 373.0)
 
     def test_icechunk_xarray_dimensions(self):
         kwargs = {"dataset_key": "giops_icechunk"}
