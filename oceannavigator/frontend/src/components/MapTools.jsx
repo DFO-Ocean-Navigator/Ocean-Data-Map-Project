@@ -10,6 +10,7 @@ import {
   faInfo,
   faRotateLeft,
   faChartLine,
+  faBug,
 } from "@fortawesome/free-solid-svg-icons";
 
 import Button from "react-bootstrap/Button";
@@ -59,7 +60,6 @@ function MapTools(props) {
     props.updateUI({ modalType: type, showModal: true });
   };
 
- 
   return (
     <div className="MapTools">
       <OverlayTrigger
@@ -177,6 +177,23 @@ function MapTools(props) {
           onClick={() => handleShowModal("info-help")}
         >
           <FontAwesomeIcon icon={faInfo} />
+        </Button>
+      </OverlayTrigger>
+
+      <OverlayTrigger
+        key="report-overlay"
+        placement="left"
+        overlay={<Tooltip id={"report-tooltip"}>{__("Report Bug")}</Tooltip>}
+      >
+        <Button
+          key="report-button"
+          className="tool-button"
+          onClick={() => {
+            props.action("generatePermalink");
+            handleShowModal("report");
+          }}
+        >
+          <FontAwesomeIcon icon={faBug} />
         </Button>
       </OverlayTrigger>
     </div>
