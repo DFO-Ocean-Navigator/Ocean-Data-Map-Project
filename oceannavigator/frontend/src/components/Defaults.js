@@ -2,7 +2,7 @@ const DATASET_DEFAULTS = Object.freeze({
   id: "giops_day",
   model_class: "Mercator",
   attribution: "The Canadian Centre for Meteorological and Environmental Prediction",
-  quantum: "day",
+  quantum: "hour",
   depth: 0,
   time: { id: -1, value: "" },
   starttime: { id: -1, value: "" },

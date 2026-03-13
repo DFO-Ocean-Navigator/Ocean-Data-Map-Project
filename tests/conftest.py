@@ -16,3 +16,6 @@ os.environ.update(TEMP_ENV_VARS)
 
 for env_var in ENV_VARS_TO_SUSPEND:
     os.environ.pop(env_var, default=None)
+
+
+print(f"*****\n,{dict(os.environ)}\n****")
