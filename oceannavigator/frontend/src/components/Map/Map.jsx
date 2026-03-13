@@ -151,6 +151,7 @@ const Map = forwardRef((props, ref) => {
     updateFeatureName: updateFeatureName,
     addNewFeature: addNewFeature,
     removeFeatures: removeFeatures,
+    removeEmptyFeatures: removeEmptyFeatures,
     splitPolyFeatures: splitPolyFeatures,
     combinePointFeatures: combinePointFeatures,
     loadFeatures: loadFeatures,
@@ -744,6 +745,18 @@ const Map = forwardRef((props, ref) => {
       });
     }
     featureVectorSource.removeFeatures(toRemove);
+  };
+  const removeEmptyFeatures = () => {
+    let features = featureVectorSource.getFeatures();
+    let emptyFeatures = features.filter(
+      (feature) =>
+        feature.get("type") !== "class4" &&
+        feature.get("class") !== "observation" &&
+        feature.getGeometry() === undefined
+    );
+    if (emptyFeatures.length > 0) {
+      featureVectorSource.removeFeatures(emptyFeatures);
+    }
   };
 
   const splitPolyFeatures = (featureId) => {
