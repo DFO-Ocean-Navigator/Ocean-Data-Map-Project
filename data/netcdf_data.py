@@ -15,7 +15,7 @@ import xarray
 import xarray.core.variable
 from babel.dates import format_date
 from cachetools import TTLCache
-from icechunk import Repository, s3_storage
+from icechunk import local_filesystem_storage, Repository, s3_storage
 
 import data.calculated
 import data.utils
@@ -144,6 +144,10 @@ class NetCDFData(Data):
                 endpoint_url=store_config["url"],
                 allow_http=True,
                 force_path_style=True,
+            )
+        elif storage_type == "local":
+            storage_config = local_filesystem_storage(
+                f"{store_config["path"]}/{dataset_key}"
             )
 
         return Repository.open(
