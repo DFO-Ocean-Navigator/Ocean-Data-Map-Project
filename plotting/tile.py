@@ -21,6 +21,7 @@ from data import open_dataset
 from data.transformers.geojson import data_array_to_geojson
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
+from routes.enums import InterpolationType
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -249,6 +250,11 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
         for v in variable:
+            if config.variable[v].map_colors:
+                args["interp"] = InterpolationType.nearest
+                args["radius"] = 25000
+                args["neighbours"] = 10
+
             data.append(
                 dataset.get_area(
                     np.array([lat, lon]),
