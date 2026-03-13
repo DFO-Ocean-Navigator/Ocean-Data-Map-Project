@@ -64,13 +64,13 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     if (timestamps.length === 0) return;
 
     let nextSelectedIndex = timestamps.findIndex((ts) => ts.id === selected.id);
-    if (nextSelectedIndex > 0 && nextSelectedIndex !== selectedIndex) {
+    if (nextSelectedIndex >= 0 && nextSelectedIndex !== selectedIndex) {
       setSelectedIndex(nextSelectedIndex);
     }
   }, [timestamps.length, selected]);
 
   useEffect(() => {
-    if (timestamps.length === 0 || !selectedIndex) return;
+    if (timestamps.length === 0 || selectedIndex === undefined) return;
     updateContentScroll(selectedIndex);
     let nextSelected = timestamps[selectedIndex].id;
     if (nextSelected !== selected.id) {
