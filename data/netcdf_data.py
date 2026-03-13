@@ -131,7 +131,7 @@ class NetCDFData(Data):
 
     def __get_ic_repo(self, dataset_key: str) -> Repository:
         settings = get_settings()
-        storage_type = settings.icechunk_storage
+        storage_type = settings.icechunk_storage_type
         store_config = settings.icechunk_storage_config
 
         if storage_type == "s3":
