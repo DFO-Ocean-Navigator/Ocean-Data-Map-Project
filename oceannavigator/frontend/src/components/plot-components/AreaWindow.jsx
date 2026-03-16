@@ -156,19 +156,23 @@ const AreaWindow = (props) => {
         >
           {_("Swap Views")}
         </Button> */}
-        <Form.Check
-          type="checkbox"
-          id={props.id + "_auto"}
-          checked={autoScale}
-          onChange={toggleAutoScale}
-          label={"Auto Range"}
-        />
-        {autoScale ? null : (
-          <ColormapRange
-            id="scale"
-            state={scale}
-            onUpdate={(_, s) => setScale(s)}
-          />
+        {!props.dataset0.variable.legend_labels && (
+          <>
+            <Form.Check
+              type="checkbox"
+              id={props.id + "_auto"}
+              checked={autoScale}
+              onChange={toggleAutoScale}
+              label={"Auto Range"}
+            />
+            {autoScale ? null : (
+              <ColormapRange
+                id="scale"
+                state={scale}
+                onUpdate={(_, s) => setScale(s)}
+              />
+            )}
+          </>
         )}
         {props.compareDatasets && !autoScale && (
           <ComboBox
