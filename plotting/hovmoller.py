@@ -1,5 +1,6 @@
 import re
 
+import matplotlib.colors
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
@@ -205,6 +206,7 @@ class HovmollerPlotter(LinePlotter):
             + get_depth_label(
                 self.depth_value, self.depth_unit
             ),  # gettext(get_depth_label(self.depth_value, self.depth_unit)),
+            legend_labels=self.dataset_config.variable[self.variables[0]].legend_labels,
         )
 
         # If in compare mode
@@ -228,6 +230,9 @@ class HovmollerPlotter(LinePlotter):
             if len(self.compare["variables"]) > 1:
                 vmin = 0
 
+            compare_legend_labels = DatasetConfig(
+                self.compare["dataset"]
+            ).variable[self.compare["variables"][0]].legend_labels
             self._hovmoller_plot(
                 gs,
                 [1, 1],
@@ -246,6 +251,7 @@ class HovmollerPlotter(LinePlotter):
                 #  gettext(
                 #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),
+                legend_labels=compare_legend_labels,
             )
 
             # Difference plot
@@ -330,11 +336,19 @@ class HovmollerPlotter(LinePlotter):
         cmap,
         unit,
         title,
+        legend_labels=None,
     ):
         if self.showmap:
             plt.subplot(subplot[map_subplot[0], map_subplot[1]])
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
+
+        if legend_labels:
+            n = int(vmax - vmin + 1)
+            boundaries = [vmin - 0.5 + i for i in range(n + 1)]
+            plot_norm = matplotlib.colors.BoundaryNorm(boundaries, cmap.N)
+        else:
+            plot_norm = None
 
         c = plt.pcolormesh(
             self.distance,
@@ -342,8 +356,9 @@ class HovmollerPlotter(LinePlotter):
             data,
             cmap=cmap,
             shading="gouraud",  # Smooth shading
-            vmin=vmin,
-            vmax=vmax,
+            norm=plot_norm if plot_norm is not None else None,
+            vmin=vmin if plot_norm is None else None,
+            vmax=vmax if plot_norm is None else None,
         )
 
         ax = plt.gca()
@@ -372,3 +387,6 @@ class HovmollerPlotter(LinePlotter):
         cax = divider.append_axes("right", size="5%", pad=0.05)
         bar = plt.colorbar(c, cax=cax)
         bar.set_label(f"{name} ({math_unit})")
+        if legend_labels:
+            bar.set_ticks(list(range(int(vmin), int(vmax) + 1)))
+            bar.set_ticklabels(legend_labels, fontsize=7)
