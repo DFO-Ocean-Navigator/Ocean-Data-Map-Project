@@ -12,10 +12,6 @@
     width: max-content;
   }
 
-  .horizontal {
-    width: min-content !important;
-  }
-
   .button-container {
     width: 100%;
     display: flex;
@@ -62,4 +58,10 @@
       padding: 0px;
     }
   }
+}
+
+.horizontal {
+  width: min-content !important;
+  display: flex;
+  flex-wrap: nowrap;
 }
