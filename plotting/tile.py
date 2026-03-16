@@ -194,10 +194,13 @@ def scale(args):
     if len(variable) == 2:
         cmap = colormap.colormaps.get("speed")
 
+    var_key = ",".join(variable) if len(variable) > 1 else variable[0]
+    legend_labels = config.variable[var_key].legend_labels
+
     fig = plt.figure(figsize=(2, 5), dpi=75)
     ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
-    if variable_name == "Seabed Lithology":
-        n = int(scale[1] - scale[0] + 1)  # 13
+    if legend_labels:
+        n = int(scale[1] - scale[0] + 1)
         boundaries = [scale[0] - 0.5 + i for i in range(n + 1)]
         norm = matplotlib.colors.BoundaryNorm(boundaries, cmap.N)
     else:
@@ -208,27 +211,15 @@ def scale(args):
     bar = ColorbarBase(
         ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
     )
-    if variable_name == "Potential Sub Surface Channel":
-        bar.set_ticks([0, 1])
-        bar.set_ticklabels(["A", "B"])
-    if variable_name == "Seabed Lithology":
-        ticks = list(range(int(scale[0]), int(scale[1]) + 1))
-        labels = [
-            "Gravel", "Sand", "Silt", "Clay",
-            "Calcareous Ooze", "Radiolarian Ooze", "Diatom Ooze",
-            "Sponge Spicules", "Mixed Ooze", "Shell & Coral Fragments",
-            "Ash & Volcanic Sand/Gravel", "Siliceous Mud",
-            "Fine-Grained Calcareous Sediment",
-        ]
-        bar.set_ticks(ticks)
-        bar.set_ticklabels(labels)
+    if legend_labels:
+        bar.set_ticks(list(range(int(scale[0]), int(scale[1]) + 1)))
+        bar.set_ticklabels(legend_labels)
         bar.ax.tick_params(labelsize=7)
 
     bar.set_label(
         "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12
     )
-    # Increase tick font size
-    if variable_name != "Seabed Lithology":
+    if not legend_labels:
         bar.ax.tick_params(labelsize=12)
 
     buf = BytesIO()

@@ -814,7 +814,8 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        if self.variable_name.lower() == "seabed lithology":
+        legend_labels = self.dataset_config.variable[self.variables[0]].legend_labels
+        if legend_labels:
             n = int(vmax - vmin + 1)
             boundaries = [vmin - 0.5 + i for i in range(n + 1)]
             imshow_norm = BoundaryNorm(boundaries, self.cmap.N)
@@ -1135,19 +1136,9 @@ class MapPlotter(Plotter):
             f"{self.variable_name.title()} ({var_unit})",
             fontsize=14,
         )
-        if self.variable_name.lower() == "potential sub surface channel":
-            bar.set_ticks([0, 1])
-            bar.set_ticklabels(["A", "B"])
-        if self.variable_name.lower() == "seabed lithology":
-            labels = [
-                "Gravel", "Sand", "Silt", "Clay",
-                "Calcareous Ooze", "Radiolarian Ooze", "Diatom Ooze",
-                "Sponge Spicules", "Mixed Ooze", "Shell & Coral Fragments",
-                "Ash & Volcanic Sand/Gravel", "Siliceous Mud",
-                "Fine-Grained Calcareous Sediment",
-            ]
-            bar.set_ticks(list(range(1, 14)))
-            bar.set_ticklabels(labels, fontsize=9)
+        if legend_labels:
+            bar.set_ticks(list(range(int(vmin), int(vmax) + 1)))
+            bar.set_ticklabels(legend_labels, fontsize=9)
 
         if (
             self.quiver is not None
