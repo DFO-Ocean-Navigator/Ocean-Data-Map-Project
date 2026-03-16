@@ -395,6 +395,16 @@ class VariableConfig:
             return None
 
     @property
+    def legend_labels(self) -> list | None:
+        """
+        Returns ordered legend labels for discrete variables, if present in dataset config file
+        """
+        try:
+            return self.__get_attribute('legend_labels')
+        except KeyError:
+            return None
+
+    @property
     def is_hidden(self) -> bool:
         """
         Is the given variable marked as hidden in the dataset config file
