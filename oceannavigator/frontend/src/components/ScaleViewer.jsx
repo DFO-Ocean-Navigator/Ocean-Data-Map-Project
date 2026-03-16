@@ -30,18 +30,36 @@ function ScaleViewer(props) {
     setExpanded(!expanded);
   };
 
+  const legendLabels = props.dataset.variable.legend_labels;
+  const mapColors = props.dataset.variable.map_colors;
+
   const rangeControl = expanded ? (
-    <ColormapRange
-      id="variable_scale"
-      state={scale}
-      title="Colormap Range"
-      onUpdate={props.onUpdate}
-      default_scale={defaultScale}
-      showAuto={props.dataset.variable.scale[1] - props.dataset.variable.scale[0]==1? false:true}
-      dataset={props.dataset}
-      mapSettings={props.mapSettings}
-      mapRef={props.mapRef}
-    />
+    legendLabels && mapColors ? (
+      <div className="DiscreteColorLegend">
+        <h1>Legend</h1>
+        {legendLabels.map((label, i) => (
+          <div key={i} className="legend-item">
+            <span
+              className="legend-swatch"
+              style={{ backgroundColor: mapColors[i] }}
+            />
+            <span className="legend-label">{label}</span>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <ColormapRange
+        id="variable_scale"
+        state={scale}
+        title="Colormap Range"
+        onUpdate={props.onUpdate}
+        default_scale={defaultScale}
+        showAuto={props.dataset.variable.scale[1] - props.dataset.variable.scale[0]==1? false:true}
+        dataset={props.dataset}
+        mapSettings={props.mapSettings}
+        mapRef={props.mapRef}
+      />
+    )
   ) : null;
 
   const expandIcon = expanded ? (
