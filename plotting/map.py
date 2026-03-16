@@ -13,7 +13,7 @@ import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import FuncNorm
+from matplotlib.colors import BoundaryNorm, FuncNorm
 from matplotlib.patches import PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
@@ -814,10 +814,18 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
+        if self.variable_name.lower() == "seabed lithology":
+            n = int(vmax - vmin + 1)
+            boundaries = [vmin - 0.5 + i for i in range(n + 1)]
+            imshow_norm = BoundaryNorm(boundaries, self.cmap.N)
+        else:
+            imshow_norm = None
+
         c = ax.imshow(
             self.data,
-            vmin=vmin,
-            vmax=vmax,
+            vmin=vmin if imshow_norm is None else None,
+            vmax=vmax if imshow_norm is None else None,
+            norm=imshow_norm,
             cmap=self.cmap,
             extent=self.plot_extent,
             transform=self.plot_projection,
@@ -1127,6 +1135,19 @@ class MapPlotter(Plotter):
             f"{self.variable_name.title()} ({var_unit})",
             fontsize=14,
         )
+        if self.variable_name.lower() == "potential sub surface channel":
+            bar.set_ticks([0, 1])
+            bar.set_ticklabels(["A", "B"])
+        if self.variable_name.lower() == "seabed lithology":
+            labels = [
+                "Gravel", "Sand", "Silt", "Clay",
+                "Calcareous Ooze", "Radiolarian Ooze", "Diatom Ooze",
+                "Sponge Spicules", "Mixed Ooze", "Shell & Coral Fragments",
+                "Ash & Volcanic Sand/Gravel", "Siliceous Mud",
+                "Fine-Grained Calcareous Sediment",
+            ]
+            bar.set_ticks(list(range(1, 14)))
+            bar.set_ticklabels(labels, fontsize=9)
 
         if (
             self.quiver is not None

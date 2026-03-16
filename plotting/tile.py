@@ -196,7 +196,12 @@ def scale(args):
 
     fig = plt.figure(figsize=(2, 5), dpi=75)
     ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
-    norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
+    if variable_name == "Seabed Lithology":
+        n = int(scale[1] - scale[0] + 1)  # 13
+        boundaries = [scale[0] - 0.5 + i for i in range(n + 1)]
+        norm = matplotlib.colors.BoundaryNorm(boundaries, cmap.N)
+    else:
+        norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
 
     formatter = ScalarFormatter()
     formatter.set_powerlimits((-3, 4))
@@ -205,12 +210,26 @@ def scale(args):
     )
     if variable_name == "Potential Sub Surface Channel":
         bar.set_ticks([0, 1])
+        bar.set_ticklabels(["A", "B"])
+    if variable_name == "Seabed Lithology":
+        ticks = list(range(int(scale[0]), int(scale[1]) + 1))
+        labels = [
+            "Gravel", "Sand", "Silt", "Clay",
+            "Calcareous Ooze", "Radiolarian Ooze", "Diatom Ooze",
+            "Sponge Spicules", "Mixed Ooze", "Shell & Coral Fragments",
+            "Ash & Volcanic Sand/Gravel", "Siliceous Mud",
+            "Fine-Grained Calcareous Sediment",
+        ]
+        bar.set_ticks(ticks)
+        bar.set_ticklabels(labels)
+        bar.ax.tick_params(labelsize=7)
 
     bar.set_label(
         "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12
     )
     # Increase tick font size
-    bar.ax.tick_params(labelsize=12)
+    if variable_name != "Seabed Lithology":
+        bar.ax.tick_params(labelsize=12)
 
     buf = BytesIO()
     plt.savefig(
