@@ -64,6 +64,4 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    settings = Settings()  # reads variables from environment
-
-    return settings
+    return Settings()  # reads variables from environment
