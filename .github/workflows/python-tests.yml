@@ -45,8 +45,7 @@ jobs:
         show-channel-urls: true
         use-only-tar-bz2: true
     - name: Set environment variables
-      run: echo "ONAV_ENV_FILE=oceannavigator/configs/testing.env" >> $GITHUB_ENV
-      run: echo "ONAV_ICECHUNK_STORAGE_CONFIG='{"path":"tests/testdata/icechunk"}'" >> $GITHUB_ENV    
+      run: echo "ONAV_ENV_FILE=oceannavigator/configs/testing.env" >> $GITHUB_ENV ; echo "ONAV_ICECHUNK_STORAGE_CONFIG='{"path":"tests/testdata/icechunk"}'" >> $GITHUB_ENV    
     - name: Update environment
       run: mamba env update -f config/conda/environment.yml --name test --quiet
     - name: Run tests (activate)
