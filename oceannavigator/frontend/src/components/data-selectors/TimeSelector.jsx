@@ -119,9 +119,8 @@ function TimeSelector({
           id="time"
           dataset={dataset}
           timestamps={timestamps.data}
-          selected={dataset.time.id}
+          selected={dataset.time}
           onChange={updateTime}
-          loading={timestamps.isLoading}
         />
       );
       break;
