@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import * as Sentry from "@sentry/react";
 import {
   Button,
   Form,
@@ -124,9 +125,7 @@ function FeedbackWindow(props) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const Google_form_Url =
-    "https://docs.google.com/forms/u/0/d/e/1FAIpQLScWMaa6sUo2_fEFucDFGa1tXfwT2GgJ5Q7XV6TfM5GuVn8ruw/formResponse";
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -135,19 +134,20 @@ function FeedbackWindow(props) {
 
     setSubmitting(true);
 
-    const formDataToSend = new FormData();
+    const message = [
+      `[${formData.feedbackType.toUpperCase()}]${formData.subject ? ` ${formData.subject}` : ""}`,
+      "",
+      formData.description,
+      "",
+      `State: ${permalink}`,
+    ].join("\n");
 
-    formDataToSend.append("entry.921734993", formData.name);
-    formDataToSend.append("entry.1530791040", formData.email);
-    formDataToSend.append("entry.662130548", formData.subject);
-    formDataToSend.append("entry.1364439903", formData.description);
-    formDataToSend.append("entry.630392635", permalink);
-
-    await fetch(Google_form_Url, {
-      method: "POST",
-      mode: "no-cors",
-      body: formDataToSend,
+    Sentry.captureFeedback({
+      name: formData.name || "Anonymous",
+      email: formData.email,
+      message,
     });
+
     setSubmitted(true);
     setSubmitting(false);
   };
