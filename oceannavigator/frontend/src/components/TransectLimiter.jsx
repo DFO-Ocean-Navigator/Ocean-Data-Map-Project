@@ -37,12 +37,12 @@ const TransectLimiter = ({
   const handleChecked = (e) => {
     const checked = e.target.checked;
     setLimit(checked);
-    onUpdate(id, checked ? value : false);
+    onUpdate(checked ? value : false);
   };
 
-  const handleValueUpdate = (_key, newValue) => {
+  const handleValueUpdate = (newValue) => {
     setValue(newValue);
-    onUpdate(id, newValue);
+    onUpdate(newValue);
   };
 
   return (
