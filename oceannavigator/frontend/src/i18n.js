@@ -1,6 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+import frTranslation from "../../translations/fr.json";
+import enTranslation from "../../translations/en.json";
 
 i18n
   .use(LanguageDetector)
@@ -16,10 +18,10 @@ i18n
     },
     resources: {
       fr: {
-        translation: require("../../translations/fr.json"),
+        translation: frTranslation,
       },
       en: {
-        translation: require("../../translations/en.json"),
+        translation: enTranslation,
       },
     },
   });

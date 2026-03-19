@@ -18,12 +18,12 @@ function ComboBox({
   alwaysShow = false,
   horizontalLayout = false,
   children,
-  t: _,
+  t,
 }) {
   const [showHelp, setShowHelp] = useState(false);
 
   let optionsData = [...options];
-  includeNone && optionsData.unshift({ id: "", value: _("None") });
+  includeNone && optionsData.unshift({ id: "", value: t("None") });
 
   const handleChange = (e) => {
     let nextSelected = e.target.value;
@@ -69,9 +69,9 @@ function ComboBox({
               variant="link"
               className="combobox-help-button"
               onClick={() => setShowHelp(true)}
-              aria-label={_("Open help for {{label}}", { label })}
+              aria-label={t("Open help for {{label}}", { label })}
             >
-              {_("?")}
+              {t("?")}
             </Button>
           )}
         </div>
@@ -82,7 +82,7 @@ function ComboBox({
           dialogClassName="helpdialog"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{_("titlehelp", { title: label })}</Modal.Title>
+            <Modal.Title>{t("titlehelp", { title: label })}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {children}
@@ -90,7 +90,7 @@ function ComboBox({
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={() => setShowHelp(false)}>
-              <Icon icon="close" /> {_("Close")}
+              <Icon icon="close" /> {t("Close")}
             </Button>
           </Modal.Footer>
         </Modal>

@@ -36,16 +36,16 @@ function deg2rad(deg) {
 }
 
 // CHS S111 standard arrows for quiver layer
-const I0 = require("../../images/s111/I0.svg").default; // lgtm [js/unused-local-variable]
-const I1 = require("../../images/s111/I1.svg").default;
-const I2 = require("../../images/s111/I2.svg").default;
-const I3 = require("../../images/s111/I3.svg").default;
-const I4 = require("../../images/s111/I4.svg").default;
-const I5 = require("../../images/s111/I5.svg").default;
-const I6 = require("../../images/s111/I6.svg").default;
-const I7 = require("../../images/s111/I7.svg").default;
-const I8 = require("../../images/s111/I8.svg").default;
-const I9 = require("../../images/s111/I9.svg").default;
+import I0 from "../../images/s111/I0.svg";
+import I1 from "../../images/s111/I1.svg";
+import I2 from "../../images/s111/I2.svg";
+import I3 from "../../images/s111/I3.svg";
+import I4 from "../../images/s111/I4.svg";
+import I5 from "../../images/s111/I5.svg";
+import I6 from "../../images/s111/I6.svg";
+import I7 from "../../images/s111/I7.svg";
+import I8 from "../../images/s111/I8.svg";
+import I9 from "../../images/s111/I9.svg";
 
 const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 

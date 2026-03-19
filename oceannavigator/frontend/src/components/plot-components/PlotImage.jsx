@@ -13,7 +13,7 @@ import { withTranslation } from "react-i18next";
 
 import { useGetPlotImage } from "../../remote/queries.js";
 
-const FAIL_IMAGE = require("../fail.js");
+import FAIL_IMAGE from "../fail.js";
 
 const PlotImage = ({
   plotType,

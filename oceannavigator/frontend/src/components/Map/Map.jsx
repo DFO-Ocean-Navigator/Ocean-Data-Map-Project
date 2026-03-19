@@ -27,7 +27,7 @@ import * as olProj4 from "ol/proj/proj4";
 import * as olTilegrid from "ol/tilegrid";
 
 import { AnnotationOverlay } from "./AnnotationOverlay.jsx";
-import MultiMapMousePosition from "./MultiMapMousePosition.js";
+import MultiMapMousePosition from "./MultiMapMousePosition.jsx";
 import {
   createPlotData,
   createMapView,

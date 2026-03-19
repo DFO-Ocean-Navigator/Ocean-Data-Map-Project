@@ -1,0 +1,267 @@
+// Scoped replica of the original grayscale.css landing page design.
+// All rules are nested under .LandingPage to avoid conflicting with the app.
+
+.LandingPage {
+  font-family: "Lora", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  color: #fcfdfd;
+  background-color: #171717;
+
+  // Match Bootstrap 4 fixed heading sizes (Bootstrap 5 uses fluid vw-based sizes which differ)
+  h1 { font-size: 2.5rem !important; }
+  h2 { font-size: 2.2rem !important; }
+  h3 { font-size: 1.75rem !important; }
+  h4 { font-size: 1.5rem !important; }
+  h5 { font-size: 1.25rem !important; }
+  h6 { font-size: 1rem !important; }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Cabin", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-weight: 700 !important;
+    margin: 0 0 35px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+  }
+
+  p {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 25px !important;
+
+    @media (min-width: 768px) {
+      font-size: 20px !important;
+      line-height: 1.7 !important;
+      margin: 0 0 35px !important;
+    }
+  }
+
+  a {
+    transition: all 0.2s ease-in-out;
+    color: #008cba;
+
+    &:focus,
+    &:hover {
+      text-decoration: none;
+      color: #008cba;
+    }
+  }
+
+  // Navbar
+  #mainNav {
+    font-family: "Cabin", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    margin-bottom: 0;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    background-color: black;
+
+    .navbar-toggler {
+      font-size: 16px;
+      padding: 11px;
+      color: #fcfdfd;
+      border: 1px solid #fcfdfd;
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.4rem !important;
+    }
+
+    a {
+      color: #fcfdfd;
+    }
+
+    .navbar-nav .nav-item {
+      transition: background 0.3s ease-in-out;
+
+      &:hover {
+        color: rgba(252, 253, 253, 0.8);
+        outline: none;
+        background-color: transparent;
+      }
+
+      &:active,
+      &:focus {
+        outline: none;
+        background-color: transparent;
+      }
+    }
+
+    .nav-link {
+      font-size: 1rem !important;
+      letter-spacing: 1px;
+    }
+
+    @media (min-width: 992px) {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      transition: background 0.3s ease-in-out, padding-top 0.3s ease-in-out,
+        padding-bottom 0.3s;
+      letter-spacing: 1px;
+      border-bottom: none;
+      background: rgba(29, 29, 29, 0.8);
+
+      &.navbar-shrink {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        background: black;
+      }
+
+      .nav-link.active {
+        outline: none;
+        background-color: rgba(255, 255, 255, 0.3);
+
+        &:hover {
+          color: #fcfdfd;
+        }
+      }
+    }
+  }
+
+  // Masthead / hero
+  .masthead {
+    display: table;
+    width: 100%;
+    height: auto;
+    padding: 200px 0;
+    text-align: center;
+    color: #fcfdfd;
+    background-color: black;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-attachment: scroll;
+    background-size: cover;
+
+    .intro-body {
+      display: table-cell;
+      vertical-align: middle;
+
+      .brand-heading {
+        font-size: 70px !important;
+      }
+
+      .intro-text {
+        font-size: 20px !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      height: 100vh;
+      padding: 0;
+
+      .intro-body {
+        .brand-heading {
+          font-size: 120px !important;
+        }
+
+        .intro-text {
+          font-size: 24px !important;
+        }
+      }
+    }
+  }
+
+  // Circle scroll-down button — must come after .btn to win the border-radius battle
+  .btn.btn-circle {
+    font-size: 26px !important;
+    width: 70px !important;
+    height: 70px !important;
+    margin-top: 15px;
+    line-height: 60px !important;
+    transition: background 0.3s ease-in-out;
+    color: #fcfdfd !important;
+    border: 2px solid #fcfdfd !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    display: inline-block;
+    padding: 0 !important;
+
+    &:focus,
+    &:hover {
+      color: #fcfdfd !important;
+      outline: none;
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  // Content sections
+  .content-section {
+    padding-top: 150px;
+    padding-bottom: 150px;
+
+    h2 {
+      text-align: center;
+    }
+
+    p {
+      text-indent: 3em;
+    }
+
+    @media (min-width: 992px) {
+      padding-top: 200px;
+      padding-bottom: 200px;
+    }
+  }
+
+  .example-span {
+    display: flex;
+    justify-content: center;
+    font-style: italic;
+    font-size: 18px;
+  }
+
+  // Buttons
+  .btn {
+    font-family: "Cabin", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-weight: 400 !important;
+    transition: all 0.3s ease-in-out !important;
+    text-transform: uppercase !important;
+    border-radius: 0 !important;
+  }
+
+  .btn-lg {
+    font-size: 1.2rem !important;
+    padding: 0.7rem 2rem !important;
+  }
+
+  .btn-default {
+    color: #fff !important;
+    border: 1px solid #008cba !important;
+    background-color: transparent !important;
+
+    &:focus,
+    &:hover {
+      color: #fff !important;
+      border: 1px solid #008cba !important;
+      outline: none !important;
+      background-color: #008cba !important;
+    }
+  }
+
+  ul.banner-social-buttons {
+    display: flex;
+    justify-content: center;
+  }
+
+  // Footer
+  footer {
+    padding: 50px 0;
+
+    p {
+      font-size: 14px;
+      margin: 0;
+    }
+  }
+
+  ::selection {
+    background: rgba(255, 255, 255, 0.2);
+    text-shadow: none;
+  }
+}
