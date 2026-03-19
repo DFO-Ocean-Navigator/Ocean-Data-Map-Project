@@ -30,43 +30,29 @@ function ScaleViewer(props) {
     setExpanded(!expanded);
   };
 
-  const legendLabels = props.dataset.variable.legend_labels;
-  const mapColors = props.dataset.variable.map_colors;
+  const dataCategories = props.dataset.variable.data_categories;
 
-  const rangeControl = expanded ? (
-    legendLabels && mapColors ? (
-      <div className="DiscreteColorLegend">
-        <h1>Legend</h1>
-        {legendLabels.map((label, i) => (
-          <div key={i} className="legend-item">
-            <span
-              className="legend-swatch"
-              style={{ backgroundColor: mapColors[i] }}
-            />
-            <span className="legend-label">{label}</span>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <ColormapRange
-        id="variable_scale"
-        state={scale}
-        title="Colormap Range"
-        onUpdate={props.onUpdate}
-        default_scale={defaultScale}
-        showAuto={props.dataset.variable.scale[1] - props.dataset.variable.scale[0]==1? false:true}
-        dataset={props.dataset}
-        mapSettings={props.mapSettings}
-        mapRef={props.mapRef}
-      />
-    )
+  const rangeControl = !dataCategories && expanded ? (
+    <ColormapRange
+      id="variable_scale"
+      state={scale}
+      title="Colormap Range"
+      onUpdate={props.onUpdate}
+      default_scale={defaultScale}
+      showAuto={props.dataset.variable.scale[1] - props.dataset.variable.scale[0] === 1 ? false : true}
+      dataset={props.dataset}
+      mapSettings={props.mapSettings}
+      mapRef={props.mapRef}
+    />
   ) : null;
 
-  const expandIcon = expanded ? (
-    <ChevronLeft className="expand-icon" onClick={handleExpand} />
-  ) : (
-    <ChevronRight className="expand-icon" onClick={handleExpand} />
-  );
+  const expandIcon = !dataCategories ? (
+    expanded ? (
+      <ChevronLeft className="expand-icon" onClick={handleExpand} />
+    ) : (
+      <ChevronRight className="expand-icon" onClick={handleExpand} />
+    )
+  ) : null;
 
   const scaleImage = (
     <img className="scale-image" src={source} onClick={handleExpand} />

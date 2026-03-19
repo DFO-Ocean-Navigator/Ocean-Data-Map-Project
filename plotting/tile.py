@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.patches import Patch
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
 from PIL import Image
@@ -194,33 +195,28 @@ def scale(args):
     if len(variable) == 2:
         cmap = colormap.colormaps.get("speed")
 
-    var_key = ",".join(variable) if len(variable) > 1 else variable[0]
-    legend_labels = config.variable[var_key].legend_labels
+    data_categories = config.variable[args.get("variable")].data_categories
 
     fig = plt.figure(figsize=(2, 5), dpi=75)
-    ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
-    if legend_labels:
-        n = int(scale[1] - scale[0] + 1)
-        boundaries = [scale[0] - 0.5 + i for i in range(n + 1)]
-        norm = matplotlib.colors.BoundaryNorm(boundaries, cmap.N)
-    else:
+    if data_categories is None:
+        ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
         norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
-
-    formatter = ScalarFormatter()
-    formatter.set_powerlimits((-3, 4))
-    bar = ColorbarBase(
-        ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
-    )
-    if legend_labels:
-        bar.set_ticks(list(range(int(scale[0]), int(scale[1]) + 1)))
-        bar.set_ticklabels(legend_labels)
-        bar.ax.tick_params(labelsize=7)
-
-    bar.set_label(
-        "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12
-    )
-    if not legend_labels:
+        formatter = ScalarFormatter()
+        formatter.set_powerlimits((-3, 4))
+        bar = ColorbarBase(
+            ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
+        )
+        bar.set_label(
+            "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)),
+            fontsize=12,
+        )
         bar.ax.tick_params(labelsize=12)
+    else:
+        legend_categories = [
+            Patch(facecolor=color, edgecolor="k", label=label)
+            for color, label in zip(cmap.colors, data_categories)
+        ]
+        fig.legend(handles=legend_categories, fontsize=12, frameon=False)
 
     buf = BytesIO()
     plt.savefig(

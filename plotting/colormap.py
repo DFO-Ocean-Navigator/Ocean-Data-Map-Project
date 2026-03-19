@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import plotting
-from oceannavigator.dataset_config import DatasetConfig
 
 
 def make_colormap(seq):
@@ -42,15 +41,6 @@ def find_colormap(name):
 
 _c = mcolors.ColorConverter().to_rgb
 data_dir = (Path(plotting.__file__).parent).joinpath("data")
-
-dataset_keys = DatasetConfig.get_datasets()
-variables={}
-for dataset_key in dataset_keys:
-    config = DatasetConfig(dataset_key)
-    for variable in config.variables:
-        map_colors = config.variable[variable].map_colors
-        if map_colors:
-            variables[variable] = map_colors
 
 colormaps = {
     "water velocity bearing": cmocean.cm.rain,
@@ -291,8 +281,12 @@ colormaps = {
         ]
     ),
     "grey": make_colormap([_c("#ffffff"), _c("#000000")]),
-    "potential sub surface channel": mcolors.ListedColormap(variables['psubsurfacechannel']),
-    "seabed lithology": mcolors.ListedColormap(variables['lithology']),
+    "potential sub surface channel": mcolors.ListedColormap(["#ecf0f1", "#f57732"]),
+    "seabed lithology": mcolors.ListedColormap([
+        "#808080", "#E8C840", "#C4904C", "#6B8E23", "#E8D5B0",
+        "#5DADE2", "#52BE80", "#E67E22", "#9B59B6", "#E74C3C",
+        "#2C3E50", "#1ABC9C", "#F0B429",
+    ]),
     "thermal": cmocean.cm.thermal,
     "neo_sst": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("neo_sst.txt"))),
     "BuYlRd": mcolors.ListedColormap(np.loadtxt(data_dir.joinpath("BuYlRd.txt"))),

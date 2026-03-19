@@ -14,7 +14,7 @@ import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import BoundaryNorm, FuncNorm
-from matplotlib.patches import PathPatch, Polygon
+from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
 from shapely.geometry import box, LinearRing, MultiPolygon, Point, Polygon as Poly
@@ -814,8 +814,8 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        legend_labels = self.dataset_config.variable[self.variables[0]].legend_labels
-        if legend_labels:
+        data_categories = self.dataset_config.variable[self.variables[0]].data_categories
+        if data_categories:
             n = int(vmax - vmin + 1)
             boundaries = [vmin - 0.5 + i for i in range(n + 1)]
             imshow_norm = BoundaryNorm(boundaries, self.cmap.N)
@@ -1128,17 +1128,29 @@ class MapPlotter(Plotter):
             )
         plt.title(title.strip())
         axpos = ax.get_position()
-        pos_x = axpos.x0 + axpos.width + 0.01
-        pos_y = axpos.y0
-        cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label(
-            f"{self.variable_name.title()} ({var_unit})",
-            fontsize=14,
-        )
-        if legend_labels:
-            bar.set_ticks(list(range(int(vmin), int(vmax) + 1)))
-            bar.set_ticklabels(legend_labels, fontsize=9)
+        if data_categories:
+            legend_patches = [
+                Patch(facecolor=color, edgecolor="k", label=label)
+                for color, label in zip(self.cmap.colors, data_categories)
+            ]
+            ax.legend(
+                handles=legend_patches,
+                fontsize=9,
+                frameon=False,
+                title=f"{self.variable_name.title()} ({var_unit})",
+                title_fontsize=14,
+                loc="upper left",
+                bbox_to_anchor=(1.01, 1),
+            )
+        else:
+            pos_x = axpos.x0 + axpos.width + 0.01
+            pos_y = axpos.y0
+            cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
+            bar = plt.colorbar(c, cax=cax)
+            bar.set_label(
+                f"{self.variable_name.title()} ({var_unit})",
+                fontsize=14,
+            )
 
         if (
             self.quiver is not None

@@ -384,23 +384,12 @@ class VariableConfig:
             return [0, 100]
         
     @property
-    def map_colors(self) -> list | None:
+    def data_categories(self) -> list | None:
         """
-        Returns colors associated with each variable if present from dataset config file
-        """
-        try:
-            map_colors = self.__get_attribute('map_colors')
-            return map_colors
-        except KeyError:
-            return None
-
-    @property
-    def legend_labels(self) -> list | None:
-        """
-        Returns ordered legend labels for discrete variables, if present in dataset config file
+        Returns ordered category labels for discrete/categorical variables.
         """
         try:
-            return self.__get_attribute('legend_labels')
+            return self.__get_attribute('data_categories')
         except KeyError:
             return None
 
