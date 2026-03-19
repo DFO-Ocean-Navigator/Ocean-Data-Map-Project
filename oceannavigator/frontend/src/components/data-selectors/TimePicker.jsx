@@ -67,8 +67,8 @@ function TimePicker(props) {
             0,
             0,
             0,
-            0
-          )
+            0,
+          ),
         );
       }
       newMap[newData[i].id] = d2;
@@ -158,7 +158,7 @@ function TimePicker(props) {
         break;
       default:
         const utcDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
         );
         props.onUpdate(props.id, revMap[utcDate.toUTCString()]);
         break;
@@ -261,44 +261,42 @@ function TimePicker(props) {
   const formLayout = props.horizontalLayout ? Row : Col;
 
   return (
-    <InputGroup className="timepicker" as={formLayout}>
-      <label
-        className={`timepicker-label ${
-          props.horizontalLayout ? "horizontal" : ""
-        }`}
-      >
-        {props.title}
-      </label>
-      <Dropdown drop={props.horizontalLayout ? "up" : "down"}>
-        <div className="button-container">
-          <Button
-            className="header-button"
-            disabled={currentIndex === 0}
-            onClick={handlePrevTime}
-          >
-            {" "}
-            <ChevronLeft />
-          </Button>
-          <div className="dropdown-container">
-            <Dropdown.Toggle as={CustomToggle}>{dateSelector}</Dropdown.Toggle>
-            <Dropdown.Menu
-              className="dropdown-menu"
-              disabled={props.dataset.quantum === "year"}
+    <div className={`timepicker ${props.horizontalLayout ? "horizontal" : ""}`}>
+      <label className="timepicker-label">{props.title}</label>
+      <InputGroup className="timepicker" as={formLayout}>
+        <Dropdown drop={props.horizontalLayout ? "up" : "down"}>
+          <div className="button-container">
+            <Button
+              className="header-button"
+              disabled={currentIndex === 0}
+              onClick={handlePrevTime}
             >
-              {calendar}
-            </Dropdown.Menu>
-            {hourDropdown}
+              {" "}
+              <ChevronLeft />
+            </Button>
+            <div className="dropdown-container">
+              <Dropdown.Toggle as={CustomToggle}>
+                {dateSelector}
+              </Dropdown.Toggle>
+              <Dropdown.Menu
+                className="dropdown-menu"
+                disabled={props.dataset.quantum === "year"}
+              >
+                {calendar}
+              </Dropdown.Menu>
+              {hourDropdown}
+            </div>
+            <Button
+              className="header-button"
+              disabled={currentIndex === data.length - 1}
+              onClick={handleNextTime}
+            >
+              <ChevronRight />
+            </Button>
           </div>
-          <Button
-            className="header-button"
-            disabled={currentIndex === data.length - 1}
-            onClick={handleNextTime}
-          >
-            <ChevronRight />
-          </Button>
-        </div>
-      </Dropdown>
-    </InputGroup>
+        </Dropdown>
+      </InputGroup>
+    </div>
   );
 }
 
