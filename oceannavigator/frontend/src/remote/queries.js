@@ -9,7 +9,7 @@ import {
   GetPlotImagePromise,
   GetAllVariablesPromise,
   GetTrackTimeRangePromise,
-  GetComboBoxQuery,
+  GetComboBoxQueryPromise as GetComboBoxQuery,
   GetClass4ForecastsPromise,
   GetClass4ModelsPromise,
   GetObservationDatatypes,

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-const axios = require("axios");
+import axios from "axios";
 
 function ColormapRange(props) {
   const [useAuto, setUseAuto] = useState(props.auto);

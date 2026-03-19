@@ -8,7 +8,7 @@ import {
   GetPresetAreasPromise,
 } from "../remote/OceanNavigator.js";
 
-const LOADING_IMAGE = require("../images/spinner.gif").default;
+import LOADING_IMAGE from "../images/spinner.gif";
 
 import { withTranslation } from "react-i18next";
 
