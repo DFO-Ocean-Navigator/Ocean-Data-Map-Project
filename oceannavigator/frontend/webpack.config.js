@@ -18,6 +18,12 @@ module.exports = {
       _: "props.t",
       __: "props.t",
       "process.env.LOGGER_LEVEL": JSON.stringify("info"),
+      "process.env.ONAV_SENTRY_JS_DSN": JSON.stringify(
+        process.env.ONAV_SENTRY_JS_DSN,
+      ),
+      "process.env.ONAV_SENTRY_TRACES_RATE": JSON.stringify(
+        process.env.ONAV_SENTRY_TRACES_RATE,
+      ),
     }),
     new HtmlWebpackPlugin({
       filename: "index.html",

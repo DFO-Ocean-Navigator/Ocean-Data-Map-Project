@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
+import * as Sentry from "@sentry/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import OceanNavigator from "./components/OceanNavigator.jsx";
 import ReactGA from "react-ga";
@@ -18,13 +19,20 @@ if (process.env.NODE_ENV == "production") {
 
 ReactGA.pageview(window.location.pathname + window.location.search);
 
-document.title = "Ocean Navigator";
+const SENTRY_DSN = process.env.ONAV_SENTRY_JS_DSN;
+const SENTRY_TRACES_RATE = process.env.ONAV_SENTRY_TRACES_RATE;
+
+Sentry.init({
+    dsn: SENTRY_DSN,
+    tracesSampleRate: SENTRY_TRACES_RATE, 
+});
 
 const queryClient = new QueryClient();
 
+document.title = "Ocean Navigator";
 const root = createRoot(document.getElementById("app"));
 root.render(
   <QueryClientProvider client={queryClient}>
     <OceanNavigator />
-  </QueryClientProvider>
+  </QueryClientProvider>,
 );
