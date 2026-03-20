@@ -18,6 +18,9 @@ module.exports = {
       _: "props.t",
       __: "props.t",
       "process.env.LOGGER_LEVEL": JSON.stringify("info"),
+      "process.env.ONAV_SENTRY_ENV": JSON.stringify(
+        process.env.ONAV_SENTRY_ENV,
+      ),      
       "process.env.ONAV_SENTRY_JS_DSN": JSON.stringify(
         process.env.ONAV_SENTRY_JS_DSN,
       ),
