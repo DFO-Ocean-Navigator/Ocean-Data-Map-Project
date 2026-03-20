@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     profiling: bool = False
     profiling_dir: str = ""
     sentry_env: str = ""
+    sentry_py_dsn: str = ""
     sentry_traces_rate: float = 0
     shape_file_dir: str = ""
     sqlalchemy_database_uri: str = ""
