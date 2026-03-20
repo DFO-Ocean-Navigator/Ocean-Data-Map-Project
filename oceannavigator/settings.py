@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     drifter_catalog_url: str = ""
     drifter_url: str = ""
     etopo_file: str = ""
+    icechunk_storage_type: str = "s3"
+    icechunk_storage_config: dict = {}
     log_level: str = "DEBUG"
     observation_agg_url: str = ""
     overlay_kml_dir: str = ""
