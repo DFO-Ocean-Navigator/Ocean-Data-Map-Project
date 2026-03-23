@@ -78,6 +78,7 @@ class TestAPIv2:
                 "interp": None,
                 "two_dimensional": False,
                 "vector_variable": False,
+                "data_categories": False,
             }
         ]
 
@@ -97,6 +98,7 @@ class TestAPIv2:
                 "interp": None,
                 "two_dimensional": False,
                 "vector_variable": False,
+                "data_categories": False
             }
         ]
 

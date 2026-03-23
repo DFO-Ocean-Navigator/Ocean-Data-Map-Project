@@ -233,6 +233,7 @@ def variables(
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
                     "vector_variable": v.key in config.vector_variables,
+                    "data_categories": config.variable[v].data_categories is not None,
                 }
             )
 
@@ -930,7 +931,6 @@ async def data_tile(
         str(x),
         f"{y}.png",
     )
-
     if os.path.isfile(f):
         return FileResponse(
             f,
