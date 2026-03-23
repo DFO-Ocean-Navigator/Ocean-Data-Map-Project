@@ -256,7 +256,7 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
         for v in variable:
-            if config.variable[v].map_colors:
+            if config.variable[v].data_categories is not None:
                 args["interp"] = InterpolationType.nearest
                 args["radius"] = 25000
                 args["neighbours"] = 10
