@@ -32,7 +32,7 @@ function ScaleViewer(props) {
 
   const dataCategories = props.dataset.variable.data_categories;
 
-  const rangeControl = !dataCategories && expanded ? (
+  const rangeControl = expanded ? (
     <ColormapRange
       id="variable_scale"
       state={scale}

@@ -13,7 +13,7 @@ import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import BoundaryNorm, FuncNorm
+from matplotlib.colors import FuncNorm
 from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
@@ -817,18 +817,10 @@ class MapPlotter(Plotter):
             )
 
         data_categories = self.dataset_config.variable[self.variables[0]].data_categories
-        if data_categories:
-            n = int(vmax - vmin + 1)
-            boundaries = [vmin - 0.5 + i for i in range(n + 1)]
-            imshow_norm = BoundaryNorm(boundaries, self.cmap.N)
-        else:
-            imshow_norm = None
-
         c = ax.imshow(
             self.data,
-            vmin=vmin if imshow_norm is None else None,
-            vmax=vmax if imshow_norm is None else None,
-            norm=imshow_norm,
+            vmin=vmin,
+            vmax=vmax,
             cmap=self.cmap,
             extent=self.plot_extent,
             transform=self.plot_projection,

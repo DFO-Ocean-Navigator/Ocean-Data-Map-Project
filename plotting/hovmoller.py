@@ -1,6 +1,5 @@
 import re
 
-import matplotlib.colors
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -346,22 +345,14 @@ class HovmollerPlotter(LinePlotter):
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
-        if data_categories:
-            n = int(vmax - vmin + 1)
-            boundaries = [vmin - 0.5 + i for i in range(n + 1)]
-            plot_norm = matplotlib.colors.BoundaryNorm(boundaries, cmap.N)
-        else:
-            plot_norm = None
-
         c = plt.pcolormesh(
             self.distance,
             times,
             data,
             cmap=cmap,
-            shading="gouraud",  # Smooth shading
-            norm=plot_norm,
-            vmin=vmin if plot_norm is None else None,
-            vmax=vmax if plot_norm is None else None,
+            shading="nearest" if data_categories else "gouraud",
+            vmin=vmin,
+            vmax=vmax,
         )
 
         ax = plt.gca()
