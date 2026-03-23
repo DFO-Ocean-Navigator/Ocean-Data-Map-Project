@@ -141,12 +141,14 @@ const AreaWindow = (props) => {
     <Card variant="primary">
       <Card.Header>{_("Area Settings")}</Card.Header>
       <Card.Body className="global-settings-card">
-        <CheckBox
-          id="dataset_compare"
-          checked={props.compareDatasets}
-          onUpdate={(_, checked) => compareChanged(checked)}
-          title={_("Compare Datasets")}
-        />
+        {!props.dataset0.variable.data_categories && (
+          <CheckBox
+            id="dataset_compare"
+            checked={props.compareDatasets}
+            onUpdate={(_, checked) => compareChanged(checked)}
+            title={_("Compare Datasets")}
+          />
+        )}
 
         {/* Displays Options for Compare Datasets */}
         {/* <Button
@@ -156,19 +158,23 @@ const AreaWindow = (props) => {
         >
           {_("Swap Views")}
         </Button> */}
-        <Form.Check
-          type="checkbox"
-          id={props.id + "_auto"}
-          checked={autoScale}
-          onChange={toggleAutoScale}
-          label={"Auto Range"}
-        />
-        {autoScale ? null : (
-          <ColormapRange
-            id="scale"
-            state={scale}
-            onUpdate={(_, s) => setScale(s)}
-          />
+        {!props.dataset0.variable.data_categories && (
+          <>
+            <Form.Check
+              type="checkbox"
+              id={props.id + "_auto"}
+              checked={autoScale}
+              onChange={toggleAutoScale}
+              label={"Auto Range"}
+            />
+            {autoScale ? null : (
+              <ColormapRange
+                id="scale"
+                state={scale}
+                onUpdate={(_, s) => setScale(s)}
+              />
+            )}
+          </>
         )}
         {props.compareDatasets && !autoScale && (
           <ComboBox
