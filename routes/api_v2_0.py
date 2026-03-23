@@ -1383,25 +1383,35 @@ def observation_track(
         db, query_dict.get("quantum", "day"), **params
     )
 
-    if len(coordinates) > 1:
-        df = pd.DataFrame(np.array(coordinates), columns=["id", "type", "lon", "lat"])
-        df["id"] = df.id.astype(int)
+    df = pd.DataFrame(np.array(coordinates), columns=["id", "type", "lon", "lat"])
+    df["id"] = df.id.astype(int)
+    df = df.groupby("id").filter(lambda id: len(id) > 1)
 
-        vc = df.id.value_counts()
-        for p_id in vc.where(vc > 1).dropna().index:
-            d = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "LineString",
-                    "coordinates": df[["lon", "lat"]][df.id == p_id].values.tolist(),
-                },
-                "properties": {
-                    "id": int(p_id),
-                    "type": df.type[df.id == p_id].values[0].name,
-                    "class": "observation",
-                },
-            }
-            data.append(d)
+    df["coordinates"] = df[["lon", "lat"]].values.tolist()
+    df["type"] = df["type"].apply(lambda t: t.name)
+    df = (
+        df[["id", "type", "coordinates"]]
+        .groupby(["id", "type"])
+        .agg(list)
+        .reset_index()
+    )
+
+    data = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": row[2],
+            },
+            "properties": {
+                "id": int(row[0]),
+                "type": row[1],
+                "class": "observation",
+            },
+        }
+        for row in df.values
+        if len(row[2]) > 1
+    ]
 
     result = {
         "type": "FeatureCollection",
