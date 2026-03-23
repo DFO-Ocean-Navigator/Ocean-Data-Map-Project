@@ -290,6 +290,38 @@ def add_samples(df, engine):
         )
 
 
+def correct_platform_tracks(platform_id : str, engine):
+
+    def mysql_upsert(table, conn, keys, data_iter):
+        data = [dict(zip(keys, row)) for row in data_iter]
+        stmt = insert(table.table).values(data)
+        update_stmt = stmt.on_duplicate_key_update(**{c.name: c for c in stmt.inserted})
+        conn.execute(update_stmt)
+
+    stations = pd.read_sql(
+            f"SELECT * FROM stations where platform_id={platform_id};",
+            con=engine,
+            index_col="id",
+        ).sort_values(by="time")
+
+    corrected_lon = np.copy(stations.longitude.values)
+    diffs = np.diff(corrected_lon)
+    crossings = np.where(np.abs(diffs) > 180)[0]
+
+    if len(crossings) > 0:
+        print(f"Updating track of platform {platform_id}.")
+
+        for crossing in crossings:
+            if diffs[crossing] > 0:
+                corrected_lon[crossing + 1 :] -= 360
+            else:
+                corrected_lon[crossing + 1 :] += 360
+        stations.longitude = corrected_lon
+        stations.to_sql(
+            "stations", engine, if_exists="append", method=mysql_upsert, index=False
+        )
+
+
 def import_cmems_obs(uri : str, file_list : list | PosixPath | str, platform_type : str):
 
     engine = create_engine(
@@ -318,6 +350,8 @@ def import_cmems_obs(uri : str, file_list : list | PosixPath | str, platform_typ
 
             df = add_stations(df, engine)
             add_samples(df, engine)
+
+            correct_platform_tracks(platform_id, engine)
         except Exception as e:
             print(f"Error importing file: {file}")
             print(e)

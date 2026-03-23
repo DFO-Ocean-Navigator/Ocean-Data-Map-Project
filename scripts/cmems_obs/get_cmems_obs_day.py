@@ -13,7 +13,7 @@ def main(uri: str, output_dir: str, date_str: str):
     string to add to the observation database.
     Deletes dowloaded files after data is added. Arguments should be passed on
     commandline. e.g:
-    python scripts/data_importers/init_cmems_obs.py "db_uri" "/output_dir/"
+    python scripts/data_importers/init_cmems_obs.py "uri" "/output_dir/" -d 20250101
 
     :param uri: The URI string of the MariaDB Observation database
     :param output_dir: The directory that you want to save the data to.

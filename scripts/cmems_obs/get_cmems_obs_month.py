@@ -12,7 +12,7 @@ def main(uri: str, output_dir: str, month_key: str):
     Downloads one month of CMEMS monthly observation data to append to the observation
     database. Deletes dowloaded files after data is added. Arguments should be passed
     on commandline. e.g:
-    python scripts/data_importers/get_cmems_month.py "db_uri" "/output_dir/" "month_key"
+    python scripts/data_importers/get_cmems_month.py "uri" "/output_dir/" -m "month_key"
 
     :param uri: The URI string of the MariaDB Observation database
     :param output_dir: The directory that you want to save the data to.
@@ -26,15 +26,16 @@ def main(uri: str, output_dir: str, month_key: str):
     obs_types = ["GL", "DB", "PF", "CT"]
 
     for obs in obs_types:
-        obs_filter = f"*/{month_key}/{obs}/*.nc"
+        obs_filter = f"*/{obs}/{month_key}/*.nc"
         resp = copernicusmarine.get(
             dataset_id="cmems_obs-ins_glo_phybgcwav_mynrt_na_irr",
             dataset_version=version,
             output_directory=output_dir,
             filter=obs_filter,
             dataset_part="monthly",
-            sync=True,
+            sync=True
         )
+
         file_list = [f.file_path for f in resp.files]
 
         try:
