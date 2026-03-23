@@ -368,6 +368,8 @@ class MapPlotter(Plotter):
 
             data = []
             var = dataset.variables[self.variables[0]]
+            if self.dataset_config.variable[self.variables[0]].data_categories:
+                self.interp = "nearest"
             if self.filetype in ["csv", "odv", "txt"]:
                 d, depth_value_map = dataset.get_area(
                     np.array([self.latitude, self.longitude]),
