@@ -41,7 +41,6 @@ def find_colormap(name):
 
 _c = mcolors.ColorConverter().to_rgb
 data_dir = (Path(plotting.__file__).parent).joinpath("data")
-
 colormaps = {
     "water velocity bearing": cmocean.cm.rain,
     "depth excess": cmocean.cm.deep,

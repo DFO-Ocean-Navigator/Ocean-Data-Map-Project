@@ -32,38 +32,6 @@ Div.ScaleViewer {
   }
 }
 
-.DiscreteColorLegend {
-  padding: 6px 8px;
-  min-width: 160px;
-
-  h1 {
-    font-size: 12px;
-    font-weight: bold;
-    margin: 0 0 6px 0;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 3px;
-  }
-
-  .legend-swatch {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 2px;
-    flex-shrink: 0;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-  }
-
-  .legend-label {
-    font-size: 11px;
-    line-height: 1.2;
-  }
-}
-
 .scale-viewer-container {
   display: flex;
   flex-direction: column;

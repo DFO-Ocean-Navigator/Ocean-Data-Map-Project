@@ -39,7 +39,7 @@ function ScaleViewer(props) {
       title="Colormap Range"
       onUpdate={props.onUpdate}
       default_scale={defaultScale}
-      showAuto={props.dataset.variable.scale[1] - props.dataset.variable.scale[0] === 1 ? false : true}
+      showAuto={true}
       dataset={props.dataset}
       mapSettings={props.mapSettings}
       mapRef={props.mapRef}

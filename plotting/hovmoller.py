@@ -359,7 +359,7 @@ class HovmollerPlotter(LinePlotter):
             data,
             cmap=cmap,
             shading="gouraud",  # Smooth shading
-            norm=plot_norm if plot_norm is not None else None,
+            norm=plot_norm,
             vmin=vmin if plot_norm is None else None,
             vmax=vmax if plot_norm is None else None,
         )
