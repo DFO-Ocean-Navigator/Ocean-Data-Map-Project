@@ -12,9 +12,8 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
     dataset0: true,
     dataset1: !!compareDatasets,
     mapSettings: true,
-    featureType: true,
-    vectorid: true,
-    time: true,
+    mapView: true,
+    features: true,
   });
 
   const handleChange = (e) => {
@@ -82,24 +81,17 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
             />
             <Form.Check
               type="checkbox"
-              name="featureType"
-              checked={options.featureType}
+              name="mapView"
+              checked={options.mapView}
               onChange={handleChange}
-              label={_("Feature Type")}
+              label={_("Map View")}
             />
             <Form.Check
               type="checkbox"
-              name="vectorid"
-              checked={options.vectorid}
+              name="features"
+              checked={options.features}
               onChange={handleChange}
-              label={_("Vector ID")}
-            />
-            <Form.Check
-              type="checkbox"
-              name="time"
-              checked={options.time}
-              onChange={handleChange}
-              label={_("Time")}
+              label={_("Features")}
             />
           </Card.Body>
         </Card>

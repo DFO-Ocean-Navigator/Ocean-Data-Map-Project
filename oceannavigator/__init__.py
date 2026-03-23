@@ -46,7 +46,8 @@ def configure_sentry(app: FastAPI) -> None:
 
     # Sentry DSN URL will be read from SENTRY_DSN environment variable
     sentry_sdk.init(
-        traces_sample_rate=float(settings.sentry_traces_rate),
+        dsn=settings.sentry_py_dsn,
+        traces_sample_rate=settings.sentry_traces_rate,
         environment=settings.sentry_env,
     )
 

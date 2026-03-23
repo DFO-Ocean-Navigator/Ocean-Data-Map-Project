@@ -68,7 +68,7 @@ function QuiverSelector({
           0: "",
           1: "+",
         }}
-        defaultValue={dataset.quiverDensity}
+        value={dataset.quiverDensity}
         onChange={(x) => updateQuiver("quiverDensity", parseInt(x))}
       />
     </div>
