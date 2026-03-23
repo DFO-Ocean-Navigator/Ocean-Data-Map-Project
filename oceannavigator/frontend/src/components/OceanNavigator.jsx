@@ -22,6 +22,7 @@ import Class4Selector from "./Class4Selector.jsx";
 import Permalink from "./Permalink.jsx";
 import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
+import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
 
 import { withTranslation } from "react-i18next";
@@ -418,6 +419,7 @@ function OceanNavigator(props) {
           action={action}
         />
         <LinkButton action={action} />
+        <BugReportButton action={action} updateUI={updateUI} />
         <ToggleLanguage />
       </div>
 
