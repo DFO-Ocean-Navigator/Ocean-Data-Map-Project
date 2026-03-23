@@ -59,7 +59,6 @@ function MapTools(props) {
     props.updateUI({ modalType: type, showModal: true });
   };
 
- 
   return (
     <div className="MapTools">
       <OverlayTrigger
@@ -179,6 +178,7 @@ function MapTools(props) {
           <FontAwesomeIcon icon={faInfo} />
         </Button>
       </OverlayTrigger>
+
     </div>
   );
 }
