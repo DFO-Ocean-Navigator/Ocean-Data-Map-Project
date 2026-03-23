@@ -453,34 +453,40 @@ def get_all_variables():
     variables = {}
     for dataset_key in dataset_keys:
         config = DatasetConfig(dataset_key)
-        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
-            with SQLiteDatabase(config.url) as db:
-                dims = db.get_all_dimensions()
-        else:
-            if not isinstance(config.url, list):
-                data = xr.open_mfdataset([config.url])
+        try:
+            if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
+                with SQLiteDatabase(config.url) as db:
+                    dims = db.get_all_dimensions()
+            elif not isinstance(config.url, list) and config.url == "icechunk":
+                with open_dataset(config) as ds:
+                    dims = list(ds.nc_data.dataset.dims)
             else:
-                data = xr.open_mfdataset(config.url)
-            dims = data.dims
-        has_depth = "depth" in dims
+                if not isinstance(config.url, list):
+                    data = xr.open_mfdataset([config.url])
+                else:
+                    data = xr.open_mfdataset(config.url)
+                dims = data.dims
+            has_depth = "depth" in dims
 
-        for variable in config.variables:
-            variable_name = config.variable[variable].name
-            scale = config.variable[variable].scale
+            for variable in config.variables:
+                variable_name = config.variable[variable].name
+                scale = config.variable[variable].scale
 
-            entry = {
-                "dataset_id": dataset_key,
-                "variable_id": variable,
-                "variable_scale": scale,
-                "vector_variables": variable in config.vector_variables
-                and config.model_class == "Mercator",
-                "depth": has_depth,
-            }
+                entry = {
+                    "dataset_id": dataset_key,
+                    "variable_id": variable,
+                    "variable_scale": scale,
+                    "vector_variables": variable in config.vector_variables
+                    and config.model_class == "Mercator",
+                    "depth": has_depth,
+                }
 
-            if variable_name in variables:
-                variables[variable_name].append(entry)
-            else:
-                variables[variable_name] = [entry]
+                if variable_name in variables:
+                    variables[variable_name].append(entry)
+                else:
+                    variables[variable_name] = [entry]
+        except Exception:
+            continue
     return variables
 
 
@@ -499,31 +505,16 @@ def filter_datasets_by_date(
 
     for dataset_id in dataset_id_list:
         config = DatasetConfig(dataset_id)
-        if not isinstance(config.url, list) and config.url.endswith(".sqlite3"):
-            with SQLiteDatabase(config.url) as db:
-                vals = np.array(db.get_all_timestamps())
-                time_dim_units = config.time_dim_units
-                lowest = np.min(vals)
-                highest = np.max(vals)
-                converted_times = time_index_to_datetime(
-                    [lowest, highest], time_dim_units
+        try:
+            with open_dataset(config) as ds:
+                vals = ds.nc_data.time_variable.values
+                time_range = time_index_to_datetime(
+                    [vals.min(), vals.max()], config.time_dim_units
                 )
-
-                if (
-                    converted_times[0] <= parsed_date
-                    and converted_times[1] >= parsed_date
-                ):
+                if time_range[0] <= parsed_date and time_range[1] >= parsed_date:
                     matching_dataset_ids.append(dataset_id)
-        else:
-            if not isinstance(config.url, list):
-                data = xr.open_mfdataset([config.url])
-            else:
-                data = xr.open_mfdataset(config.url)
-            time_vals = data.time.values
-            if time_vals.min() <= np.datetime64(
-                parsed_date
-            ) and time_vals.max() >= np.datetime64(parsed_date):
-                matching_dataset_ids.append(dataset_id)
+        except Exception:
+            continue
 
     return matching_dataset_ids
 

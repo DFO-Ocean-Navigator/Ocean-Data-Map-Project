@@ -43,7 +43,7 @@ class TestAPIv2:
         data = response.json()
 
         assert response.status_code == 200
-        assert len(data) == 7
+        assert len(data) == 8
 
     def test_dataset(self) -> None:
         response = self.client.get("/api/v2.0/dataset/giops")

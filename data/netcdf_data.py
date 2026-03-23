@@ -15,6 +15,7 @@ import xarray
 import xarray.core.variable
 from babel.dates import format_date
 from cachetools import TTLCache
+from icechunk import local_filesystem_storage, Repository, s3_storage
 
 import data.calculated
 import data.utils
@@ -24,6 +25,7 @@ from data.sqlite_database import SQLiteDatabase
 from data.variable import Variable
 from data.variable_list import VariableList
 from oceannavigator.dataset_config import DatasetConfig
+from oceannavigator.settings import get_settings
 
 
 class NetCDFData(Data):
@@ -45,18 +47,24 @@ class NetCDFData(Data):
         self._dataset_config: DatasetConfig = (
             DatasetConfig(self._dataset_key) if self._dataset_key else None
         )
-        self._nc_files: Union[List, None] = self.get_nc_file_list(
-            self._dataset_config, **kwargs
-        )
         self.interp: str = kwargs.get("interp", "gaussian")
         self.radius: int = kwargs.get("radius", 25000)
         self.neighbours: int = kwargs.get("neighbours", 10)
+
+        if url == "icechunk":
+            self.get_ic_dataset(**kwargs)
+        else:
+            self._nc_files: Union[List, None] = self.get_nc_file_list(
+                self._dataset_config, **kwargs
+            )
 
     def __enter__(self):
         # Don't decode times since we do it anyways.
         decode_times = False
 
-        if self.url.endswith(".sqlite3") if not isinstance(self.url, list) else False:
+        if self.url == "icechunk":
+            pass
+        elif self.url.endswith(".sqlite3") if not isinstance(self.url, list) else False:
             if self._nc_files:
                 try:
                     if len(self._nc_files) > 1:
@@ -75,11 +83,6 @@ class NetCDFData(Data):
                     self.dataset = netCDF4.MFDataset(self._nc_files)
             else:
                 self.dataset = xarray.Dataset()
-
-        elif self.url.endswith(".zarr") if not isinstance(self.url, list) else False:
-            ds_zarr = xarray.open_zarr(self.url, decode_times=decode_times)
-            self.dataset = ds_zarr
-
         else:
             try:
                 # Handle list of URLs for staggered grid velocity field datasets
@@ -125,6 +128,31 @@ class NetCDFData(Data):
         if self._dataset_open:
             self.dataset.close()
             self._dataset_open = False
+
+    def __get_ic_repo(self, dataset_key: str) -> Repository:
+        settings = get_settings()
+        storage_type = settings.icechunk_storage_type
+        store_config = settings.icechunk_storage_config
+
+        if storage_type == "s3":
+            storage_config = s3_storage(
+                bucket=store_config["bucket"],
+                prefix=dataset_key,
+                region="us-east-1",
+                access_key_id=store_config["user"],
+                secret_access_key=store_config["password"],
+                endpoint_url=store_config["url"],
+                allow_http=True,
+                force_path_style=True,
+            )
+        elif storage_type == "local":
+            storage_config = local_filesystem_storage(
+                f"{store_config["path"]}/{dataset_key}"
+            )
+
+        return Repository.open(
+            storage_config, authorize_virtual_chunk_access={"file:///data/": None}
+        )
 
     def __find_variable(self, candidates: list):
         """Finds a matching variable in the dataset given a list
@@ -373,11 +401,9 @@ class NetCDFData(Data):
             p1 = geopy.Point(top_right)
 
         else:
-            y_slice = slice(self.get_dataset_variable(lat_var).size)
-            x_slice = slice(self.get_dataset_variable(lon_var).size)
-
             p0 = geopy.Point([-85.0, -180.0])
             p1 = geopy.Point([85.0, 180.0])
+
         # Get timestamp
         time_var = find_variable("time", list(self.dataset.variables.keys()))
         timestamp = str(
@@ -907,44 +933,21 @@ class NetCDFData(Data):
                     db.get_data_variables()
                 )  # Cache the list for later
 
-        elif url.endswith(".zarr"):
-            ds_zarr = xarray.open_zarr(url)
+        elif url == "icechunk":
             var_list = []
-            for var in list(ds_zarr.data_vars):
-                name = var
-                units = (
-                    ds_zarr.variables[var].attrs["units"]
-                    if ds_zarr.variables[var].attrs["units"]
-                    else None
-                )
-                long_name = (
-                    ds_zarr.variables[var].attrs["long_name"]
-                    if ds_zarr.variables[var].attrs["long_name"]
-                    else name
-                )
-                valid_min = (
-                    ds_zarr.variables[var].attrs["valid_min"]
-                    if ds_zarr.variables[var].attrs["valid_min"]
-                    else None
-                )
-                valid_max = (
-                    ds_zarr.variables[var].attrs["valid_max"]
-                    if ds_zarr.variables[var].attrs["valid_max"]
-                    else None
-                )
-
+            for var in list(self.dataset.data_vars):
                 var_list.append(
                     Variable(
-                        name,
-                        long_name,
-                        units,
-                        list(ds_zarr[name].dims),
-                        valid_min,
-                        valid_max,
+                        var,
+                        self.dataset.variables[var].attrs.get("long_name") or var,
+                        self.dataset.variables[var].attrs.get("units"),
+                        list(self.dataset[var].dims),
+                        self.dataset.variables[var].attrs.get("valid_min"),
+                        self.dataset.variables[var].attrs.get("valid_max"),
                     )
                 )
 
-            self._variable_list = var_list
+            self._variable_list = VariableList(var_list)
 
         else:
             try:
@@ -1037,6 +1040,62 @@ class NetCDFData(Data):
             self.__timestamp_cache["timestamps"] = timestamps
 
         return self.__timestamp_cache.get("timestamps")
+
+    def get_ic_dataset(
+        self,
+        dataset_key: str,
+        variable: str | list = None,
+        timestamp: int = None,
+        endtime: int = None,
+        depth: float = None,
+        **kwargs: dict,
+    ) -> None:
+        """Initializes dataset from an Icechunk repository. The dataset is subsetted
+        according to the provided keyword arguments.
+
+        Arguments:
+            dataset_key: The key of the dataset in the Icechunk repository.
+            variable: A list or string of variable names to subset.
+            timestamp: The timestamp or start time to subset.
+            endtime: The end timestamp to subset.
+            depth: The depth to subset.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
+        """
+
+        repo = self.__get_ic_repo(dataset_key)
+        session = repo.readonly_session(branch="main")
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Numcodecs codecs are not in the Zarr version 3 specification*",
+                category=UserWarning,
+            )
+
+            dataset = xarray.open_zarr(
+                session.store, consolidated=False, decode_times=False
+            )
+
+        if variable and isinstance(variable, str):
+            variable = [variable]
+
+        if variable and all([v in dataset.variables for v in variable]):
+            dataset = dataset[variable]
+
+        indexer = {}
+
+        if timestamp and endtime:
+            indexer["time"] = slice(timestamp, endtime)
+        elif timestamp and timestamp >= 0:
+            indexer["time"] = slice(timestamp, timestamp)
+
+        if depth:
+            indexer["depth"] = depth
+
+        self.dataset = dataset.loc[indexer]
 
     def get_nc_file_list(
         self, datasetconfig: DatasetConfig, **kwargs: dict
