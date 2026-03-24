@@ -137,8 +137,8 @@ def get_platform_tracks(
     query = select(
         Platform.id,
         Platform.type,
-        Station.longitude,
-        Station.latitude,
+        func.avg(Station.longitude),
+        func.avg(Station.latitude),
     ).join(Station)
     if quantum not in ["year", "month", "week", "day", "hour", "minute"]:
         raise ValueError(f"Quantum {quantum} is unknown")
@@ -160,7 +160,7 @@ def get_platform_tracks(
         endtime=endtime,
     )
 
-    query = query.order_by(
+    query = query.group_by(Platform.id, funcs[quantum](Station.time)).order_by(
         Platform.id, funcs[quantum](Station.time)
     )
 
