@@ -1387,31 +1387,32 @@ def observation_track(
     df["id"] = df.id.astype(int)
     df = df.groupby("id").filter(lambda id: len(id) > 1)
 
-    df["coordinates"] = df[["lon", "lat"]].values.tolist()
-    df["type"] = df["type"].apply(lambda t: t.name)
-    df = (
-        df[["id", "type", "coordinates"]]
-        .groupby(["id", "type"])
-        .agg(list)
-        .reset_index()
-    )
+    if len(df) > 0:
+        df["coordinates"] = df[["lon", "lat"]].values.tolist()
+        df["type"] = df["type"].apply(lambda t: t.name)
+        df = (
+            df[["id", "type", "coordinates"]]
+            .groupby(["id", "type"])
+            .agg(list)
+            .reset_index()
+        )
 
-    data = [
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": row[2],
-            },
-            "properties": {
-                "id": int(row[0]),
-                "type": row[1],
-                "class": "observation",
-            },
-        }
-        for row in df.values
-        if len(row[2]) > 1
-    ]
+        data = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": row[2],
+                },
+                "properties": {
+                    "id": int(row[0]),
+                    "type": row[1],
+                    "class": "observation",
+                },
+            }
+            for row in df.values
+            if len(row[2]) > 1
+        ]
 
     result = {
         "type": "FeatureCollection",

@@ -3,7 +3,7 @@ import math
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from . import DataType, Platform, PlatformMetadata, Sample, Station, engine
@@ -134,11 +134,11 @@ def get_platform_tracks(
     the optional query filters.
     """
     funcs = __db_funcs()
-    query = session.query(
+    query = select(
         Platform.id,
         Platform.type,
-        func.avg(Station.longitude),
-        func.avg(Station.latitude),
+        Station.longitude,
+        Station.latitude,
     ).join(Station)
     if quantum not in ["year", "month", "week", "day", "hour", "minute"]:
         raise ValueError(f"Quantum {quantum} is unknown")
@@ -160,9 +160,13 @@ def get_platform_tracks(
         endtime=endtime,
     )
 
-    query = query.group_by(Platform.id, funcs[quantum](Station.time))
+    query = query.order_by(
+        Platform.id, funcs[quantum](Station.time)
+    )
 
-    return query.order_by(Platform.id, funcs[quantum](Station.time)).all()
+    result = session.execute(query)
+
+    return [r for r in result]
 
 
 def get_platform_track(
