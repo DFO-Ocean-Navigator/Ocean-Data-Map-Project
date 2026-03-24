@@ -158,7 +158,7 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   const updateTickContainerWidth = () => {
     if (!scrollTrackRef.current || timestamps.length === 0) return;
 
-    let minTickWidth = 70;
+    let minTickWidth = 105;
     if (dataset.quantum === "hour" && dataset.id !== "giops_day") {
       minTickWidth = 35;
     }
