@@ -1499,23 +1499,38 @@ def observation_point(
     if len(stations) > 500:
         stations = stations[:: round(len(stations) / 500)]
 
-    for s in stations:
-        if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
-            continue
+    df = pd.DataFrame(
+        np.array(stations),
+        columns=["type", "id", "name", "lat", "lon"],
+    )
+    df["id"] = df.id.astype(int)
 
-        d = {
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [s.longitude, s.latitude]},
-            "properties": {
-                "type": s.platform.type.name,
-                "id": s.id,
-                "class": "observation",
-            },
-        }
-        if s.name:
-            d["properties"]["name"] = s.name
+    if len(df) > 0:
+        df["coordinates"] = df[["lon", "lat"]].values.tolist()
+        df["type"] = df["type"].apply(lambda t: t.name)
 
-        data.append(d)
+        if checkpoly:
+            df["in_poly"] = df["coordinates"].apply(
+                lambda c: poly.contains(Point(c[1], c[0]))
+            )
+            df = df.loc[df["in_poly"]]
+
+        data = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": row["coordinates"],
+                },
+                "properties": {
+                    "id": int(row.id),
+                    "type": row["type"],
+                    "class": "observation",
+                    **({"name": row["name"]} if row["name"] is not None else {}),
+                },
+            }
+            for idx, row in df.iterrows()
+        ]
 
     result = {
         "type": "FeatureCollection",

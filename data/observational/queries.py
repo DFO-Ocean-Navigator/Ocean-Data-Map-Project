@@ -164,9 +164,7 @@ def get_platform_tracks(
         Platform.id, funcs[quantum](Station.time)
     )
 
-    result = session.execute(query)
-
-    return [r for r in result]
+    return session.execute(query).all()
 
 
 def get_platform_track(
@@ -330,7 +328,13 @@ def __build_station_query(
     meta_key=None,
     meta_value=None,
 ):
-    query = session.query(Station)
+    query = select(
+        Platform.type,
+        Station.id,
+        Station.name,
+        Station.latitude,
+        Station.longitude,
+    ).join(Station)
 
     # Use index hint
     query = query.with_hint(Station, "USE INDEX (idx_stations_time)")
@@ -382,7 +386,7 @@ def get_stations(
     """
     Queries for stations, given the optional query filters.
     """
-    return __build_station_query(
+    query = __build_station_query(
         session=session,
         variable=variable,
         mindepth=mindepth,
@@ -396,7 +400,9 @@ def get_stations(
         platform_types=platform_types,
         meta_key=meta_key,
         meta_value=meta_value,
-    ).all()
+    )
+
+    return session.execute(query).all()
 
 
 def get_station_time_range(session: Session):
