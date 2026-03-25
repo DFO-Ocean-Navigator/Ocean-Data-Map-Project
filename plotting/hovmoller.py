@@ -2,6 +2,7 @@ import re
 
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 
 # from flask_babel import gettext
@@ -205,6 +206,9 @@ class HovmollerPlotter(LinePlotter):
             + get_depth_label(
                 self.depth_value, self.depth_unit
             ),  # gettext(get_depth_label(self.depth_value, self.depth_unit)),
+            data_categories=self.dataset_config.variable[
+                self.variables[0]
+            ].data_categories,
         )
 
         # If in compare mode
@@ -228,6 +232,9 @@ class HovmollerPlotter(LinePlotter):
             if len(self.compare["variables"]) > 1:
                 vmin = 0
 
+            compare_data_categories = DatasetConfig(
+                self.compare["dataset"]
+            ).variable[self.compare["variables"][0]].data_categories
             self._hovmoller_plot(
                 gs,
                 [1, 1],
@@ -246,6 +253,7 @@ class HovmollerPlotter(LinePlotter):
                 #  gettext(
                 #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),
+                data_categories=compare_data_categories,
             )
 
             # Difference plot
@@ -330,6 +338,7 @@ class HovmollerPlotter(LinePlotter):
         cmap,
         unit,
         title,
+        data_categories=None,
     ):
         if self.showmap:
             plt.subplot(subplot[map_subplot[0], map_subplot[1]])
@@ -341,7 +350,7 @@ class HovmollerPlotter(LinePlotter):
             times,
             data,
             cmap=cmap,
-            shading="gouraud",  # Smooth shading
+            shading="nearest" if data_categories else "gouraud",
             vmin=vmin,
             vmax=vmax,
         )
@@ -368,7 +377,22 @@ class HovmollerPlotter(LinePlotter):
         plt.xlabel("Distance (km)")  # plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])
 
-        divider = make_axes_locatable(plt.gca())
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label(f"{name} ({math_unit})")
+        if data_categories:
+            legend_patches = [
+                Patch(facecolor=color, edgecolor="k", label=label)
+                for color, label in zip(cmap.colors, data_categories)
+            ]
+            ax.legend(
+                handles=legend_patches,
+                fontsize=9,
+                frameon=False,
+                title=f"{name} ({math_unit})",
+                title_fontsize=12,
+                loc="upper left",
+                bbox_to_anchor=(1.01, 1),
+            )
+        else:
+            divider = make_axes_locatable(plt.gca())
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            bar = plt.colorbar(c, cax=cax)
+            bar.set_label(f"{name} ({math_unit})")

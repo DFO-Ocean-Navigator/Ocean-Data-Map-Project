@@ -14,7 +14,7 @@ import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import FuncNorm
-from matplotlib.patches import PathPatch, Polygon
+from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
 from shapely.geometry import box, LinearRing, MultiPolygon, Point, Polygon as Poly
@@ -368,6 +368,8 @@ class MapPlotter(Plotter):
 
             data = []
             var = dataset.variables[self.variables[0]]
+            if self.dataset_config.variable[self.variables[0]].data_categories:
+                self.interp = "nearest"
             if self.filetype in ["csv", "odv", "txt"]:
                 d, depth_value_map = dataset.get_area(
                     np.array([self.latitude, self.longitude]),
@@ -814,6 +816,7 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
+        data_categories = self.dataset_config.variable[self.variables[0]].data_categories
         c = ax.imshow(
             self.data,
             vmin=vmin,
@@ -1119,14 +1122,29 @@ class MapPlotter(Plotter):
             )
         plt.title(title.strip())
         axpos = ax.get_position()
-        pos_x = axpos.x0 + axpos.width + 0.01
-        pos_y = axpos.y0
-        cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label(
-            f"{self.variable_name.title()} ({var_unit})",
-            fontsize=14,
-        )
+        if data_categories:
+            legend_patches = [
+                Patch(facecolor=color, edgecolor="k", label=label)
+                for color, label in zip(self.cmap.colors, data_categories)
+            ]
+            ax.legend(
+                handles=legend_patches,
+                fontsize=9,
+                frameon=False,
+                title=f"{self.variable_name.title()} ({var_unit})",
+                title_fontsize=14,
+                loc="upper left",
+                bbox_to_anchor=(1.01, 1),
+            )
+        else:
+            pos_x = axpos.x0 + axpos.width + 0.01
+            pos_y = axpos.y0
+            cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
+            bar = plt.colorbar(c, cax=cax)
+            bar.set_label(
+                f"{self.variable_name.title()} ({var_unit})",
+                fontsize=14,
+            )
 
         if (
             self.quiver is not None

@@ -382,6 +382,16 @@ class VariableConfig:
             return [self._variable.valid_min, self._variable.valid_max]
         else:
             return [0, 100]
+        
+    @property
+    def data_categories(self) -> list | None:
+        """
+        Returns ordered category labels for discrete/categorical variables.
+        """
+        try:
+            return self.__get_attribute('data_categories')
+        except KeyError:
+            return None
 
     @property
     def is_hidden(self) -> bool:
