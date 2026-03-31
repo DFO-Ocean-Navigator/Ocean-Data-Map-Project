@@ -145,7 +145,11 @@ const PointWindow = ({
   const only3d = [TabEnum.PROFILE, TabEnum.OBSERVATION].includes(selected);
   const showDepthSelector = selected === TabEnum.MOORING;
   const showTimeRange = [TabEnum.MOORING].includes(selected);
-  const showVarSelector = [TabEnum.PROFILE, TabEnum.OBSERVATION, TabEnum.MOORING].includes(selected);
+  const showVarSelector = [
+    TabEnum.PROFILE,
+    TabEnum.OBSERVATION,
+    TabEnum.MOORING,
+  ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
 
@@ -212,15 +216,17 @@ const PointWindow = ({
         multipleVariables={multipleVariables}
         mountedDataset={plotDataset}
       />
-      <CheckBox
-        key="showmap"
-        id="showmap"
-        checked={showMap}
-        onUpdate={(_, value) => setShowMap(value)}
-        title={_("Show Location")}
-      >
-        {_("showmap_help")}
-      </CheckBox>
+      {selected !== TabEnum.OBSERVATION && (
+        <CheckBox
+          key="showmap"
+          id="showmap"
+          checked={showMap}
+          onUpdate={(_, value) => setShowMap(value)}
+          title={_("Show Location")}
+        >
+          {_("showmap_help")}
+        </CheckBox>
+      )}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
@@ -316,7 +322,7 @@ const PointWindow = ({
         ...plotQuery,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
-          : plotDataset.variable.id, 
+          : plotDataset.variable.id,
         observation: [plotData.id],
         observation_variable: observationVariable,
       };
