@@ -145,7 +145,7 @@ const PointWindow = ({
   const only3d = [TabEnum.PROFILE, TabEnum.OBSERVATION].includes(selected);
   const showDepthSelector = selected === TabEnum.MOORING;
   const showTimeRange = [TabEnum.MOORING].includes(selected);
-  const showVarSelector = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showVarSelector = [TabEnum.PROFILE, TabEnum.OBSERVATION, TabEnum.MOORING].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
 
@@ -175,7 +175,7 @@ const PointWindow = ({
             value: o.replace(/ \[.*\]/, ""),
           }));
     observationInputs = (
-      <Card key="globalSettings" variant="primary">
+      <Card key="obsSettings" variant="primary">
         <Card.Header>{_("Observation Settings")}</Card.Header>
         <Card.Body className="global-settings-card">
           <ComboBox
@@ -203,6 +203,7 @@ const PointWindow = ({
         showVariableRange={false}
         showAxisRange={showAxisRange}
         showTimeRange={showTimeRange}
+        disableTimeSelector={selected === TabEnum.OBSERVATION}
         showDepthSelector={showDepthSelector}
         mapSettings={mapSettings}
         hasDepth={only3d}
@@ -313,6 +314,9 @@ const PointWindow = ({
     case TabEnum.OBSERVATION:
       plotQuery = {
         ...plotQuery,
+        variable: Array.isArray(plotDataset.variable)
+          ? plotDataset.variable.map((v) => v.id)
+          : plotDataset.variable.id, 
         observation: [plotData.id],
         observation_variable: observationVariable,
       };
