@@ -3,7 +3,7 @@ import math
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Tuple
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from . import DataType, Platform, PlatformMetadata, Sample, Station, engine
@@ -134,7 +134,7 @@ def get_platform_tracks(
     the optional query filters.
     """
     funcs = __db_funcs()
-    query = session.query(
+    query = select(
         Platform.id,
         Platform.type,
         func.avg(Station.longitude),
@@ -160,9 +160,11 @@ def get_platform_tracks(
         endtime=endtime,
     )
 
-    query = query.group_by(Platform.id, funcs[quantum](Station.time))
+    query = query.group_by(Platform.id, funcs[quantum](Station.time)).order_by(
+        Platform.id, funcs[quantum](Station.time)
+    )
 
-    return query.order_by(Platform.id, funcs[quantum](Station.time)).all()
+    return session.execute(query).all()
 
 
 def get_platform_track(
@@ -326,7 +328,13 @@ def __build_station_query(
     meta_key=None,
     meta_value=None,
 ):
-    query = session.query(Station)
+    query = select(
+        Platform.type,
+        Station.id,
+        Station.name,
+        Station.latitude,
+        Station.longitude,
+    ).join(Station)
 
     # Use index hint
     query = query.with_hint(Station, "USE INDEX (idx_stations_time)")
@@ -378,7 +386,7 @@ def get_stations(
     """
     Queries for stations, given the optional query filters.
     """
-    return __build_station_query(
+    query = __build_station_query(
         session=session,
         variable=variable,
         mindepth=mindepth,
@@ -392,7 +400,9 @@ def get_stations(
         platform_types=platform_types,
         meta_key=meta_key,
         meta_value=meta_value,
-    ).all()
+    )
+
+    return session.execute(query).all()
 
 
 def get_station_time_range(session: Session):

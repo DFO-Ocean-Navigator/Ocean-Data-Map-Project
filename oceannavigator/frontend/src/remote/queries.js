@@ -205,15 +205,6 @@ export function useGetClass4Models(class4Type, class4Id) {
   return { data, status };
 }
 
-export function useGetComboBoxQuery(url) {
-  const { data = [], status } = useQuery({
-    queryKey: ["comboBox", url],
-    queryFn: () => GetComboBoxQuery(url),
-  });
-
-  return { data, status };
-}
-
 export function prefetchAllVariables() {
   const queryClient = useQueryClient();
   queryClient.prefetchQuery({

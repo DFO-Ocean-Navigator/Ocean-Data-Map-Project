@@ -827,14 +827,27 @@ const Map = forwardRef((props, ref) => {
     let url = "";
     let extent = mapView.calculateExtent(map0.getSize());
     let resolution = mapView.getResolution();
+    let prevFeatures;
     switch (featureType) {
       case "observation_points":
+        prevFeatures = featureVectorSource.getFeatures();
+        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
+        featureVectorSource.removeFeatures(prevFeatures)
+
         url = `/api/v2.0/observation/point/` + `${featureId}.json`;
         break;
       case "observation_tracks":
+        prevFeatures = featureVectorSource.getFeatures();
+        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
+        featureVectorSource.removeFeatures(prevFeatures)
+
         url = `/api/v2.0/observation/track/` + `${featureId}.json`;
         break;
       case "class4":
+        prevFeatures = featureVectorSource.getFeatures();
+        prevFeatures = prevFeatures.filter((feature) => feature.get("type") === "class4")
+        featureVectorSource.removeFeatures(prevFeatures)
+      
         url =
           `/api/v2.0/class4` +
           `/${props.class4Type}` +

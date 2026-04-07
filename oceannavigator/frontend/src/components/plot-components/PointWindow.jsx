@@ -145,7 +145,11 @@ const PointWindow = ({
   const only3d = [TabEnum.PROFILE, TabEnum.OBSERVATION].includes(selected);
   const showDepthSelector = selected === TabEnum.MOORING;
   const showTimeRange = [TabEnum.MOORING].includes(selected);
-  const showVarSelector = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showVarSelector = [
+    TabEnum.PROFILE,
+    TabEnum.OBSERVATION,
+    TabEnum.MOORING,
+  ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
 
@@ -165,44 +169,36 @@ const PointWindow = ({
     </>
   );
 
-  let observationVariableSelector = null;
+  let observationInputs = null;
   if (plotData.observation) {
-    if (typeof plotData.id === "number") {
-      observationVariableSelector = (
-        <ComboBox
-          key="observation_variable"
-          id="observation_variable"
-          multiple
-          selected={observationVariable}
-          options={observationVariables.data}
-          label={_("Observation Variable")}
-          onChange={(_, value) => setObservationVariable(value)}
-          alwaysShow={true}
-        />
-      );
-    } else {
-      const data = plotData.coordinates[0][2].datatypes.map((o, i) => ({
-        id: i,
-        value: o.replace(/ \[.*\]/, ""),
-      }));
-      observationVariableSelector = (
-        <ComboBox
-          key="observation_variable"
-          id="observation_variable"
-          multiple
-          selected={observationVariable}
-          options={data}
-          label={_("Observation Variable")}
-          onChange={(_, value) => setObservationVariable(value)}
-          alwaysShow={true}
-        />
-      );
-    }
+    let obsOptions =
+      typeof plotData.id === "number"
+        ? observationVariables.data
+        : plotData.coordinates[0][2].datatypes.map((o, i) => ({
+            id: i,
+            value: o.replace(/ \[.*\]/, ""),
+          }));
+    observationInputs = (
+      <Card key="obsSettings" variant="primary">
+        <Card.Header>{_("Observation Settings")}</Card.Header>
+        <Card.Body className="global-settings-card">
+          <ComboBox
+            key="observation_variable"
+            id="observation_variable"
+            multiple
+            selected={observationVariable}
+            options={obsOptions}
+            label={_("Observation Variable")}
+            onChange={(_, value) => setObservationVariable(value)}
+            alwaysShow={true}
+          />
+        </Card.Body>
+      </Card>
+    );
   }
 
   const inputs = (
     <>
-      {observationVariableSelector}
       <DatasetPanel
         key="point-window-dataset-panel"
         id="point-window-dataset-panel"
@@ -211,6 +207,7 @@ const PointWindow = ({
         showVariableRange={false}
         showAxisRange={showAxisRange}
         showTimeRange={showTimeRange}
+        disableTimeSelector={selected === TabEnum.OBSERVATION}
         showDepthSelector={showDepthSelector}
         mapSettings={mapSettings}
         hasDepth={only3d}
@@ -219,15 +216,17 @@ const PointWindow = ({
         multipleVariables={multipleVariables}
         mountedDataset={plotDataset}
       />
-      <CheckBox
-        key="showmap"
-        id="showmap"
-        checked={showMap}
-        onUpdate={(_, value) => setShowMap(value)}
-        title={_("Show Location")}
-      >
-        {_("showmap_help")}
-      </CheckBox>
+      {selected !== TabEnum.OBSERVATION && (
+        <CheckBox
+          key="showmap"
+          id="showmap"
+          checked={showMap}
+          onUpdate={(_, value) => setShowMap(value)}
+          title={_("Show Location")}
+        >
+          {_("showmap_help")}
+        </CheckBox>
+      )}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
@@ -321,6 +320,9 @@ const PointWindow = ({
     case TabEnum.OBSERVATION:
       plotQuery = {
         ...plotQuery,
+        variable: Array.isArray(plotDataset.variable)
+          ? plotDataset.variable.map((v) => v.id)
+          : plotDataset.variable.id,
         observation: [plotData.id],
         observation_variable: observationVariable,
       };
@@ -365,22 +367,34 @@ const PointWindow = ({
     <div className="PointWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.PROFILE} disabled={only2d}>
+          <Nav.Link
+            eventKey={TabEnum.PROFILE}
+            disabled={plotData.observation || only2d}
+          >
             {_("Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.CTD} disabled={!hasTempSal || only2d}>
+          <Nav.Link
+            eventKey={TabEnum.CTD}
+            disabled={plotData.observation || !hasTempSal || only2d}
+          >
             {_("CTD Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.TS} disabled={!hasTempSal || only2d}>
+          <Nav.Link
+            eventKey={TabEnum.TS}
+            disabled={plotData.observation || !hasTempSal || only2d}
+          >
             {_("T/S Diagram")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.SOUND} disabled={!hasTempSal || only2d}>
+          <Nav.Link
+            eventKey={TabEnum.SOUND}
+            disabled={plotData.observation || !hasTempSal || only2d}
+          >
             {_("Sound Speed Profile")}
           </Nav.Link>
         </Nav.Item>
@@ -393,7 +407,9 @@ const PointWindow = ({
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={TabEnum.MOORING}>{_("Virtual Mooring")}</Nav.Link>
+          <Nav.Link eventKey={TabEnum.MOORING} disabled={plotData.observation}>
+            {_("Virtual Mooring")}
+          </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
@@ -402,6 +418,7 @@ const PointWindow = ({
             <Card.Header>{_("Global Settings")}</Card.Header>
             <Card.Body className="global-settings-card">{inputs}</Card.Body>
           </Card>
+          {observationInputs}
         </Col>
         <Col lg={10} className="plot-col">
           <PlotImage

@@ -98,7 +98,7 @@ class TestAPIv2:
                 "interp": None,
                 "two_dimensional": False,
                 "vector_variable": False,
-                "data_categories": False
+                "data_categories": False,
             }
         ]
 
@@ -393,27 +393,32 @@ class TestAPIv2:
         data = json.loads(response.content)
         assert data[0] == "this is a test"
 
-    @patch("data.observational.queries.get_stations")
+    @patch("data.observational.queries.get_platform_tracks")
     def test_observation_track(
         self,
-        patch_get_stations,
+        patch_get_platform_tracks,
     ):
         platform_type = PropertyMock()
         platform_type.name = "platform_type"
-        station = PropertyMock(
-            platform=PropertyMock(type=platform_type),
-            latitude=0,
-            longitude=0,
-            id=0,
-        )
-        station.name = "myname"
-        patch_get_stations.return_value = [station]
-        response = self.client.get(self.api_links["observation_point"])
+        platform = PropertyMock()
+        platform.name = "platform_name"
+
+        coordinates = [
+            (1, platform, -120.4, 33.1),
+            (1, platform, -120.3, 32.9),
+            (1, platform, -120.1, 32.7),
+        ]
+        patch_get_platform_tracks.return_value = coordinates
+        response = self.client.get(self.api_links["observation_track"])
 
         assert response.status_code == 200
         data = json.loads(response.content)
         assert len(data["features"]) == 1
-        assert data["features"][0]["geometry"]["coordinates"] == [0, 0]
+        assert data["features"][0]["geometry"]["coordinates"] == [
+            [-120.4, 33.1],
+            [-120.3, 32.9],
+            [-120.1, 32.7],
+        ]
 
     @patch("sqlalchemy.orm.session.Session.query")
     def test_observation_variables(self, patch_query):

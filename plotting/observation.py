@@ -8,7 +8,7 @@ import numpy as np
 import pint
 import pytz
 from babel.dates import format_datetime
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from data import open_dataset
@@ -71,17 +71,19 @@ class ObservationPlotter(PointPlotter):
 
                 data = []
                 for dt in datatypes:
-                    data.append(
-                        self.db.query(Sample.depth, Sample.value)
-                        .filter(Sample.station == station, Sample.datatype == dt)
-                        .all()
+                    query = (
+                        select(Sample.depth, Sample.value)
+                        .where(Sample.station_id == station.id)
+                        .where(Sample.datatype_key == dt.key)
                     )
+                    dt_values = self.db.execute(query).all()
+                    data.append(np.ma.array(dt_values))
 
                     if idx == 0:
                         self.observation_variable_names.append(dt.name)
                         self.observation_variable_units.append(dt.unit)
 
-                observation["data"] = np.ma.array(data)  # .transpose()
+                observation["data"] = data  # .transpose()
                 self.observation[idx] = observation
 
                 self.points = [
@@ -176,10 +178,11 @@ class ObservationPlotter(PointPlotter):
 
         data = []
         for o in self.observation:
-            d = np.ma.MaskedArray(o["data"])
-            d[np.where(d == "")] = np.ma.masked
-            d = np.ma.masked_invalid(d.filled(np.nan).astype(np.float32))
-            data.append(d)
+            for obs_data in o["data"]:
+                d = np.ma.MaskedArray(obs_data)
+                d[np.where(d == "")] = np.ma.masked
+                d = np.ma.masked_invalid(d.filled(np.nan).astype(np.float32))
+                data.append(d)
 
         ureg = pint.UnitRegistry()
         ax_idx = -1
@@ -187,13 +190,13 @@ class ObservationPlotter(PointPlotter):
         unit_map = {}
         for idx in self.observation_variable:
             ax_idx += 1
-            for d in data:
-                if d.shape[1] == 1:
-                    style = "."
-                else:
-                    style = "-"
+            d = data[idx]
+            if d.shape[0] == 1:
+                style = "."
+            else:
+                style = "-"
 
-                ax[ax_idx].plot(d[idx, :, 1], d[idx, :, 0], style)
+            ax[ax_idx].plot(d[:, 1], d[:, 0], style)
             ax[ax_idx].xaxis.set_label_position("top")
             ax[ax_idx].xaxis.set_ticks_position("top")
             ax[ax_idx].set_xlabel(
@@ -212,7 +215,7 @@ class ObservationPlotter(PointPlotter):
                     u = self.observation_variable_units[idx].lower()
                 unit_map[self.observation_variable_names[idx]] = ureg.parse_units(u)
 
-            except:
+            except Exception:
                 unit_map[self.observation_variable_names[idx]] = ureg.dimensionless
 
         for k, v in list(unit_map.items()):
@@ -233,7 +236,7 @@ class ObservationPlotter(PointPlotter):
                     if destunit == ureg.speed_of_light:
                         destunit = ureg.celsius
 
-                except:
+                except Exception:
                     destunit = ureg.dimensionless
 
             for j in range(0, self.data.shape[0]):
@@ -243,7 +246,7 @@ class ObservationPlotter(PointPlotter):
                         u = ureg.celsius
 
                     quan = ureg.Quantity(self.data[j, idx, :], u)
-                except:
+                except Exception:
                     quan = ureg.Quantity(self.data[j, idx, :], ureg.dimensionless)
 
                 axis.plot(quan.to(destunit).magnitude, self.depths[j, idx, :])
@@ -260,7 +263,7 @@ class ObservationPlotter(PointPlotter):
                     )
                 )
             else:
-                l = []
+                leg_items = []
                 for j in [
                     (
                         "Observed",
@@ -277,9 +280,9 @@ class ObservationPlotter(PointPlotter):
                         else:
                             name = name + " "
 
-                        l.append("%s%s (%s)" % (name, j[0], format_datetime(j[1][i])))
+                        leg_items.append("%s%s (%s)" % (name, j[0], format_datetime(j[1][i])))
 
-                leg = axis.legend(l, loc="best")
+                leg = axis.legend(leg_items, loc="best")
 
                 for legobj in leg.legend_handles:
                     legobj.set_linewidth(4.0)

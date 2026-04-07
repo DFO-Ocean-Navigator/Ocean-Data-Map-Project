@@ -1383,25 +1383,36 @@ def observation_track(
         db, query_dict.get("quantum", "day"), **params
     )
 
-    if len(coordinates) > 1:
-        df = pd.DataFrame(np.array(coordinates), columns=["id", "type", "lon", "lat"])
-        df["id"] = df.id.astype(int)
+    df = pd.DataFrame(np.array(coordinates), columns=["id", "type", "lon", "lat"])
+    df["id"] = df.id.astype(int)
+    df = df.groupby("id").filter(lambda id: len(id) > 1)
 
-        vc = df.id.value_counts()
-        for p_id in vc.where(vc > 1).dropna().index:
-            d = {
+    if len(df) > 0:
+        df["coordinates"] = df[["lon", "lat"]].values.tolist()
+        df["type"] = df["type"].apply(lambda t: t.name)
+        df = (
+            df[["id", "type", "coordinates"]]
+            .groupby(["id", "type"])
+            .agg(list)
+            .reset_index()
+        )
+
+        data = [
+            {
                 "type": "Feature",
                 "geometry": {
                     "type": "LineString",
-                    "coordinates": df[["lon", "lat"]][df.id == p_id].values.tolist(),
+                    "coordinates": row[2],
                 },
                 "properties": {
-                    "id": int(p_id),
-                    "type": df.type[df.id == p_id].values[0].name,
+                    "id": int(row[0]),
+                    "type": row[1],
                     "class": "observation",
                 },
             }
-            data.append(d)
+            for row in df.values
+            if len(row[2]) > 1
+        ]
 
     result = {
         "type": "FeatureCollection",
@@ -1488,23 +1499,38 @@ def observation_point(
     if len(stations) > 500:
         stations = stations[:: round(len(stations) / 500)]
 
-    for s in stations:
-        if checkpoly and not poly.contains(Point(s.latitude, s.longitude)):
-            continue
+    df = pd.DataFrame(
+        np.array(stations),
+        columns=["type", "id", "name", "lat", "lon"],
+    )
+    df["id"] = df.id.astype(int)
 
-        d = {
-            "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [s.longitude, s.latitude]},
-            "properties": {
-                "type": s.platform.type.name,
-                "id": s.id,
-                "class": "observation",
-            },
-        }
-        if s.name:
-            d["properties"]["name"] = s.name
+    if len(df) > 0:
+        df["coordinates"] = df[["lon", "lat"]].values.tolist()
+        df["type"] = df["type"].apply(lambda t: t.name)
 
-        data.append(d)
+        if checkpoly:
+            df["in_poly"] = df["coordinates"].apply(
+                lambda c: poly.contains(Point(c[1], c[0]))
+            )
+            df = df.loc[df["in_poly"]]
+
+        data = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": row["coordinates"],
+                },
+                "properties": {
+                    "id": int(row.id),
+                    "type": row["type"],
+                    "class": "observation",
+                    **({"name": row["name"]} if row["name"] is not None else {}),
+                },
+            }
+            for idx, row in df.iterrows()
+        ]
 
     result = {
         "type": "FeatureCollection",
