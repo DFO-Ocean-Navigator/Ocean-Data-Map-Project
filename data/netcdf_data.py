@@ -1085,7 +1085,19 @@ class NetCDFData(Data):
         if variable and all([v in dataset.variables for v in variable]):
             dataset = dataset[variable]
 
+        def get_nearest_timestamp(all_timestamps, timestamp):
+            if not timestamp:
+                return None
+            difference_array = np.absolute(all_timestamps - timestamp)
+            nearest_idx = difference_array.argmin()
+            return all_timestamps[nearest_idx]
+
         indexer = {}
+        nearest_timestamp = kwargs.get("nearest_timestamp", False)
+
+        if nearest_timestamp:
+            timestamp = get_nearest_timestamp(dataset.time.data, timestamp)
+            endtime = get_nearest_timestamp(dataset.time.data, endtime)
 
         if timestamp and endtime:
             indexer["time"] = slice(timestamp, endtime)

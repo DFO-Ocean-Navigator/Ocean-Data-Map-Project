@@ -83,7 +83,7 @@ class ObservationPlotter(PointPlotter):
                         self.observation_variable_names.append(dt.name)
                         self.observation_variable_units.append(dt.unit)
 
-                observation["data"] = data  # .transpose()
+                observation["data"] = data
                 self.observation[idx] = observation
 
                 self.points = [
