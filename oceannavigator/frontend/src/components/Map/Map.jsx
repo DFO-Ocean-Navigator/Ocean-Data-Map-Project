@@ -54,7 +54,7 @@ const DEF_CENTER = {
 };
 
 const DEF_ZOOM = {
-  "EPSG:3857": 4,
+  "EPSG:3857": 8,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
@@ -172,7 +172,7 @@ const Map = forwardRef((props, ref) => {
     const newMapView = createMapView(
       DEF_CENTER[projection],
       projection,
-      4,
+      DEF_ZOOM[projection],
       MIN_ZOOM[projection],
       MAX_ZOOM[projection],
     );
@@ -383,7 +383,7 @@ const Map = forwardRef((props, ref) => {
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
       }
-      quiverLayer.setSource(source);
+      // quiverLayer.setSource(source);
     }
   }, [
     props.dataset0.id,
@@ -399,7 +399,7 @@ const Map = forwardRef((props, ref) => {
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
       }
-      quiverLayer.setSource(source);
+      // quiverLayer.setSource(source);
     }
   }, [
     props.dataset1.id,
@@ -1126,25 +1126,25 @@ const Map = forwardRef((props, ref) => {
       maxZoom: MAX_ZOOM[props.mapSettings.projection],
     });
 
-    mapLayers[2].setSource(
-      new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    );
+    // mapLayers[1].setSource(
+    //   new VectorTile({
+    //     format: new MVT(),
+    //     tileGrid: vectorTileGrid,
+    //     tilePixelRatio: 8,
+    //     url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+    //     projection: props.mapSettings.projection,
+    //   }),
+    // );
 
-    mapLayers[4].setSource(
-      new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    );
+    // mapLayers[4].setSource(
+    //   new VectorTile({
+    //     format: new MVT(),
+    //     tileGrid: vectorTileGrid,
+    //     tilePixelRatio: 8,
+    //     url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+    //     projection: props.mapSettings.projection,
+    //   }),
+    // );
 
     let bathySource = null;
     switch (props.mapSettings.bathyContour) {
@@ -1204,24 +1204,24 @@ const Map = forwardRef((props, ref) => {
         maxZoom: MAX_ZOOM[props.mapSettings.projection],
       });
 
-      mapLayers[4].setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        }),
-      );
+      // mapLayers[1].setSource(
+      //   new VectorTile({
+      //     format: new MVT(),
+      //     tileGrid: vectorTileGrid,
+      //     tilePixelRatio: 8,
+      //     url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+      //     projection: props.mapSettings.projection,
+      //   }),
+      // );
 
-      mapLayers[2].setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        }),
-      );
+      // mapLayers[2].setSource(
+      //   new VectorTile({
+      //     format: new MVT(),
+      //     tileGrid: vectorTileGrid,
+      //     url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+      //     projection: props.mapSettings.projection,
+      //   }),
+      // );
     }
   };
 

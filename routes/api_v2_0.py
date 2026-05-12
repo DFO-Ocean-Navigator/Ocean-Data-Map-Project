@@ -931,12 +931,12 @@ async def data_tile(
         str(x),
         f"{y}.png",
     )
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # if os.path.isfile(f):
+    #     return FileResponse(
+    #         f,
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
@@ -1044,7 +1044,7 @@ def topography_tiles(
 
     settings = get_settings()
 
-    if zoom > 7:
+    if zoom > 8:
         return FileResponse(
             os.path.join(settings.shape_file_dir, "blank.png"),
             media_type="image/png",
@@ -1063,12 +1063,12 @@ def topography_tiles(
         f"{y}.png",
     )
 
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # if os.path.isfile(f):
+    #     return FileResponse(
+    #         f,
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     img = plot_topography(projection, x, y, zoom, shaded_relief)
     return _cache_and_send_img(img, f)
@@ -1119,9 +1119,8 @@ async def bathymetry_tiles(
     return _cache_and_send_img(img, f)
 
 
-@router.get("/mbt/{tiletype}/{zoom}/{x}/{y}")
-def mbt(
-    tiletype: str = Path(examples=["bath"]),
+@router.get("/mbt/bath/{zoom}/{x}/{y}")
+def bathy_mbt(
     zoom: int = Path(examples=[8]),
     x: int = Path(examples=[88]),
     y: int = Path(examples=[85]),
@@ -1142,7 +1141,7 @@ def mbt(
         "v2.0",
         "mbt",
         projection,
-        tiletype,
+        "bath",
         str(zoom),
         str(x),
         str(y),
@@ -1156,22 +1155,22 @@ def mbt(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    if (zoom < 7) or (projection != "EPSG:3857"):
-        return blank_response
+    # if (zoom < 7) or (projection != "EPSG:3857"):
+    #     return blank_response
 
-    if (zoom > 11) and (tiletype == "bath"):
-        return blank_response
+    # if (zoom > 11) and (tiletype == "bath"):
+    #     return blank_response
 
-    # Send file if cached or select data in SQLite file
-    if requestf.is_file():
-        return FileResponse(
-            requestf.as_posix(),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    # # Send file if cached or select data in SQLite file
+    # if requestf.is_file():
+    #     return FileResponse(
+    #         requestf.as_posix(),
+    #         media_type="image/png",
+    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    #     )
 
     y = (2**zoom - 1) - y
-    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
+    connection = sqlite3.connect("/data/misc/shapes/onav_bathy.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
     selector.execute(sqlite)
@@ -1188,6 +1187,64 @@ def mbt(
             shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
         requestf,
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+@router.get("/mbt/lands/{zoom}/{x}/{y}")
+def land_mbt(
+    zoom: int = Path(examples=[8]),
+    x: int = Path(examples=[88]),
+    y: int = Path(examples=[85]),
+    projection: str = Query(
+        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
+    ),
+):
+    """
+    Serves mbt files
+    """
+
+    settings = get_settings()
+
+    shape_file_dir = settings.shape_file_dir
+    requestf = pathlib.Path(
+        settings.cache_dir,
+        "api",
+        "v2.0",
+        "mbt",
+        projection,
+        "lands",
+        str(zoom),
+        str(x),
+        str(y),
+    )
+    basedir = requestf.parents[0]
+
+    # Send blank tile if conditions aren't met
+    blank_response = FileResponse(
+        shape_file_dir + "/blank.mbt",
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    )
+
+    y = (2**zoom - 1) - y
+    # connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
+    connection = sqlite3.connect("/data/misc/shapes/onav_basemap.mbtiles")
+    selector = connection.cursor()
+    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
+    selector.execute(sqlite)
+    tile = selector.fetchone()
+
+    if tile is None:
+        return blank_response
+
+    # Write tile to cache and send file
+    basedir.mkdir(parents=True, exist_ok=True)
+    with open(requestf.as_posix() + ".pbf", "wb") as f:
+        f.write(tile[0])
+
+    return FileResponse(
+        requestf.as_posix() + ".pbf",
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )

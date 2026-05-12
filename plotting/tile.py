@@ -1,4 +1,6 @@
+import io
 import math
+import sqlite3
 from io import BytesIO
 
 import matplotlib.cm
@@ -293,14 +295,28 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     xpx = x * 256
     ypx = y * 256
 
-    # Mask out any topography if we're below the vector-tile threshold
-    if z < 8:
-        with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-            bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+    connection = sqlite3.connect("/data/misc/shapes/onav_land_mask.mbtiles")
+    selector = connection.cursor()
+    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {z} AND tile_column = {x} AND tile_row = {(2**z - 1) - y}"
+    selector.execute(sqlite)
+    land_mask_tile = selector.fetchone()
+    if land_mask_tile is not None:
+        out = io.BytesIO(land_mask_tile[0])
+        out.seek(0)
+        land_mask = np.load(out)
 
-        bathymetry = gaussian_filter(bathymetry, 0.5)
+        data[land_mask==1] = np.ma.masked
 
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
+
+
+    # # Mask out any topography if we're below the vector-tile threshold
+    # if z < 8:
+    #     with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
+    #         bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
+
+    #     bathymetry = gaussian_filter(bathymetry, 0.5)
+
+    #     data[np.where(bathymetry > -depthm)] = np.ma.masked
 
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap
