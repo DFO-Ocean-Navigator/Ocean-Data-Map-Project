@@ -32,12 +32,26 @@ class DatasetConfig:
     @lru_cache()
     def _get_dataset_config() -> dict:
         settings = get_settings()
-        with open(settings.dataset_config_file, "r") as f:
+        dataset_config_file = f"{settings.dataset_config_path}datasetconfig.json"
+
+        with open(dataset_config_file, "r") as f:
             config = json.load(f)
             log().debug(
-                f"Loaded dataset config file from: {settings.dataset_config_file}"
+                f"Loaded dataset config file from: {dataset_config_file}"
             )
-            return config
+
+        for name in config: 
+            stub_file = f"{settings.dataset_config_path}datasetconfig-stubs/{name}.json"
+
+            with open(stub_file, "r") as f: 
+                config[name] = json.load(f)[name]
+                log().debug(
+                    f"Loaded stub dataset config file from: {stub_file}"
+                )
+
+        return config
+
+
 
     def _get_attribute(self, key: str) -> Union[str, dict]:
         return self._config.get(key) if not None else ""
@@ -112,21 +126,6 @@ class DatasetConfig:
         return self._get_attribute("bathymetry_file_url")
 
     @property
-    def vector_arrow_stride(self) -> int:
-        """
-        Returns the stride used to slice the dataset for generating geojson
-        for the vector arrows (i.e. every n-th value).
-
-        Defaults to 4.
-        """
-
-        stride = self._get_attribute("vector_arrow_stride")
-        if stride:
-            return stride
-
-        return 4
-
-    @property
     def model_class(self) -> str:
         return self._get_attribute("model_class")
 
@@ -177,17 +176,6 @@ class DatasetConfig:
             return re.sub(r"<[^>]*>", "", self._get_attribute("attribution"))
         except KeyError:
             return ""
-
-    @property
-    def cache(self) -> int:
-        """
-        Returns the cache value for a dataset as defined in dataset config file
-        """
-        cache = self._get_attribute("cache")
-        if cache is not None and isinstance(cache, str):
-            cache = int(cache)
-
-        return cache
 
     @property
     def default_location(self) -> list:
