@@ -32,16 +32,15 @@ class DatasetConfig:
     @lru_cache()
     def _get_dataset_config() -> dict:
         settings = get_settings()
-        dataset_config_file = f"{settings.dataset_config_path}datasetconfig.json"
 
-        with open(dataset_config_file, "r") as f:
+        with open(settings.dataset_config_file, "r") as f:
             config = json.load(f)
             log().debug(
-                f"Loaded dataset config file from: {dataset_config_file}"
+                f"Loaded dataset config file from: {settings.dataset_config_file}"
             )
 
         for name in config: 
-            stub_file = f"{settings.dataset_config_path}datasetconfig-stubs/{name}.json"
+            stub_file = f"{settings.dataset_config_stub_path}{name}.json"
 
             with open(stub_file, "r") as f: 
                 config[name] = json.load(f)[name]
