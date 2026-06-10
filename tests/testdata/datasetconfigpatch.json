@@ -1,143 +1,17 @@
 {
-    "giops": {
-        "enabled": 1,
-        "url": "tests/testdata/nemo_test.nc",
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "model_class": "Mercator",
-        "quantum": "day",
-        "name": "GIOPS",
-        "help": "help",
-        "attribution": "attrib",
-        "lat_var_key": "nav_lat",
-        "lon_var_key": "nav_lon",
-        "variables": {
-            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
-        }
-    },
+    "giops": {},
 
-    "giops_no_url": {
-        "enabled": 1,
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "model_class": "Mercator",
-        "quantum": "day",
-        "name": "GIOPS",
-        "help": "help",
-        "attribution": "attrib",
-        "variables": {
-            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
-        }
-    },
+    "giops_no_url": {},
 
-    "giops_real": {
-        "enabled": 1,
-        "url": "tests/testdata/giops_test.nc",
-        "name": "GIOPS Forecast 3D - Polar Stereographic",
-        "model_class": "Mercator",
-        "quantum": "day",
-        "type": "forecast",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
-        "vector_variables": ["magwatervel"],
-        "variables": {
-            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] },
-            "vosaline": { "name": "Salinity", "units": "PSU", "scale": [30, 40] },
-            "vozocrtx": { "name": "Water Y Velocity", "units": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "vomecrty": { "name": "Water X Velocity", "units": "m/s", "scale": [-3, 3], "zero_centered": "true" },
-            "magwatervel": { "name": "Water Velocity", "units": "m/s", "scale": [0, 3], "equation": "magnitude(vozocrtx, vomecrty)",  "dims": ["time", "depth", "latitude", "longitude"], "east_vector_component": "vozocrtx", "north_vector_component": "vomecrty" },
-            "bearing": { "hide": "true", "name": "Water Velocity Bearing (deg clockwise +tive from N)", "units": "degrees", "scale": [0, 360], "equation": "bearing(vomecrty, vozocrtx)" ,"dims": ["time", "depth", "latitude", "longitude"] }
-        }
-    },
+    "giops_real": {},
 
-    "giops_icechunk": {
-        "group": "GIOPS Forecast",    
-        "url": "icechunk",
-        "name": "GIOPS 10 Day Daily Mean Forecast 3D - LatLon",
-        "quantum": "hour",
-        "type": "forecast",
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "model_class": "Mercator",
-        "enabled": true,
-        "attribution": "The Canadian Centre for Meteorological and Environmental Prediction",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
-        "help": "./data-help/giops-10day.html",
-        "vector_variables": ["magwatervel"],
-        "variables": {
-            "votemper": { "name": "Potential Temperature", "units": "Celsius", "scale": [-5, 30], "equation": "votemper - 273.15", "dims": ["time", "depth", "latitude", "longitude"], "valid_min": -100, "valid_max": 100 }
-        }
-    },  
+    "giops_icechunk": {},  
 
-    "nemo_sqlite3": {
-        "enabled": 1,
-        "name": "Nemo SQLITE3",
-        "url": "tests/testdata/databases/test-nemo.sqlite3",
-        "quantum": "day",
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "model_class": "Nemo",
-        "attribution": "attrib",
-        "variables": {
-            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
-        }
-    },
+    "nemo_sqlite3": {},
 
-    "salishseacast_ssh": {
-        "enabled": true,
-        "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSgSurfaceTracerFields1hV19-05",
-        "geo_ref": {
-            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV21-08",
-            "drop_variables": ["bathymetry"]
-        },
-        "name": "SalishSeaCast Sea Surface Height",
-        "quantum": "hour",
-        "type": "historical",
-        "time_dim_units": "seconds since 1970-01-01 00:00:00",
-        "model_class": "Nemo",
-        "attribution": "UBC-MOAD",
-        "lat_var_key": "nav_lat",
-        "lon_var_key": "nav_lon",
-        "variables": {
-            "ssh": { "name":  "Sea Surface Height", "units":  "m", "scale":  [-4, 4], "zero_centered": "true" }
-        }
-    },
+    "salishseacast_ssh": {},
 
-    "salishseacast_currents": {
-        "enabled": true,
-        "name": "SalishSeaCast 3D Currents",
-        "type": "historical",
-        "url": [
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DuGridFields1hV21-11",
-            "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSg3DvGridFields1hV21-11"
-        ],
-        "geo_ref": {
-            "url": "https://salishsea.eos.ubc.ca/erddap/griddap/ubcSSnBathymetryV21-08",
-            "drop_variables": ["bathymetry"]
-        },
-        "quantum": "hour",
-        "time_dim_units": "seconds since 1970-01-01 00:00:00",
-        "model_class": "Nemo",
-        "lat_var_key": "nav_lat",
-        "lon_var_key": "nav_lon",
-        "attribution": "UBC-MOAD",
-        "variables": {
-            "uVelocity": { "name":  "Eastward Current", "units":  "m/s", "scale":  [-8, 8], "zero_centered": "true" },
-            "vVelocity": { "name":  "Northward Current", "units":  "m/s", "scale":  [-8, 8], "zero_centered": "true" }
-        }
-    },
+    "salishseacast_currents": {},
 
-    "mercator_test": {
-        "enabled": 1,
-        "url": "tests/testdata/mercator_test.nc",
-        "name": "Mercator test",
-        "time_dim_units": "seconds since 1950-01-01 00:00:00",
-        "model_class": "Mercator",
-        "quantum": "day",
-        "lat_var_key": "latitude",
-        "lon_var_key": "longitude",
-        "attribution": "attrib",
-        "variables": {
-            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
-        }
-    }
+    "mercator_test": {}
 }
