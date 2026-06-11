@@ -2,7 +2,6 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pint
 from netCDF4 import Dataset
 
 from oceannavigator import DatasetConfig
@@ -29,9 +28,11 @@ class PointPlotter(Plotter):
     def parse_names_points(self, names, points):
         if points is None or len(points) < 1:
             points = [[47.546667, -52.586667]]
-            
+
+        points = [[p[0], (p[1] + 180) % 360 - 180] for p in points]
+
         for i in range(len(names)):
-            if names[i] is None:                  
+            if names[i] is None:
                 names[i] = "(%1.4f, %1.4f)" % (float(points[i][0]), float(points[i][1]))
 
         t = sorted(zip(names, points))
