@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     dask_scheduler: str = ""
     dataset_shape_file_dir: str = ""
     dataset_config_file: str = ""
+    dataset_config_stub_path: str = ""
     debug: bool = False
     drifter_agg_url: str = ""
     drifter_catalog_url: str = ""
