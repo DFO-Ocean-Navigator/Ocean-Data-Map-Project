@@ -51,17 +51,17 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    updateTickContainerWidth();
-  }, [timestamps.length]);
-
-  useEffect(() => {
     if (timestamps.length === 0) return;
 
+    updateTickContainerWidth();
+
     let nextSelectedIndex = timestamps.findIndex((ts) => ts.id === selected.id);
+    updateContentScroll(nextSelectedIndex);
+
     if (nextSelectedIndex >= 0 && nextSelectedIndex !== selectedIndex) {
       setSelectedIndex(nextSelectedIndex);
     }
-  }, [timestamps.length, selected]);
+  }, [dataset.id, timestamps.length, selected]);
 
   useEffect(() => {
     if (timestamps.length === 0 || selectedIndex === undefined) return;
@@ -81,7 +81,6 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     }, 16);
     return () => clearInterval(interval);
   }, [scrollSpeed]);
-
 
   useEffect(() => {
     if (contentRef.current && scrollTrackRef.current) {
@@ -409,6 +408,8 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
       icon={rightButtonIcons[i]}
     />
   ));
+
+  console.log(dataset.id, timestamps.length, thumbLeft, selectedIndex);
 
   return (
     <div

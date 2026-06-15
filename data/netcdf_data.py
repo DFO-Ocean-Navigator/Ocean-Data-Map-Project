@@ -500,6 +500,11 @@ class NetCDFData(Data):
             key: str(value) for key, value in subset[variable].attrs.items()
         }
 
+        # Remove incompatable interpolation attributes
+        for var in subset.data_vars:
+            if "interpolation" in subset[var].attrs.keys():
+                del subset[var].attrs["interpolation"]
+
         # convert longitude values to -180 to 180 range
         subset = subset.assign_coords(
             {lon_var: (((subset[lon_var] + 180) % 360) - 180)}
