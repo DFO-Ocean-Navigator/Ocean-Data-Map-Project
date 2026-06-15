@@ -1,0 +1,14 @@
+{
+    "nemo_sqlite3": {
+        "enabled": 1,
+        "name": "Nemo SQLITE3",
+        "url": "tests/testdata/databases/test-nemo.sqlite3",
+        "quantum": "day",
+        "time_dim_units": "seconds since 1950-01-01 00:00:00",
+        "model_class": "Nemo",
+        "attribution": "attrib",
+        "variables": {
+            "votemper": { "name": "Temperature", "units": "Celsius", "scale": [-5, 30] }
+        }
+    }
+}
