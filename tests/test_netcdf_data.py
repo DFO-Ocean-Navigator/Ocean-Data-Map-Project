@@ -20,8 +20,18 @@ from data.netcdf_data import NetCDFData
 
 
 class TestNetCDFData(unittest.TestCase):
-    with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
-        patch_dataset_config_ret_val = json.load(dataPatch)
+
+    with open("tests/testdata/datasetconfigpatch.json", "r") as f:
+        patch_dataset_config_ret_val = json.load(f)
+
+    for name in patch_dataset_config_ret_val: 
+        stub_file = f"tests/testdata/datasetconfigpatch-stubs/{name}.json"
+
+        with open(stub_file, "r") as f: 
+            patch_dataset_config_ret_val[name] = json.load(f)[name]
+    
+    # with open("tests/testdata/datasetconfigpatch.json") as dataPatch:
+    #     patch_dataset_config_ret_val = json.load(dataPatch)
 
     @pytest.fixture(scope="class", autouse=True)
     def setUp_teardown(self):
