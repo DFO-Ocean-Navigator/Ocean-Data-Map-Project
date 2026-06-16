@@ -409,8 +409,6 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     />
   ));
 
-  console.log(dataset.id, timestamps.length, thumbLeft, selectedIndex);
-
   return (
     <div
       className="time-slider"

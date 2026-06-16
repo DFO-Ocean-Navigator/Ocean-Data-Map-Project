@@ -39,18 +39,14 @@ class DatasetConfig:
                 f"Loaded dataset config file from: {settings.dataset_config_file}"
             )
 
-        for name in config: 
+        for name in config:
             stub_file = f"{settings.dataset_config_stub_path}{name}.json"
 
-            with open(stub_file, "r") as f: 
+            with open(stub_file, "r") as f:
                 config[name] = json.load(f)[name]
-                log().debug(
-                    f"Loaded stub dataset config file from: {stub_file}"
-                )
+                log().debug(f"Loaded stub dataset config file from: {stub_file}")
 
         return config
-
-
 
     def _get_attribute(self, key: str) -> Union[str, dict]:
         return self._config.get(key) if not None else ""
@@ -369,14 +365,14 @@ class VariableConfig:
             return [self._variable.valid_min, self._variable.valid_max]
         else:
             return [0, 100]
-        
+
     @property
     def data_categories(self) -> list | None:
         """
         Returns ordered category labels for discrete/categorical variables.
         """
         try:
-            return self.__get_attribute('data_categories')
+            return self.__get_attribute("data_categories")
         except KeyError:
             return None
 
