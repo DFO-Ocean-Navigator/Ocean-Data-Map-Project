@@ -12,9 +12,7 @@ import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 from matplotlib.colors import FuncNorm
-from matplotlib.figure import Figure
 from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
@@ -144,28 +142,15 @@ class MapPlotter(Plotter):
         scale = scaler.scale_from_extent(extent)
 
         land_feats = cfeature.NaturalEarthFeature("physical", "land", scale=scale)
-        lake_feats = cfeature.NaturalEarthFeature("physical", "lakes", scale=scale)
 
-        lon_min, lon_max, lat_min, lat_max = extent
-
-        exts = []
-        if lon_min <= lon_max:
-            exts.append(extent)
-        else:
-            # plot wraps longitudes - process each side separately
-            west_ext = (lon_min, lat_min, 180, lat_max)
-            east_ext = (-180, lat_min, lon_max, lat_max)
-            exts.extend([west_ext, east_ext])
+        land_geoms = land_feats.intersecting_geometries(extent)
+        land_geoms = unary_union(list(land_geoms))
 
         geometries = []
-        for ext in exts:
-            land_geoms = land_feats.intersecting_geometries(ext)
-            land_geoms = unary_union(list(land_geoms))
+        if not land_geoms.is_empty:
+            lake_feats = cfeature.NaturalEarthFeature("physical", "lakes", scale=scale)
 
-            if land_geoms.is_empty:
-                continue
-
-            lake_geoms = lake_feats.intersecting_geometries(ext)
+            lake_geoms = lake_feats.intersecting_geometries(extent)
             lake_geoms = unary_union(list(lake_geoms))
 
             geometries.append(land_geoms.difference(lake_geoms))
@@ -177,7 +162,7 @@ class MapPlotter(Plotter):
         extent: list,
         figuresize: list,
         dpi: int,
-    ) -> Figure | Axes:
+    ) -> tuple:
 
         CACHE_DIR = settings.cache_dir
         filename = self._get_filename(self.plot_projection.proj4_params["proj"], extent)
@@ -916,6 +901,7 @@ class MapPlotter(Plotter):
                 self.longitude,
                 self.latitude,
                 self.bathymetry,
+                transform_first=True,
                 linewidths=0.5,
                 norm=FuncNorm(
                     (lambda x: np.log10(x), lambda x: 10**x), vmin=1, vmax=6000
