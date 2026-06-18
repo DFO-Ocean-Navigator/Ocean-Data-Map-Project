@@ -275,14 +275,10 @@ class MapPlotter(Plotter):
                 ]
             )
 
-        elif abs(self.centroid[1] - self.bounds[1]) > 90:
-
-            if abs(self.bounds[3] - self.bounds[1]) > 360:
-                raise ClientError(("You have requested an area that exceeds the width \
-                        of the world. Thinking big is good but plots need to \
-                        be less than 360 deg wide."))  # gettext(
-            self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
-
+        elif abs(self.bounds[3] - self.bounds[1]) > 360:
+            raise ClientError(("You have requested an area that exceeds the width \
+                of the world. Thinking big is good but plots need to \
+                be less than 360 deg wide."))  # gettext()
         else:
             self.plot_projection = ccrs.Mercator(
                 central_longitude=self.centroid[1],
