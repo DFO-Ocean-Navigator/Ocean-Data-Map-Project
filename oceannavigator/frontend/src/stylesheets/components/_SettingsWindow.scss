@@ -12,5 +12,16 @@
   .form-label {
     margin: 0px 5px;
     font-weight: bold;
+    font-size: 10pt;
+  }
+
+  .form-select {
+    border: 0px;
+    font-size: 10pt;
+    border-bottom: 1px solid;
+    border-radius: 0px;
+    max-width: 300px;
+    padding-bottom: 0;
+    margin: 5px;
   }
 }

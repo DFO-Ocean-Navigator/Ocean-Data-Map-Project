@@ -53,6 +53,8 @@ const TrackWindow = (props) => {
     dataset: plotDataset.id,
     name: props.name,
     track: [props.plotData.id],
+    starttime: starttime.toLocaleDateString('en-CA'),
+    endtime: endtime.toLocaleDateString('en-CA'),
     showmap: showmap,
     variable: plotDataset.variable.id,
     latlon: latlon,
@@ -61,23 +63,13 @@ const TrackWindow = (props) => {
     track_quantum: quantum,
   };
 
-  if (starttime) {
-    if (plotQuery.starttime instanceof Date) {
-      plotQuery.starttime = starttime.toISOString();
-      plotQuery.endtime = endtime.toISOString();
-    } else {
-      plotQuery.starttime = starttime;
-      plotQuery.endtime = endtime;
-    }
-  }
-
   const permlink_subquery = {
     showmap,
     plotDataset,
     latlon,
     trackvariable,
-    starttime,
-    endtime,
+    starttime: plotQuery.starttime,
+    endtime: plotQuery.endtime,
     plotSize,
     plotDpi,
   };
@@ -158,7 +150,7 @@ const TrackWindow = (props) => {
                   selected={quantum}
                   label="Track Simplification"
                   onChange={updateQuantum}
-                  data={[
+                  options={[
                     { id: "minute", value: "Minute" },
                     { id: "hour", value: "Hour" },
                     { id: "day", value: "Day" },
