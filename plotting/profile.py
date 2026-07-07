@@ -2,11 +2,13 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+import pint
 
 import plotting.utils as utils
 from data import open_dataset
 from plotting.point import PointPlotter
 from utils.errors import ClientError
+from oceannavigator.log import log 
 
 
 class ProfilePlotter(PointPlotter):
@@ -183,6 +185,31 @@ class ProfilePlotter(PointPlotter):
         else:
             width_ratios = None
 
+        # Convert to imperial units
+        log().debug(
+            f"\nImperial Units {self.use_imperial_units}"
+        )
+        if self.use_imperial_units:
+            ureg = pint.UnitRegistry()
+            if self.use_imperial_units[0]["id"] == "all" and self.use_imperial_units[0]["checked"]:
+                    self.depths = utils.convert_units(
+                        self.depths, "meter", "foot"
+                    )
+            if self.use_imperial_units[1]["id"] == "depth" and self.use_imperial_units[1]["checked"]:
+                    self.depths = utils.convert_units(
+                        self.depths, "meter", "foot"
+                    )
+            for idx, var in enumerate(self.use_imperial_units[2:]):
+                log().debug(
+                    f"\nVariable Name {var["id"]}"
+                )
+                if var["id"] == "votemper" and var["checked"]:
+                    self.data[:, idx, :] = utils.convert_units(
+                        self.data[:, idx, :], "°C", "°F"
+                    )
+                    self.variable_units[idx] = "°F"
+                
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
         subplot = 0
@@ -233,7 +260,10 @@ class ProfilePlotter(PointPlotter):
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                current_axis.set_ylabel("Depth (m)", fontsize=14)
+                if self.use_imperial_units and self.use_imperial_units[1]["checked"]:
+                    current_axis.set_ylabel("Depth (ft)", fontsize=14)
+                else:
+                    current_axis.set_ylabel("Depth (m)", fontsize=14)
                 # current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
+import Toggle from "../data-selectors/Toggle.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ComboBox from "../lib/ComboBox.jsx";
 import LocationInput from "../LocationInput.jsx";
@@ -78,6 +79,50 @@ const PointWindow = ({
     plotData.id,
     plotData.observation && typeof plotData.id === "number",
   );
+
+  // Imperial Units Accordion
+  const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
+  const [variableImperialUnits, setVariableImperialUnits] = useState([
+    {
+      id: "all",
+      checked: false,
+      label: "All Variables",
+    },
+    {
+      id: "depth",
+      checked: false,
+      label: "Depth",
+    },
+    ...plotDataset.variable.map((v) => ({
+      id: v.id,
+      checked: false,
+      label: v.value,
+    })),
+  ]);
+
+  const updateVariableImperialUnits = (var_id, checked) => {
+  setVariableImperialUnits((prev) => {
+    if (var_id === "all") {
+      return prev.map((item) => ({ ...item, checked }));
+    }
+
+    const updated = prev.map((item) =>
+      item.id === var_id
+        ? { ...item, checked }
+        : item
+    );
+
+    const allVariablesChecked = updated
+      .filter((item) => item.id !== "all")
+      .every((item) => item.checked);
+
+    return updated.map((item) =>
+      item.id === "all"
+        ? { ...item, checked: allVariablesChecked }
+        : item
+    );
+  });
+};
 
   useEffect(() => {
     const dataset2D =
@@ -205,6 +250,7 @@ const PointWindow = ({
         onUpdate={handleDatasetUpdate}
         showQuiverSelector={false}
         showVariableRange={false}
+        showUnitSelector={selected !== TabEnum.OBSERVATION}
         showAxisRange={showAxisRange}
         showTimeRange={showTimeRange}
         disableTimeSelector={selected === TabEnum.OBSERVATION}
@@ -226,6 +272,17 @@ const PointWindow = ({
         >
           {_("showmap_help")}
         </CheckBox>
+      )}
+      {selected !== TabEnum.OBSERVATION && (
+        <Toggle
+          id="use_imperial_units"
+          title={_("Use Imperial Units")}
+          checked={imperialUnits}
+          checked_variables={variableImperialUnits}
+          onUpdate={updateVariableImperialUnits}
+        >
+          {_("use_imperial_units_help")}
+        </Toggle>
       )}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
@@ -269,6 +326,7 @@ const PointWindow = ({
     dataset: plotDataset.id,
     names: names,
   };
+
   let axisRange = Array.isArray(plotDataset.variable)
     ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
     : plotDataset.axisRange[plotDataset.variable.id];
@@ -279,6 +337,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        use_imperial_units: variableImperialUnits,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)

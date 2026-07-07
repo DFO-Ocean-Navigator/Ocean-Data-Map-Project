@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 import AxisRange from "./AxisRange.jsx";
+import Toggle from "./Toggle.jsx";
 import DatasetSelector from "./data-selectors/DatasetSelector.jsx";
 import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
@@ -26,6 +27,7 @@ function DatasetPanel({
   showQuiverSelector = true,
   showTimeRange = false,
   showDepthSelector = true,
+  showUnitSelector = true, 
   showAxisRange = false,
   showVariableSelector = true,
   showAllDepths = false,
@@ -162,6 +164,16 @@ function DatasetPanel({
       hasDepth={hasDepth}
       multipleVariables={multipleVariables}
       horizontalLayout={horizontalLayout}
+    />
+  ) : null;
+
+  let unitSelector = showUnitSelector ? (
+    <Toggle
+      id="use_imperial_units"
+      title={_("Use Imperial Units")}
+      checked={imperialUnits}
+      checked_variables={variableImperialUnits}
+      onUpdate={updateVariableImperialUnits}
     />
   ) : null;
 
@@ -359,6 +371,7 @@ DatasetPanel.propTypes = {
   showQuiverSelector: PropTypes.bool,
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
+  showUnitSelector: PropTypes.bool,
   showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showAllDepths: PropTypes.bool,

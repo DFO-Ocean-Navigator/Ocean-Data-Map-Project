@@ -5,6 +5,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import numpy as np
+import pint
 
 from oceannavigator.settings import get_settings
 
@@ -195,3 +196,11 @@ def point_plot(points, grid_loc):
 
 def path_plot(points, grid_loc, quiver=True):
     _map_plot(points, grid_loc, True, quiver=quiver)
+
+def convert_units(value: float, from_unit: str, to_unit: str) -> list:
+    ureg = pint.UnitRegistry()
+
+    value_m = value
+    value_imp = ureg.Quantity(value_m, from_unit).to(to_unit).magnitude
+
+    return np.ma.array(value_imp, mask=value_m.mask)
