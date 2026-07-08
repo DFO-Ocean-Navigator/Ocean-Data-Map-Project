@@ -81,48 +81,48 @@ const PointWindow = ({
   );
 
   // Imperial Units Accordion
-  const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
-  const [variableImperialUnits, setVariableImperialUnits] = useState([
-    {
-      id: "all",
-      checked: false,
-      label: "All Variables",
-    },
-    {
-      id: "depth",
-      checked: false,
-      label: "Depth",
-    },
-    ...plotDataset.variable.map((v) => ({
-      id: v.id,
-      checked: false,
-      label: v.value,
-    })),
-  ]);
+//   const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
+//   const [variableImperialUnits, setVariableImperialUnits] = useState([
+//     {
+//       id: "all",
+//       checked: false,
+//       label: "All Variables",
+//     },
+//     {
+//       id: "depth",
+//       checked: false,
+//       label: "Depth",
+//     },
+//     ...plotDataset.variable.map((v) => ({
+//       id: v.id,
+//       checked: false,
+//       label: v.value,
+//     })),
+//   ]);
 
-  const updateVariableImperialUnits = (var_id, checked) => {
-  setVariableImperialUnits((prev) => {
-    if (var_id === "all") {
-      return prev.map((item) => ({ ...item, checked }));
-    }
+//   const updateVariableImperialUnits = (var_id, checked) => {
+//   setVariableImperialUnits((prev) => {
+//     if (var_id === "all") {
+//       return prev.map((item) => ({ ...item, checked }));
+//     }
 
-    const updated = prev.map((item) =>
-      item.id === var_id
-        ? { ...item, checked }
-        : item
-    );
+//     const updated = prev.map((item) =>
+//       item.id === var_id
+//         ? { ...item, checked }
+//         : item
+//     );
 
-    const allVariablesChecked = updated
-      .filter((item) => item.id !== "all")
-      .every((item) => item.checked);
+//     const allVariablesChecked = updated
+//       .filter((item) => item.id !== "all")
+//       .every((item) => item.checked);
 
-    return updated.map((item) =>
-      item.id === "all"
-        ? { ...item, checked: allVariablesChecked }
-        : item
-    );
-  });
-};
+//     return updated.map((item) =>
+//       item.id === "all"
+//         ? { ...item, checked: allVariablesChecked }
+//         : item
+//     );
+//   });
+// };
 
   useEffect(() => {
     const dataset2D =
@@ -197,6 +197,7 @@ const PointWindow = ({
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showUnitSelector = selected !== TabEnum.OBSERVATION;
 
   const plotOptions = (
     <>
@@ -250,7 +251,7 @@ const PointWindow = ({
         onUpdate={handleDatasetUpdate}
         showQuiverSelector={false}
         showVariableRange={false}
-        showUnitSelector={selected !== TabEnum.OBSERVATION}
+        showUnitSelector={showUnitSelector}
         showAxisRange={showAxisRange}
         showTimeRange={showTimeRange}
         disableTimeSelector={selected === TabEnum.OBSERVATION}
@@ -273,7 +274,7 @@ const PointWindow = ({
           {_("showmap_help")}
         </CheckBox>
       )}
-      {selected !== TabEnum.OBSERVATION && (
+      {/* {selected !== TabEnum.OBSERVATION && (
         <Toggle
           id="use_imperial_units"
           title={_("Use Imperial Units")}
@@ -283,7 +284,7 @@ const PointWindow = ({
         >
           {_("use_imperial_units_help")}
         </Toggle>
-      )}
+      )} */}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
@@ -337,7 +338,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
-        use_imperial_units: variableImperialUnits,
+        //use_imperial_units: variableImperialUnits,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)

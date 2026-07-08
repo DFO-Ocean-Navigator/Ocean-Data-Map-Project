@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 import AxisRange from "./AxisRange.jsx";
-import Toggle from "./Toggle.jsx";
+import Toggle from "./data-selectors/Toggle.jsx";
 import DatasetSelector from "./data-selectors/DatasetSelector.jsx";
 import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
@@ -117,6 +117,13 @@ function DatasetPanel({
           axisRange: newAxisRange,
         }));
         break;
+      case "unitSelector":
+        let newUnitSelector = { ...dataset.unitSelector, [value[0]]: value[1] };
+        setDataset((prevDataset) => ({
+          ...prevDataset,
+          unitSelector: newUnitSelector,
+        }));
+        break;
       default:
         setDataset((prevDataset) => ({
           ...prevDataset,
@@ -153,6 +160,50 @@ function DatasetPanel({
 
   const applySearchFilters = (filteredDataset) => {
     setDataset({ ...dataset, ...filteredDataset });
+  };
+
+  // Imperial Units Accordion
+  const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
+  const [variableImperialUnits, setVariableImperialUnits] = useState([
+    {
+      id: "all",
+      checked: false,
+      label: "All Variables",
+    },
+    {
+      id: "depth",
+      checked: false,
+      label: "Depth",
+    },
+    ...plotDataset.variable.map((v) => ({
+      id: v.id,
+      checked: false,
+      label: v.value,
+    })),
+  ]);
+
+  const updateVariableImperialUnits = (var_id, checked) => {
+    setVariableImperialUnits((prev) => {
+      if (var_id === "all") {
+        return prev.map((item) => ({ ...item, checked }));
+      }
+
+      const updated = prev.map((item) =>
+        item.id === var_id
+          ? { ...item, checked }
+          : item
+      );
+
+      const allVariablesChecked = updated
+        .filter((item) => item.id !== "all")
+        .every((item) => item.checked);
+
+      return updated.map((item) =>
+        item.id === "all"
+          ? { ...item, checked: allVariablesChecked }
+          : item
+      );
+    });
   };
 
   let variableSelector = showVariableSelector ? (
