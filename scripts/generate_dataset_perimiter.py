@@ -62,6 +62,10 @@ def generate_perimeters(
         # get the contours from the mask
         contours = measure.find_contours(ch_mask, level=0)
 
+        if len(contours) == 0:
+            print(f"Could not extract data for {dataset_key}. Skipping.")
+            continue
+
         # select the first contour for our perimeter (the first element should be the
         # one we're interested in but you'll have to confirm yourself)
         perim_y, perim_x = np.transpose(contours[0]).astype(int)
