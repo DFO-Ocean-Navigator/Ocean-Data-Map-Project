@@ -152,7 +152,7 @@ ColormapRange.propTypes = {
   showAuto: PropTypes.bool,
   dataset: PropTypes.object,
   mapSettings: PropTypes.object,
-  mapRef: PropTypes.object
+  mapRef: PropTypes.object,
 };
 
 export default withTranslation()(ColormapRange);

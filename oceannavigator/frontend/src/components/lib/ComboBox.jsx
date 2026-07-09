@@ -4,8 +4,6 @@ import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
 import { withTranslation } from "react-i18next";
 
-import { useGetComboBoxQuery } from "../../remote/queries.js";
-
 function ComboBox({
   id,
   label,

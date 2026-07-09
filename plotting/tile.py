@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.patches import Patch
 from matplotlib.ticker import ScalarFormatter
 from netCDF4 import Dataset
 from PIL import Image
@@ -21,6 +22,7 @@ from data import open_dataset
 from data.transformers.geojson import data_array_to_geojson
 from oceannavigator import DatasetConfig
 from oceannavigator.settings import get_settings
+from routes.enums import InterpolationType
 
 
 def deg2num(lat_deg, lon_deg, zoom):
@@ -193,23 +195,28 @@ def scale(args):
     if len(variable) == 2:
         cmap = colormap.colormaps.get("speed")
 
+    data_categories = config.variable[args.get("variable")].data_categories
+
     fig = plt.figure(figsize=(2, 5), dpi=75)
-    ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
-    norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
-
-    formatter = ScalarFormatter()
-    formatter.set_powerlimits((-3, 4))
-    bar = ColorbarBase(
-        ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
-    )
-    if variable_name == "Potential Sub Surface Channel":
-        bar.set_ticks([0, 1])
-
-    bar.set_label(
-        "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)), fontsize=12
-    )
-    # Increase tick font size
-    bar.ax.tick_params(labelsize=12)
+    if data_categories is None:
+        ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
+        norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
+        formatter = ScalarFormatter()
+        formatter.set_powerlimits((-3, 4))
+        bar = ColorbarBase(
+            ax, cmap=cmap, norm=norm, orientation="vertical", format=formatter
+        )
+        bar.set_label(
+            "%s (%s)" % (variable_name.title(), utils.mathtext(variable_unit)),
+            fontsize=12,
+        )
+        bar.ax.tick_params(labelsize=12)
+    else:
+        legend_categories = [
+            Patch(facecolor=color, edgecolor="k", label=label)
+            for color, label in zip(cmap.colors, data_categories)
+        ]
+        fig.legend(handles=legend_categories, fontsize=12, frameon=False)
 
     buf = BytesIO()
     plt.savefig(
@@ -249,6 +256,11 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
         for v in variable:
+            if config.variable[v].data_categories is not None:
+                args["interp"] = InterpolationType.nearest
+                args["radius"] = 25000
+                args["neighbours"] = 10
+
             data.append(
                 dataset.get_area(
                     np.array([lat, lon]),

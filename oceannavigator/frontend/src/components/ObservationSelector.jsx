@@ -94,10 +94,8 @@ function ObservationSelector(props) {
 
   const getSelection = () => {
     const newSelection = {
-      start_date: startDate.toISOString().slice(0, 10),
-      end_date: new Date(new Date(endDate).setDate(endDate.getDate() + 1))
-        .toISOString()
-        .slice(0, 10),
+      start_date: startDate.toLocaleDateString('en-CA'),
+      end_date: endDate.toLocaleDateString('en-CA'),
       type: points ? "points" : "track",
     };
 

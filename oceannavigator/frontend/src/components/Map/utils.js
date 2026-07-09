@@ -49,13 +49,17 @@ const I9 = require("../../images/s111/I9.svg").default;
 
 const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
+const OBS_COLORS = {
+  argo: [255, 0, 0],
+  mission: [255, 255, 0],
+  drifter: [0, 255, 0],
+  glider: [0, 255, 255],
+  animal: [0, 0, 255],
+};
+
 const COLORS = [
-  [0, 0, 255],
   [0, 128, 0],
-  [255, 0, 0],
-  [0, 255, 255],
   [255, 0, 255],
-  [255, 255, 0],
   [0, 0, 0],
   [255, 255, 255],
 ];
@@ -78,7 +82,7 @@ export const getBasemap = (
   source,
   projection,
   attribution,
-  topoShadedRelief
+  topoShadedRelief,
 ) => {
   switch (source) {
     case "topo":
@@ -129,13 +133,13 @@ export const createMap = (
   layerFeatureVector,
   obsDrawSource,
   maxZoom,
-  mapRef
+  mapRef,
 ) => {
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
     mapSettings.projection,
     mapSettings.basemap_attribution,
-    mapSettings.topoShadedRelief
+    mapSettings.topoShadedRelief,
   );
 
   const vectorTileGrid = new olTilegrid.createXYZ({
@@ -260,7 +264,7 @@ export const createMap = (
       mapObject.getEventPixel(e.originalEvent),
       function (feature, layer) {
         return feature;
-      }
+      },
     );
     if (feature && feature.get("name")) {
       overlay.setPosition(e.coordinate);
@@ -286,7 +290,7 @@ export const createMap = (
                 <td>{bearing}</td>
               </tr>
             )}
-          </table>
+          </table>,
         );
       } else {
         popupElement.current.innerHTML = feature.get("name");
@@ -313,8 +317,8 @@ export const createMap = (
                 olProj.transform(
                   f.get("centroid"),
                   "EPSG:4326",
-                  mapSettings.projection
-                )
+                  mapSettings.projection,
+                ),
               ),
               text: new Text({
                 text: f.get("name"),
@@ -355,8 +359,8 @@ export const createMap = (
                       <td>{response.data[key]}</td>
                     </tr>
                   ))}
-                </table>
-              )
+                </table>,
+              ),
             );
             popupElement.current.innerHTML = feature.get("meta");
           })
@@ -416,7 +420,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
     style: function (feat, res) {
       if (feat.get("class") == "observation") {
         if (feat.getGeometry() instanceof olgeom.LineString) {
-          let color = drifter_color[feat.get("id")];
+          let color = OBS_COLORS[feat.get("type")];
 
           if (color === undefined) {
             color = COLORS[Object.keys(drifter_color).length % COLORS.length];
@@ -429,6 +433,12 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 width: 8,
               }),
             }),
+            new Style({
+              stroke: new Stroke({
+                color: "#555555",
+                width: isMobile ? 6 : 4,
+              }),
+            }),            
             new Style({
               stroke: new Stroke({
                 color: color,
@@ -452,11 +462,12 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
         });
         let stroke = new Stroke({ color: "#000000", width: 1 });
         let radius = isMobile ? 9 : 6;
-        switch (feat.get("type")) {
+        let featureType = feat.get("type");
+        switch (featureType) {
           case "argo":
             image = new Circle({
               radius: isMobile ? 6 : 4,
-              fill: new Fill({ color: "#ff0000" }),
+              fill: new Fill({ color: OBS_COLORS[featureType] }),
               stroke: stroke,
             });
             break;
@@ -464,7 +475,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
             image = new RegularShape({
               points: 3,
               radius: radius,
-              fill: new Fill({ color: "#ffff00" }),
+              fill: new Fill({ color: OBS_COLORS[featureType] }),
               stroke: stroke,
             });
             break;
@@ -472,7 +483,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
             image = new RegularShape({
               points: 4,
               radius: radius,
-              fill: new Fill({ color: "#00ff00" }),
+              fill: new Fill({ color: OBS_COLORS[featureType] }),
               stroke: stroke,
             });
             break;
@@ -480,7 +491,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
             image = new RegularShape({
               points: 5,
               radius: radius,
-              fill: new Fill({ color: "#00ffff" }),
+              fill: new Fill({ color: OBS_COLORS[featureType] }),
               stroke: stroke,
             });
             break;
@@ -488,7 +499,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
             image = new RegularShape({
               points: 6,
               radius: radius,
-              fill: new Fill({ color: "#0000ff" }),
+              fill: new Fill({ color: OBS_COLORS[featureType] }),
               stroke: stroke,
             });
             break;
@@ -520,7 +531,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 feat,
                 "#000",
                 "#ffffff",
-                mapSettings
+                mapSettings,
               );
               if (textStyle) styles.push(textStyle);
 
@@ -544,7 +555,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 feat,
                 "#000",
                 "#ffffff",
-                mapSettings
+                mapSettings,
               );
               if (textStyle) styles.push(textStyle);
               return styles;
@@ -568,7 +579,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
               feat,
               "#000",
               "#ffffff",
-              mapSettings
+              mapSettings,
             );
             if (textStyle) styles.push(textStyle);
             return styles;
@@ -654,7 +665,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
             const red = Math.min(255, 255 * (feat.get("error_norm") / 0.5));
             const green = Math.min(
               255,
-              (255 * (1 - feat.get("error_norm"))) / 0.5
+              (255 * (1 - feat.get("error_norm"))) / 0.5,
             );
 
             return new Style({
@@ -680,7 +691,7 @@ export const createFeatureTextStyle = (
   feature,
   textColor = "#000",
   strokeColor = "#ffffff",
-  mapSettings = null
+  mapSettings = null,
 ) => {
   if (!feature.get("name")) return null;
 
@@ -702,8 +713,8 @@ export const createFeatureTextStyle = (
       olProj.transform(
         feature.get("centroid"),
         "EPSG:4326",
-        mapSettings.projection
-      )
+        mapSettings.projection,
+      ),
     );
   }
 
@@ -821,7 +832,7 @@ export const createPlotData = (selected, projection) => {
   let id = selected[0].getId();
   let name = selected.map((f) => f.get("name"));
   let coordinates = selected.map((feature) =>
-    feature.getGeometry().getCoordinates()
+    feature.getGeometry().getCoordinates(),
   );
   // Observations
   if (selected[0].get("class") === "observation") {
@@ -853,7 +864,7 @@ export const createPlotData = (selected, projection) => {
       title = selected.map((feature, idx) =>
         feature.get("name")
           ? feature.get("name")
-          : `${formatLatLon(coordinates[idx][0], coordinates[idx][1])}`
+          : `${formatLatLon(coordinates[idx][0], coordinates[idx][1])}`,
       );
       title = "Point - " + title.join(", ");
     } else if (type === "LineString") {

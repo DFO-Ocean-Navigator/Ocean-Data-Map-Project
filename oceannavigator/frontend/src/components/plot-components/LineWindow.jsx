@@ -141,12 +141,14 @@ const LineWindow = (props) => {
     <Card id="global_settings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
       <Card.Body>
-        <CheckBox
-          id="dataset_compare"
-          checked={props.compareDatasets}
-          onUpdate={(_, checked) => props.setCompareDatasets(checked)}
-          title={_("Compare Datasets")}
-        />
+        {!props.dataset0.variable.data_categories && (
+          <CheckBox
+            id="dataset_compare"
+            checked={props.compareDatasets}
+            onUpdate={(_, checked) => props.setCompareDatasets(checked)}
+            title={_("Compare Datasets")}
+          />
+        )}
         {/* <Button
           id="swap_views"
           style={{ display: props.compareDatasets ? "block" : "none" }}

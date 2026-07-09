@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  memo,
-} from "react";
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -57,17 +51,17 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    updateTickContainerWidth();
-  }, [timestamps.length]);
-
-  useEffect(() => {
     if (timestamps.length === 0) return;
 
+    updateTickContainerWidth();
+
     let nextSelectedIndex = timestamps.findIndex((ts) => ts.id === selected.id);
+    updateContentScroll(nextSelectedIndex);
+
     if (nextSelectedIndex >= 0 && nextSelectedIndex !== selectedIndex) {
       setSelectedIndex(nextSelectedIndex);
     }
-  }, [timestamps.length, selected]);
+  }, [dataset.id, timestamps.length, selected]);
 
   useEffect(() => {
     if (timestamps.length === 0 || selectedIndex === undefined) return;
@@ -87,17 +81,6 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
     }, 16);
     return () => clearInterval(interval);
   }, [scrollSpeed]);
-
-  useEffect(() => {
-    document.addEventListener("mousemove", handleThumbMousemove);
-    document.addEventListener("mouseup", handleThumbMouseup);
-    document.addEventListener("mouseleave", handleThumbMouseup);
-    return () => {
-      document.removeEventListener("mousemove", handleThumbMousemove);
-      document.removeEventListener("mouseup", handleThumbMouseup);
-      document.removeEventListener("mouseleave", handleThumbMouseup);
-    };
-  }, [timestamps, tickWidth]);
 
   useEffect(() => {
     if (contentRef.current && scrollTrackRef.current) {
@@ -158,7 +141,7 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   const updateTickContainerWidth = () => {
     if (!scrollTrackRef.current || timestamps.length === 0) return;
 
-    let minTickWidth = 70;
+    let minTickWidth = 105;
     if (dataset.quantum === "hour" && dataset.id !== "giops_day") {
       minTickWidth = 35;
     }
@@ -427,7 +410,12 @@ function TimeSlider({ id, dataset, timestamps, selected, onChange }) {
   ));
 
   return (
-    <div className="time-slider">
+    <div
+      className="time-slider"
+      onMouseMove={handleThumbMousemove}
+      onMouseDown={handleThumbMousedown}
+      onMouseUp={handleThumbMouseup}
+    >
       <div className="nav-button-container">{leftButtons}</div>
       <div className="time-slider-container">
         <div

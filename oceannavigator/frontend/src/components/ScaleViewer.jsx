@@ -30,6 +30,8 @@ function ScaleViewer(props) {
     setExpanded(!expanded);
   };
 
+  const dataCategories = props.dataset.variable.data_categories;
+
   const rangeControl = expanded ? (
     <ColormapRange
       id="variable_scale"
@@ -44,11 +46,13 @@ function ScaleViewer(props) {
     />
   ) : null;
 
-  const expandIcon = expanded ? (
-    <ChevronLeft className="expand-icon" onClick={handleExpand} />
-  ) : (
-    <ChevronRight className="expand-icon" onClick={handleExpand} />
-  );
+  const expandIcon = !dataCategories ? (
+    expanded ? (
+      <ChevronLeft className="expand-icon" onClick={handleExpand} />
+    ) : (
+      <ChevronRight className="expand-icon" onClick={handleExpand} />
+    )
+  ) : null;
 
   const scaleImage = (
     <img className="scale-image" src={source} onClick={handleExpand} />

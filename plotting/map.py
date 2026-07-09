@@ -6,7 +6,6 @@ import pickle
 import threading
 import tempfile
 from textwrap import wrap
-from typing import Union
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
@@ -14,10 +13,10 @@ import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import FuncNorm
-from matplotlib.patches import PathPatch, Polygon
+from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
-from shapely.geometry import box, LinearRing, MultiPolygon, Point, Polygon as Poly
+from shapely.geometry import LinearRing, MultiPolygon, Point, Polygon as Poly
 from shapely.ops import unary_union
 
 import plotting.colormap as colormap
@@ -30,7 +29,6 @@ from utils.errors import ClientError
 from utils.misc import list_areas
 
 from oceannavigator.settings import get_settings
-
 
 settings = get_settings()
 
@@ -47,10 +45,8 @@ class MapPlotter(Plotter):
         super().parse_query(query)
 
         if len(self.variables) > 1:
-            raise ClientError(
-                f"MapPlotter only supports 1 variable. \
-                    Received multiple: {self.variables}"
-            )
+            raise ClientError(f"MapPlotter only supports 1 variable. \
+                    Received multiple: {self.variables}")
 
         self.projection = query.get("projection")
 
@@ -143,28 +139,21 @@ class MapPlotter(Plotter):
     def get_land_geoms(self, extent: tuple) -> list:
         # Returns a list of land shape geometries that intersect the plot extent
         scaler = cfeature.AdaptiveScaler("110m", (("50m", 50), ("10m", 15)))
-        land_shp = cfeature.NaturalEarthFeature(
-            "physical", "land", scale=scaler.scale_from_extent(extent)
-        )
+        scale = scaler.scale_from_extent(extent)
 
-        lon_min, lon_max, lat_min, lat_max = extent
+        land_feats = cfeature.NaturalEarthFeature("physical", "land", scale=scale)
+
+        land_geoms = land_feats.intersecting_geometries(extent)
+        land_geoms = unary_union(list(land_geoms))
 
         geometries = []
-        if lon_min <= lon_max:
-            bbox = box(lon_min, lat_min, lon_max, lat_max)
-            for geom in land_shp.geometries():
-                inter = geom.intersection(bbox)
-                if not inter.is_empty:
-                    geometries.append(inter)
-        else:
-            # plot wraps longitudes
-            west_box = box(lon_min, lat_min, 180, lat_max)
-            east_box = box(-180, lat_min, lon_max, lat_max)
-            for geom in land_shp.geometries():
-                for bb in (west_box, east_box):
-                    inter = geom.intersection(bb)
-                    if not inter.is_empty:
-                        geometries.append(inter)
+        if not land_geoms.is_empty:
+            lake_feats = cfeature.NaturalEarthFeature("physical", "lakes", scale=scale)
+
+            lake_geoms = lake_feats.intersecting_geometries(extent)
+            lake_geoms = unary_union(list(lake_geoms))
+
+            geometries.append(land_geoms.difference(lake_geoms))
 
         return geometries
 
@@ -173,7 +162,7 @@ class MapPlotter(Plotter):
         extent: list,
         figuresize: list,
         dpi: int,
-    ) -> Union[plt.figure, plt.axes]:
+    ) -> tuple:
 
         CACHE_DIR = settings.cache_dir
         filename = self._get_filename(self.plot_projection.proj4_params["proj"], extent)
@@ -286,18 +275,10 @@ class MapPlotter(Plotter):
                 ]
             )
 
-        elif abs(self.centroid[1] - self.bounds[1]) > 90:
-
-            if abs(self.bounds[3] - self.bounds[1]) > 360:
-                raise ClientError(
-                    (  # gettext(
-                        "You have requested an area that exceeds the width \
-                        of the world. Thinking big is good but plots need to \
-                        be less than 360 deg wide."
-                    )
-                )
-            self.plot_projection = ccrs.Mercator(central_longitude=self.centroid[1])
-
+        elif abs(self.bounds[3] - self.bounds[1]) > 360:
+            raise ClientError(("You have requested an area that exceeds the width \
+                of the world. Thinking big is good but plots need to \
+                be less than 360 deg wide."))  # gettext()
         else:
             self.plot_projection = ccrs.Mercator(
                 central_longitude=self.centroid[1],
@@ -368,6 +349,8 @@ class MapPlotter(Plotter):
 
             data = []
             var = dataset.variables[self.variables[0]]
+            if self.dataset_config.variable[self.variables[0]].data_categories:
+                self.interp = "nearest"
             if self.filetype in ["csv", "odv", "txt"]:
                 d, depth_value_map = dataset.get_area(
                     np.array([self.latitude, self.longitude]),
@@ -814,6 +797,9 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
+        data_categories = self.dataset_config.variable[
+            self.variables[0]
+        ].data_categories
         c = ax.imshow(
             self.data,
             vmin=vmin,
@@ -911,6 +897,7 @@ class MapPlotter(Plotter):
                 self.longitude,
                 self.latitude,
                 self.bathymetry,
+                transform_first=True,
                 linewidths=0.5,
                 norm=FuncNorm(
                     (lambda x: np.log10(x), lambda x: 10**x), vmin=1, vmax=6000
@@ -1119,14 +1106,29 @@ class MapPlotter(Plotter):
             )
         plt.title(title.strip())
         axpos = ax.get_position()
-        pos_x = axpos.x0 + axpos.width + 0.01
-        pos_y = axpos.y0
-        cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
-        bar = plt.colorbar(c, cax=cax)
-        bar.set_label(
-            f"{self.variable_name.title()} ({var_unit})",
-            fontsize=14,
-        )
+        if data_categories:
+            legend_patches = [
+                Patch(facecolor=color, edgecolor="k", label=label)
+                for color, label in zip(self.cmap.colors, data_categories)
+            ]
+            ax.legend(
+                handles=legend_patches,
+                fontsize=9,
+                frameon=False,
+                title=f"{self.variable_name.title()} ({var_unit})",
+                title_fontsize=14,
+                loc="upper left",
+                bbox_to_anchor=(1.01, 1),
+            )
+        else:
+            pos_x = axpos.x0 + axpos.width + 0.01
+            pos_y = axpos.y0
+            cax = fig.add_axes([pos_x, pos_y, 0.03, axpos.height])
+            bar = plt.colorbar(c, cax=cax)
+            bar.set_label(
+                f"{self.variable_name.title()} ({var_unit})",
+                fontsize=14,
+            )
 
         if (
             self.quiver is not None
