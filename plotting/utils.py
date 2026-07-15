@@ -204,3 +204,40 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> list:
     value_imp = ureg.Quantity(value_m, from_unit).to(to_unit).magnitude
 
     return np.ma.array(value_imp, mask=value_m.mask)
+
+def convert_to_imperial(use_imperial_units, depths, data, variables, variable_units): 
+    ureg = pint.UnitRegistry()
+    if "depth" in use_imperial_units:
+            depths = convert_units(
+                depths, "meter", "foot"
+            )
+
+    for idx, var in enumerate(variables):
+        print(
+            f"\nVariable Name {var}"
+        )
+        if var in use_imperial_units and var == "votemper":
+            data[:, idx, :] = convert_units(
+                data[:, idx, :], "°C", "°F"
+            )
+            variable_units[idx] = "°F"
+
+        if var in use_imperial_units and (var == "vozocrtx" or var == "vomecrty" or var == "magwatervel" or var == "sspeed"):
+            data[:, idx, :] = convert_units(
+                data[:, idx, :], "m/s", "ft/s"
+            )
+            variable_units[idx] = "ft/s"
+
+        if var in use_imperial_units and (var == "deepsoundchannel" or var == "soniclayerdepth" or var == "deepsoundchannelbottom" or var == "depthexcess"):
+            data[:, idx, :] = convert_units(
+                data[:, idx, :], "m", "ft"
+            )
+            variable_units[idx] = "ft"
+
+        if var in use_imperial_units and var == "density":
+            data[:, idx, :] = convert_units(
+                data[:, idx, :], "kg/m³", "lb/ft³"
+            )
+            variable_units[idx] = "lb/ft³"
+
+    return depths, data, variable_units

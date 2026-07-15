@@ -27,13 +27,15 @@ function DatasetPanel({
   showQuiverSelector = true,
   showTimeRange = false,
   showDepthSelector = true,
-  showUnitSelector = true, 
+  showUnitSelector = false, 
   showAxisRange = false,
   showVariableSelector = true,
   showAllDepths = false,
   horizontalLayout = false,
   datasetSearch = false,
   disableTimeSelector = false,
+  variableImperialUnits,
+  setVariableImperialUnits,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -117,11 +119,12 @@ function DatasetPanel({
           axisRange: newAxisRange,
         }));
         break;
-      case "unitSelector":
-        let newUnitSelector = { ...dataset.unitSelector, [value[0]]: value[1] };
+      case "unitSelection":
+        let id = value[0];
+        let whetherChecked = value[1];
         setDataset((prevDataset) => ({
           ...prevDataset,
-          unitSelector: newUnitSelector,
+          unitSelection: value,
         }));
         break;
       default:
@@ -161,50 +164,28 @@ function DatasetPanel({
   const applySearchFilters = (filteredDataset) => {
     setDataset({ ...dataset, ...filteredDataset });
   };
+  console.log("Dataset Variables: ", dataset);
 
   // Imperial Units Accordion
-  const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
-  const [variableImperialUnits, setVariableImperialUnits] = useState([
-    {
-      id: "all",
-      checked: false,
-      label: "All Variables",
-    },
-    {
-      id: "depth",
-      checked: false,
-      label: "Depth",
-    },
-    ...plotDataset.variable.map((v) => ({
-      id: v.id,
-      checked: false,
-      label: v.value,
-    })),
-  ]);
 
-  const updateVariableImperialUnits = (var_id, checked) => {
-    setVariableImperialUnits((prev) => {
-      if (var_id === "all") {
-        return prev.map((item) => ({ ...item, checked }));
-      }
-
-      const updated = prev.map((item) =>
-        item.id === var_id
-          ? { ...item, checked }
-          : item
-      );
-
-      const allVariablesChecked = updated
-        .filter((item) => item.id !== "all")
-        .every((item) => item.checked);
-
-      return updated.map((item) =>
-        item.id === "all"
-          ? { ...item, checked: allVariablesChecked }
-          : item
-      );
-    });
-  };
+  // const [variableImperialUnits, setVariableImperialUnits] = useState([
+  //   {
+  //     id: "all",
+  //     checked: false,
+  //     label: "All Variables",
+  //   },
+  //   {
+  //     id: "depth",
+  //     checked: false,
+  //     label: "Depth",
+  //   },
+  //   ...dataset.variable.map((v) => ({
+  //     id: v.id,
+  //     checked: false,
+  //     label: v.value,
+  //   })),
+  // ]);
+  console.log("Imperial Units: ", variableImperialUnits);
 
   let variableSelector = showVariableSelector ? (
     <VariableSelector
@@ -221,10 +202,11 @@ function DatasetPanel({
   let unitSelector = showUnitSelector ? (
     <Toggle
       id="use_imperial_units"
-      title={_("Use Imperial Units")}
-      checked={imperialUnits}
-      checked_variables={variableImperialUnits}
-      onUpdate={updateVariableImperialUnits}
+      title={"Use Imperial Units"}
+      dataset={dataset}
+      onUpdate={updateDataset}
+      variableImperialUnits={variableImperialUnits}
+      setVariableImperialUnits={setVariableImperialUnits}
     />
   ) : null;
 
@@ -387,6 +369,7 @@ function DatasetPanel({
           horizontalLayout={horizontalLayout}
         />
         {variableSelector}
+        {unitSelector}
         {axisRangeSelectors}
         {quiverSelector}
         {depthSelector}

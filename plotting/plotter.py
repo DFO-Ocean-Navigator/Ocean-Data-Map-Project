@@ -216,9 +216,19 @@ class Plotter(metaclass=ABCMeta):
         return showmap is None or bool(showmap)
 
     def __get_use_imperial_units(self, use_imperial_units: list[dict]):
-        if any(item.get("checked") is True for item in use_imperial_units):
-            return use_imperial_units
-        return None
+        print(f"\n use_imperial_units: {use_imperial_units} \n")
+        checked_keys = [
+            key
+            for key, item in use_imperial_units.items()
+            if item.get("checked", True)
+        ]
+
+        if checked_keys:
+            print(checked_keys)
+            checked_keys.remove("all")
+            return checked_keys
+
+        return []
 
     @abstractmethod
     def load_data(self):

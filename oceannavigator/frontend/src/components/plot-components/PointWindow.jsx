@@ -59,6 +59,31 @@ const PointWindow = ({
     init?.plotTitles || Array(7).fill(""),
   );
 
+  const [variableImperialUnits, setVariableImperialUnits] = useState({
+    all: {
+      checked: false,
+      label: "All Variables",
+    },
+    depth: {
+      checked: false,
+      label: "Depth",
+    },
+    ...(Array.isArray(dataset.variable)
+      ? Object.fromEntries(
+          dataset.variable.map((v) => [
+            v.id,
+            {
+              checked: false,
+              label: v.value,
+            },
+          ])
+        )
+    : {[dataset.variable.id]: {
+       checked: false, 
+       label: dataset.variable.value 
+      }}),
+  });
+
   // Dataset state - keep as single object due to complexity
   const [plotDataset, setPlotDataset] = useState(
     init?.plotDataset || {
@@ -69,6 +94,9 @@ const PointWindow = ({
       axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : { [dataset.variable.id]: null },
+      unitSelection: dataset.hasOwnProperty("unitSelection")
+        ? dataset.unitSelection
+        : variableImperialUnits,
     },
   );
   const [only2d, setOnly2d] = useState(false);
@@ -99,7 +127,7 @@ const PointWindow = ({
 //       label: v.value,
 //     })),
 //   ]);
-
+//   console.log(plotDataset.variable);
 //   const updateVariableImperialUnits = (var_id, checked) => {
 //   setVariableImperialUnits((prev) => {
 //     if (var_id === "all") {
@@ -262,6 +290,8 @@ const PointWindow = ({
         showAllDepths={showDepthSelector}
         multipleVariables={multipleVariables}
         mountedDataset={plotDataset}
+        variableImperialUnits={variableImperialUnits}
+        setVariableImperialUnits={setVariableImperialUnits}
       />
       {selected !== TabEnum.OBSERVATION && (
         <CheckBox
@@ -338,7 +368,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
-        //use_imperial_units: variableImperialUnits,
+        use_imperial_units: variableImperialUnits,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)

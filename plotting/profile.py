@@ -190,26 +190,8 @@ class ProfilePlotter(PointPlotter):
             f"\nImperial Units {self.use_imperial_units}"
         )
         if self.use_imperial_units:
-            ureg = pint.UnitRegistry()
-            if self.use_imperial_units[0]["id"] == "all" and self.use_imperial_units[0]["checked"]:
-                    self.depths = utils.convert_units(
-                        self.depths, "meter", "foot"
-                    )
-            if self.use_imperial_units[1]["id"] == "depth" and self.use_imperial_units[1]["checked"]:
-                    self.depths = utils.convert_units(
-                        self.depths, "meter", "foot"
-                    )
-            for idx, var in enumerate(self.use_imperial_units[2:]):
-                log().debug(
-                    f"\nVariable Name {var["id"]}"
-                )
-                if var["id"] == "votemper" and var["checked"]:
-                    self.data[:, idx, :] = utils.convert_units(
-                        self.data[:, idx, :], "°C", "°F"
-                    )
-                    self.variable_units[idx] = "°F"
+            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.use_imperial_units, self.depths, self.data, self.variables, self.variable_units)
                 
-
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
         subplot = 0
@@ -260,7 +242,7 @@ class ProfilePlotter(PointPlotter):
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                if self.use_imperial_units and self.use_imperial_units[1]["checked"]:
+                if "depth" in self.use_imperial_units:
                     current_axis.set_ylabel("Depth (ft)", fontsize=14)
                 else:
                     current_axis.set_ylabel("Depth (m)", fontsize=14)
