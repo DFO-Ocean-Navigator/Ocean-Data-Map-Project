@@ -48,7 +48,12 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Setup figure layout
         width = 2 if self.showmap else 1
         # Scale TS Diagram to be double the size of location map
-        width_ratios = [1, 3] if self.showmap else None
+        width_ratios = [1, 3] if self.showmap else None  
+
+        if self.unitSelection: 
+            self.variable_units = ["ft/s"]
+        else:
+            self.variable_units = ["m/s"]
 
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
@@ -64,6 +69,9 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 ),
                 gs[0, 0],
             )  # Longitudes
+
+        if self.unitSelection:
+            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.unitSelection, self.depths, self.data, self.variables, self.variable_units)
 
         # Plot Sound Speed profile
         plt.subplot(gs[:, 1 if self.showmap else 0])
@@ -81,7 +89,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             ]
         )
         ax.set_xlabel(
-            "Sound Speed (m/s)", fontsize=14
+            f"Sound Speed {self.variable_units[0]}", fontsize=14
         )  # ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(
             "Depth (m)", fontsize=14

@@ -34,8 +34,7 @@ function DatasetPanel({
   horizontalLayout = false,
   datasetSearch = false,
   disableTimeSelector = false,
-  variableImperialUnits,
-  setVariableImperialUnits,
+  onUnitSelectionChange,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -119,14 +118,14 @@ function DatasetPanel({
           axisRange: newAxisRange,
         }));
         break;
-      case "unitSelection":
-        let id = value[0];
-        let whetherChecked = value[1];
-        setDataset((prevDataset) => ({
-          ...prevDataset,
-          unitSelection: value,
-        }));
-        break;
+      // case "unitSelection":
+      //   let id = value[0];
+      //   let whetherChecked = value[1];
+      //   setDataset((prevDataset) => ({
+      //     ...prevDataset,
+      //     unitSelection: value,
+      //   }));
+      //   break;
       default:
         setDataset((prevDataset) => ({
           ...prevDataset,
@@ -166,27 +165,6 @@ function DatasetPanel({
   };
   console.log("Dataset Variables: ", dataset);
 
-  // Imperial Units Accordion
-
-  // const [variableImperialUnits, setVariableImperialUnits] = useState([
-  //   {
-  //     id: "all",
-  //     checked: false,
-  //     label: "All Variables",
-  //   },
-  //   {
-  //     id: "depth",
-  //     checked: false,
-  //     label: "Depth",
-  //   },
-  //   ...dataset.variable.map((v) => ({
-  //     id: v.id,
-  //     checked: false,
-  //     label: v.value,
-  //   })),
-  // ]);
-  console.log("Imperial Units: ", variableImperialUnits);
-
   let variableSelector = showVariableSelector ? (
     <VariableSelector
       id={`${id}-variable-selector`}
@@ -203,10 +181,9 @@ function DatasetPanel({
     <Toggle
       id="use_imperial_units"
       title={"Use Imperial Units"}
-      dataset={dataset}
-      onUpdate={updateDataset}
-      variableImperialUnits={variableImperialUnits}
-      setVariableImperialUnits={setVariableImperialUnits}
+      variables={dataset.variable}
+      unitSelection={dataset.unitSelection}
+      onChange={onUnitSelectionChange}
     />
   ) : null;
 

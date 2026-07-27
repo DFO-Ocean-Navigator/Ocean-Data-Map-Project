@@ -59,30 +59,22 @@ const PointWindow = ({
     init?.plotTitles || Array(7).fill(""),
   );
 
-  const [variableImperialUnits, setVariableImperialUnits] = useState({
-    all: {
-      checked: false,
-      label: "All Variables",
-    },
-    depth: {
-      checked: false,
-      label: "Depth",
-    },
-    ...(Array.isArray(dataset.variable)
-      ? Object.fromEntries(
-          dataset.variable.map((v) => [
-            v.id,
-            {
-              checked: false,
-              label: v.value,
-            },
-          ])
-        )
-    : {[dataset.variable.id]: {
-       checked: false, 
-       label: dataset.variable.value 
-      }}),
-  });
+  // Imperial Units Accordion
+  const buildUnitSelection = (dataset) => {
+    const variables = Array.isArray(dataset?.variable)
+      ? dataset.variable
+      : dataset?.variable
+        ? [dataset.variable]
+        : [];
+
+      return {
+        all: false,
+        depth: false,
+        ...Object.fromEntries(
+          variables.map((variable) => [variable.id, false])
+        ),
+      };
+  };
 
   // Dataset state - keep as single object due to complexity
   const [plotDataset, setPlotDataset] = useState(
@@ -96,7 +88,7 @@ const PointWindow = ({
         : { [dataset.variable.id]: null },
       unitSelection: dataset.hasOwnProperty("unitSelection")
         ? dataset.unitSelection
-        : variableImperialUnits,
+        : buildUnitSelection(dataset),
     },
   );
   const [only2d, setOnly2d] = useState(false);
@@ -109,48 +101,47 @@ const PointWindow = ({
   );
 
   // Imperial Units Accordion
-//   const [imperialUnits, setImperialUnits] = useState(init?.imperialUnits || false)
-//   const [variableImperialUnits, setVariableImperialUnits] = useState([
-//     {
-//       id: "all",
-//       checked: false,
-//       label: "All Variables",
-//     },
-//     {
-//       id: "depth",
-//       checked: false,
-//       label: "Depth",
-//     },
-//     ...plotDataset.variable.map((v) => ({
-//       id: v.id,
-//       checked: false,
-//       label: v.value,
-//     })),
-//   ]);
-//   console.log(plotDataset.variable);
-//   const updateVariableImperialUnits = (var_id, checked) => {
-//   setVariableImperialUnits((prev) => {
-//     if (var_id === "all") {
-//       return prev.map((item) => ({ ...item, checked }));
-//     }
+  const updateUnitSelection = (varId, checked) => {
+    setPlotDataset((previousDataset) => {
+      let currentSelection = previousDataset.unitSelection;
 
-//     const updated = prev.map((item) =>
-//       item.id === var_id
-//         ? { ...item, checked }
-//         : item
-//     );
+      // Rebuild the selection when it does not match the current dataset
+      if (
+        !currentSelection ||
+        !Object.prototype.hasOwnProperty.call(currentSelection, varId)
+      ) {
+        currentSelection = buildUnitSelection(previousDataset);
+      }
 
-//     const allVariablesChecked = updated
-//       .filter((item) => item.id !== "all")
-//       .every((item) => item.checked);
+      // Checking "all" updates every checkbox
+      if (varId === "all") {
+        return {
+          ...previousDataset,
+          unitSelection: Object.fromEntries(
+            Object.keys(currentSelection).map((id) => [id, checked])
+          ),
+        };
+      }
 
-//     return updated.map((item) =>
-//       item.id === "all"
-//         ? { ...item, checked: allVariablesChecked }
-//         : item
-//     );
-//   });
-// };
+      const updatedSelection = {
+        ...currentSelection,
+        [varId]: checked,
+      };
+
+      const variableIds = Object.keys(updatedSelection).filter(
+        (id) => id !== "all"
+      );
+
+      updatedSelection.all =
+        variableIds.length > 0 &&
+        variableIds.every((id) => updatedSelection[id]);
+
+      return {
+        ...previousDataset,
+        unitSelection: updatedSelection,
+      };
+    });
+  };
 
   useEffect(() => {
     const dataset2D =
@@ -290,8 +281,7 @@ const PointWindow = ({
         showAllDepths={showDepthSelector}
         multipleVariables={multipleVariables}
         mountedDataset={plotDataset}
-        variableImperialUnits={variableImperialUnits}
-        setVariableImperialUnits={setVariableImperialUnits}
+        onUnitSelectionChange={updateUnitSelection}
       />
       {selected !== TabEnum.OBSERVATION && (
         <CheckBox
@@ -304,17 +294,6 @@ const PointWindow = ({
           {_("showmap_help")}
         </CheckBox>
       )}
-      {/* {selected !== TabEnum.OBSERVATION && (
-        <Toggle
-          id="use_imperial_units"
-          title={_("Use Imperial Units")}
-          checked={imperialUnits}
-          checked_variables={variableImperialUnits}
-          onUpdate={updateVariableImperialUnits}
-        >
-          {_("use_imperial_units_help")}
-        </Toggle>
-      )} */}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
@@ -368,7 +347,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
-        use_imperial_units: variableImperialUnits,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
@@ -384,6 +363,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
       };
@@ -394,6 +374,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
       };
       plotType = "ts";
@@ -403,6 +384,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
       };
       plotType = "sound";
@@ -426,6 +408,7 @@ const PointWindow = ({
           : plotDataset.variable.id,
         variable_range: axisRange,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         station: plotData.coordinates,
         depth: plotDataset.depth,
         starttime: plotDataset.starttime.id,

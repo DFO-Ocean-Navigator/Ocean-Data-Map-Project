@@ -208,8 +208,9 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> list:
 def convert_to_imperial(use_imperial_units, depths, data, variables, variable_units): 
     ureg = pint.UnitRegistry()
     if "depth" in use_imperial_units:
-            depths = convert_units(
-                depths, "meter", "foot"
+        for depth in depths: 
+            depth = convert_units(
+                depth, "meter", "foot"
             )
 
     for idx, var in enumerate(variables):
