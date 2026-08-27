@@ -1,0 +1,43 @@
+.unit-toggle-label {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-size: 10pt;
+  font-weight: bold;
+  width: max-content;
+}
+
+.imperial-units-accordion {
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+
+  .accordion-item {
+    border: 0;
+    background: transparent;
+  }
+
+  .accordion-header {
+    margin: 0;
+  }
+
+  .accordion-button {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    box-shadow: none;
+
+    font-size: 1rem;
+    font-weight: 400;
+
+    &:not(.collapsed) {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+
+  .accordion-body {
+    padding: 0.75rem 0.5rem 0;
+  }
+}

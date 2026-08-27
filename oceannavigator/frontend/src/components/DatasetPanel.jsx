@@ -34,7 +34,6 @@ function DatasetPanel({
   horizontalLayout = false,
   datasetSearch = false,
   disableTimeSelector = false,
-  onUnitSelectionChange,
   mountedDataset,
   showTimeSlider,
   compareDatasets,
@@ -118,14 +117,12 @@ function DatasetPanel({
           axisRange: newAxisRange,
         }));
         break;
-      // case "unitSelection":
-      //   let id = value[0];
-      //   let whetherChecked = value[1];
-      //   setDataset((prevDataset) => ({
-      //     ...prevDataset,
-      //     unitSelection: value,
-      //   }));
-      //   break;
+      case "unitSelection":
+        setDataset((prevDataset) => ({
+          ...prevDataset,
+          unitSelection: value,
+        }));
+        break;
       default:
         setDataset((prevDataset) => ({
           ...prevDataset,
@@ -180,10 +177,9 @@ function DatasetPanel({
   let unitSelector = showUnitSelector ? (
     <Toggle
       id="use_imperial_units"
-      title={"Use Imperial Units"}
-      variables={dataset.variable}
-      unitSelection={dataset.unitSelection}
-      onChange={onUnitSelectionChange}
+      title={"Units"}
+      dataset={dataset}
+      onChange={updateDataset}
     />
   ) : null;
 

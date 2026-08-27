@@ -197,7 +197,21 @@ def point_plot(points, grid_loc):
 def path_plot(points, grid_loc, quiver=True):
     _map_plot(points, grid_loc, True, quiver=quiver)
 
-def convert_units(value: float, from_unit: str, to_unit: str) -> list:
+IMPERIAL_UNITS = {
+    "m": "ft",
+    "km": "mi",
+    "m/s": "ft/s",
+    "kg/m^3": "lb/ft^3",
+    "degC": "degF",
+}
+
+def get_imperial_unit(metric_unit):
+    return IMPERIAL_UNITS.get(metric_unit, metric_unit)
+
+def convert_units(value, from_unit, to_unit="None"):
+    if to_unit == "None":
+        to_unit = get_imperial_unit(from_unit)
+    
     ureg = pint.UnitRegistry()
 
     value_m = value
@@ -206,6 +220,15 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> list:
     return np.ma.array(value_imp, mask=value_m.mask)
 
 def convert_to_imperial(use_imperial_units, depths, data, variables, variable_units): 
+    '''
+    Converts the depths and data to imperial units if specified in the use_imperial_units list.
+        use_imperial_units: list of variable names to convert to imperial units
+        depths: list of depth arrays to convert
+        data: 3D array of data to convert
+        variables: list of variable names corresponding to the data array
+        variable_units: list of units corresponding to the variables
+    Returns the converted depths, data, and variable_units.
+    '''
     ureg = pint.UnitRegistry()
     if "depth" in use_imperial_units:
         for depth in depths: 

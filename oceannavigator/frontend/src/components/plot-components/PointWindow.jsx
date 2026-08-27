@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Nav, Row, Col, Accordion } from "react-bootstrap";
 import PlotImage from "./PlotImage.jsx";
-import Toggle from "../data-selectors/Toggle.jsx";
+//import Toggle from "../data-selectors/Toggle.jsx";
 import CheckBox from "../lib/CheckBox.jsx";
 import ComboBox from "../lib/ComboBox.jsx";
 import LocationInput from "../LocationInput.jsx";
@@ -59,23 +59,6 @@ const PointWindow = ({
     init?.plotTitles || Array(7).fill(""),
   );
 
-  // Imperial Units Accordion
-  const buildUnitSelection = (dataset) => {
-    const variables = Array.isArray(dataset?.variable)
-      ? dataset.variable
-      : dataset?.variable
-        ? [dataset.variable]
-        : [];
-
-      return {
-        all: false,
-        depth: false,
-        ...Object.fromEntries(
-          variables.map((variable) => [variable.id, false])
-        ),
-      };
-  };
-
   // Dataset state - keep as single object due to complexity
   const [plotDataset, setPlotDataset] = useState(
     init?.plotDataset || {
@@ -88,7 +71,11 @@ const PointWindow = ({
         : { [dataset.variable.id]: null },
       unitSelection: dataset.hasOwnProperty("unitSelection")
         ? dataset.unitSelection
-        : buildUnitSelection(dataset),
+        : {
+            all: false,
+            depth: false,
+            [dataset.variable.id]: false
+          },
     },
   );
   const [only2d, setOnly2d] = useState(false);
@@ -99,49 +86,6 @@ const PointWindow = ({
     plotData.id,
     plotData.observation && typeof plotData.id === "number",
   );
-
-  // Imperial Units Accordion
-  const updateUnitSelection = (varId, checked) => {
-    setPlotDataset((previousDataset) => {
-      let currentSelection = previousDataset.unitSelection;
-
-      // Rebuild the selection when it does not match the current dataset
-      if (
-        !currentSelection ||
-        !Object.prototype.hasOwnProperty.call(currentSelection, varId)
-      ) {
-        currentSelection = buildUnitSelection(previousDataset);
-      }
-
-      // Checking "all" updates every checkbox
-      if (varId === "all") {
-        return {
-          ...previousDataset,
-          unitSelection: Object.fromEntries(
-            Object.keys(currentSelection).map((id) => [id, checked])
-          ),
-        };
-      }
-
-      const updatedSelection = {
-        ...currentSelection,
-        [varId]: checked,
-      };
-
-      const variableIds = Object.keys(updatedSelection).filter(
-        (id) => id !== "all"
-      );
-
-      updatedSelection.all =
-        variableIds.length > 0 &&
-        variableIds.every((id) => updatedSelection[id]);
-
-      return {
-        ...previousDataset,
-        unitSelection: updatedSelection,
-      };
-    });
-  };
 
   useEffect(() => {
     const dataset2D =
@@ -281,7 +225,6 @@ const PointWindow = ({
         showAllDepths={showDepthSelector}
         multipleVariables={multipleVariables}
         mountedDataset={plotDataset}
-        onUnitSelectionChange={updateUnitSelection}
       />
       {selected !== TabEnum.OBSERVATION && (
         <CheckBox
