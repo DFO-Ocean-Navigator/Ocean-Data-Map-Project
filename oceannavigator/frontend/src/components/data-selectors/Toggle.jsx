@@ -36,6 +36,21 @@ const Toggle = ({ id, title, dataset, onChange }) => {
       };
   };
 
+  const setAxisRangeScale = (varId, checked) => {
+    if (
+      varId !== "all" &&
+      varId !== "depth" &&
+      axisRange[varId] != null
+    ) {
+      if (checked) {
+        updateDataset("axisRange", [varId, dataset.variable.imperial_scale]);
+      }
+      else if (!checked) {
+        updateDataset("axisRange",[varId, dataset.variable.scale]);
+      }
+    }
+  }
+
     // Imperial Units Accordion
   const updateUnitSelection = (varId, checked) => {
       let currentSelection = dataset.unitSelection;
@@ -55,48 +70,30 @@ const Toggle = ({ id, title, dataset, onChange }) => {
         );
 
         updateDataset("unitSelection", updatedSelection);
-        return;
-      }
 
-      const updatedSelection = {
-        ...currentSelection,
-        [varId]: checked,
-      };
+        Object.keys(unitSelection).forEach((variableId) => {
+          setAxisRangeScale(variableId, checked);
+        });
+      } 
+      else {
+        const updatedSelection = {
+          ...currentSelection,
+          [varId]: checked,
+        };
 
-      const variableIds = Object.keys(updatedSelection).filter(
-        (id) => id !== "all"
-      );
-
-      // updateAxisRange(varId, checked);
-
-      updatedSelection.all =
-        variableIds.length > 0 &&
-        variableIds.every((id) => updatedSelection[id]);
-
-      updateDataset("unitSelection", updatedSelection);
-
-      // Update is_imperial in dataset.variable for the specific variable
-      if (
-        varId !== "all" &&
-        varId !== "depth" &&
-        checked && 
-        axisRange[varId] != null
-      ) {
-        updateDataset(
-          "axisRange",
-          [varId, dataset.variable.imperial_scale]
+        const variableIds = Object.keys(updatedSelection).filter(
+          (id) => id !== "all"
         );
-      }
-      else if (
-        varId !== "all" &&
-        varId !== "depth" &&
-        !checked && 
-        axisRange[varId] != null
-      ) {
-        updateDataset(
-          "axisRange",
-          [varId, dataset.variable.scale]
-        );
+
+        // updateAxisRange(varId, checked);
+
+        updatedSelection.all =
+          variableIds.length > 0 &&
+          variableIds.every((id) => updatedSelection[id]);
+
+        updateDataset("unitSelection", updatedSelection);
+
+        setAxisRangeScale(varId, checked);
       }
   };
 

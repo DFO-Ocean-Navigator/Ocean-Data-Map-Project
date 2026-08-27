@@ -14,6 +14,11 @@ function AxisRange(props) {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    setMin(props.is_imperial?props.variable.imperial_scale[0]:props.variable.scale[0])
+    setMax(props.is_imperial?props.variable.imperial_scale[1]:props.variable.scale[1])
+  }, [props.is_imperial])
+
+  useEffect(() => {
     let newMin = parseFloat(min);
     let newMax = parseFloat(max);
 
@@ -51,11 +56,17 @@ function AxisRange(props) {
   const handleResetButton = () => {
     clearTimeout(timerRef.current);
 
-    setMin(props.variable.scale[0]);
-    setMax(props.variable.scale[1]);
+    let scale = props.variable.scale
+
+    if (props.is_imperial){
+      scale = props.variable.imperial_scale
+    }
+
+    setMin(scale[0]);
+    setMax(scale[1]);
 
     timerRef.current = setTimeout(
-      updateParent([props.variable.scale[0], props.variable.scale[1]]),
+      updateParent([scale[0], scale[1]]),
       500,
     );
   };
@@ -110,6 +121,7 @@ AxisRange.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   variable: PropTypes.object,
+  units: PropTypes.bool,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
 };

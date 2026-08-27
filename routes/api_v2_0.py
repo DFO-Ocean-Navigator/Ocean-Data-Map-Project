@@ -230,16 +230,26 @@ def variables(
 
             # Define imperial_scale
             unit = config.variable[v].unit
+            if unit == "Celsius":
+                unit = "°C"
+
             imperial_unit = utils.get_imperial_unit(unit)
 
             if imperial_unit == unit:
                 imperial_scale = config.variable[v].scale
             else:
-                imperial_scale = (
-                    ureg.Quantity(config.variable[v].scale, unit)
+                imperial_scale = [round(float(
+                    ureg.Quantity(config.variable[v].scale[0], unit)
                     .to(imperial_unit)
                     .magnitude
-                )
+                )),round(float(
+                    ureg.Quantity(config.variable[v].scale[1], unit)
+                    .to(imperial_unit)
+                    .magnitude
+                ))]
+            print(f"Variable: {config.variable[v].name}")
+            print(f"Scale: {config.variable[v].scale}")
+            print(f"Imperial Scale: {imperial_scale}")
 
             data.append(
                 {

@@ -201,8 +201,8 @@ IMPERIAL_UNITS = {
     "m": "ft",
     "km": "mi",
     "m/s": "ft/s",
-    "kg/m^3": "lb/ft^3",
-    "degC": "degF",
+    "kg/m^3": "lbs/ft^3",
+    "°C": "°F",
 }
 
 def get_imperial_unit(metric_unit):
