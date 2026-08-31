@@ -71,7 +71,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             )  # Longitudes
 
         if self.unitSelection:
-            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.unitSelection, self.depths, self.data, self.variables, self.variable_units)
+            self.depth, self.data, self.variable_units = utils.convert_to_imperial(self.unitSelection, self.depth, self.data, self.variables, self.variable_units)
 
         # Plot Sound Speed profile
         plt.subplot(gs[:, 1 if self.showmap else 0])

@@ -159,12 +159,12 @@ const Toggle = ({ id, title, dataset, onChange }) => {
   }, [dataset.variable]);
 
   return (
-    <div>
+    <div className="units-options">
       <div>
         <Form.Label className="unit-toggle-label">{title}</Form.Label>
       </div>
       <div>
-        <Accordion key="plot-options" className="imperial-units-accordion">
+        <Accordion className="imperial-units-accordion">
           <Accordion.Item eventKey={id}>
             <Accordion.Header>{"Imperial Units"} </Accordion.Header>
             <Accordion.Body>

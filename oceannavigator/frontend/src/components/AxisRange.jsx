@@ -121,7 +121,7 @@ AxisRange.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   variable: PropTypes.object,
-  units: PropTypes.bool,
+  is_imperial: PropTypes.bool,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
 };
