@@ -104,6 +104,17 @@ const PointWindow = ({
     setOnly2d(dataset2D);
   }, [plotDataset]);
 
+  useEffect(() => {
+    setPlotDataset((prev) => ({
+      ...prev, 
+      unitSelection: {
+        all: false,
+        depth: false,
+        [dataset.variable.id]: false
+      }
+    }));
+  }, [selected]);
+
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
     if (value.variable && value.depth !== "all") {
@@ -160,7 +171,7 @@ const PointWindow = ({
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
-  const showUnitSelector = selected !== TabEnum.OBSERVATION;
+  const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
 
   const plotOptions = (
     <>

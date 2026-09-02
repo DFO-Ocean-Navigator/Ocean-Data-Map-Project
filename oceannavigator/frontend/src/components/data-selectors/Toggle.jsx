@@ -2,10 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import { withTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Accordion from "react-bootstrap/Accordion";
 
-const Toggle = ({ id, title, dataset, onChange }) => {
+const Toggle = ({ id, dataset, onChange }) => {
 
   const variables = Array.isArray(dataset?.variable)
     ? dataset.variable
@@ -15,18 +15,15 @@ const Toggle = ({ id, title, dataset, onChange }) => {
   const unitSelection = dataset?.unitSelection || {};
   const axisRange = dataset?.axisRange || {};
 
+  //For radio display, unchecking/checking all if all variables are not the same value (true or false)
+  const allSameBoolean = Object.keys(unitSelection).length > 0 && (Object.values(unitSelection).every((value) => value === true) || Object.values(unitSelection).every((value) => value === false));
+
   const updateDataset = (key, value) => {
     onChange(key, value);
   };
 
-    // Imperial Units Accordion
-  const buildUnitSelection = (dataset) => {
-    const variables = Array.isArray(dataset?.variable)
-      ? dataset.variable
-      : dataset?.variable
-        ? [dataset.variable]
-        : [];
-
+  // Build unit selection object 
+  const buildUnitSelection = () => {
       return {
         all: false,
         depth: false,
@@ -36,6 +33,7 @@ const Toggle = ({ id, title, dataset, onChange }) => {
       };
   };
 
+  // Updates axis range scale with imperial scale if checked, otherwise with metric scale
   const setAxisRangeScale = (varId, checked) => {
     if (
       varId !== "all" &&
@@ -51,19 +49,11 @@ const Toggle = ({ id, title, dataset, onChange }) => {
     }
   }
 
-    // Imperial Units Accordion
+  // updates unit selection object when values are selected on UI
   const updateUnitSelection = (varId, checked) => {
       let currentSelection = dataset.unitSelection;
 
-      // Rebuild the selection when it does not match the current dataset
-      if (
-        !currentSelection ||
-        !Object.prototype.hasOwnProperty.call(currentSelection, varId)
-      ) {
-        currentSelection = buildUnitSelection(dataset);
-      }
-
-      // Checking "all" updates every checkbox
+      // If "all" is selected, update all variables to the same value 
       if (varId === "all") {
         const updatedSelection = Object.fromEntries(
           Object.keys(currentSelection).map((id) => [id, checked])
@@ -74,19 +64,17 @@ const Toggle = ({ id, title, dataset, onChange }) => {
         Object.keys(unitSelection).forEach((variableId) => {
           setAxisRangeScale(variableId, checked);
         });
-      } 
+      } // Otherwise update single variable 
       else {
         const updatedSelection = {
           ...currentSelection,
           [varId]: checked,
         };
 
+        // Update "all" selection based on whether all variables are selected or not
         const variableIds = Object.keys(updatedSelection).filter(
           (id) => id !== "all"
         );
-
-        // updateAxisRange(varId, checked);
-
         updatedSelection.all =
           variableIds.length > 0 &&
           variableIds.every((id) => updatedSelection[id]);
@@ -97,7 +85,7 @@ const Toggle = ({ id, title, dataset, onChange }) => {
       }
   };
 
-  const checkboxOptions = [
+  const radioOptions = [
     {
       id: "all",
       label: "All Variables",
@@ -112,47 +100,6 @@ const Toggle = ({ id, title, dataset, onChange }) => {
     })),
   ];
 
-  const conversions = {
-    metersToFeet: (x) => x * 3.281,
-    feetToMeters: (x) => x / 3.281,
-
-    celsiusToFahrenheit: (x) => x * 1.8 + 32,
-    fahrenheitToCelsius: (x) => (x - 32) / 1.8,
-
-    metersPerSecondToFeetPerSecond: (x) => x * 3.281,
-    feetPerSecondToMetersPerSecond: (x) => x / 3.281,
-
-    kgPerM3ToLbPerFt3: (x) => x * 0.06243,
-    lbPerFt3ToKgPerM3: (x) => x / 0.06243,
-  };
-
-  // useEffect(() => {
-  //   Object.entries(unitSelection).forEach(([variableId, checked]) => {
-  //     if (
-  //       variableId !== "all" &&
-  //       variableId !== "depth" &&
-  //       checked && 
-  //       axisRange[variableId] != null
-  //     ) {
-  //       updateDataset(
-  //         "axisRange",
-  //         [variableId, [conversions.celsiusToFahrenheit(axisRange[variableId][0]),conversions.celsiusToFahrenheit(axisRange[variableId][1])]]
-  //       );
-  //     }
-  //     if (
-  //       variableId !== "all" &&
-  //       variableId !== "depth" &&
-  //       !checked && 
-  //       axisRange[variableId] != null
-  //     ) {
-  //       updateDataset(
-  //         "axisRange",
-  //         [variableId, [conversions.fahrenheitToCelsius(axisRange[variableId][0]),conversions.fahrenheitToCelsius(axisRange[variableId][1])]]
-  //       );
-  //     }
-  //   });
-  // }, [unitSelection, axisRange]);
-
   useEffect(() => {
     // Rebuild the unit selection when the variables changes
     updateDataset("unitSelection", buildUnitSelection(dataset));
@@ -161,25 +108,53 @@ const Toggle = ({ id, title, dataset, onChange }) => {
   return (
     <div className="units-options">
       <div>
-        <Form.Label className="unit-toggle-label">{title}</Form.Label>
-      </div>
-      <div>
         <Accordion className="imperial-units-accordion">
           <Accordion.Item eventKey={id}>
-            <Accordion.Header>{"Imperial Units"} </Accordion.Header>
+            <Accordion.Header>{"Unit Selection"} </Accordion.Header>
             <Accordion.Body>
-              {checkboxOptions.map((option) => (
-                <Form.Check
-                  key={option.id}
-                  type="checkbox"
-                  id={`unit-selection-${id}-${option.id}`}
-                  checked={Boolean(unitSelection?.[option.id])}
-                  onChange={(event) =>
-                    updateUnitSelection(option.id, event.target.checked)
-                  }
-                  label={option.label}
-                />
-              ))}
+              <div className="unit-table">
+                <div className="unit-table-header">
+                  <span className="unit-table-header-spacer" />
+                  <span className="unit-table-header-col">Metric</span>
+                  <span className="unit-table-header-col">Imperial</span>
+                </div>
+
+                {radioOptions.map((option) => (
+                <div key={option.id} className="unit-table-row">
+                  <Form.Label className="unit-option-label mb-0">
+                    {option.label}:
+                  </Form.Label>
+
+                  <div className="unit-radio-cell">
+                    <Form.Check
+                      type="radio"
+                      aria-label="Metric"
+                      name={`units-${option.id}`}
+                      id={`metric-${option.id}`}
+                      value="metric"
+                      checked={(option.id==="all" && !allSameBoolean)?Boolean(unitSelection?.[option.id]):Boolean(!unitSelection?.[option.id])}
+                      onChange={() =>
+                        updateUnitSelection(option.id, false)
+                      }
+                    />
+                  </div>
+
+                  <div className="unit-radio-cell">
+                    <Form.Check
+                      type="radio"
+                      aria-label="Imperial"
+                      name={`units-${option.id}`}
+                      id={`imperial-${option.id}`}
+                      value="imperial"
+                      checked={Boolean(unitSelection?.[option.id])}
+                      onChange={() =>
+                        updateUnitSelection(option.id, true)
+                      }
+                    />
+                  </div>
+                </div>
+                ))}
+              </div>
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>
@@ -188,19 +163,9 @@ const Toggle = ({ id, title, dataset, onChange }) => {
   );
 };
 
-
 Toggle.propTypes = {
   id: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
   dataset: PropTypes.object.isRequired,
-  // variables: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.shape({
-  //   id: PropTypes.string.isRequired,
-  //   value: PropTypes.string.isRequired,
-  // }))),
-  // unitSelection: PropTypes.objectOf(PropTypes.shape({
-  //   id: PropTypes.string.isRequired,
-  //   value: PropTypes.string.isRequired,
-  // })),
   onChange: PropTypes.func.isRequired,
 };
 

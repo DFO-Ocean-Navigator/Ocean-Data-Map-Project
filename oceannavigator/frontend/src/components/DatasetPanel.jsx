@@ -177,7 +177,6 @@ function DatasetPanel({
   let unitSelector = showUnitSelector ? (
     <Toggle
       id="use_imperial_units"
-      title={"Units"}
       dataset={dataset}
       onChange={updateDataset}
     />
