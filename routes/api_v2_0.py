@@ -28,7 +28,7 @@ import plotting.colormap
 import routes.enums as e
 import utils.misc
 import pint
-import plotting.utils as utils
+from plotting.utils import get_imperial_unit
 from data import open_dataset
 from data.observational import (
     Base,
@@ -233,7 +233,7 @@ def variables(
             if unit == "Celsius":
                 unit = "°C"
 
-            imperial_unit = utils.get_imperial_unit(unit)
+            imperial_unit = get_imperial_unit(unit)
 
             if imperial_unit == unit:
                 imperial_scale = config.variable[v].scale

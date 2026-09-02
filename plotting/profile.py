@@ -187,10 +187,10 @@ class ProfilePlotter(PointPlotter):
 
         # Convert to imperial units
         log().debug(
-            f"\nImperial Units {self.unitSelection}"
+            f"\nImperial Units {self.unit_selection}"
         )
-        if self.unitSelection:
-            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.unitSelection, self.depths, self.data, self.variables, self.variable_units)
+        if self.unit_selection:
+            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.unit_selection, self.depths, self.data, self.variables, self.variable_units)
                 
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
@@ -242,7 +242,7 @@ class ProfilePlotter(PointPlotter):
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                if "depth" in self.unitSelection:
+                if "depth" in self.unit_selection:
                     current_axis.set_ylabel("Depth (ft)", fontsize=14)
                 else:
                     current_axis.set_ylabel("Depth (m)", fontsize=14)

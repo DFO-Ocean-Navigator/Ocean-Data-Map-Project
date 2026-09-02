@@ -52,7 +52,7 @@ class TimeseriesPlotter(PointPlotter):
             interp=self.interp,
             radius=self.radius,
             neighbours=self.neighbours,
-            unit_selection=self.unitSelection,
+            unit_selection=self.unit_selection,
         ) as dataset:
             self.load_misc(dataset, self.variables)
 

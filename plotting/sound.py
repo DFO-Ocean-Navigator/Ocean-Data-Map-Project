@@ -50,7 +50,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Scale TS Diagram to be double the size of location map
         width_ratios = [1, 3] if self.showmap else None  
 
-        if self.unitSelection: 
+        if self.unit_selection: 
             self.variable_units = ["ft/s"]
         else:
             self.variable_units = ["m/s"]

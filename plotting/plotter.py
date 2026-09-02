@@ -119,7 +119,7 @@ class Plotter(metaclass=ABCMeta):
 
         self.showmap = self.__get_showmap(query.get("showmap"))
 
-        self.unitSelection = self.__get_use_imperial_units(query.get("unitSelection"))
+        self.unit_selection = self.__get_use_imperial_units(query.get("unitSelection"))
 
     def __get_date_formatter(self, quantum: str):
         """
@@ -215,12 +215,12 @@ class Plotter(metaclass=ABCMeta):
     def __get_showmap(self, showmap: str):
         return showmap is None or bool(showmap)
 
-    def __get_use_imperial_units(self, use_imperial_units: list[dict]):
-        print(f"\n use_imperial_units: {use_imperial_units} \n")
-        if use_imperial_units is not None:
+    def __get_use_imperial_units(self, imperial_units: list[dict]):
+        print(f"\n use_imperial_units: {imperial_units} \n")
+        if imperial_units is not None:
             checked_keys = [
                 key
-                for key, item in use_imperial_units.items()
+                for key, item in imperial_units.items()
                 if item
             ]
 
