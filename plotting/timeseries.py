@@ -163,7 +163,13 @@ class TimeseriesPlotter(PointPlotter):
             unit = "m"
 
             if self.unit_selection:
-                depths, point_data, unit = utils.convert_to_imperial(self.unit_selection, depths, point_data, self.variables, self.variable_unit)
+                depths, point_data, unit = utils.convert_to_imperial(
+                    self.unit_selection,
+                    depths,
+                    point_data,
+                    self.variables,
+                    self.variable_unit,
+                )
             self.times = times
             self.data = point_data
             self.depths = depths

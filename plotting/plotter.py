@@ -218,15 +218,11 @@ class Plotter(metaclass=ABCMeta):
     def __get_use_imperial_units(self, imperial_units: list[dict]):
         print(f"\n use_imperial_units: {imperial_units} \n")
         if imperial_units is not None:
-            checked_keys = [
-                key
-                for key, item in imperial_units.items()
-                if item
-            ]
+            checked_keys = [key for key, item in imperial_units.items() if item]
 
             if checked_keys and checked_keys[0] == "all":
                 checked_keys.remove("all")
-                
+
             return checked_keys
 
         return []

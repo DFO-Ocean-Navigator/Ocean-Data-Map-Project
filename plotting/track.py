@@ -333,18 +333,14 @@ class TrackPlotter(Plotter):
 
             if len(np.unique(self.depth)) == 1:
                 if self.data_units[j] is not None:
-                    ax.set_ylabel(
-                        f"{self.data_names[j]} \
-                        ({utils.mathtext(self.data_units[j])})"
-                    )
+                    ax.set_ylabel(f"{self.data_names[j]} \
+                        ({utils.mathtext(self.data_units[j])})")
                 else:
                     ax.set_ylabel(self.data_names[j])
             else:
                 if self.data_units[j] is not None:
-                    bar.set_label(
-                        f"{self.data_names[j]} \
-                        ({utils.mathtext(self.data_units[j])})"
-                    )
+                    bar.set_label(f"{self.data_names[j]} \
+                        ({utils.mathtext(self.data_units[j])})")
                 else:
                     bar.set_label(self.data_names[j])
 
@@ -393,10 +389,8 @@ class TrackPlotter(Plotter):
 
             if len(np.unique(self.depth)) > 1:
                 ax.set_ylabel("Depth (m)")
-                bar.set_label(
-                    f"{self.variable_names[idx]} \
-                    ({utils.mathtext(self.variable_units[idx])})"
-                )
+                bar.set_label(f"{self.variable_names[idx]} \
+                    ({utils.mathtext(self.variable_units[idx])})")
             else:
                 ax.set_ylabel(
                     "%s (%s)"

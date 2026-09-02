@@ -8,7 +8,7 @@ import plotting.utils as utils
 from data import open_dataset
 from plotting.point import PointPlotter
 from utils.errors import ClientError
-from oceannavigator.log import log 
+from oceannavigator.log import log
 
 
 class ProfilePlotter(PointPlotter):
@@ -73,14 +73,13 @@ class ProfilePlotter(PointPlotter):
         columns = ["Latitude", "Longitude", "Depth"]
         variable_order = []
 
-
         priority_vars = {
             "Potential Temperature": "Potential Temperature (Celsius)",
             "Salinity": "Salinity (PSU)",
             "Speed of Sound": "Speed of Sound (m/s)",
         }
 
-        #Arranging column labels and order in which variables are to be displayed
+        # Arranging column labels and order in which variables are to be displayed
         for var in ["Potential Temperature", "Salinity", "Speed of Sound"]:
             if var in self.variable_names:
                 columns.append(priority_vars[var])
@@ -90,7 +89,6 @@ class ProfilePlotter(PointPlotter):
             if name not in priority_vars:
                 columns.append(f"{name} ({unit})")
                 variable_order.append(name)
-
 
         data = []
 
@@ -114,7 +112,7 @@ class ProfilePlotter(PointPlotter):
                     value = self.data[p, i, d]
                     entry.append("%0.1f" % value)
                 data.append(entry)
-               
+
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def stats_csv(self):
@@ -186,12 +184,16 @@ class ProfilePlotter(PointPlotter):
             width_ratios = None
 
         # Convert to imperial units
-        log().debug(
-            f"\nImperial Units {self.unit_selection}"
-        )
+        log().debug(f"\nImperial Units {self.unit_selection}")
         if self.unit_selection:
-            self.depths, self.data, self.variable_units = utils.convert_to_imperial(self.unit_selection, self.depths, self.data, self.variables, self.variable_units)
-                
+            self.depths, self.data, self.variable_units = utils.convert_to_imperial(
+                self.unit_selection,
+                self.depths,
+                self.data,
+                self.variables,
+                self.variable_units,
+            )
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
         subplot = 0

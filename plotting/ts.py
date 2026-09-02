@@ -85,10 +85,10 @@ class TemperatureSalinityPlotter(PointPlotter):
         # Scale TS Diagram to be double the size of location map
         width_ratios = [1, 3] if self.showmap else None
 
-        #Unit Selection
+        # Unit Selection
         if "depth" in self.unit_selection:
             depth_units = "ft"
-        else: 
+        else:
             depth_units = "m"
 
         # Create layout helper
@@ -108,7 +108,13 @@ class TemperatureSalinityPlotter(PointPlotter):
 
         if self.unit_selection:
             depths = [self.salinity_depths, self.temperature_depths]
-            depths, self.data, self.variable_units = utils.convert_to_imperial(self.unit_selection, depths, self.data, self.variables, self.variable_units)
+            depths, self.data, self.variable_units = utils.convert_to_imperial(
+                self.unit_selection,
+                depths,
+                self.data,
+                self.variables,
+                self.variable_units,
+            )
             [self.salinity_depths, self.temperature_depths] = depths
 
         # Plot TS Diagram
