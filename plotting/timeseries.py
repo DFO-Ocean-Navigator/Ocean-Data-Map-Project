@@ -52,6 +52,7 @@ class TimeseriesPlotter(PointPlotter):
             interp=self.interp,
             radius=self.radius,
             neighbours=self.neighbours,
+            unit_selection=self.unit_selection,
         ) as dataset:
             self.load_misc(dataset, self.variables)
 
@@ -159,10 +160,20 @@ class TimeseriesPlotter(PointPlotter):
 
                 self.quiver_data = vector_point_data
 
+            units = "m"
+
+            if self.unit_selection:
+                depths, point_data, units = utils.convert_to_imperial(
+                    self.unit_selection,
+                    depths,
+                    point_data,
+                    self.variables,
+                    self.variable_unit,
+                )
             self.times = times
             self.data = point_data
             self.depths = depths
-            self.depth_unit = "m"
+            self.depth_unit = units
 
     def csv(self):
         header = [

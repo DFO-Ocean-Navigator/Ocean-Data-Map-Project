@@ -119,6 +119,8 @@ class Plotter(metaclass=ABCMeta):
 
         self.showmap = self.__get_showmap(query.get("showmap"))
 
+        self.unit_selection = self.__get_unit_selection(query.get("unitSelection"))
+
     def __get_date_formatter(self, quantum: str):
         """
         Returns the correct lambda to format a date given a quantum.
@@ -212,6 +214,17 @@ class Plotter(metaclass=ABCMeta):
 
     def __get_showmap(self, showmap: str):
         return showmap is None or bool(showmap)
+
+    def __get_unit_selection(self, imperial_units: list[dict]):
+        if imperial_units is not None:
+            checked_keys = [key for key, item in imperial_units.items() if item]
+
+            if checked_keys and checked_keys[0] == "all":
+                checked_keys.remove("all")
+
+            return checked_keys
+
+        return []
 
     @abstractmethod
     def load_data(self):

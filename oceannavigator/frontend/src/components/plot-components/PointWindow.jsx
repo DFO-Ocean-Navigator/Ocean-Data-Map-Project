@@ -68,6 +68,13 @@ const PointWindow = ({
       axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : { [dataset.variable.id]: null },
+      unitSelection: dataset.hasOwnProperty("unitSelection")
+        ? dataset.unitSelection
+        : {
+            all: false,
+            depth: false,
+            [dataset.variable.id]: false
+          },
     },
   );
   const [only2d, setOnly2d] = useState(false);
@@ -95,6 +102,17 @@ const PointWindow = ({
     }
     setOnly2d(dataset2D);
   }, [plotDataset]);
+
+  useEffect(() => {
+    setPlotDataset((prev) => ({
+      ...prev, 
+      unitSelection: {
+        all: false,
+        depth: false,
+        [dataset.variable.id]: false
+      }
+    }));
+  }, [selected]);
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
@@ -152,6 +170,7 @@ const PointWindow = ({
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
 
   const plotOptions = (
     <>
@@ -205,6 +224,7 @@ const PointWindow = ({
         onUpdate={handleDatasetUpdate}
         showQuiverSelector={false}
         showVariableRange={false}
+        showUnitSelector={showUnitSelector}
         showAxisRange={showAxisRange}
         showTimeRange={showTimeRange}
         disableTimeSelector={selected === TabEnum.OBSERVATION}
@@ -269,6 +289,7 @@ const PointWindow = ({
     dataset: plotDataset.id,
     names: names,
   };
+
   let axisRange = Array.isArray(plotDataset.variable)
     ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
     : plotDataset.axisRange[plotDataset.variable.id];
@@ -279,6 +300,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
@@ -294,6 +316,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
       };
@@ -304,6 +327,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
       };
       plotType = "ts";
@@ -313,6 +337,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
       };
       plotType = "sound";
@@ -336,6 +361,7 @@ const PointWindow = ({
           : plotDataset.variable.id,
         variable_range: axisRange,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         station: plotData.coordinates,
         depth: plotDataset.depth,
         starttime: plotDataset.starttime.id,

@@ -5,6 +5,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 import numpy as np
+import pint
 
 from oceannavigator.settings import get_settings
 
@@ -195,3 +196,73 @@ def point_plot(points, grid_loc):
 
 def path_plot(points, grid_loc, quiver=True):
     _map_plot(points, grid_loc, True, quiver=quiver)
+
+
+IMPERIAL_UNITS = {
+    "m": "ft",
+    "km": "mi",
+    "m/s": "ft/s",
+    "kg/m^3": "lbs/ft^3",
+    "°C": "°F",
+}
+
+
+def get_imperial_unit(metric_unit):
+    return IMPERIAL_UNITS.get(metric_unit, metric_unit)
+
+
+def convert_units(value, from_unit, to_unit="None"):
+    if to_unit == "None":
+        to_unit = get_imperial_unit(from_unit)
+
+    ureg = pint.UnitRegistry()
+
+    value_m = value
+    value_imp = ureg.Quantity(value_m, from_unit).to(to_unit).magnitude
+
+    return np.ma.array(value_imp, mask=value_m.mask)
+
+
+def convert_to_imperial(use_imperial_units, depths, data, variables, variable_units):
+    """
+    Converts the depths and data to imperial units if specified in the use_imperial_units list.
+        use_imperial_units: list of variable names to convert to imperial units
+        depths: list of depth arrays to convert
+        data: 3D array of data to convert
+        variables: list of variable names corresponding to the data array
+        variable_units: list of units corresponding to the variables
+    Returns the converted depths, data, and variable_units.
+    """
+    ureg = pint.UnitRegistry()
+    if "depth" in use_imperial_units:
+        for depth in depths:
+            depth = convert_units(depth, "meter", "foot")
+
+    for idx, var in enumerate(variables):
+        if var in use_imperial_units and var == "votemper":
+            data[:, idx, :] = convert_units(data[:, idx, :], "°C", "°F")
+            variable_units[idx] = "°F"
+
+        if var in use_imperial_units and (
+            var == "vozocrtx"
+            or var == "vomecrty"
+            or var == "magwatervel"
+            or var == "sspeed"
+        ):
+            data[:, idx, :] = convert_units(data[:, idx, :], "m/s", "ft/s")
+            variable_units[idx] = "ft/s"
+
+        if var in use_imperial_units and (
+            var == "deepsoundchannel"
+            or var == "soniclayerdepth"
+            or var == "deepsoundchannelbottom"
+            or var == "depthexcess"
+        ):
+            data[:, idx, :] = convert_units(data[:, idx, :], "m", "ft")
+            variable_units[idx] = "ft"
+
+        if var in use_imperial_units and var == "density":
+            data[:, idx, :] = convert_units(data[:, idx, :], "kg/m³", "lb/ft³")
+            variable_units[idx] = "lb/ft³"
+
+    return depths, data, variable_units

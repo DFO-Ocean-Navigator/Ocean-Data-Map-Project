@@ -27,6 +27,8 @@ import data.observational.queries as ob_queries
 import plotting.colormap
 import routes.enums as e
 import utils.misc
+import pint
+from plotting.utils import get_imperial_unit
 from data import open_dataset
 from data.observational import (
     Base,
@@ -212,6 +214,7 @@ def variables(
     """
 
     config = DatasetConfig(dataset)
+    ureg = pint.UnitRegistry()
 
     data = []
     with open_dataset(config) as ds:
@@ -225,11 +228,39 @@ def variables(
             if (vectors_only) and v.key not in config.vector_variables:
                 continue
 
+            # Define imperial_scale
+            unit = config.variable[v].unit
+            if unit == "Celsius":
+                unit = "°C"
+
+            imperial_unit = get_imperial_unit(unit)
+
+            if imperial_unit == unit:
+                imperial_scale = config.variable[v].scale
+            else:
+                imperial_scale = [
+                    round(
+                        float(
+                            ureg.Quantity(config.variable[v].scale[0], unit)
+                            .to(imperial_unit)
+                            .magnitude
+                        )
+                    ),
+                    round(
+                        float(
+                            ureg.Quantity(config.variable[v].scale[1], unit)
+                            .to(imperial_unit)
+                            .magnitude
+                        )
+                    ),
+                ]
+
             data.append(
                 {
                     "id": v.key,
                     "value": config.variable[v].name,
                     "scale": config.variable[v].scale,
+                    "imperial_scale": imperial_scale,
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
                     "vector_variable": v.key in config.vector_variables,

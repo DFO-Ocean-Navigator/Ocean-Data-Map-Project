@@ -50,6 +50,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Scale TS Diagram to be double the size of location map
         width_ratios = [1, 3] if self.showmap else None
 
+        if self.unit_selection:
+            self.variable_units = ["ft/s"]
+        else:
+            self.variable_units = ["m/s"]
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -81,7 +86,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             ]
         )
         ax.set_xlabel(
-            "Sound Speed (m/s)", fontsize=14
+            f"Sound Speed {self.variable_units[0]}", fontsize=14
         )  # ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(
             "Depth (m)", fontsize=14
