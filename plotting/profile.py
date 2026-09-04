@@ -8,7 +8,6 @@ import plotting.utils as utils
 from data import open_dataset
 from plotting.point import PointPlotter
 from utils.errors import ClientError
-from oceannavigator.log import log
 
 
 class ProfilePlotter(PointPlotter):
@@ -184,7 +183,6 @@ class ProfilePlotter(PointPlotter):
             width_ratios = None
 
         # Convert to imperial units
-        log().debug(f"\nImperial Units {self.unit_selection}")
         if self.unit_selection:
             self.depths, self.data, self.variable_units = utils.convert_to_imperial(
                 self.unit_selection,

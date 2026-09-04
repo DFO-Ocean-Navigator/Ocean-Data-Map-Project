@@ -254,9 +254,6 @@ def variables(
                         )
                     ),
                 ]
-            print(f"Variable: {config.variable[v].name}")
-            print(f"Scale: {config.variable[v].scale}")
-            print(f"Imperial Scale: {imperial_scale}")
 
             data.append(
                 {

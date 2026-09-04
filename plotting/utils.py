@@ -239,7 +239,6 @@ def convert_to_imperial(use_imperial_units, depths, data, variables, variable_un
             depth = convert_units(depth, "meter", "foot")
 
     for idx, var in enumerate(variables):
-        print(f"\nVariable Name {var}")
         if var in use_imperial_units and var == "votemper":
             data[:, idx, :] = convert_units(data[:, idx, :], "°C", "°F")
             variable_units[idx] = "°F"

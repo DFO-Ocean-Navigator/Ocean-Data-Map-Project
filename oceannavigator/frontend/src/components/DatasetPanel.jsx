@@ -160,7 +160,6 @@ function DatasetPanel({
   const applySearchFilters = (filteredDataset) => {
     setDataset({ ...dataset, ...filteredDataset });
   };
-  console.log("Dataset Variables: ", dataset);
 
   let variableSelector = showVariableSelector ? (
     <VariableSelector

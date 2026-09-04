@@ -160,10 +160,10 @@ class TimeseriesPlotter(PointPlotter):
 
                 self.quiver_data = vector_point_data
 
-            unit = "m"
+            units = "m"
 
             if self.unit_selection:
-                depths, point_data, unit = utils.convert_to_imperial(
+                depths, point_data, units = utils.convert_to_imperial(
                     self.unit_selection,
                     depths,
                     point_data,
@@ -173,7 +173,7 @@ class TimeseriesPlotter(PointPlotter):
             self.times = times
             self.data = point_data
             self.depths = depths
-            self.depth_unit = unit
+            self.depth_unit = units
 
     def csv(self):
         header = [
