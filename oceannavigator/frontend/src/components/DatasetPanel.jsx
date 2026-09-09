@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 import AxisRange from "./AxisRange.jsx";
+import Toggle from "./data-selectors/Toggle.jsx";
 import DatasetSelector from "./data-selectors/DatasetSelector.jsx";
 import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
@@ -26,6 +27,7 @@ function DatasetPanel({
   showQuiverSelector = true,
   showTimeRange = false,
   showDepthSelector = true,
+  showUnitSelector = false, 
   showAxisRange = false,
   showVariableSelector = true,
   showAllDepths = false,
@@ -115,6 +117,12 @@ function DatasetPanel({
           axisRange: newAxisRange,
         }));
         break;
+      case "unitSelection":
+        setDataset((prevDataset) => ({
+          ...prevDataset,
+          unitSelection: value,
+        }));
+        break;
       default:
         setDataset((prevDataset) => ({
           ...prevDataset,
@@ -165,6 +173,14 @@ function DatasetPanel({
     />
   ) : null;
 
+  let unitSelector = showUnitSelector ? (
+    <Toggle
+      id="use_imperial_units"
+      dataset={dataset}
+      onChange={updateDataset}
+    />
+  ) : null;
+
   let axisRangeSelectors = [];
   if (showAxisRange) {
     let axisVariables = Array.isArray(dataset.variable)
@@ -177,6 +193,7 @@ function DatasetPanel({
           id={variable.id + "_axis_range"}
           title={variable.value + " Range"}
           variable={variable}
+          is_imperial={dataset.unitSelection[variable.id]}
           range={dataset.axisRange[variable.id]}
           onUpdate={updateDataset}
         />
@@ -324,6 +341,7 @@ function DatasetPanel({
           horizontalLayout={horizontalLayout}
         />
         {variableSelector}
+        {unitSelector}
         {axisRangeSelectors}
         {quiverSelector}
         {depthSelector}
@@ -359,6 +377,7 @@ DatasetPanel.propTypes = {
   showQuiverSelector: PropTypes.bool,
   showTimeRange: PropTypes.bool,
   showDepthSelector: PropTypes.bool,
+  showUnitSelector: PropTypes.bool,
   showAxisRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showAllDepths: PropTypes.bool,
