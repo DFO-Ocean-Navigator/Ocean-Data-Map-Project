@@ -68,7 +68,7 @@ const PointWindow = ({
       axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : selected===TabEnum.PROFILE 
-          ? { [dataset.variable.id]: null , ["depth"]: null} 
+          ? { [dataset.variable.id]: null , ["depth_range"]: null} 
           : { [dataset.variable.id]: null} ,
       unitSelection: dataset.hasOwnProperty("unitSelection")
         ? dataset.unitSelection
@@ -173,6 +173,7 @@ const PointWindow = ({
   const multipleVariables = selected === TabEnum.PROFILE;
   const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
   const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
+  const showDepthRange = selected === TabEnum.PROFILE;
 
   const plotOptions = (
     <>

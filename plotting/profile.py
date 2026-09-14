@@ -2,7 +2,6 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-import pint
 
 import plotting.utils as utils
 from data import open_dataset
@@ -105,7 +104,7 @@ class ProfilePlotter(PointPlotter):
                     "%0.1f" % self.depths[p, 0, d],
                 ]
 
-                ## Append values for each variable in order, formatted to one decimal place
+                # Append values for each variable in order, formatted to one decimal place
                 for var_name in variable_order:
                     i = self.variable_names.index(var_name)
                     value = self.data[p, i, d]
@@ -253,6 +252,8 @@ class ProfilePlotter(PointPlotter):
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
             elif self.axis_range:
+                if "depth_range" in self.axis_range:
+                    plt.gca().set_ylim(self.axis_range["depth_range"])
                 plt.gca().set_xlim(self.axis_range[idx])
 
             subplot += 1

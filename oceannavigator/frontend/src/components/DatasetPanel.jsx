@@ -188,7 +188,7 @@ function DatasetPanel({
       ? dataset.variable
       : [dataset.variable];
     if (showDepthRange) {
-      let depth_variable = {value: "Depth", id: "depth", scale: [0, 10000]};
+      let depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000]};
       axisVariables.push(depth_variable);
     }
     for (let variable of axisVariables) {
@@ -384,6 +384,7 @@ DatasetPanel.propTypes = {
   showDepthSelector: PropTypes.bool,
   showUnitSelector: PropTypes.bool,
   showAxisRange: PropTypes.bool,
+  showDepthRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showAllDepths: PropTypes.bool,
   mountedDataset: PropTypes.object,
