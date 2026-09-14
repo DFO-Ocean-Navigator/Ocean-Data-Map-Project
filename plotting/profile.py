@@ -104,7 +104,8 @@ class ProfilePlotter(PointPlotter):
                     "%0.1f" % self.depths[p, 0, d],
                 ]
 
-                # Append values for each variable in order, formatted to one decimal place
+                # Append values for each variable in order,
+                # formatted to 1 decimal place
                 for var_name in variable_order:
                     i = self.variable_names.index(var_name)
                     value = self.data[p, i, d]
@@ -121,7 +122,9 @@ class ProfilePlotter(PointPlotter):
 
         columns = [
             "Statistic",
-        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
+        ] + [
+            "%s (%s)" % x for x in zip(self.variable_names, self.variable_units)
+        ]
 
         data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
