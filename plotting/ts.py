@@ -85,6 +85,12 @@ class TemperatureSalinityPlotter(PointPlotter):
         # Scale TS Diagram to be double the size of location map
         width_ratios = [1, 3] if self.showmap else None
 
+        # Unit Selection
+        if "depth" in self.unit_selection:
+            depth_units = "ft"
+        else:
+            depth_units = "m"
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -99,6 +105,17 @@ class TemperatureSalinityPlotter(PointPlotter):
                 ),
                 gs[0, 0],
             )  # Longitudes
+
+        if self.unit_selection:
+            depths = [self.salinity_depths, self.temperature_depths]
+            depths, self.data, self.variable_units = utils.convert_to_imperial(
+                self.unit_selection,
+                depths,
+                self.data,
+                self.variables,
+                self.variable_units,
+            )
+            [self.salinity_depths, self.temperature_depths] = depths
 
         # Plot TS Diagram
         plt.subplot(gs[:, 1 if self.showmap else 0])
@@ -131,7 +148,7 @@ class TemperatureSalinityPlotter(PointPlotter):
             "Salinity (PSU)", fontsize=14
         )  # plt.xlabel(gettext("Salinity (PSU)"), fontsize=14)
         plt.ylabel(
-            "Temperature (Celsius)", fontsize=14
+            f"Temperature ({self.variable_units[0]})", fontsize=14
         )  # plt.ylabel(gettext("Temperature (Celsius)"), fontsize=14)
 
         if len(self.points) == 1:
@@ -145,7 +162,7 @@ class TemperatureSalinityPlotter(PointPlotter):
                     labels.append(d)
                     for idx2, _ in enumerate(self.temperature):
                         plt.annotate(
-                            "{:.0f}m".format(d),
+                            "{:.0f}{}".format(d, depth_units),
                             xy=(self.salinity[idx2][idx], self.temperature[idx2][idx]),
                             xytext=(15, -15),
                             ha="left",

@@ -118,12 +118,9 @@ class ObservationPlotter(PointPlotter):
                 self.load_misc(dataset, self.variables)
             except IndexError as e:
                 raise ClientError(
-                    (
-                        "The selected variable(s) were not found in the dataset. \
+                    ("The selected variable(s) were not found in the dataset. \
                         Most likely, this variable is a derived product from existing \
-                        dataset variables. Please select another variable."
-                    )
-                    + str(e)
+                        dataset variables. Please select another variable.") + str(e)
                 )
 
             point_data, self.depths = self.get_data(
@@ -280,7 +277,9 @@ class ObservationPlotter(PointPlotter):
                         else:
                             name = name + " "
 
-                        leg_items.append("%s%s (%s)" % (name, j[0], format_datetime(j[1][i])))
+                        leg_items.append(
+                            "%s%s (%s)" % (name, j[0], format_datetime(j[1][i]))
+                        )
 
                 leg = axis.legend(leg_items, loc="best")
 
