@@ -359,6 +359,11 @@ function DatasetPanel({
         {variableSelector}
         {unitSelector}
         {axisRangeSelectors}
+        {/* <table className="range-table">
+          <tbody>
+            {axisRangeSelectors}
+          </tbody>
+        </table> */}
         {quiverSelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}

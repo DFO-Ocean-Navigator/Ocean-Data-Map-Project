@@ -1,23 +1,102 @@
-div.axis-range {
-  display: flex;
-  flex-direction: column;
+.axis-range-row {
+  display: grid;
 
-  .range-label {
-    margin: 10px 0px;
-    font-size: small;
-    font-weight: bold;
-  }
+  grid-template-columns:
+    105px   // variable name
+    28px    // checkbox
+    30px    // Min
+    60px    // min input
+    32px    // Max
+    60px    // max input
+    34px;   // reset
 
-  .range-table {
-    display: flex;
-    margin: 5px;
-  }
+  align-items: center;
+  column-gap: 4px;
 
-  .range-input {
-    width: 90px;
-  }
-
-  .default-button-container {
-    padding: 2px;
-  }
+  margin-bottom: 8px;
 }
+
+.axis-range-name {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.axis-range-label {
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.axis-range-input {
+  width: 60px;
+  height: 31px;
+  padding: 2px 5px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.axis-range-reset {
+  width: 34px;
+  height: 31px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.2rem;
+  line-height: 1;
+}
+// div.axis-range {
+//   display: flex;
+//   flex-direction: column;
+//   width: 100%;
+//   max-width: 100%;
+
+//   .range-label-row {
+//     display: flex;
+//     flex-direction: row;
+//     align-items: center;
+//     justify-content: space-between;
+//     line-height: 0.5rem;
+
+//     .range-label {
+//       //margin: 10px 0px;
+//       font-size: 0.7rem;
+//       font-weight: 600;
+//       color: #6f6f6f;
+//       align-items: left;
+//     }
+//   }
+
+//   .range-table {
+//     display: flex;
+//     margin: 5px;
+//     //width: 20px;
+//   }
+
+//   .range-input {
+//     width: 40px;
+//     align-items: right;
+      
+//     // Chrome, Safari, Edge, Opera
+//     &::-webkit-outer-spin-button,
+//     &::-webkit-inner-spin-button {
+//       -webkit-appearance: none;
+//       margin: 0;
+//     }
+
+//     // Firefox
+//     -moz-appearance: textfield;
+//     appearance: textfield;
+//   }
+
+  
+
+//   .default-button-container {
+//     padding: 1px;
+//     font-size: 0.7rem;
+//     line-height: 0.5rem;
+//     width: 3px;
+//     align-items: right;
+//   }
+// }
