@@ -214,7 +214,7 @@ class ProfilePlotter(PointPlotter):
         is_y_label_plotted = False
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
-        for idx, _ in enumerate(self.variables):
+        for idx, var in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
 
             plt.plot(
@@ -225,6 +225,10 @@ class ProfilePlotter(PointPlotter):
             current_axis = plt.gca()
             current_axis.xaxis.set_label_position("top")
             current_axis.xaxis.set_ticks_position("top")
+
+            if "depth_range" in self.axis_range:
+                plt.gca().set_ylim(self.axis_range["depth_range"])
+
             current_axis.invert_yaxis()
             current_axis.grid(True)
             current_axis.set_xlabel(
@@ -254,10 +258,8 @@ class ProfilePlotter(PointPlotter):
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
-            elif self.axis_range:
-                if "depth_range" in self.axis_range:
-                    plt.gca().set_ylim(self.axis_range["depth_range"])
-                plt.gca().set_xlim(self.axis_range[idx])
+            elif var in self.axis_range:
+                plt.gca().set_xlim(self.axis_range[var])
 
             subplot += 1
 
