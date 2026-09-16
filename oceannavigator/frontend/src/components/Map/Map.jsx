@@ -9,6 +9,7 @@ import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
+import { toLonLat } from "ol/proj";
 import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
@@ -44,6 +45,8 @@ import {
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
+//import { useGetPointDepth } from "../../remote/queries.js";
+import { GetPointDepthPromise } from "../../remote/OceanNavigator.js";
 
 import "ol/ol.css";
 
@@ -491,6 +494,38 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
+  useEffect(() => {
+    if (!(map0)) return;
+
+    let timeout;
+
+    const handlePointerMove = (event) => {
+      clearTimeout(timeout);
+
+      const [longitude, latitude] = toLonLat(event.coordinate);
+
+      timeout = setTimeout(async () => {
+        try {
+          const pointDepth = await GetPointDepthPromise(latitude, longitude);
+          //const pointData = useGetPointData(dataset, variable, lat, lon);
+
+          console.log("Lat:", latitude);
+          console.log("Lon:", longitude);
+          console.log("Point depth:", pointDepth);
+        } catch (error) {
+          console.error("Depth API error:", error);
+        }
+      }, 1000);
+    };
+
+    map0.on("pointermove", handlePointerMove);
+
+    return () => {
+      clearTimeout(timeout);
+      map0.un("pointermove", handlePointerMove);
+    };
+  }, [map0, map1]);
+
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
@@ -548,6 +583,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
+
     return new Select({
       condition: pointerMove,
       layers: [layerFeatureVector],

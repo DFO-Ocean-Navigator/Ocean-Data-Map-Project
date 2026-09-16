@@ -8,6 +8,7 @@ import {
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
+  GetPointDepthPromise,
   GetTrackTimeRangePromise,
   GetComboBoxQuery,
   GetClass4ForecastsPromise,
@@ -49,6 +50,18 @@ export function useGetDatasetVariables(
     queryKey: ["dataset", "variables", dataset.id, vectorsOnly],
     queryFn: () => GetVariablesPromise(dataset.id, vectorsOnly),
     enabled,
+  });
+
+  return { data, status };
+}
+
+export function useGetPointDepth(
+  latitude,
+  longitude,
+) {
+  const { data = [], status } = useQuery({
+    queryKey: ["point", "depth", latitude, longitude],
+    queryFn: () => GetPointDepthPromise(latitude, longitude),
   });
 
   return { data, status };

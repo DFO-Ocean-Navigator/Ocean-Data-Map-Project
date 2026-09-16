@@ -21,6 +21,7 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
+from netCDF4 import Dataset
 
 import data.class4 as class4
 import data.observational.queries as ob_queries
@@ -700,6 +701,38 @@ def colormaps_png():
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
+
+
+@router.get("/point_depth")
+def point_depth(
+    latitude: float = Query(
+        title="Latitude",
+        examples=[49.25],
+    ),
+    longitude: float = Query(
+        title="Longitude",
+        examples=[-127.45],
+    ),
+):
+    """
+    Returns the depth for a given point.
+    """
+
+    settings = get_settings()
+
+    with Dataset(settings.etopo_file % ("EPSG:3857", 1), "r") as ds:
+
+        latitudes = ds.variables["lat"][:]
+        longitudes = ds.variables["lon"][:]
+        depths = ds.variables["z"][:]
+
+        lat_index = np.abs(latitudes - latitude).argmin()
+        lon_index = np.abs(longitudes - longitude).argmin()
+        depth = depths[lat_index, lon_index]
+
+        depth = -float(depth) if depth < 0 else 0
+
+    return depth
 
 
 @router.get("/plot/{plot_type}")

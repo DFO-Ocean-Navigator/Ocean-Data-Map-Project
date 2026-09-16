@@ -42,6 +42,14 @@ export async function GetAllVariablesPromise() {
   return response.data;
 }
 
+//Returns the depth for a given point.
+export async function GetPointDepthPromise(latitude, longitude) {
+  const response = await instance.get(
+    `/api/v2.0/point_depth?latitude=${latitude}&longitude=${longitude}`,
+  );
+  return response.data;
+}
+
 export function GetPresetPointsPromise() {
   return instance.get("/api/v2.0/kml/point");
 }
