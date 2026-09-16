@@ -46,7 +46,7 @@ import {
   obsAreaDrawAction,
 } from "./drawing";
 //import { useGetPointDepth } from "../../remote/queries.js";
-import { GetPointDepthPromise } from "../../remote/OceanNavigator.js";
+import { GetPointDepthPromise, GetPointDataPromise } from "../../remote/OceanNavigator.js";
 
 import "ol/ol.css";
 
@@ -500,18 +500,41 @@ const Map = forwardRef((props, ref) => {
     let timeout;
 
     const handlePointerMove = (event) => {
+      const target = event.originalEvent.target;
+
+      if (
+        target.closest(".ol-control") ||
+        target.closest(".menu") ||
+        target.closest(".dropdown-menu")
+      ) {
+        return;
+      }
       clearTimeout(timeout);
 
       const [longitude, latitude] = toLonLat(event.coordinate);
 
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180 || 
+        latitude == NaN ||
+        longitude == NaN
+      ) {
+        return;
+      }
+
       timeout = setTimeout(async () => {
         try {
           const pointDepth = await GetPointDepthPromise(latitude, longitude);
-          //const pointData = useGetPointData(dataset, variable, lat, lon);
+          const pointData = await GetPointDataPromise(props.dataset0.id, props.dataset0.variable.id, latitude, longitude);
 
           console.log("Lat:", latitude);
           console.log("Lon:", longitude);
           console.log("Point depth:", pointDepth);
+          console.log("Data:", pointData);
         } catch (error) {
           console.error("Depth API error:", error);
         }

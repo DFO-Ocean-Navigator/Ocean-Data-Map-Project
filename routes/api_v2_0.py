@@ -735,6 +735,47 @@ def point_depth(
     return depth
 
 
+@router.get("/dataset/{dataset}/variable/{variable}/point_data")
+def point_data(
+    dataset: str = Path(title="The key of the dataset.", examples=["giops_day"]),
+    variable: str = Path(title="The variable key.", examples=["votemper"]),
+    latitude: float = Query(
+        title="Latitude",
+        examples=[49.25],
+    ),
+    longitude: float = Query(
+        title="Longitude",
+        examples=[-127.45],
+    ),
+):
+    """
+    Returns the data value for a dataset at a given point.
+    """
+
+    config = DatasetConfig(dataset)
+
+    with open_dataset(config, variable=variable,) as ds:
+        # Convert to [0,360] range for netCDF dataset
+        longitude = longitude % 360
+
+        point_data = (
+            ds.nc_data.dataset[variable]
+            .sel(
+                latitude=latitude,
+                longitude=longitude,
+                method="nearest",
+            )
+        )
+
+        point_data = point_data.isel(time=0, depth=0)
+        temperature_c = round(float(point_data.values) - 273.15, 2)
+
+    if np.isnan(temperature_c):
+        return None
+
+    return temperature_c
+
+
 @router.get("/plot/{plot_type}")
 async def plot(
     plot_type: str = Path(title="The key of the dataset.", examples=["profile"]),

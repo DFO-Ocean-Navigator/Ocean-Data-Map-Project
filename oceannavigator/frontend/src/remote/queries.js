@@ -67,6 +67,18 @@ export function useGetPointDepth(
   return { data, status };
 }
 
+export function useGetPointData(
+  latitude,
+  longitude,
+) {
+  const { data = [], status } = useQuery({
+    queryKey: ["point", "depth", latitude, longitude],
+    queryFn: () => GetPointDepthPromise(latitude, longitude),
+  });
+
+  return { data, status };
+}
+
 export function useGetDatasetTimestamps(dataset, enabled) {
   let variable = Array.isArray(dataset.variable)
     ? dataset.variable[0]
