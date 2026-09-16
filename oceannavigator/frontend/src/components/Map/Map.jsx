@@ -499,16 +499,6 @@ const Map = forwardRef((props, ref) => {
     let timeout;
 
     const handlePointerMove = (event) => {
-      const target = event.originalEvent.target;
-
-      // if (
-      //   target.closest(".ol-control") ||
-      //   target.closest(".menu") ||
-      //   target.closest(".dropdown-menu")
-      // ) {
-      //   return;
-      // }
-
       const [longitude, latitude] = toLonLat(event.coordinate);
 
       if (
