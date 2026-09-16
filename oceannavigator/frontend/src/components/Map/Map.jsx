@@ -494,22 +494,20 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
-  useEffect(() => {
-    if (!(map0)) return;
+  const mapHoverLogger = (map) => {
 
     let timeout;
 
     const handlePointerMove = (event) => {
       const target = event.originalEvent.target;
 
-      if (
-        target.closest(".ol-control") ||
-        target.closest(".menu") ||
-        target.closest(".dropdown-menu")
-      ) {
-        return;
-      }
-      clearTimeout(timeout);
+      // if (
+      //   target.closest(".ol-control") ||
+      //   target.closest(".menu") ||
+      //   target.closest(".dropdown-menu")
+      // ) {
+      //   return;
+      // }
 
       const [longitude, latitude] = toLonLat(event.coordinate);
 
@@ -519,12 +517,12 @@ const Map = forwardRef((props, ref) => {
         latitude < -90 ||
         latitude > 90 ||
         longitude < -180 ||
-        longitude > 180 || 
-        latitude == NaN ||
-        longitude == NaN
+        longitude > 180
       ) {
         return;
       }
+
+      clearTimeout(timeout);
 
       timeout = setTimeout(async () => {
         try {
@@ -536,17 +534,25 @@ const Map = forwardRef((props, ref) => {
           console.log("Point depth:", pointDepth);
           console.log("Data:", pointData);
         } catch (error) {
-          console.error("Depth API error:", error);
+          console.error("API error:", error);
         }
       }, 1000);
     };
 
-    map0.on("pointermove", handlePointerMove);
+    map.on("pointermove", handlePointerMove);
 
     return () => {
       clearTimeout(timeout);
-      map0.un("pointermove", handlePointerMove);
+      map.un("pointermove", handlePointerMove);
     };
+  };
+
+  useEffect(() => {
+    if (map0) {
+      mapHoverLogger(map0)
+    } else if (props.compareDatasets && map1) {
+      mapHoverLogger(map1)
+    }
   }, [map0, map1]);
 
   const createSelect = () => {
