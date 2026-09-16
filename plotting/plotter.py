@@ -7,7 +7,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
+# import xarray as xr
 from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap

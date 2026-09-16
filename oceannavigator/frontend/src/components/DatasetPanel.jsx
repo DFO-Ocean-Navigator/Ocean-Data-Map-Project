@@ -29,6 +29,7 @@ function DatasetPanel({
   showDepthSelector = true,
   showUnitSelector = false, 
   showAxisRange = false,
+  showDepthRange = false,
   showVariableSelector = true,
   showAllDepths = false,
   horizontalLayout = false,
@@ -201,6 +202,21 @@ function DatasetPanel({
       axisRangeSelectors.push(rangeSelector);
     }
   }
+  if (showDepthRange) {
+      const depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000], imperial_scale: [0, 32808.4]};
+      let depthRangeSelector = (
+        <AxisRange
+          key={"depth_axis_range"}
+          id={"depth_axis_range"}
+          title={depth_variable.value + " Range"}
+          variable={depth_variable}
+          is_imperial={dataset.unitSelection["depth"]}
+          range={dataset.axisRange[depth_variable.id]}
+          onUpdate={updateDataset}
+        />
+      );
+      axisRangeSelectors.push(depthRangeSelector);
+    }
 
   let quiverSelector = showQuiverSelector ? (
     <QuiverSelector
@@ -343,6 +359,11 @@ function DatasetPanel({
         {variableSelector}
         {unitSelector}
         {axisRangeSelectors}
+        {/* <table className="range-table">
+          <tbody>
+            {axisRangeSelectors}
+          </tbody>
+        </table> */}
         {quiverSelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}
@@ -379,6 +400,7 @@ DatasetPanel.propTypes = {
   showDepthSelector: PropTypes.bool,
   showUnitSelector: PropTypes.bool,
   showAxisRange: PropTypes.bool,
+  showDepthRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showAllDepths: PropTypes.bool,
   mountedDataset: PropTypes.object,
