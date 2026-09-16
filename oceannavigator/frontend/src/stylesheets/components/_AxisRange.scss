@@ -1,51 +1,55 @@
 .axis-range-row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5rem 4.5rem;
+  align-items: stretch;
 
-  grid-template-columns:
-    105px   // variable name
-    28px    // checkbox
-    30px    // Min
-    60px    // min input
-    32px    // Max
-    60px    // max input
-    34px;   // reset
+  .axis-range-name {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    //align-items: center;   
+    justify-content: space-between;
+  }
 
-  align-items: center;
-  column-gap: 4px;
+  .axis-range-label {
+    font-size: 0.85rem;
+    text-align: center;
+    align-items: center;   
+  }
 
-  margin-bottom: 8px;
+  .axis-range-input {
+    width: 60px;
+    height: 31px;
+    padding: 2px 5px;
+    text-align: center;
+    font-size: 0.85rem;
+    align-items: center;   
+
+    //Chrome, Safari, Edge, Opera
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    // Firefox
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .axis-range-reset {
+    width: 34px;
+    height: 31px;
+    padding: 0;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 1.2rem;
+    line-height: 1;
+  }
 }
 
-.axis-range-name {
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
 
-.axis-range-label {
-  font-size: 0.85rem;
-  text-align: center;
-}
-
-.axis-range-input {
-  width: 60px;
-  height: 31px;
-  padding: 2px 5px;
-  text-align: center;
-  font-size: 0.85rem;
-}
-
-.axis-range-reset {
-  width: 34px;
-  height: 31px;
-  padding: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 1.2rem;
-  line-height: 1;
-}
 // div.axis-range {
 //   display: flex;
 //   flex-direction: column;
