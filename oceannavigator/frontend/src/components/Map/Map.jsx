@@ -5,10 +5,12 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
+import { useQueryClient } from '@tanstack/react-query'
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
 import Overlay from "ol/Overlay.js";
+import { toLonLat } from "ol/proj";
 import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
@@ -44,6 +46,7 @@ import {
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
+import { useGetPointDepth, useGetPointData } from "../../remote/queries.js";
 
 import "ol/ol.css";
 
@@ -135,6 +138,8 @@ const Map = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
   const [hoverSelect0, setHoverSelect0] = useState();
   const [hoverSelect1, setHoverSelect1] = useState();
+
+  const [hoverCardPoint, setHoverCardPoint] = useState({latitude: null, longitude: null});
 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
@@ -491,6 +496,61 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
+  // queryClient object + backend API calls for point hover card
+  const queryClient = useQueryClient();
+  
+  //Recalls everytime the hoverCardPoint changes, which is set by the mapHoverLogger function below
+  const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+  const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+
+  const mapHoverLogger = (map) => {
+
+    let timeout;
+
+    const handlePointerMove = (event) => {
+      const [longitude, latitude] = toLonLat(event.coordinate);
+
+      //Clear timer and cancel any in progress API requests
+      clearTimeout(timeout);
+      queryClient.cancelQueries({
+        queryKey: ["point", "depth", latitude, longitude],
+      });
+      queryClient.cancelQueries({
+        queryKey: ["point", "data", latitude, longitude],
+      });
+
+      timeout = setTimeout(async () => {
+        setHoverCardPoint({ latitude, longitude });
+      }, 1500);
+    };
+
+    map.on("pointermove", handlePointerMove);
+
+    return () => {
+      clearTimeout(timeout);
+      map.un("pointermove", handlePointerMove);
+    };
+  };
+
+  useEffect(() => {
+    //May have to change as I don't think the else if will actually work with two map objects
+    if (map0) {
+      return mapHoverLogger(map0)
+    } else if (props.compareDatasets && map1) {
+      return mapHoverLogger(map1)
+    }
+  }, [map0, map1]);
+
+  // Actual card logic goes here
+  useEffect(() => {
+    if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess) return;
+    
+    console.log("Lat:", hoverCardPoint?.latitude);
+    console.log("Lon:", hoverCardPoint?.longitude);
+    console.log("Point depth:", pointDepth);
+    console.log("Data:", pointData);
+  }, [pointDepth, pointData]);
+
   const createSelect = () => {
     const newSelect = new Select({
       style: function (feat, res) {
@@ -548,6 +608,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   const createHoverSelect = (selectInteraction, layerFeatureVector) => {
+
     return new Select({
       condition: pointerMove,
       layers: [layerFeatureVector],
