@@ -496,8 +496,10 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
-  // Backend API calls for point hover card
+  // queryClient object + backend API calls for point hover card
   const queryClient = useQueryClient();
+  
+  //Recalls everytime the hoverCardPoint changes, which is set by the mapHoverLogger function below
   const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
   const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
 
@@ -531,6 +533,7 @@ const Map = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
+    //May have to change as I don't think the else if will actually work with two map objects
     if (map0) {
       return mapHoverLogger(map0)
     } else if (props.compareDatasets && map1) {
