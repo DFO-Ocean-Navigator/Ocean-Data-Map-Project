@@ -5,6 +5,7 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
+import { useQueryClient } from '@tanstack/react-query'
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
@@ -495,6 +496,8 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
+  // Backend API calls for point hover card
+  const queryClient = useQueryClient();
   const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
   const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
 
@@ -505,11 +508,18 @@ const Map = forwardRef((props, ref) => {
     const handlePointerMove = (event) => {
       const [longitude, latitude] = toLonLat(event.coordinate);
 
+      //Clear timer and cancel any in progress API requests
       clearTimeout(timeout);
+      queryClient.cancelQueries({
+        queryKey: ["point", "depth", latitude, longitude],
+      });
+      queryClient.cancelQueries({
+        queryKey: ["point", "data", latitude, longitude],
+      });
 
       timeout = setTimeout(async () => {
         setHoverCardPoint({ latitude, longitude });
-      }, 1000);
+      }, 1500);
     };
 
     map.on("pointermove", handlePointerMove);
@@ -528,6 +538,7 @@ const Map = forwardRef((props, ref) => {
     }
   }, [map0, map1]);
 
+  // Actual card logic goes here
   useEffect(() => {
     if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess) return;
     
