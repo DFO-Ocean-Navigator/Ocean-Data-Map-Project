@@ -45,8 +45,7 @@ import {
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
-//import { useGetPointDepth } from "../../remote/queries.js";
-import { GetPointDepthPromise, GetPointDataPromise } from "../../remote/OceanNavigator.js";
+import { useGetPointDepth, useGetPointData } from "../../remote/queries.js";
 
 import "ol/ol.css";
 
@@ -138,6 +137,8 @@ const Map = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
   const [hoverSelect0, setHoverSelect0] = useState();
   const [hoverSelect1, setHoverSelect1] = useState();
+
+  const [hoverCardPoint, setHoverCardPoint] = useState({latitude: null, longitude: null});
 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
@@ -494,6 +495,9 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
+  const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+  const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+
   const mapHoverLogger = (map) => {
 
     let timeout;
@@ -501,31 +505,10 @@ const Map = forwardRef((props, ref) => {
     const handlePointerMove = (event) => {
       const [longitude, latitude] = toLonLat(event.coordinate);
 
-      if (
-        !Number.isFinite(latitude) ||
-        !Number.isFinite(longitude) ||
-        latitude < -90 ||
-        latitude > 90 ||
-        longitude < -180 ||
-        longitude > 180
-      ) {
-        return;
-      }
-
       clearTimeout(timeout);
 
       timeout = setTimeout(async () => {
-        try {
-          const pointDepth = await GetPointDepthPromise(latitude, longitude);
-          const pointData = await GetPointDataPromise(props.dataset0.id, props.dataset0.variable.id, latitude, longitude);
-
-          console.log("Lat:", latitude);
-          console.log("Lon:", longitude);
-          console.log("Point depth:", pointDepth);
-          console.log("Data:", pointData);
-        } catch (error) {
-          console.error("API error:", error);
-        }
+        setHoverCardPoint({ latitude, longitude });
       }, 1000);
     };
 
@@ -539,11 +522,20 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0) {
-      mapHoverLogger(map0)
+      return mapHoverLogger(map0)
     } else if (props.compareDatasets && map1) {
-      mapHoverLogger(map1)
+      return mapHoverLogger(map1)
     }
   }, [map0, map1]);
+
+  useEffect(() => {
+    if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess) return;
+    
+    console.log("Lat:", hoverCardPoint?.latitude);
+    console.log("Lon:", hoverCardPoint?.longitude);
+    console.log("Point depth:", pointDepth);
+    console.log("Data:", pointData);
+  }, [pointDepth, pointData]);
 
   const createSelect = () => {
     const newSelect = new Select({
