@@ -735,18 +735,14 @@ def point_depth(
     return depth
 
 
-@router.get("/dataset/{dataset}/variable/{variable}/point_data")
+@router.get("/dataset/{dataset}/{variable}/{time}/point_data")
 def point_data(
     dataset: str = Path(title="The key of the dataset.", examples=["giops_day"]),
     variable: str = Path(title="The variable key.", examples=["votemper"]),
-    latitude: float = Query(
-        title="Latitude",
-        examples=[49.25],
-    ),
-    longitude: float = Query(
-        title="Longitude",
-        examples=[-127.45],
-    ),
+    time: int = Path(title="NetCDF timestamp", examples=[2422094400]),
+    depth: int = Query(title="Depth", examples=[0]),
+    latitude: float = Query(title="Latitude", examples=[49.25]),
+    longitude: float = Query(title="Longitude", examples=[-127.45])
 ):
     """
     Returns the data value for a dataset at a given point.
@@ -754,26 +750,15 @@ def point_data(
 
     config = DatasetConfig(dataset)
 
-    with open_dataset(config, variable=variable,) as ds:
-        # Convert to [0,360] range for netCDF dataset
-        longitude = longitude % 360
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
 
-        point_data = (
-            ds.nc_data.dataset[variable]
-            .sel(
-                latitude=latitude,
-                longitude=longitude,
-                method="nearest",
-            )
-        )
+        # ds.get_point(latitude, longitude, 0, , data_id, timestamp, )
+        point_data = ds.get_point(latitude, longitude, depth, variable, time)
 
-        point_data = point_data.isel(time=0, depth=0)
-        temperature_c = round(float(point_data.values) - 273.15, 2)
-
-    if np.isnan(temperature_c):
+    if (np.isnan(point_data) or np.isnan(point_data.data)):
         return None
 
-    return temperature_c
+    return round(float(point_data.data),2)
 
 
 @router.get("/plot/{plot_type}")

@@ -72,12 +72,14 @@ export function useGetPointDepth(
 export function useGetPointData(
   dataset, 
   variable,
+  time, 
+  depth, 
   latitude,
   longitude,
 ) {
   const { data = [], isSuccess } = useQuery({
     queryKey: ["point", "data", latitude, longitude],
-    queryFn: () => GetPointDataPromise(dataset, variable, latitude, longitude),
+    queryFn: () => GetPointDataPromise(dataset, variable, time, depth, latitude, longitude),
     enabled: Number.isFinite(latitude) && Number.isFinite(longitude),
   });
 

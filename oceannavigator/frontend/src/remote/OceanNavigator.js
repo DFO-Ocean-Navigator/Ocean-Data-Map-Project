@@ -49,8 +49,8 @@ export async function GetPointDepthPromise(latitude, longitude) {
 }
 
 //Returns the data in a dataset for a given point.
-export async function GetPointDataPromise(dataset, variable, latitude, longitude) {
-  const response = await instance.get(`/api/v2.0/dataset/${dataset}/variable/${variable}/point_data?latitude=${latitude}&longitude=${longitude}`);
+export async function GetPointDataPromise(dataset, variable, time, depth, latitude, longitude) {
+  const response = await instance.get(`/api/v2.0/dataset/${dataset}/${variable}/${time}/point_data?depth=${depth}&latitude=${latitude}&longitude=${longitude}`);
   return response.data;
 }
 

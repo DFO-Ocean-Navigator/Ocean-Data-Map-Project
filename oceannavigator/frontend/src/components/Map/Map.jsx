@@ -501,7 +501,7 @@ const Map = forwardRef((props, ref) => {
   
   //Recalls everytime the hoverCardPoint changes, which is set by the mapHoverLogger function below
   const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
-  const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+  const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, props.dataset0.time.id, props.dataset0.depth, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
 
   const mapHoverLogger = (map) => {
 
