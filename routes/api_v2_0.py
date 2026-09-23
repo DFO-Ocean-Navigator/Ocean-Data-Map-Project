@@ -724,11 +724,10 @@ def point_depth(
 
         latitudes = ds.variables["lat"][:]
         longitudes = ds.variables["lon"][:]
-        depths = ds.variables["z"][:]
 
         lat_index = np.abs(latitudes - latitude).argmin()
         lon_index = np.abs(longitudes - longitude).argmin()
-        depth = depths[lat_index, lon_index]
+        depth = ds.variables["z"][lat_index, lon_index]
 
         depth = -float(depth) if depth < 0 else 0
 
@@ -740,7 +739,7 @@ def point_data(
     dataset: str = Path(title="The key of the dataset.", examples=["giops_day"]),
     variable: str = Path(title="The variable key.", examples=["votemper"]),
     time: int = Path(title="NetCDF timestamp", examples=[2422094400]),
-    depth: int = Query(title="Depth", examples=[0]),
+    depth: str = Query(title="Depth Index", examples=["0", "bottom"]),
     latitude: float = Query(title="Latitude", examples=[49.25]),
     longitude: float = Query(title="Longitude", examples=[-127.45])
 ):

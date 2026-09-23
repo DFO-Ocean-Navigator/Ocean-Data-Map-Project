@@ -543,7 +543,7 @@ const Map = forwardRef((props, ref) => {
 
   // Actual card logic goes here
   useEffect(() => {
-    if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess) return;
+    if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess || pointDepth.data == 0) return;
     
     console.log("Lat:", hoverCardPoint?.latitude);
     console.log("Lon:", hoverCardPoint?.longitude);
