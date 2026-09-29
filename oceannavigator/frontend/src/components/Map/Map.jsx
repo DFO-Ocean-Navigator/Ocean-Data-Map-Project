@@ -6,6 +6,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { useQueryClient } from '@tanstack/react-query'
+import { renderToString } from "react-dom/server";
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
@@ -138,9 +139,13 @@ const Map = forwardRef((props, ref) => {
   const popupElement1 = useRef(null);
   const [hoverSelect0, setHoverSelect0] = useState();
   const [hoverSelect1, setHoverSelect1] = useState();
-
+    // State to hold the current point being hovered over on the map, which is used to display a hover card with information about that point. The hover card will show data such as bathymetry and variable values for the hovered point. The state is initialized to null, indicating that no point is currently being hovered over.
   const [hoverCardPoint, setHoverCardPoint] = useState({latitude: null, longitude: null});
-
+  // Refs to hold the timer for the hover card delay, the currently active hover point, and the function to handle water hover events. These refs are used to manage the hover card behavior and ensure that it only appears after a certain delay when hovering over a point on the map.
+  const hoverTimer = useRef();
+  const activeHover = useRef(null);
+  const waterHoverHandler = useRef();
+ 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
     startFeatureDraw: startFeatureDraw,
@@ -195,17 +200,20 @@ const Map = forwardRef((props, ref) => {
 
     const newObsDrawSource = new VectorSource({ features: [] });
 
-    const newMap = createMap(
-      props.mapSettings,
-      overlay,
-      popupElement0,
-      newMapView,
-      layerData0,
-      newLayerFeatureVector,
-      newObsDrawSource,
-      MAX_ZOOM[props.mapSettings.projection],
-      mapRef0,
-    );
+   const newMap = createMap(
+  props.mapSettings,
+  overlay,
+  popupElement0,
+  newMapView,
+  layerData0,
+  newLayerFeatureVector,
+  newObsDrawSource,
+  MAX_ZOOM[props.mapSettings.projection],
+  mapRef0,
+  (event, map, overlay) =>
+    waterHoverHandler.current(event, map, overlay, "map0"),
+);
+
 
     const newSelect0 = createSelect();
     const newSelect1 = createSelect();
@@ -228,7 +236,7 @@ const Map = forwardRef((props, ref) => {
     setFeatureVectorSource(newFeatureVectorSource);
     setObsDrawSource(newObsDrawSource);
   }, []);
-
+   
   useEffect(() => {
     let newMap, newHoverSelect;
     if (props.compareDatasets) {
@@ -244,17 +252,20 @@ const Map = forwardRef((props, ref) => {
         props.mapSettings,
       );
 
-      newMap = createMap(
-        props.mapSettings,
-        overlay,
-        popupElement1,
-        map0.getView(),
-        layerData1,
-        newLayerFeatureVector,
-        obsDrawSource,
-        MAX_ZOOM[props.mapSettings.projection],
-        mapRef1,
-      );
+     newMap = createMap(
+  props.mapSettings,
+  overlay,
+  popupElement1,
+  map0.getView(),
+  layerData1,
+  newLayerFeatureVector,
+  obsDrawSource,
+  MAX_ZOOM[props.mapSettings.projection],
+  mapRef1,
+  (event, map, overlay) =>
+    waterHoverHandler.current(event, map, overlay, "map1"),
+);
+
 
       map0.getControls().item(0).setMap(newMap); // change zoom control target
       map0.getControls().item(3).setMap1(newMap);
@@ -496,60 +507,131 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView,map1]);
 
-  // queryClient object + backend API calls for point hover card
-  const queryClient = useQueryClient();
   
+  const queryClient = useQueryClient();
+   // Determines which dataset to use for the hover card based on the map that the user is hovering over. If the user is hovering over map1, it uses dataset1; otherwise, it uses dataset0. This allows the hover card to display information relevant to the specific dataset being viewed.
+  const hoverDataset = hoverCardPoint?.mapId === "map1" ? props.dataset1 : props.dataset0;
+
   //Recalls everytime the hoverCardPoint changes, which is set by the mapHoverLogger function below
   const pointDepth = useGetPointDepth(hoverCardPoint?.latitude, hoverCardPoint?.longitude);
-  const pointData = useGetPointData(props.dataset0.id, props.dataset0.variable.id, props.dataset0.time.id, props.dataset0.depth, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
+  const pointData = useGetPointData(hoverDataset.id, hoverDataset.variable.id, hoverDataset.time.id, hoverDataset.depth, hoverCardPoint?.latitude, hoverCardPoint?.longitude);
 
-  const mapHoverLogger = (map) => {
-
-    let timeout;
-
-    const handlePointerMove = (event) => {
-      const [longitude, latitude] = toLonLat(event.coordinate);
-
-      //Clear timer and cancel any in progress API requests
-      clearTimeout(timeout);
-      queryClient.cancelQueries({
-        queryKey: ["point", "depth", latitude, longitude],
-      });
-      queryClient.cancelQueries({
-        queryKey: ["point", "data", latitude, longitude],
-      });
-
-      timeout = setTimeout(async () => {
-        setHoverCardPoint({ latitude, longitude });
-      }, 1500);
-    };
-
-    map.on("pointermove", handlePointerMove);
-
-    return () => {
-      clearTimeout(timeout);
-      map.un("pointermove", handlePointerMove);
-    };
+   // Clears the hover card and cancels any ongoing queries when the user moves their mouse away from the map
+  const clearWaterHover = () => {
+     clearTimeout(hoverTimer.current);
+      if (!activeHover.current) return;
+       // If there is an active hover point, it clears the position of the overlay associated with that point, sets the active hover reference to null, and resets the hover card point state to null. It also cancels any ongoing queries related to point data to prevent unnecessary data fetching when the user is no longer hovering over a point on the map.
+      activeHover.current.overlay.setPosition(undefined);
+      activeHover.current = null;
+      setHoverCardPoint(null);
+      queryClient.cancelQueries({ queryKey: ["point"] });
   };
-
-  useEffect(() => {
-    //May have to change as I don't think the else if will actually work with two map objects
-    if (map0) {
-      return mapHoverLogger(map0)
-    } else if (props.compareDatasets && map1) {
-      return mapHoverLogger(map1)
-    }
-  }, [map0, map1]);
-
-  // Actual card logic goes here
-  useEffect(() => {
-    if (pointDepth.data==null || pointData.data==null || !pointDepth.isSuccess || !pointData.isSuccess || pointDepth.data == 0) return;
+   // Sets the hover card point after a 1.5 second delay, and cancels any previous hover card queries if the user moves their mouse before the delay is up
+  waterHoverHandler.current = (event,map, overlay, mapId) => {
+    clearWaterHover();
+    if (!event) return;
+      
+    const dataset = mapId === "map1" ? props.dataset1 : props.dataset0;
+     // If the dataset is not valid, return early and do not set the hover card point
+    if (
+      !dataset?.id ||
+      !dataset.variable?.id ||
+      dataset.time?.id == null ||
+      dataset.time.id < 0 ||
+      dataset.depth == null
+    ) {
+      
+      return
     
-    console.log("Lat:", hoverCardPoint?.latitude);
-    console.log("Lon:", hoverCardPoint?.longitude);
-    console.log("Point depth:", pointDepth);
-    console.log("Data:", pointData);
-  }, [pointDepth, pointData]);
+    }
+        
+     
+    const coordinate = event.coordinate.slice();
+
+    const [longitude, latitude] = toLonLat(coordinate, map.getView().getProjection());
+     // If the latitude or longitude is not a finite number, or if the latitude is outside the valid range of -90 to 90 degrees, return early and do not set the hover card point
+    if(!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90){ 
+      
+      return;
+    
+    }
+
+    
+    const point = { latitude, longitude, coordinate, overlay, mapId};
+     activeHover.current = point;
+
+     hoverTimer.current = setTimeout(() => setHoverCardPoint(point), 1500);
+  
+};
+
+
+
+
+ // Clears the hover card when the user moves their mouse away from the map, and cancels any ongoing queries for point data
+ useEffect(() => {
+  clearWaterHover();
+
+  return clearWaterHover;
+}, [
+  props.dataset0.id,
+  props.dataset0.variable.id,
+  props.dataset0.time.id,
+  props.dataset0.depth,
+  props.dataset1.id,
+  props.dataset1.variable.id,
+  props.dataset1.time.id,
+  props.dataset1.depth,
+  props.compareDatasets,
+]);
+
+
+  // Updates the hover card with bathymetry and variable data when the user hovers over a point on the map. If the point depth or point data queries are not successful, or if the point depth is not a finite number or is less than or equal to zero, or if the point data is not a finite number, then the hover card is cleared and no information is displayed.
+ useEffect(() => {
+  if (
+    // If there is no hover card point or if the hover card point is not the same as the currently active hover point, return early and do not update the hover card
+    !hoverCardPoint ||
+    hoverCardPoint !== activeHover.current
+  ) {
+    return;
+  }
+    // If the hover card point is valid and matches the currently active hover point, it extracts the overlay and coordinate from the hover card point. It then checks if the point depth and point data queries are successful and if the retrieved data is valid. If any of these conditions are not met, it clears the hover card by setting the overlay position to undefined and returns early. If all conditions are met, it updates the hover card's inner HTML with a table displaying the bathymetry and variable data for the hovered point, and sets the overlay position to the coordinate of the hovered point.
+  const { overlay, coordinate } = hoverCardPoint;
+  const table = overlay.getElement().querySelector("table");
+   // If the point depth or point data queries are not successful, or if the point depth is not a finite number or is less than or equal to zero, or if the point data is not a finite number, then clear the hover card and return early
+  if (
+    !pointDepth.isSuccess ||
+    !pointData.isSuccess ||
+    (!table && (!Number.isFinite(pointDepth.data) ||
+    pointDepth.data <= 0 ||
+    !Number.isFinite(pointData.data)))
+  ) {
+    // If the table element does not exist and the point depth or point data is invalid, clear the hover card by setting the overlay position to undefined and return early
+    if (!table) overlay.setPosition(undefined);
+    return;
+  }
+      // 
+const rows = renderToString(
+    <>
+      <tr>
+        <td>Bathymetry:</td><td>{Number.isFinite(pointDepth.data) ? `${pointDepth.data.toFixed(1)} m` : "N/A"}</td> </tr>
+      <tr> 
+        <td>{hoverDataset.variable.value}</td><td>{Number.isFinite(pointData.data) ? pointData.data.toFixed(2) : "N/A"}</td>
+      </tr>
+    </>,
+
+);
+     // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
+  if (table) table.insertAdjacentHTML("beforeend", rows);
+   // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
+  else overlay.getElement().innerHTML = `<table>${rows}</table>`;
+  overlay.setPosition(coordinate);
+}, [
+  hoverCardPoint,
+  pointDepth.data,
+  pointDepth.isSuccess,
+  pointData.data,
+  pointData.isSuccess,
+]);
 
   const createSelect = () => {
     const newSelect = new Select({
