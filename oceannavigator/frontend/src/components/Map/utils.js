@@ -134,6 +134,7 @@ export const createMap = (
   obsDrawSource,
   maxZoom,
   mapRef,
+  onWaterHover,
 ) => {
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
@@ -253,9 +254,32 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
-
+      //
   let selected = null;
+  let hoverRequest = 0;
+  const hidePopup = () => {
+    hoverRequest += 1;
+    overlay.setPosition(undefined);
+    popupElement.current.innerHTML = "";
+    onWaterHover(null, mapObject, overlay);
+  };
+
+  // Hide popup on map move or view change
+  mapObject.on("movestart", hidePopup);
+  mapObject.on("change:view", hidePopup);
+
+  // Hide popup on pointer leave
+  const viewport = mapObject.getViewport();
+  viewport.addEventListener("pointerleave", hidePopup);
+  // Remove the pointerleave event listener when the map's target changes to prevent memory leaks and ensure that the event listener is only active for the current map instance. This is important for maintaining performance and avoiding unexpected behavior when switching between different map instances or views.
+  mapObject.once("change:target", () => {
+    viewport.removeEventListener("pointerleave", hidePopup);
+  });
+   // Handle pointer move events to display popups for features on the map. When the pointer moves over a feature, the popup is displayed with relevant information. If the pointer moves away from a feature or over water, the popup is hidden. The function also handles fetching additional metadata for observation features if not already available.
   mapObject.on("pointermove", function (e) {
+    hidePopup();
+    const request = hoverRequest;
+    if (e.dragging) return;
     if (selected !== null) {
       selected.setStyle(undefined);
       selected = null;
@@ -266,7 +290,8 @@ export const createMap = (
         return feature;
       },
     );
-    if (feature && feature.get("name")) {
+     // Added  && feature.get("class") != "observation" so that the if else goes to the else if for observation features.
+    if (feature && feature.get("name") && feature.get("class") != "observation") {
       overlay.setPosition(e.coordinate);
       if (feature.get("data")) {
         let bearing = feature.get("bearing");
@@ -292,6 +317,7 @@ export const createMap = (
             )}
           </table>,
         );
+        onWaterHover(e, mapObject, overlay);
       } else {
         popupElement.current.innerHTML = feature.get("name");
       }
@@ -340,13 +366,14 @@ export const createMap = (
       if (feature.get("meta")) {
         overlay.setPosition(e.coordinate);
         popupElement.current.innerHTML = feature.get("meta");
+        onWaterHover(e, mapObject, overlay);
       } else {
         let type = "station";
         if (feature.getGeometry() instanceof olgeom.LineString) {
           type = "platform";
         }
         axios
-          .get(`/api/v2.0/observation/meta/${type}/${feature.get("id")}}.json`)
+          .get(`/api/v2.0/observation/meta/${type}/${feature.get("id")}.json`)
           .then(function (response) {
             overlay.setPosition(e.coordinate);
             feature.set(
@@ -363,11 +390,16 @@ export const createMap = (
               ),
             );
             popupElement.current.innerHTML = feature.get("meta");
+            onWaterHover(e, mapObject, overlay);
           })
-          .catch();
+          .catch(() => {
+            // If the request fails or is canceled, hide the popup to ensure that no stale or incorrect information is displayed to the user. This helps maintain a clean and accurate user interface, especially when dealing with dynamic data that may change frequently.
+            if (request === hoverRequest) hidePopup();
+          });
       }
     } else {
-      overlay.setPosition(undefined);
+      // If no feature is found at the pointer location, call the onWaterHover function with null to indicate that the pointer is over water. This can be used to trigger any necessary actions or updates in the application when hovering over water areas.
+      onWaterHover(e, mapObject, overlay);
     }
   });
 

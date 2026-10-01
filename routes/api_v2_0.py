@@ -21,6 +21,7 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
+from netCDF4 import Dataset
 
 import data.class4 as class4
 import data.observational.queries as ob_queries
@@ -700,6 +701,63 @@ def colormaps_png():
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
+
+
+@router.get("/point_depth")
+def point_depth(
+    latitude: float = Query(
+        title="Latitude",
+        examples=[49.25],
+    ),
+    longitude: float = Query(
+        title="Longitude",
+        examples=[-127.45],
+    ),
+):
+    """
+    Returns the depth for a given point.
+    """
+
+    settings = get_settings()
+
+    with Dataset(settings.etopo_file % ("EPSG:3857", 1), "r") as ds:
+
+        latitudes = ds.variables["lat"][:]
+        longitudes = ds.variables["lon"][:]
+
+        lat_index = np.abs(latitudes - latitude).argmin()
+        lon_index = np.abs(longitudes - longitude).argmin()
+        depth = ds.variables["z"][lat_index, lon_index]
+
+        depth = -float(depth) if depth < 0 else 0
+
+    return depth
+
+
+@router.get("/dataset/{dataset}/{variable}/{time}/point_data")
+def point_data(
+    dataset: str = Path(title="The key of the dataset.", examples=["giops_day"]),
+    variable: str = Path(title="The variable key.", examples=["votemper"]),
+    time: int = Path(title="NetCDF timestamp", examples=[2422094400]),
+    depth: str = Query(title="Depth Index", examples=["0", "bottom"]),
+    latitude: float = Query(title="Latitude", examples=[49.25]),
+    longitude: float = Query(title="Longitude", examples=[-127.45])
+):
+    """
+    Returns the data value for a dataset at a given point.
+    """
+
+    config = DatasetConfig(dataset)
+
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
+
+        # ds.get_point(latitude, longitude, 0, , data_id, timestamp, )
+        point_data = ds.get_point(latitude, longitude, depth, variable, time)
+
+    if (np.isnan(point_data) or np.isnan(point_data.data)):
+        return None
+
+    return round(float(point_data.data),2)
 
 
 @router.get("/plot/{plot_type}")

@@ -208,7 +208,7 @@
       tr {
         td {
           text-align: left;
-          &:first-child:after {
+          &:first-child:not(:last-child):after {
             content: ":";
             margin-right: 1em;
           }

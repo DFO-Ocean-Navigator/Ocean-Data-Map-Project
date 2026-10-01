@@ -8,6 +8,8 @@ import {
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
+  GetPointDepthPromise,
+  GetPointDataPromise,
   GetTrackTimeRangePromise,
   GetComboBoxQuery,
   GetClass4ForecastsPromise,
@@ -52,6 +54,46 @@ export function useGetDatasetVariables(
   });
 
   return { data, status };
+}
+ // Returns the timestamps for a given dataset and variable.
+export function useGetPointDepth(
+  latitude,
+  longitude,
+) {
+  const { data = [], isSuccess } = useQuery({
+    queryKey: ["point", "depth", latitude, longitude],
+    queryFn: () => GetPointDepthPromise(latitude, longitude),
+    enabled: Number.isFinite(latitude) && Number.isFinite(longitude),
+    // The refetchOnWindowFocus option is set to false to prevent automatic refetching when the window gains focus, and retry is set to false to avoid retrying failed requests.
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  return { data, isSuccess };
+}
+ // Returns the data in a dataset for a given point.
+export function useGetPointData(
+  dataset, 
+  variable,
+  time, 
+  depth, 
+  latitude,
+  longitude,
+) {
+  // Use the useQuery hook to fetch point data based on the provided parameters. The query is enabled only if all required parameters are valid. The query key is constructed using the dataset, variable, time, depth, latitude, and longitude to ensure that the query is unique for each combination of these parameters. The query function calls GetPointDataPromise with the provided parameters and a signal for cancellation. The refetchOnWindowFocus option is set to false to prevent automatic refetching when the window gains focus, and retry is set to false to avoid retrying failed requests.
+  const { data = [], isSuccess } = useQuery({
+    queryKey: ["point", "data", dataset, variable, time, depth, latitude, longitude],
+    queryFn: () => GetPointDataPromise(dataset, variable, time, depth, latitude, longitude),
+    enabled:
+     // Check if all required parameters are valid before enabling the query. The query is enabled only if dataset and variable are truthy, time is not null and greater than or equal to 0, depth is not null, and both latitude and longitude are finite numbers. 
+     Boolean(dataset && variable && time !=null && time >=0) &&
+      depth != null &&
+    Number.isFinite(latitude) && Number.isFinite(longitude),
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  return { data, isSuccess };
 }
 
 export function useGetDatasetTimestamps(dataset, enabled) {
