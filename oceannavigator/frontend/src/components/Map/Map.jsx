@@ -555,8 +555,8 @@ const Map = forwardRef((props, ref) => {
       return;
     
     }
-
-    
+     // If the overlay element does not already contain a table, it inserts a new row with a loading message into the table.
+    overlay.getElement().querySelector("table")?.insertAdjacentHTML("beforeend", '<tr><td colspan="2"><hr/><span class="point-loading" style= "font-weight:700; font-size:12px">Bathymetry and Variable Loading...</span></td></tr>')
     const point = { latitude, longitude, coordinate, overlay, mapId};
      activeHover.current = point;
 
@@ -613,13 +613,15 @@ const Map = forwardRef((props, ref) => {
 const rows = renderToString(
     <>
       <tr>
-        <td>Bathymetry:</td><td>{Number.isFinite(pointDepth.data) ? `${pointDepth.data.toFixed(1)} m` : "N/A"}</td> </tr>
+        <td>Bathymetry</td><td>{Number.isFinite(pointDepth.data) ? `${pointDepth.data.toFixed(1)} m` : "N/A"}</td> </tr>
       <tr> 
         <td>{hoverDataset.variable.value}</td><td>{Number.isFinite(pointData.data) ? pointData.data.toFixed(2) : "N/A"}</td>
       </tr>
     </>,
 
 );
+    // Remove the loading message from the table if it exists.
+    table?.querySelector(".point-loading")?.remove();
      // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
   if (table) table.insertAdjacentHTML("beforeend", rows);
    // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
