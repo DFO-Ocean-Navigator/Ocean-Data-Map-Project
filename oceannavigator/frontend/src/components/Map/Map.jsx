@@ -36,6 +36,7 @@ import {
   getBasemap,
   getDataSource,
   getQuiverSource,
+  handlePointerMove,
   removeMapInteractions,
   createFeatureTextStyle,
 } from "./utils";
@@ -133,6 +134,7 @@ const Map = forwardRef((props, ref) => {
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
   const popupElement1 = useRef(null);
+  const hoverTimer = useRef();
   const [hoverSelect0, setHoverSelect0] = useState();
   const [hoverSelect1, setHoverSelect1] = useState();
 
@@ -162,6 +164,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     let overlay = new Overlay({
+      id: "popup0",
       element: popupElement0.current,
       autoPan: false,
       offset: [0, -10],
@@ -353,6 +356,23 @@ const Map = forwardRef((props, ref) => {
       layerData0.setSource(
         new XYZ(getDataSource(props.dataset0, props.mapSettings)),
       );
+
+      map0.on("pointermove", function (e) {
+        clearTimeout(hoverTimer.current);
+
+        let overlay = map0.getOverlayById("popup0")
+
+        if (e.dragging) {
+          return;
+        }
+
+        overlay.setPosition(undefined);
+
+        hoverTimer.current = setTimeout(function () {
+          
+          handlePointerMove(e, props.dataset0, popupElement0, overlay);
+        }, 500);
+      });
     }
   }, [
     props.dataset0.id,
@@ -489,7 +509,7 @@ const Map = forwardRef((props, ref) => {
       map0.setView(newMapView);
       map1 && map1.setView(newMapView);
     }
-  }, [props.mapSettings.mapView,map1]);
+  }, [props.mapSettings.mapView, map1]);
 
   const createSelect = () => {
     const newSelect = new Select({
@@ -752,7 +772,7 @@ const Map = forwardRef((props, ref) => {
       (feature) =>
         feature.get("type") !== "class4" &&
         feature.get("class") !== "observation" &&
-        feature.getGeometry() === undefined
+        feature.getGeometry() === undefined,
     );
     if (emptyFeatures.length > 0) {
       featureVectorSource.removeFeatures(emptyFeatures);
@@ -831,23 +851,29 @@ const Map = forwardRef((props, ref) => {
     switch (featureType) {
       case "observation_points":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
-        featureVectorSource.removeFeatures(prevFeatures)
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("class") === "observation",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
 
         url = `/api/v2.0/observation/point/` + `${featureId}.json`;
         break;
       case "observation_tracks":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
-        featureVectorSource.removeFeatures(prevFeatures)
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("class") === "observation",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
 
         url = `/api/v2.0/observation/track/` + `${featureId}.json`;
         break;
       case "class4":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("type") === "class4")
-        featureVectorSource.removeFeatures(prevFeatures)
-      
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("type") === "class4",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
+
         url =
           `/api/v2.0/class4` +
           `/${props.class4Type}` +
