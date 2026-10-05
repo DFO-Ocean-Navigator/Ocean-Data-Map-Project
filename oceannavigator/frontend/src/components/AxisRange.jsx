@@ -72,131 +72,48 @@ function AxisRange(props) {
   };
 
   return (
-    <div className="axis-range-row">
-      <span className="axis-range-name">{props.title}</span>
+    <div className="axis-range">
+      <div className="axis-range-header">
+        <span className="axis-range-title">{props.title}</span>
 
-      <Form.Check
-        checked={auto}
-        onChange={autoChanged}
-      />
+        <Form.Check
+          type="checkbox"
+          id={`${props.id}_auto`}
+          label="Auto"
+          checked={auto}
+          onChange={autoChanged}
+          className="axis-range-auto"
+        />
 
-      <span className="axis-range-label">Min</span>
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={handleResetButton}
+          title="Reset to default"
+          aria-label={`Reset ${props.title} range`}
+        >
+          <FontAwesomeIcon icon={faRotateLeft} />
+        </Button>
+      </div>
 
-      <Form.Control
-        type="number"
-        size="sm"
-        value={min}
-        className="axis-range-input"
-        onChange={(n, s) => changed("min", n)}
-        step={0.1}
-        disabled={auto}
-      />
+      <div className="axis-range-inputs">
+        <div className="axis-range-inputs">
+          <label className="axis-range-tag" htmlFor={`${props.id}_min`}>Min</label>
+          <Form.Control
+            id={`${props.id}_min`} type="number" size="sm"
+            value={min} step={0.1} disabled={auto}
+            onChange={(n, s) => changed("min", n)}
+          />
 
-      <span className="axis-range-label">Max</span>
-
-      <Form.Control
-        type="number"
-        size="sm"
-        value={max}
-        className="axis-range-input"
-        onChange={(n, s) => changed("max", n)}
-        step={0.1}
-        disabled={auto}
-      />
-
-      <Button
-        size="sm"
-        variant="info"
-        className="axis-range-reset"
-        onClick={handleResetButton}
-      >
-        ↶
-      </Button>
+          <label className="axis-range-tag" htmlFor={`${props.id}_max`}>Max</label>
+          <Form.Control
+            id={`${props.id}_max`} type="number" size="sm"
+            value={max} step={0.1} disabled={auto}
+            onChange={(n, s) => changed("max", n)}
+          />
+        </div>
+      </div>
     </div>
-    // <InputGroup className="axis-range-row">
-    //   <InputGroup.Text className="axis-label">
-    //     {props.title}
-    //   </InputGroup.Text>
-    //   <InputGroup.Checkbox
-    //     type="checkbox"
-    //     id={props.id + "_auto"}
-    //     checked={auto}
-    //     onChange={autoChanged}
-    //     label={"Auto"}
-    //   />
-
-    //   <InputGroup.Text className="axis-label">
-    //     Min
-    //   </InputGroup.Text>
-
-    //   <Form.Control
-    //     className="axis-input"
-    //     type="number"
-    //     value={min}
-    //     onChange={(n, s) => changed("min", n)}
-    //     step={0.1}
-    //     disabled={auto}
-    //   />
-
-    //   <InputGroup.Text className="axis-label">
-    //     Max
-    //   </InputGroup.Text>
-
-    //   <Form.Control
-    //     className="axis-input"
-    //     type="number"
-    //     value={max}
-    //     onChange={(n, s) => changed("max", n)}
-    //     step={0.1}
-    //     disabled={auto}
-    //   />
-
-    //   <Button name="default" size="sm" onClick={handleResetButton} className="axis-reset">
-    //     <FontAwesomeIcon icon={faRotateLeft} />
-    //   </Button>
-    // </InputGroup>
-
-    // <div className="axis-range">
-    //   <tr className="range-label-row">
-    //     <td>
-    //       <Form.Label className="range-label">{props.title}</Form.Label>
-    //     </td>
-    //     <td className="range-auto-checkbox">
-    //       <Form.Check
-    //         type="checkbox"
-    //         id={props.id + "_auto"}
-    //         checked={auto}
-    //         onChange={autoChanged}
-    //         label={"Auto"}
-    //       />
-    //     </td>
-    //     <td>
-    //       <input
-    //         className="range-input"
-    //         type="number"
-    //         value={min}
-    //         onChange={(n, s) => changed("min", n)}
-    //         step={0.1}
-    //         disabled={auto}
-    //       />
-    //     </td>
-    //     <td>
-    //       <input
-    //         className="range-input"
-    //         type="number"
-    //         value={max}
-    //         onChange={(n, s) => changed("max", n)}
-    //         step={0.1}
-    //         disabled={auto}
-    //       />
-    //     </td>
-    //     <td className="default-button-container">
-    //       <Button name="default" size="sm" onClick={handleResetButton}>
-    //         <FontAwesomeIcon icon={faRotateLeft} />
-    //       </Button>
-    //     </td>
-    //   </tr>
-    // </div>
   );
 }
 
