@@ -146,18 +146,6 @@ function FeatureCard(props) {
           <Form.Control
             type="text"
             id={index.toString()}
-            key={`row_${index}_lon`}
-            className="cord-input"
-            value={coord[0]}
-            onChange={(e) => {
-              updateLon(e);
-            }}
-          />
-        </td>
-        <td>
-          <Form.Control
-            type="text"
-            id={index.toString()}
             key={`row_${index}_lat`}
             className="cord-input"
             value={coord[1]}
@@ -166,6 +154,19 @@ function FeatureCard(props) {
             }}
           />
         </td>
+        <td>
+          <Form.Control
+            type="text"
+            id={index.toString()}
+            key={`row_${index}_lon`}
+            className="cord-input"
+            value={coord[0]}
+            onChange={(e) => {
+              updateLon(e);
+            }}
+          />
+        </td>
+
         <td>
           <button
             className="remove-button"
@@ -184,7 +185,7 @@ function FeatureCard(props) {
     <div className="feature-card">
       <div className="card-header">
         <Form.Check
-        disabled={coordinateAlerts!=0 || coordinates[0][0]==="" || coordinates[0][1]===""}
+          disabled={coordinateAlerts != 0 || coordinates[0][0] === "" || coordinates[0][1] === ""}
           onChange={(e) => {
             props.setSelected(props.feature.id, featureType, e.target.checked);
           }}
@@ -193,7 +194,7 @@ function FeatureCard(props) {
         <Form.Control
           className="name-input"
           type="text"
-          value={featureName?? ""}
+          value={featureName ?? ""}
           onChange={updateFeatureName}
         />
         <div className="header-buttons">
@@ -217,8 +218,9 @@ function FeatureCard(props) {
         <Table bordered size="sm">
           <thead>
             <tr>
-              <th>{"Longitude"}</th>
               <th>{"Latitude"}</th>
+              <th>{"Longitude"}</th>
+
               <th style={{ width: "5%" }}></th>
             </tr>
           </thead>
