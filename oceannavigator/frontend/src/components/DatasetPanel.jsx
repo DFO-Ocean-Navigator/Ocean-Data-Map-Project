@@ -183,6 +183,21 @@ function DatasetPanel({
   ) : null;
 
   let axisRangeSelectors = [];
+  if (showDepthRange) {
+    const depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000], imperial_scale: [0, 32808.4]};
+    let depthRangeSelector = (
+      <AxisRange
+        key={"depth_axis_range"}
+        id={"depth_axis_range"}
+        title={depth_variable.value + " Range"}
+        variable={depth_variable}
+        is_imperial={dataset.unitSelection["depth"]}
+        range={dataset.axisRange[depth_variable.id]}
+        onUpdate={updateDataset}
+      />
+    );
+    axisRangeSelectors.push(depthRangeSelector);
+  }
   if (showAxisRange) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
@@ -202,21 +217,6 @@ function DatasetPanel({
       axisRangeSelectors.push(rangeSelector);
     }
   }
-  if (showDepthRange) {
-      const depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000], imperial_scale: [0, 32808.4]};
-      let depthRangeSelector = (
-        <AxisRange
-          key={"depth_axis_range"}
-          id={"depth_axis_range"}
-          title={depth_variable.value + " Range"}
-          variable={depth_variable}
-          is_imperial={dataset.unitSelection["depth"]}
-          range={dataset.axisRange[depth_variable.id]}
-          onUpdate={updateDataset}
-        />
-      );
-      axisRangeSelectors.push(depthRangeSelector);
-    }
   const axisRangeSelectorsAccordion = axisRangeSelectors.length > 0 ? (
     <Accordion className="axis-range-accordion">
       <Accordion.Item eventKey="0">

@@ -57,7 +57,6 @@
   border: none;
   border-radius: 3px;
   background: none;
-  color: var(--bs-secondary-color);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -121,7 +120,7 @@
 }
 
 .axis-range-inputs input[type="number"] {
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .axis-range-inputs input::-webkit-outer-spin-button,
