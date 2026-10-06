@@ -292,18 +292,10 @@ const PointWindow = ({
     names: names,
   };
 
-  // let axisRange = Array.isArray(plotDataset.variable)
-  //   ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
-  //   : plotDataset.axisRange[plotDataset.variable.id];
-
   let axisRange = Object.fromEntries(
     Object.entries(plotDataset.axisRange)
       .filter(([key, value]) => value != null)
   );
-  
-  // if (showDepthSelector && plotDataset.axisRange.hasOwnProperty("depth_range")) {
-  //   axisRange = { ...axisRange, depth_range: plotDataset.axisRange };
-  // }
 
   switch (selected) {
     case TabEnum.PROFILE:
