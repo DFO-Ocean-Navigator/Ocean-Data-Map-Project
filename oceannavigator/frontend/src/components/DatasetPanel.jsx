@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
+import { Accordion, Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import { withTranslation } from "react-i18next";
@@ -217,6 +217,16 @@ function DatasetPanel({
       );
       axisRangeSelectors.push(depthRangeSelector);
     }
+  const axisRangeSelectorsAccordion = axisRangeSelectors.length > 0 ? (
+    <Accordion className="axis-range-accordion">
+      <Accordion.Item eventKey="0">
+        <Accordion.Header>{"Data Ranges"}</Accordion.Header>
+        <Accordion.Body>
+          {axisRangeSelectors}
+        </Accordion.Body>
+      </Accordion.Item>
+    </Accordion>
+  ) : null;
 
   let quiverSelector = showQuiverSelector ? (
     <QuiverSelector
@@ -358,12 +368,7 @@ function DatasetPanel({
         />
         {variableSelector}
         {unitSelector}
-        {axisRangeSelectors}
-        {/* <table className="range-table">
-          <tbody>
-            {axisRangeSelectors}
-          </tbody>
-        </table> */}
+        {axisRangeSelectorsAccordion}
         {quiverSelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}

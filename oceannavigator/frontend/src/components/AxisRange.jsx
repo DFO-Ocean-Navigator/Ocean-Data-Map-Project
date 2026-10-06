@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Accordion, Button, Form, InputGroup } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
