@@ -29,10 +29,10 @@ export default function HoverPopup({
 
     map.addOverlay(overlay);
 
-    return () => {
+   return () => {
       if (map & overlay) {
         map.removeOverlay(overlay);
-      }
+        }
     };
   }, []);
 
@@ -81,8 +81,9 @@ export default function HoverPopup({
                   <td>{bearing}</td>
                 </tr>
               )}
-            </tbody><hr/>
-         </table>,
+            </tbody>
+            <hr/>
+          </table>,
         );
       } else {
         setFeatureTable(
@@ -113,7 +114,8 @@ export default function HoverPopup({
                     <td>{key}</td>
                     <td>{response.data[key]}</td>
                   </tr>
-                ))}<hr/>
+                ))}
+                <hr />
               </table>,
             );
           })
@@ -126,7 +128,7 @@ export default function HoverPopup({
 
   return (
     <>
-    {featureTable}
+      {featureTable}
       <table>
         <tbody>
           <tr>
@@ -147,7 +149,6 @@ export default function HoverPopup({
           </tr>
         </tbody>
       </table>
-      
     </>
   );
 }

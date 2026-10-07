@@ -1,5 +1,4 @@
 import React from "react";
-import { renderToString } from "react-dom/server";
 import axios from "axios";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
@@ -134,7 +133,7 @@ export const createMap = (
   obsDrawSource,
   maxZoom,
   mapRef,
-  onWaterHover,
+  hoverPopupId,
 ) => {
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
@@ -254,154 +253,7 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
-      //
-  // let selected = null;
-  // let hoverRequest = 0;
-  // const hidePopup = () => {
-  //   hoverRequest += 1;
-  //   overlay.setPosition(undefined);
-  //   popupElement.current.innerHTML = "";
-  //   onWaterHover(null, mapObject, overlay);
-  // };
-
-  // Hide popup on map move or view change
-  // mapObject.on("movestart", hidePopup);
-  // mapObject.on("change:view", hidePopup);
-
-  // Hide popup on pointer leave
-  // const viewport = mapObject.getViewport();
-  // viewport.addEventListener("pointerleave", hidePopup);
-  // // Remove the pointerleave event listener when the map's target changes to prevent memory leaks and ensure that the event listener is only active for the current map instance. This is important for maintaining performance and avoiding unexpected behavior when switching between different map instances or views.
-  // mapObject.once("change:target", () => {
-  //   viewport.removeEventListener("pointerleave", hidePopup);
-  // });
-   // Handle pointer move events to display popups for features on the map. When the pointer moves over a feature, the popup is displayed with relevant information. If the pointer moves away from a feature or over water, the popup is hidden. The function also handles fetching additional metadata for observation features if not already available.
-  // mapObject.on("pointermove", function (e) {
-  //   hidePopup();
-  //   const request = hoverRequest;
-  //   if (e.dragging) return;
-  //   if (selected !== null) {
-  //     selected.setStyle(undefined);
-  //     selected = null;
-  //   }
-  //   const feature = mapObject.forEachFeatureAtPixel(
-  //     mapObject.getEventPixel(e.originalEvent),
-  //     function (feature, layer) {
-  //       return feature;
-  //     },
-  //   );
-  //    // Added  && feature.get("class") != "observation" so that the if else goes to the else if for observation features.
-  //   if (feature && feature.get("name") && feature.get("class") != "observation") {
-  //     overlay.setPosition(e.coordinate);
-  //     if (feature.get("data")) {
-  //       let bearing = feature.get("bearing");
-  //       popupElement.current.innerHTML = renderToString(
-  //         <table>
-  //           <tr>
-  //             <td>Variable</td>
-  //             <td>{feature.get("name")}</td>
-  //           </tr>
-  //           <tr>
-  //             <td>Data</td>
-  //             <td>{feature.get("data")}</td>
-  //           </tr>
-  //           <tr>
-  //             <td>Units</td>
-  //             <td>{feature.get("units")}</td>
-  //           </tr>
-  //           {bearing && (
-  //             <tr>
-  //               <td>Bearing (+ve deg clockwise N)</td>
-  //               <td>{bearing}</td>
-  //             </tr>
-  //           )}
-  //         </table>,
-  //       );
-  //       onWaterHover(e, mapObject, overlay);
-  //     } else {
-  //       popupElement.current.innerHTML = feature.get("name");
-  //     }
-
-  //     if (feature.get("type") == "Polygon") {
-  //       mapObject.forEachFeatureAtPixel(e.pixel, function (f) {
-  //         selected = f;
-  //         f.setStyle([
-  //           new Style({
-  //             stroke: new Stroke({
-  //               color: "#ffffff",
-  //               width: 5,
-  //             }),
-  //           }),
-  //           new Style({
-  //             stroke: new Stroke({
-  //               color: "#ff0000",
-  //               width: 3,
-  //             }),
-  //           }),
-  //           new Style({
-  //             geometry: new olgeom.Point(
-  //               olProj.transform(
-  //                 f.get("centroid"),
-  //                 "EPSG:4326",
-  //                 mapSettings.projection,
-  //               ),
-  //             ),
-  //             text: new Text({
-  //               text: f.get("name"),
-  //               font: "14px sans-serif",
-  //               fill: new Fill({
-  //                 color: "#000000",
-  //               }),
-  //               stroke: new Stroke({
-  //                 color: "#ffffff",
-  //                 width: 2,
-  //               }),
-  //             }),
-  //           }),
-  //         ]);
-  //         return true;
-  //       });
-  //     }
-  //   } else if (feature && feature.get("class") == "observation") {
-  //     if (feature.get("meta")) {
-  //       overlay.setPosition(e.coordinate);
-  //       popupElement.current.innerHTML = feature.get("meta");
-  //       onWaterHover(e, mapObject, overlay);
-  //     } else {
-  //       let type = "station";
-  //       if (feature.getGeometry() instanceof olgeom.LineString) {
-  //         type = "platform";
-  //       }
-  //       axios
-  //         .get(`/api/v2.0/observation/meta/${type}/${feature.get("id")}.json`)
-  //         .then(function (response) {
-  //           overlay.setPosition(e.coordinate);
-  //           feature.set(
-  //             "meta",
-  //             renderToString(
-  //               <table>
-  //                 {Object.keys(response.data).map((key) => (
-  //                   <tr key={key}>
-  //                     <td>{key}</td>
-  //                     <td>{response.data[key]}</td>
-  //                   </tr>
-  //                 ))}
-  //               </table>,
-  //             ),
-  //           );
-  //           popupElement.current.innerHTML = feature.get("meta");
-  //           onWaterHover(e, mapObject, overlay);
-  //         })
-  //         .catch(() => {
-  //           // If the request fails or is canceled, hide the popup to ensure that no stale or incorrect information is displayed to the user. This helps maintain a clean and accurate user interface, especially when dealing with dynamic data that may change frequently.
-  //           if (request === hoverRequest) hidePopup();
-  //         });
-  //     }
-  //   } else {
-  //     // If no feature is found at the pointer location, call the onWaterHover function with null to indicate that the pointer is over water. This can be used to trigger any necessary actions or updates in the application when hovering over water areas.
-  //     onWaterHover(e, mapObject, overlay);
-  //   }
-  // });
+ 
 
   mapObject.on("pointermove", function (e) {
     var pixel = mapObject.getEventPixel(e.originalEvent);
@@ -470,7 +322,7 @@ export const createFeatureVectorLayer = (source, mapSettings) => {
                 color: "#555555",
                 width: isMobile ? 6 : 4,
               }),
-            }),            
+            }),
             new Style({
               stroke: new Stroke({
                 color: color,

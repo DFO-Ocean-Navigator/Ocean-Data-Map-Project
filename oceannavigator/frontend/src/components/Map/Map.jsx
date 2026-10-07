@@ -140,15 +140,10 @@ const Map = forwardRef((props, ref) => {
   const [popupCoordinates, setPopupCoordinates] = useState();
   const [hoverSelect0, setHoverSelect0] = useState();
   const [hoverSelect1, setHoverSelect1] = useState();
-  // State to hold the current point being hovered over on the map, which is used to display a hover card with information about that point. The hover card will show data such as bathymetry and variable values for the hovered point. The state is initialized to null, indicating that no point is currently being hovered over.
-  const [hoverCardPoint, setHoverCardPoint] = useState({
-    latitude: null,
-    longitude: null,
-  });
+ 
   // Refs to hold the timer for the hover card delay, the currently active hover point, and the function to handle water hover events. These refs are used to manage the hover card behavior and ensure that it only appears after a certain delay when hovering over a point on the map.
   const hoverTimer = useRef();
-  // const activeHover = useRef(null);
-  // const waterHoverHandler = useRef();
+  
 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
@@ -175,12 +170,7 @@ const Map = forwardRef((props, ref) => {
   }));
 
   useEffect(() => {
-    // let overlay = new Overlay({
-    //   element: popupElement0.current,
-    //   autoPan: false,
-    //   offset: [0, -10],
-    //   positioning: "bottom-center",
-    // });
+    
 
     let projection = props.mapSettings.projection;
     const newMapView = createMapView(
@@ -214,6 +204,7 @@ const Map = forwardRef((props, ref) => {
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
       mapRef0,
+      "hoverPopup0",
     );
 
     const newSelect0 = createSelect();
@@ -222,20 +213,6 @@ const Map = forwardRef((props, ref) => {
     newMap.addInteraction(newSelect0);
     newMap.addInteraction(newHoverSelect);
 
-    newMap.on("pointermove", function (e) {
-      clearTimeout(hoverTimer.current);
-
-      newMap.getOverlays().clear();
-      setPopupCoordinates(null);
-
-      if (e.dragging) {
-        return;
-      }
-
-      hoverTimer.current = setTimeout(() => {
-        setPopupCoordinates(e.coordinate);
-      }, 500);
-    });
 
     newMap.addControl(new MultiMapMousePosition());
 
@@ -256,12 +233,7 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     let newMap, newHoverSelect;
     if (props.compareDatasets) {
-      // let overlay = new Overlay({
-      //   element: popupElement1.current,
-      //   autoPan: false,
-      //   offset: [0, -10],
-      //   positioning: "bottom-center",
-      // });
+     
 
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
@@ -277,12 +249,29 @@ const Map = forwardRef((props, ref) => {
         newLayerFeatureVector,
         obsDrawSource,
         MAX_ZOOM[props.mapSettings.projection],
-        mapRef1
-       
+        mapRef1,
       );
 
       map0.getControls().item(0).setMap(newMap); // change zoom control target
       map0.getControls().item(3).setMap1(newMap);
+
+      newMap.on("pointermove", function (e) {
+        clearTimeout(hoverTimer.current);
+
+        // newMap.getOverlays().clear();
+        let overlay = newMap.getOverlayById("hoverPopup1");
+        if (overlay) newMap.removeOverlay(overlay);
+
+        setPopupCoordinates(null);
+
+        if (e.dragging) {
+          return;
+        }
+
+        hoverTimer.current = setTimeout(() => {
+          setPopupCoordinates(e.coordinate);
+        }, 500);
+      });
 
       newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
       newMap.addInteraction(select1);
@@ -521,157 +510,37 @@ const Map = forwardRef((props, ref) => {
     }
   }, [props.mapSettings.mapView, map1]);
 
-  // const queryClient = useQueryClient();
-  // // Determines which dataset to use for the hover card based on the map that the user is hovering over. If the user is hovering over map1, it uses dataset1; otherwise, it uses dataset0. This allows the hover card to display information relevant to the specific dataset being viewed.
-  // const hoverDataset =
-  //   hoverCardPoint?.mapId === "map1" ? props.dataset1 : props.dataset0;
+  const handlePointerMove = (e) => {
+    clearTimeout(hoverTimer.current);
 
-  //Recalls everytime the hoverCardPoint changes, which is set by the mapHoverLogger function below
-  // const pointDepth = useGetPointDepth(
-  //   hoverCardPoint?.latitude,
-  //   hoverCardPoint?.longitude,
-  // );
-  // const pointData = useGetPointData(
-  //   hoverDataset.id,
-  //   hoverDataset.variable.id,
-  //   hoverDataset.time.id,
-  //   hoverDataset.depth,
-  //   hoverCardPoint?.latitude,
-  //   hoverCardPoint?.longitude,
-  // );
+    // newMap.getOverlays().clear();
+    let overlay0 = map0.getOverlayById("hoverPopup0");
+    if (overlay0) map0.removeOverlay(overlay0);
+    if (map1) {
+      let overlay1 = map1.getOverlayById("hoverPopup1");
+      if (overlay1) map1.removeOverlay(overlay1);
+    }
+    setPopupCoordinates(null);
 
-  // Clears the hover card and cancels any ongoing queries when the user moves their mouse away from the map
-  // const clearWaterHover = () => {
-  //   clearTimeout(hoverTimer.current);
-  //   if (!activeHover.current) return;
-  //   // If there is an active hover point, it clears the position of the overlay associated with that point, sets the active hover reference to null, and resets the hover card point state to null. It also cancels any ongoing queries related to point data to prevent unnecessary data fetching when the user is no longer hovering over a point on the map.
-  //   activeHover.current.overlay.setPosition(undefined);
-  //   activeHover.current = null;
-  //   setHoverCardPoint(null);
-  //   queryClient.cancelQueries({ queryKey: ["point"] });
-  // };
-  // Sets the hover card point after a 1.5 second delay, and cancels any previous hover card queries if the user moves their mouse before the delay is up
-  // waterHoverHandler.current = (event, map, overlay, mapId) => {
-  //   clearWaterHover();
-  //   if (!event) return;
+    if (e.dragging) {
+      return;
+    }
 
-  //   const dataset = mapId === "map1" ? props.dataset1 : props.dataset0;
-  //   // If the dataset is not valid, return early and do not set the hover card point
-  //   if (
-  //     !dataset?.id ||
-  //     !dataset.variable?.id ||
-  //     dataset.time?.id == null ||
-  //     dataset.time.id < 0 ||
-  //     dataset.depth == null
-  //   ) {
-  //     return;
-  //   }
+    hoverTimer.current = setTimeout(() => {
+      setPopupCoordinates(e.coordinate);
+    }, 500);
+  };
+  if (map0) {
+    map0.on("pointermove", (e) => {
+      handlePointerMove(e);
+    });
+  }
+  if (map1) {
+    map1.on("pointermove", (e) => {
+      handlePointerMove(e);
+    });
+  }
 
-  //   const coordinate = event.coordinate.slice();
-
-  //   const [longitude, latitude] = toLonLat(
-  //     coordinate,
-  //     map.getView().getProjection(),
-  //   );
-  //   // If the latitude or longitude is not a finite number, or if the latitude is outside the valid range of -90 to 90 degrees, return early and do not set the hover card point
-  //   if (
-  //     !Number.isFinite(latitude) ||
-  //     !Number.isFinite(longitude) ||
-  //     Math.abs(latitude) > 90
-  //   ) {
-  //     return;
-  //   }
-  //   // If the overlay element does not already contain a table, it inserts a new row with a loading message into the table.
-  //   overlay
-  //     .getElement()
-  //     .querySelector("table")
-  //     ?.insertAdjacentHTML(
-  //       "beforeend",
-  //       '<tr><td colspan="2"><hr/><span class="point-loading" style= "font-weight:700; font-size:12px">Bathymetry and Variable Loading...</span></td></tr>',
-  //     );
-  //   const point = { latitude, longitude, coordinate, overlay, mapId };
-  //   activeHover.current = point;
-
-  //   hoverTimer.current = setTimeout(() => setHoverCardPoint(point), 1500);
-  // };
-
-  // Clears the hover card when the user moves their mouse away from the map, and cancels any ongoing queries for point data
-  // useEffect(() => {
-  //   clearWaterHover();
-
-  //   return clearWaterHover;
-  // }, [
-  //   props.dataset0.id,
-  //   props.dataset0.variable.id,
-  //   props.dataset0.time.id,
-  //   props.dataset0.depth,
-  //   props.dataset1.id,
-  //   props.dataset1.variable.id,
-  //   props.dataset1.time.id,
-  //   props.dataset1.depth,
-  //   props.compareDatasets,
-  // ]);
-
-  // Updates the hover card with bathymetry and variable data when the user hovers over a point on the map. If the point depth or point data queries are not successful, or if the point depth is not a finite number or is less than or equal to zero, or if the point data is not a finite number, then the hover card is cleared and no information is displayed.
-  // useEffect(() => {
-  //   if (
-  //     // If there is no hover card point or if the hover card point is not the same as the currently active hover point, return early and do not update the hover card
-  //     !hoverCardPoint ||
-  //     hoverCardPoint !== activeHover.current
-  //   ) {
-  //     return;
-  //   }
-  //   // If the hover card point is valid and matches the currently active hover point, it extracts the overlay and coordinate from the hover card point. It then checks if the point depth and point data queries are successful and if the retrieved data is valid. If any of these conditions are not met, it clears the hover card by setting the overlay position to undefined and returns early. If all conditions are met, it updates the hover card's inner HTML with a table displaying the bathymetry and variable data for the hovered point, and sets the overlay position to the coordinate of the hovered point.
-  //   const { overlay, coordinate } = hoverCardPoint;
-  //   const table = overlay.getElement().querySelector("table");
-  //   // If the point depth or point data queries are not successful, or if the point depth is not a finite number or is less than or equal to zero, or if the point data is not a finite number, then clear the hover card and return early
-  //   if (
-  //     !pointDepth.isSuccess ||
-  //     !pointData.isSuccess ||
-  //     (!table &&
-  //       (!Number.isFinite(pointDepth.data) ||
-  //         pointDepth.data <= 0 ||
-  //         !Number.isFinite(pointData.data)))
-  //   ) {
-  //     // If the table element does not exist and the point depth or point data is invalid, clear the hover card by setting the overlay position to undefined and return early
-  //     if (!table) overlay.setPosition(undefined);
-  //     return;
-  //   }
-  //   //
-  //   const rows = renderToString(
-  //     <>
-  //       <tr>
-  //         <td>Bathymetry</td>
-  //         <td>
-  //           {Number.isFinite(pointDepth.data)
-  //             ? `${pointDepth.data.toFixed(1)} m`
-  //             : "N/A"}
-  //         </td>{" "}
-  //       </tr>
-  //       <tr>
-  //         <td>{hoverDataset.variable.value}</td>
-  //         <td>
-  //           {Number.isFinite(pointData.data)
-  //             ? pointData.data.toFixed(2)
-  //             : "N/A"}
-  //         </td>
-  //       </tr>
-  //     </>,
-  //   );
-  //   // Remove the loading message from the table if it exists.
-  //   table?.querySelector(".point-loading")?.remove();
-  //   // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
-  //   if (table) table.insertAdjacentHTML("beforeend", rows);
-  //   // If the table element already exists, update its inner HTML with the new rows containing the bathymetry and variable data. If the table element does not exist, create a new table element and set its inner HTML to the new rows. Finally, set the overlay position to the coordinate of the hovered point to display the hover card at the correct location on the map.
-  //   else overlay.getElement().innerHTML = `<table>${rows}</table>`;
-  //   overlay.setPosition(coordinate);
-  // }, [
-  //   hoverCardPoint,
-  //   pointDepth.data,
-  //   pointDepth.isSuccess,
-  //   pointData.data,
-  //   pointData.isSuccess,
-  // ]);
 
   const createSelect = () => {
     const newSelect = new Select({
@@ -1466,18 +1335,18 @@ const Map = forwardRef((props, ref) => {
 
   return (
     <div className="map-container">
-      <div className="title ol-popup" ref={popupElement0}>
-        {popupCoordinates &&
-          createPortal(
-            <HoverPopup
-              map={map0}
-              coordinates={popupCoordinates}
-              dataset={props.dataset0}
-              popupElement={popupElement0}
-            />,
-            popupElement0.current,
-          )}
-      </div>
+      <div className="title ol-popup" ref={popupElement0} />
+      {popupCoordinates &&
+        createPortal(
+          <HoverPopup
+            map={map0}
+            coordinates={popupCoordinates}
+            dataset={props.dataset0}
+            popupElement={popupElement0}
+            overlayId="hoverPopup0"
+          />,
+          popupElement0.current,
+        )}
       <div className="title ol-popup" ref={popupElement1} />
       <div
         style={{
@@ -1490,12 +1359,27 @@ const Map = forwardRef((props, ref) => {
       />
 
       {props.compareDatasets ? (
-        <div
-          style={{ height: "100vh", width: "calc(50% - 1px)" }}
-          ref={mapRef1}
-          id="map1"
-          className="map-container map"
-        />
+        <>
+          <div
+            style={{ height: "100vh", width: "calc(50% - 1px)" }}
+            ref={mapRef1}
+            id="map1"
+            className="map-container map"
+          />
+
+          {popupCoordinates &&
+            map1 &&
+            createPortal(
+              <HoverPopup
+                map={map1}
+                coordinates={popupCoordinates}
+                dataset={props.dataset1}
+                popupElement={popupElement1}
+                overlayId="hoverPopup1"
+              />,
+              popupElement1.current,
+            )}
+        </>
       ) : null}
     </div>
   );
