@@ -109,6 +109,7 @@
 
   // Popup balloon on map
   .ol-popup {
+    
     opacity: 0.95;
     padding: 0.5em;
     line-height: 1.5;
@@ -203,22 +204,35 @@
       }
     }
 
-    table {
-      font-size: 75%;
-      tr {
-        td {
-          text-align: left;
-          &:first-child:after {
-            content: ":";
-            margin-right: 1em;
-          }
-        }
+   table {
+  width: 100%;
+  font-size: 75%;
+  text-align: left;
+  border: 1px solid #d4e2e8;
+  border-radius: 6px;
+  border-spacing: 0;
+  box-shadow: 0 3px #b6cbd5, 0 7px 12px rgba(0, 0, 0, .15);
 
-        &:nth-child(even) {
-          background-color: #f0f0f0;
-        }
+  tr {
+    &:nth-child(even) { background: #f4f9fb; }
+
+    td {
+      padding: .45rem .7rem;
+      border-bottom: 1px solid #dce6eb;
+      text-align: left;
+
+      &:first-child { color: #526775; font-weight: 600; }
+      &:last-child { text-align: right; color: #173b4d; }
+
+      &:first-child:not(:last-child):after {
+        content: ":";
+        margin-right: 1em;
       }
     }
+  }
+}
+
+table + table { margin-top: .9rem; }
   }
 
   .ol-attribution {
