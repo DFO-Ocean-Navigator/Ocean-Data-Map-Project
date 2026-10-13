@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { LineString } from "ol/geom";
 import { toLonLat } from "ol/proj";
-import { useQueryClient } from "@tanstack/react-query";
 import { useGetPointDepth, useGetPointData } from "../../remote/queries.js";
 
 import Overlay from "ol/Overlay";
@@ -15,8 +14,6 @@ export default function HoverPopup({
   overlayId,
 }) {
   const [featureTable, setFeatureTable] = useState(null);
-
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     let overlay = new Overlay({
@@ -34,23 +31,7 @@ export default function HoverPopup({
     return () => {
       if (map & overlay) {
         map.removeOverlay(overlay);
-      }
-      queryClient.cancelQueries({
-        queryKey: ["point_depth", latitude, longitude],
-        // exact: true,
-      });
-      queryClient.cancelQueries({
-        queryKey: [
-          "point_data",
-          dataset.id,
-          dataset.variable.id,
-          dataset.time.id,
-          dataset.depth,
-          latitude,
-          longitude,
-        ],
-        // exact: true,
-      });
+      }     
     };
   }, []);
 
