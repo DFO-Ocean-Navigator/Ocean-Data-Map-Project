@@ -25,6 +25,7 @@ import LinkButton from "./LinkButton.jsx";
 import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
 
+
 import { withTranslation } from "react-i18next";
 
 function OceanNavigator(props) {
@@ -55,6 +56,7 @@ function OceanNavigator(props) {
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
+  const [isMobile, setIsMobile] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -112,6 +114,20 @@ function OceanNavigator(props) {
         console.error(err);
       }
     }
+   const ScreenSize = 1024;
+    const mediaQuery = window.matchMedia(`(max-width: ${ScreenSize - 1}px)`);
+
+    const onChange = () => {
+      setIsMobile(window.innerWidth < ScreenSize);
+    };
+
+    mediaQuery.addEventListener("change", onChange);
+
+    setIsMobile(window.innerWidth < ScreenSize);
+
+    return () => {
+      mediaQuery.removeEventListener("change", onChange);
+    };
   }, []);
 
   const action = (name, arg, arg2) => {
@@ -499,6 +515,21 @@ function OceanNavigator(props) {
         <Modal.Footer>
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
+      </Modal>
+      <Modal show={isMobile} onHide={() => setIsMobile(false)}>
+        <Modal.Dialog>
+          <Modal.Header style={{ backgroundColor: "red" }} closeButton closeVariant="white" closeLabel={__("Close")}>
+            <Modal.Title style={{ fontSize: "1.25rem" }}>
+              Desktop Viewing Recommended !!!
+            </Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body>
+            <p>
+             For best experience, please view this application on a desktop or laptop computer as the site is not meant to be used on smaller screens.
+            </p>
+          </Modal.Body>
+        </Modal.Dialog>
       </Modal>
     </div>
   );
