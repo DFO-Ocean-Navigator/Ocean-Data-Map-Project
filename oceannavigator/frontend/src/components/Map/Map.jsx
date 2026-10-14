@@ -133,17 +133,14 @@ const Map = forwardRef((props, ref) => {
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [drawActions, setDrawActions] = useState({ map0: null, map1: null });
+  const [popupCoordinates, setPopupCoordinates] = useState();
+  const [hoverSelect0, setHoverSelect0] = useState();
+  const [hoverSelect1, setHoverSelect1] = useState();
   const mapRef0 = useRef();
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
   const popupElement1 = useRef(null);
-  const [popupCoordinates, setPopupCoordinates] = useState();
-  const [hoverSelect0, setHoverSelect0] = useState();
-  const [hoverSelect1, setHoverSelect1] = useState();
- 
-  // Refs to hold the timer for the hover card delay, the currently active hover point, and the function to handle water hover events. These refs are used to manage the hover card behavior and ensure that it only appears after a certain delay when hovering over a point on the map.
   const hoverTimer = useRef();
-  
 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
@@ -170,8 +167,6 @@ const Map = forwardRef((props, ref) => {
   }));
 
   useEffect(() => {
-    
-
     let projection = props.mapSettings.projection;
     const newMapView = createMapView(
       DEF_CENTER[projection],
@@ -196,15 +191,12 @@ const Map = forwardRef((props, ref) => {
 
     const newMap = createMap(
       props.mapSettings,
-      // overlay,
-      // popupElement0,
       newMapView,
       layerData0,
       newLayerFeatureVector,
       newObsDrawSource,
       MAX_ZOOM[props.mapSettings.projection],
       mapRef0,
-      "hoverPopup0",
     );
 
     const newSelect0 = createSelect();
@@ -212,7 +204,6 @@ const Map = forwardRef((props, ref) => {
     const newHoverSelect = createHoverSelect(newSelect0, newLayerFeatureVector);
     newMap.addInteraction(newSelect0);
     newMap.addInteraction(newHoverSelect);
-
 
     newMap.addControl(new MultiMapMousePosition());
 
@@ -233,8 +224,6 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     let newMap, newHoverSelect;
     if (props.compareDatasets) {
-     
-
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
         props.mapSettings,
@@ -242,8 +231,6 @@ const Map = forwardRef((props, ref) => {
 
       newMap = createMap(
         props.mapSettings,
-        // overlay,
-        // popupElement1,
         map0.getView(),
         layerData1,
         newLayerFeatureVector,
@@ -258,7 +245,6 @@ const Map = forwardRef((props, ref) => {
       newMap.on("pointermove", function (e) {
         clearTimeout(hoverTimer.current);
 
-        // newMap.getOverlays().clear();
         let overlay = newMap.getOverlayById("hoverPopup1");
         if (overlay) newMap.removeOverlay(overlay);
 
@@ -513,7 +499,6 @@ const Map = forwardRef((props, ref) => {
   const handlePointerMove = (e) => {
     clearTimeout(hoverTimer.current);
 
-    // newMap.getOverlays().clear();
     let overlay0 = map0.getOverlayById("hoverPopup0");
     if (overlay0) map0.removeOverlay(overlay0);
     if (map1) {
@@ -540,7 +525,6 @@ const Map = forwardRef((props, ref) => {
       handlePointerMove(e);
     });
   }
-
 
   const createSelect = () => {
     const newSelect = new Select({

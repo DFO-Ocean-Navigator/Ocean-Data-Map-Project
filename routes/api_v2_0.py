@@ -742,7 +742,7 @@ def point_data(
     time: int = Path(title="NetCDF timestamp", examples=[2422094400]),
     depth: str = Query(title="Depth Index", examples=["0", "bottom"]),
     latitude: float = Query(title="Latitude", examples=[49.25]),
-    longitude: float = Query(title="Longitude", examples=[-127.45])
+    longitude: float = Query(title="Longitude", examples=[-127.45]),
 ):
     """
     Returns the data value for a dataset at a given point.
@@ -751,14 +751,12 @@ def point_data(
     config = DatasetConfig(dataset)
 
     with open_dataset(config, variable=variable, timestamp=time) as ds:
-
-        # ds.get_point(latitude, longitude, 0, , data_id, timestamp, )
         point_data = ds.get_point(latitude, longitude, depth, variable, time)
 
-    if (np.isnan(point_data) or np.isnan(point_data.data)):
+    if np.isnan(point_data) or np.isnan(point_data.data):
         return None
 
-    return round(float(point_data.data),2)
+    return round(float(point_data.data), 2)
 
 
 @router.get("/plot/{plot_type}")

@@ -125,15 +125,12 @@ export const getBasemap = (
 
 export const createMap = (
   mapSettings,
-  // overlay,
-  // popupElement,
   mapView,
   layerData,
   layerFeatureVector,
   obsDrawSource,
   maxZoom,
   mapRef,
-  hoverPopupId,
 ) => {
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
@@ -242,7 +239,6 @@ export const createMap = (
         }),
       }),
     ]),
-    // overlays: [overlay],
   };
 
   let mapObject = new Map(options);
@@ -253,7 +249,7 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
- 
+
 
   mapObject.on("pointermove", function (e) {
     var pixel = mapObject.getEventPixel(e.originalEvent);
@@ -753,15 +749,13 @@ export const createPlotData = (selected, projection) => {
       title = "Point - " + title.join(", ");
     } else if (type === "LineString") {
       coordinates = convertCoords(coordinates[0], projection);
-      title = `Line -  ${
-        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
-      }`;
+      title = `Line -  ${name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+        }`;
       distance = getLineDistance(coordinates, projection);
     } else if (type === "Polygon") {
       coordinates = convertCoords(coordinates[0][0], projection);
-      title = `Area -  ${
-        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
-      }`;
+      title = `Area -  ${name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+        }`;
     }
   }
 
