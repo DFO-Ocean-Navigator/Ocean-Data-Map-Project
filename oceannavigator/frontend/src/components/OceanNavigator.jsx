@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
+import { isMobile } from "react-device-detect";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import Map from "./Map/Map.jsx";
@@ -24,7 +25,6 @@ import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
-
 
 import { withTranslation } from "react-i18next";
 
@@ -56,7 +56,7 @@ function OceanNavigator(props) {
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
-  const [isMobile, setIsMobile] = useState(false);
+  const [showMobile, setShowMobile] = useState(isMobile);
 
   const queryClient = useQueryClient();
 
@@ -114,20 +114,6 @@ function OceanNavigator(props) {
         console.error(err);
       }
     }
-   const ScreenSize = 1024;
-    const mediaQuery = window.matchMedia(`(max-width: ${ScreenSize - 1}px)`);
-
-    const onChange = () => {
-      setIsMobile(window.innerWidth < ScreenSize);
-    };
-
-    mediaQuery.addEventListener("change", onChange);
-
-    setIsMobile(window.innerWidth < ScreenSize);
-
-    return () => {
-      mediaQuery.removeEventListener("change", onChange);
-    };
   }, []);
 
   const action = (name, arg, arg2) => {
@@ -516,20 +502,23 @@ function OceanNavigator(props) {
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={isMobile} onHide={() => setIsMobile(false)}>
-        <Modal.Dialog>
-          <Modal.Header style={{ backgroundColor: "red" }} closeButton closeVariant="white" closeLabel={__("Close")}>
-            <Modal.Title style={{ fontSize: "1.25rem" }}>
-              Desktop Viewing Recommended !!!
-            </Modal.Title>
-          </Modal.Header>
+      <Modal show={showMobile} onHide={() => setShowMobile(false)}>
+        <Modal.Header
+          style={{ backgroundColor: "red" }}
+          closeButton
+          closeVariant="white"
+          closeLabel={__("Close")}
+        >
+          <Modal.Title style={{ fontSize: "1.25rem" }}>
+            {__("Mobile Device Warning")}
+          </Modal.Title>
+        </Modal.Header>
 
-          <Modal.Body>
-            <p>
-             For best experience, please view this application on a desktop or laptop computer as the site is not meant to be used on smaller screens.
-            </p>
-          </Modal.Body>
-        </Modal.Dialog>
+        <Modal.Body>
+          {__(
+            "This application has not be optimized for mobile devices. Please consider using a computer.",
+          )}
+        </Modal.Body>
       </Modal>
     </div>
   );
