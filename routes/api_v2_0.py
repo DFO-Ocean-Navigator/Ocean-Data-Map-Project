@@ -1169,7 +1169,7 @@ def bathy_mbt(
     #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     #     )
 
-    y = (2**zoom - 1) - y
+    # y = (2**zoom - 1) - y
     connection = sqlite3.connect("/data/misc/shapes/onav_bathy.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
@@ -1227,7 +1227,7 @@ def land_mbt(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    y = (2**zoom - 1) - y
+    # y = (2**zoom - 1) - y
     # connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
     connection = sqlite3.connect("/data/misc/shapes/onav_basemap.mbtiles")
     selector = connection.cursor()
