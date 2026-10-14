@@ -21,7 +21,6 @@ from PIL import Image
 from shapely.geometry import LinearRing, Point, Polygon
 from sqlalchemy import exc, func
 from sqlalchemy.orm import Session
-from netCDF4 import Dataset
 
 import data.class4 as class4
 import data.observational.queries as ob_queries
