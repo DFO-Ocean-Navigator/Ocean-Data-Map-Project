@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Modal, ProgressBar, Button, Form } from "react-bootstrap";
+import { Accordion, Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import { withTranslation } from "react-i18next";
@@ -29,6 +29,7 @@ function DatasetPanel({
   showDepthSelector = true,
   showUnitSelector = false, 
   showAxisRange = false,
+  showDepthRange = false,
   showVariableSelector = true,
   showAllDepths = false,
   horizontalLayout = false,
@@ -182,6 +183,21 @@ function DatasetPanel({
   ) : null;
 
   let axisRangeSelectors = [];
+  if (showDepthRange) {
+    const depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000], imperial_scale: [0, 32808.4]};
+    let depthRangeSelector = (
+      <AxisRange
+        key={"depth_axis_range"}
+        id={"depth_axis_range"}
+        title={depth_variable.value + " Range"}
+        variable={depth_variable}
+        is_imperial={dataset.unitSelection["depth"]}
+        range={dataset.axisRange[depth_variable.id]}
+        onUpdate={updateDataset}
+      />
+    );
+    axisRangeSelectors.push(depthRangeSelector);
+  }
   if (showAxisRange) {
     let axisVariables = Array.isArray(dataset.variable)
       ? dataset.variable
@@ -201,6 +217,16 @@ function DatasetPanel({
       axisRangeSelectors.push(rangeSelector);
     }
   }
+  const axisRangeSelectorsAccordion = axisRangeSelectors.length > 0 ? (
+    <Accordion className="axis-range-accordion">
+      <Accordion.Item eventKey="0">
+        <Accordion.Header>{"Data Ranges"}</Accordion.Header>
+        <Accordion.Body>
+          {axisRangeSelectors}
+        </Accordion.Body>
+      </Accordion.Item>
+    </Accordion>
+  ) : null;
 
   let quiverSelector = showQuiverSelector ? (
     <QuiverSelector
@@ -342,7 +368,7 @@ function DatasetPanel({
         />
         {variableSelector}
         {unitSelector}
-        {axisRangeSelectors}
+        {axisRangeSelectorsAccordion}
         {quiverSelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}
@@ -379,6 +405,7 @@ DatasetPanel.propTypes = {
   showDepthSelector: PropTypes.bool,
   showUnitSelector: PropTypes.bool,
   showAxisRange: PropTypes.bool,
+  showDepthRange: PropTypes.bool,
   showVariableSelector: PropTypes.bool,
   showAllDepths: PropTypes.bool,
   mountedDataset: PropTypes.object,

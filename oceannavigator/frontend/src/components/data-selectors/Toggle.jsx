@@ -110,7 +110,7 @@ const Toggle = ({ id, dataset, onChange }) => {
       <div>
         <Accordion className="imperial-units-accordion">
           <Accordion.Item eventKey={id}>
-            <Accordion.Header>{"Unit Selection"} </Accordion.Header>
+            <Accordion.Header>{"Units"} </Accordion.Header>
             <Accordion.Body>
               <div className="unit-table">
                 <div className="unit-table-header">
