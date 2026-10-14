@@ -714,6 +714,10 @@ def point_depth(
         title="Longitude",
         examples=[-127.45],
     ),
+    zoom: int = Query(
+        title="Zoom",
+        examples=[4],
+    ),
 ):
     """
     Returns the depth for a given point.
@@ -721,14 +725,12 @@ def point_depth(
 
     settings = get_settings()
 
-    with Dataset(settings.etopo_file % ("EPSG:3857", 1), "r") as ds:
+    if zoom > 8:
+        zoom = 8
 
-        latitudes = ds.variables["lat"][:]
-        longitudes = ds.variables["lon"][:]
-
-        lat_index = np.abs(latitudes - latitude).argmin()
-        lon_index = np.abs(longitudes - longitude).argmin()
-        depth = ds.variables["z"][lat_index, lon_index]
+    with xr.open_dataset(settings.etopo_file % ("EPSG:3857", zoom)) as ds:
+        topo_ds = ds.sel(lat=latitude, lon=longitude, method="nearest")
+        depth = topo_ds["z"]
 
         depth = -float(depth) if depth < 0 else 0
 

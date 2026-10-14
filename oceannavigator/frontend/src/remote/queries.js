@@ -59,11 +59,12 @@ export function useGetDatasetVariables(
 export function useGetPointDepth(
   latitude,
   longitude,
+  zoom,
 ) {
   const { data = [], isSuccess } = useQuery({
-    queryKey: ["point_depth", latitude, longitude],
-    queryFn: () => GetPointDepthPromise(latitude, longitude),
-    enabled: Number.isFinite(latitude) && Number.isFinite(longitude),
+    queryKey: ["point_depth", latitude, longitude, zoom],
+    queryFn: () => GetPointDepthPromise(latitude, longitude, zoom),
+    enabled: Number.isFinite(latitude) && Number.isFinite(longitude) && Number.isFinite(zoom),
     refetchOnWindowFocus: false,
     retry: false,
   });

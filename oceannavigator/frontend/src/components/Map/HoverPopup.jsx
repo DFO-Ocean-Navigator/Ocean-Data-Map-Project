@@ -31,7 +31,7 @@ export default function HoverPopup({
     return () => {
       if (map & overlay) {
         map.removeOverlay(overlay);
-      }     
+      }
     };
   }, []);
 
@@ -40,7 +40,9 @@ export default function HoverPopup({
     map.getView().getProjection(),
   );
 
-  const pointDepth = useGetPointDepth(latitude, longitude);
+  const zoom = map.getView().getZoom();
+
+  const pointDepth = useGetPointDepth(latitude, longitude, zoom);
   const pointData = useGetPointData(
     dataset.id,
     dataset.variable.id,
