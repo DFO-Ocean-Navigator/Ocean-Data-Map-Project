@@ -297,14 +297,11 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
 
     connection = sqlite3.connect("/data/misc/shapes/onav_land_mask.mbtiles")
     selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {z} AND tile_column = {x} AND tile_row = {(2**z - 1) - y}"
+    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {z} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)
     land_mask_tile = selector.fetchone()
     if land_mask_tile is not None:
-        out = io.BytesIO(land_mask_tile[0])
-        out.seek(0)
-        land_mask = np.load(out)
-
+        land_mask = np.load(io.BytesIO(land_mask_tile[0]))
         data[land_mask==1] = np.ma.masked
 
 

@@ -54,7 +54,7 @@ const DEF_CENTER = {
 };
 
 const DEF_ZOOM = {
-  "EPSG:3857": 8,
+  "EPSG:3857": 4,
   "EPSG:32661": 2,
   "EPSG:3031": 2,
 };
