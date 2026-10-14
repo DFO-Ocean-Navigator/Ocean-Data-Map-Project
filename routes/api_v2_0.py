@@ -262,6 +262,7 @@ def variables(
                     "value": config.variable[v].name,
                     "scale": config.variable[v].scale,
                     "imperial_scale": imperial_scale,
+                    "units": unit,
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
                     "vector_variable": v.key in config.vector_variables,
