@@ -169,9 +169,9 @@ const PointWindow = ({
     TabEnum.MOORING,
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
-  const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showAxisRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.MOORING].includes(selected);
   const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
-  const showDepthRange = selected === TabEnum.PROFILE;
+  const showDepthRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) || plotDataset.depth === "all";
 
   const plotOptions = (
     <>
@@ -322,6 +322,7 @@ const PointWindow = ({
         unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
+        variable_range: axisRange,
       };
       plotType = "profile";
       break;
@@ -342,6 +343,7 @@ const PointWindow = ({
         showmap: showMap,
         unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
+        variable_range: axisRange,
       };
       plotType = "sound";
       break;
