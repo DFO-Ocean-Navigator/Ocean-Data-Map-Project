@@ -292,8 +292,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
         cmap = colormap.colormaps.get("speed")
 
     data = data.transpose()
-    xpx = x * 256
-    ypx = y * 256
 
     connection = sqlite3.connect("/data/misc/shapes/onav_land_mask.mbtiles")
     selector = connection.cursor()
@@ -301,10 +299,8 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     selector.execute(sqlite)
     land_mask_tile = selector.fetchone()
     if land_mask_tile is not None:
-        land_mask = np.load(io.BytesIO(land_mask_tile[0]))
-        data[land_mask==1] = np.ma.masked
-
-
+        land_mask = np.frombuffer(land_mask_tile[0], dtype=np.uint8).reshape(256, 256)
+        data[land_mask == 1] = np.ma.masked
 
     # # Mask out any topography if we're below the vector-tile threshold
     # if z < 8:

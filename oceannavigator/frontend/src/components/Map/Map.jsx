@@ -66,7 +66,7 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 16,
+  "EPSG:3857": 14,
   "EPSG:32661": 5,
   "EPSG:3031": 5,
 };
@@ -1267,6 +1267,8 @@ const Map = forwardRef((props, ref) => {
     if (props.mapSettings.basemap === "chs") {
       layerBasemap.setZIndex(1);
       layerData0.setZIndex(0);
+
+    console.log(map0.getView().getZoom())
     } else {
       layerBasemap.setZIndex(0);
       layerData0.setZIndex(1);
