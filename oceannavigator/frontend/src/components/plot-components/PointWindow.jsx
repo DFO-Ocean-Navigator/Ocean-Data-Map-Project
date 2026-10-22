@@ -112,6 +112,31 @@ const PointWindow = ({
         [dataset.variable.id]: false
       }
     }));
+    if (selected === TabEnum.CTD) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /temp/i.test(v.value)),
+          variables.data.find((v) => /salinity/i.test(v.value)),
+        ],
+      }));
+    }
+    else if (selected === TabEnum.SOUND) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /speed/i.test(v.value)),
+        ],
+      }));
+    }
+    else {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /temp/i.test(v.value)),
+        ],
+      }));
+    }
   }, [selected]);
 
   const handleDatasetUpdate = (key, value) => {
@@ -169,9 +194,9 @@ const PointWindow = ({
     TabEnum.MOORING,
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
-  const showAxisRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.MOORING].includes(selected);
+  const showAxisRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND, TabEnum.MOORING].includes(selected);
   const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
-  const showDepthRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) || plotDataset.depth === "all";
+  const showDepthRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) || (plotDataset.depth === "all" && selected === TabEnum.MOORING);
 
   const plotOptions = (
     <>
@@ -284,6 +309,8 @@ const PointWindow = ({
   const hasTemp = variables.data.some((v) => v.id === "votemper");
   const hasSal = variables.data.some((v) => v.id === "vosaline");
   const hasTempSal = hasTemp && hasSal;
+
+
 
   // Construct query for image
   let plotType = "";

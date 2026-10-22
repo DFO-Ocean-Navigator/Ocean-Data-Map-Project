@@ -168,7 +168,7 @@ class TimeseriesPlotter(PointPlotter):
                     depths,
                     point_data,
                     self.variables,
-                    self.variable_unit,
+                    self.variable_units,
                 )
             self.times = times
             self.data = point_data

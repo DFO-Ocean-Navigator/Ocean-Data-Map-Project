@@ -116,8 +116,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         self.plot_legend(fig, self.names)
 
         ylim = ax.get_ylim()
-        
-        ax.set_xlim([1410, 1560])
+        if "sspeed" in self.axis_range:
+            ax.set_xlim(self.axis_range["sspeed"])
+        else:
+            ax.set_xlim([1410, 1560])
         ax2 = ax.twinx()
         ureg = pint.UnitRegistry()
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
