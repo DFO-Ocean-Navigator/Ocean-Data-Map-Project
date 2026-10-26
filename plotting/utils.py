@@ -58,8 +58,15 @@ def get_mimetype(filetype: str):
 
 
 def normalize_scale(data, variable_config):
+    value = data.compressed()
+    if value.size == 0:
+            
+      return variable_config.scale
+    
     vmin = float(np.amin(data))
-    vmax = float(np.amax(data))
+    vmax = float(np.amax(data)) 
+
+   
 
     if variable_config.is_zero_centered:
         vmax = max(abs(vmax), abs(vmin))
