@@ -672,8 +672,8 @@ const Map = forwardRef((props, ref) => {
     features = features.map((feature) => {
       let id = feature.getId();
       let name = feature.get("name");
-      let geom = feature.getGeometry().clone();
-      let coords = geom.getCoordinates();
+      let geom = feature.getGeometry();
+      let coords = geom ? geom.getCoordinates() : [];
 
       if (feature.get("type") === "Point") {
         coords = [coords];
