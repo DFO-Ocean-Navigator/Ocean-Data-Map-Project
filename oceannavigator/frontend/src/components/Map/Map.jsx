@@ -242,23 +242,6 @@ const Map = forwardRef((props, ref) => {
       map0.getControls().item(0).setMap(newMap); // change zoom control target
       map0.getControls().item(3).setMap1(newMap);
 
-      newMap.on("pointermove", function (e) {
-        clearTimeout(hoverTimer.current);
-
-        let overlay = newMap.getOverlayById("hoverPopup1");
-        if (overlay) newMap.removeOverlay(overlay);
-
-        setPopupCoordinates(null);
-
-        if (e.dragging) {
-          return;
-        }
-
-        hoverTimer.current = setTimeout(() => {
-          setPopupCoordinates(e.coordinate);
-        }, 500);
-      });
-
       newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
       newMap.addInteraction(select1);
       newMap.addInteraction(newHoverSelect);
@@ -515,14 +498,28 @@ const Map = forwardRef((props, ref) => {
       setPopupCoordinates(e.coordinate);
     }, 500);
   };
+
+  const handlePointerLeave = () => {
+    clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => {
+      setPopupCoordinates(null);
+    }, 500);
+  };
+
   if (map0) {
     map0.on("pointermove", (e) => {
       handlePointerMove(e);
+    });
+    map0.getTargetElement().addEventListener("pointerleave", () => {
+      handlePointerLeave();
     });
   }
   if (map1) {
     map1.on("pointermove", (e) => {
       handlePointerMove(e);
+    });
+    map1.getTargetElement().addEventListener("pointerleave", () => {
+      handlePointerLeave();
     });
   }
 
