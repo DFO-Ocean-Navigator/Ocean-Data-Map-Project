@@ -10,23 +10,24 @@ import {
 import Icon from "./lib/Icon.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const Options = ({ options, updateOptions, t: _ }) => {
-  // Local state mirrors props.options
+export default function Options({ options, updateOptions }) {
   const [interpType, setInterpType] = useState(options.interpType);
   const [interpRadius, setInterpRadius] = useState(options.interpRadius);
   const [interpNeighbours, setInterpNeighbours] = useState(
-    options.interpNeighbours
+    options.interpNeighbours,
   );
   const [bathymetry, setBathymetry] = useState(options.bathymetry);
   const [bathyContour, setBathyContour] = useState(options.bathyContour);
   const [mapBathymetryOpacity, setMapBathymetryOpacity] = useState(
-    options.mapBathymetryOpacity
+    options.mapBathymetryOpacity,
   );
   const [topoShadedRelief, setTopoShadedRelief] = useState(
-    options.topoShadedRelief
+    options.topoShadedRelief,
   );
+
+  const { t, i18n } = useTranslation();
 
   const handleApply = () => {
     updateOptions({
@@ -173,7 +174,7 @@ const Options = ({ options, updateOptions, t: _ }) => {
       </Card>
     </div>
   );
-};
+}
 
 Options.propTypes = {
   options: PropTypes.shape({
@@ -186,7 +187,4 @@ Options.propTypes = {
     topoShadedRelief: PropTypes.bool,
   }).isRequired,
   updateOptions: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(Options);

@@ -1,5 +1,4 @@
 div.TransectLimiter {
-
   .threshold-block {
     display: flex;
     flex-direction: column;
@@ -24,14 +23,12 @@ div.TransectLimiter {
     border: none;
     cursor: pointer;
     font-size: 15px;
-    width: 21px;      
-  height: 22px;  
+    width: 21px;
+    height: 22px;
     color: #077da5;
 
-     &:active {
-    background: #008cba; 
-  }
-
-
+    &:active {
+      background: #008cba;
+    }
   }
 }

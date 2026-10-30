@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios" ; 
+import axios from "axios";
 import { Button, ButtonToolbar, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-
-function ColormapRange(props) {
+export default function ColormapRange(props) {
   const [useAuto, setUseAuto] = useState(props.auto);
   const [min, setMin] = useState(parseFloat(props.state[0]).toFixed(4));
   const [max, setMax] = useState(parseFloat(props.state[1]).toFixed(4));
@@ -154,5 +153,3 @@ ColormapRange.propTypes = {
   mapSettings: PropTypes.object,
   mapRef: PropTypes.object,
 };
-
-export default withTranslation()(ColormapRange);

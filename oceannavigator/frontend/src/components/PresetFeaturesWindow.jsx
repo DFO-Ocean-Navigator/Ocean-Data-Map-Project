@@ -10,12 +10,14 @@ import {
 
 const LOADING_IMAGE = "../images/spinner.gif";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function PresetFeaturesWindow(props) {
+export default function PresetFeaturesWindow(props) {
   const [pointItems, setPointItems] = useState(null);
   const [lineItems, setLineItems] = useState(null);
   const [areaItems, setAreaItems] = useState(null);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     GetPresetPointsPromise().then(
@@ -34,12 +36,12 @@ function PresetFeaturesWindow(props) {
                 {d.name}
               </ListGroup.Item>
             );
-          })
+          }),
         );
       },
       (error) => {
         console.error(error);
-      }
+      },
     );
 
     GetPresetLinesPromise().then(
@@ -58,12 +60,12 @@ function PresetFeaturesWindow(props) {
                 {d.name}
               </ListGroup.Item>
             );
-          })
+          }),
         );
       },
       (error) => {
         console.error(error);
-      }
+      },
     );
 
     GetPresetAreasPromise().then(
@@ -82,12 +84,12 @@ function PresetFeaturesWindow(props) {
                 {d.name}
               </ListGroup.Item>
             );
-          })
+          }),
         );
       },
       (error) => {
         console.error(error);
-      }
+      },
     );
   }, []);
 
@@ -98,7 +100,7 @@ function PresetFeaturesWindow(props) {
   return (
     <div className="PresetFeaturesWindow">
       <Card className="features-card">
-        <Card.Header>{__("Points")}</Card.Header>
+        <Card.Header>{t("Points")}</Card.Header>
         {pointItems ? (
           <ListGroup variant="flush">{pointItems}</ListGroup>
         ) : (
@@ -106,7 +108,7 @@ function PresetFeaturesWindow(props) {
         )}
       </Card>
       <Card className="features-card">
-        <Card.Header>{__("Lines")}</Card.Header>
+        <Card.Header>{t("Lines")}</Card.Header>
         {lineItems ? (
           <ListGroup variant="flush">{lineItems}</ListGroup>
         ) : (
@@ -114,7 +116,7 @@ function PresetFeaturesWindow(props) {
         )}
       </Card>
       <Card className="features-card">
-        <Card.Header>{__("Areas")}</Card.Header>
+        <Card.Header>{t("Areas")}</Card.Header>
         {areaItems ? (
           <ListGroup variant="flush">{areaItems}</ListGroup>
         ) : (
@@ -124,5 +126,3 @@ function PresetFeaturesWindow(props) {
     </div>
   );
 }
-
-export default withTranslation()(PresetFeaturesWindow);

@@ -34,10 +34,10 @@ class MultiMapMousePosition extends MousePosition {
     const viewport = map.getViewport();
 
     this.listenerKeys.push(
-      listen(viewport, EventType.POINTERMOVE, this.handleMouseMove, this)
+      listen(viewport, EventType.POINTERMOVE, this.handleMouseMove, this),
     );
     this.listenerKeys.push(
-      listen(map, MapEventType.POSTRENDER, this.render, this)
+      listen(map, MapEventType.POSTRENDER, this.render, this),
     );
     const target = this.target_ ?? map.getOverlayContainerStopEvent();
     if (this.element) {

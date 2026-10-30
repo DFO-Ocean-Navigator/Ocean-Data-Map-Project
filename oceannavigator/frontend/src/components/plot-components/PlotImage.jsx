@@ -9,13 +9,13 @@ import {
 } from "react-bootstrap";
 import Icon from "../lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 import { useGetPlotImage } from "../../remote/queries.js";
 
 const FAIL_IMAGE = "../fail.js";
 
-const PlotImage = ({
+export default function PlotImage({
   plotType,
   query,
   permlink_subquery,
@@ -24,7 +24,7 @@ const PlotImage = ({
   size,
   dpi,
   t,
-}) => {
+}) {
   const imagelinkRef = useRef();
   const [showImagelink, setShowImagelink] = useState(false);
 
@@ -47,7 +47,7 @@ const PlotImage = ({
   // Build URL from query
   const urlFromQuery = () => {
     return `/api/v2.0/plot/${plotType}?query=${encodeURIComponent(
-      JSON.stringify(query)
+      JSON.stringify(query),
     )}`;
   };
 
@@ -111,7 +111,7 @@ const PlotImage = ({
                 />{" "}
                 {fmt.toUpperCase()}
               </Dropdown.Item>
-            )
+            ),
           )}
           <Dropdown.Divider />
           {["csv", "odv", "stats"].map((fmt) => (
@@ -122,7 +122,7 @@ const PlotImage = ({
                 (fmt === "csv" && plotType === "hovmoller") ||
                 (fmt === "odv" &&
                   !["profile", "observation", "transect", "map"].includes(
-                    plotType
+                    plotType,
                   ))
               }
             >
@@ -198,7 +198,7 @@ const PlotImage = ({
             ref={imagelinkRef}
             readOnly
             value={`${window.location.origin}${urlFromQuery(
-              query
+              query,
             )}&format=png&size=${size}&dpi=${dpi}`}
           />
         </Modal.Body>
@@ -218,14 +218,11 @@ const PlotImage = ({
       </Modal>
     </div>
   );
-};
+}
 
 //***********************************************************************
 PlotImage.propTypes = {
   query: PropTypes.object,
   permlink_subquery: PropTypes.object,
   action: PropTypes.func,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(PlotImage);

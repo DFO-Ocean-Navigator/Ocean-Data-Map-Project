@@ -25,9 +25,9 @@ import LinkButton from "./LinkButton.jsx";
 import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function OceanNavigator(props) {
+export default function OceanNavigator(props) {
   const mapRef = useRef();
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
@@ -55,6 +55,8 @@ function OceanNavigator(props) {
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
+
+  const { t, i18n } = useTranslation();
 
   const queryClient = useQueryClient();
 
@@ -334,7 +336,7 @@ function OceanNavigator(props) {
           updateUI={updateUI}
         />
       );
-      modalTitle = __("Report Bug");
+      modalTitle = t("Report Bug");
       break;
 
     case "presetFeatures":
@@ -350,13 +352,13 @@ function OceanNavigator(props) {
           mapRef={mapRef}
         />
       );
-      modalTitle = __("Edit Map Features");
+      modalTitle = t("Edit Map Features");
       break;
     case "annotation":
       modalBodyContent = (
         <AnnotationTextWindow mapRef={mapRef} updateUI={updateUI} />
       );
-      modalTitle = __("Add Annotation Label");
+      modalTitle = t("Add Annotation Label");
       modalSize = "md";
       break;
     case "observationSelect":
@@ -383,11 +385,11 @@ function OceanNavigator(props) {
           updateMapSettings={updateMapSettings}
         />
       );
-      modalTitle = __("Settings");
+      modalTitle = t("Settings");
       break;
     case "info-help":
       modalBodyContent = <InfoHelpWindow />;
-      modalTitle = __("Info/Help");
+      modalTitle = t("Info/Help");
       break;
   }
 
@@ -472,12 +474,12 @@ function OceanNavigator(props) {
         dialogClassName="full-screen-modal"
         size={modalSize}
       >
-        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
+        <Modal.Header closeButton closeVariant="white" closeLabel={t("Close")}>
           <Modal.Title>{modalTitle}</Modal.Title>
         </Modal.Header>
         <Modal.Body>{modalBodyContent}</Modal.Body>
         <Modal.Footer>
-          <Button onClick={closeModal}>{__("Close")}</Button>
+          <Button onClick={closeModal}>{t("Close")}</Button>
         </Modal.Footer>
       </Modal>
       <Modal
@@ -486,8 +488,8 @@ function OceanNavigator(props) {
         dialogClassName="permalink-modal"
         backdrop={true}
       >
-        <Modal.Header closeButton closeVariant="white" closeLabel={__("Close")}>
-          <Modal.Title>{__("Share Link")}</Modal.Title>
+        <Modal.Header closeButton closeVariant="white" closeLabel={t("Close")}>
+          <Modal.Title>{t("Share Link")}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Permalink
@@ -497,11 +499,9 @@ function OceanNavigator(props) {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
+          <Button onClick={() => setShowPermalink(false)}>{t("Close")}</Button>
         </Modal.Footer>
       </Modal>
     </div>
   );
 }
-
-export default withTranslation()(OceanNavigator);

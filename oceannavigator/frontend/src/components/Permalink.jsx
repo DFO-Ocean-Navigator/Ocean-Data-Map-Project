@@ -2,12 +2,11 @@ import React, { useState, useRef } from "react";
 import { Button, Card, Form, Row, Col } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
+export default function Permalink({ generatePermLink, compareDatasets }) {
   const textareaRef = useRef(null);
 
-  // Default options
   const [options, setOptions] = useState({
     dataset0: true,
     dataset1: !!compareDatasets,
@@ -15,6 +14,8 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
     mapView: true,
     features: true,
   });
+
+  const { t, i18n } = useTranslation();
 
   const handleChange = (e) => {
     const { name, checked } = e.target;
@@ -98,12 +99,9 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
       </Col>
     </div>
   );
-};
+}
 
 Permalink.propTypes = {
   generatePermLink: PropTypes.func.isRequired,
   compareDatasets: PropTypes.bool,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(Permalink);

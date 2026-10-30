@@ -28,7 +28,7 @@ export const obsPointDrawAction = (map, obsDrawSource, projection, action) => {
     const lonlat = transform(
       e.feature.getGeometry().getCoordinates(),
       projection,
-      "EPSG:4326"
+      "EPSG:4326",
     );
 
     // Send area to Observation Selector

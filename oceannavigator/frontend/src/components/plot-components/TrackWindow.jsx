@@ -14,9 +14,9 @@ import {
   useGetObservationVariablesPlatform,
 } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const TrackWindow = (props) => {
+export default function TrackWindow(props) {
   const [showmap, setShowMap] = useState(true);
   const [plotDataset, setPlotDataset] = useState(props.dataset);
   const [latlon, setLatlon] = useState(false);
@@ -53,8 +53,8 @@ const TrackWindow = (props) => {
     dataset: plotDataset.id,
     name: props.name,
     track: [props.plotData.id],
-    starttime: starttime.toLocaleDateString('en-CA'),
-    endtime: endtime.toLocaleDateString('en-CA'),
+    starttime: starttime.toLocaleDateString("en-CA"),
+    endtime: endtime.toLocaleDateString("en-CA"),
     showmap: showmap,
     variable: plotDataset.variable.id,
     latlon: latlon,
@@ -203,7 +203,7 @@ const TrackWindow = (props) => {
       </Row>
     </div>
   );
-};
+}
 
 //***********************************************************************
 TrackWindow.propTypes = {
@@ -214,5 +214,3 @@ TrackWindow.propTypes = {
   action: PropTypes.func,
   observationQuery: PropTypes.object,
 };
-
-export default withTranslation()(TrackWindow);

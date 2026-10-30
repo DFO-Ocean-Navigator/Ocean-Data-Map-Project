@@ -14,11 +14,9 @@ import PropTypes from "prop-types";
 
 import { useGetColormaps } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const AreaWindow = (props) => {
-  const { t: _ } = props;
-
+export default function AreaWindow(props) {
   // UI state
   const [currentTab, setCurrentTab] = useState(1);
 
@@ -64,6 +62,8 @@ const AreaWindow = (props) => {
       hatch: false,
     },
   );
+
+  const { t, i18n } = useTranslation();
 
   const colormaps = useGetColormaps();
 
@@ -390,7 +390,7 @@ const AreaWindow = (props) => {
       </Row>
     </div>
   );
-};
+}
 
 AreaWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
@@ -410,7 +410,4 @@ AreaWindow.propTypes = {
   updateDataset0: PropTypes.func.isRequired,
   updateDataset1: PropTypes.func.isRequired,
   mapSettings: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(AreaWindow);

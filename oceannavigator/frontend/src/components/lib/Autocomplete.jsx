@@ -11,7 +11,7 @@ function Autocomplete(props) {
 
     const newFilteredSuggestions = props.suggestions.filter(
       (suggestion) =>
-        suggestion.toLowerCase().indexOf(userInput.toLowerCase()) > -1
+        suggestion.toLowerCase().indexOf(userInput.toLowerCase()) > -1,
     );
 
     setActiveSuggestion(0);
@@ -25,7 +25,7 @@ function Autocomplete(props) {
     setFilteredSuggestions([]);
     setShowSuggestions(false);
     setUserInput(e.currentTarget.innerText);
-    props.onChange(e.currentTarget.innerText)
+    props.onChange(e.currentTarget.innerText);
   };
 
   const onKeyDown = (e) => {

@@ -17,10 +17,9 @@ import {
   useGetDatasetVariables,
 } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const LineWindow = (props) => {
-  const { t: _ } = props;
+export default function LineWindow(props) {
   // UI state
   const [selected, setSelected] = useState(props.init?.selected || 1);
 
@@ -68,6 +67,8 @@ const LineWindow = (props) => {
   const [showProfile, setShowProfile] = useState(
     props.init?.show_profile || false,
   );
+
+  const { t, i18n } = useTranslation();
 
   const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(props.dataset0);
@@ -437,7 +438,7 @@ const LineWindow = (props) => {
       </Row>
     </div>
   );
-};
+}
 
 LineWindow.propTypes = {
   compareDatasets: PropTypes.bool,
@@ -452,7 +453,4 @@ LineWindow.propTypes = {
   plotData: PropTypes.object,
   action: PropTypes.func,
   init: PropTypes.object,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(LineWindow);

@@ -5,21 +5,23 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 import FeatureCard from "./FeatureCard.jsx";
 
-function ModifyFeaturesWindow(props) {
+export default function ModifyFeaturesWindow(props) {
   const [mapFeatures, setMapFeatures] = useState([]);
   const [uploadType, setUploadType] = useState("Point");
   const fileForm = useRef(null);
   const fileInput = useRef(null);
 
+  const { t, i18n } = useTranslation();
+
   useEffect(() => {
     let features = props.mapRef.current.getFeatures();
     setMapFeatures(features);
   }, [props.selectedFeatureIds]);
-  
+
   useEffect(() => {
     return () => {
       props.mapRef.current.removeEmptyFeatures();
@@ -52,7 +54,7 @@ function ModifyFeaturesWindow(props) {
     setMapFeatures((prevFeatures) =>
       prevFeatures.filter((feature) => {
         return !ids.includes(feature.id);
-      })
+      }),
     );
   };
 
@@ -124,9 +126,9 @@ function ModifyFeaturesWindow(props) {
           const lon = findKey(["longitude", "lon"]);
           if (lat == -1 || lon == -1) {
             alert(
-              __(
-                "Error: Could not find latitude or longitude column in file: "
-              ) + file.name
+              t(
+                "Error: Could not find latitude or longitude column in file: ",
+              ) + file.name,
             );
             return;
           }
@@ -159,15 +161,12 @@ function ModifyFeaturesWindow(props) {
     }
   };
 
-  let selectedFeatureType = mapFeatures.reduce(
-    (result, feat) => {
-      if (feat.id === props.selectedFeatureIds[0]) {
-        result = feat.type;
-      }
-      return result;
-    },
-    ""
-  );
+  let selectedFeatureType = mapFeatures.reduce((result, feat) => {
+    if (feat.id === props.selectedFeatureIds[0]) {
+      result = feat.type;
+    }
+    return result;
+  }, "");
 
   return (
     <div className="ModifyFeaturesWindow">
@@ -223,5 +222,3 @@ function ModifyFeaturesWindow(props) {
     </div>
   );
 }
-
-export default withTranslation()(ModifyFeaturesWindow);

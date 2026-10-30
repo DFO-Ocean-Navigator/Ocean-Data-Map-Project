@@ -15,7 +15,6 @@ div.DatasetPanel-horizontal {
 
 .go-button {
   margin: 5px;
-
 }
 
 .go-button:hover {
@@ -52,12 +51,12 @@ div.DatasetPanel-horizontal {
     background-color: transparent;
     border: none;
     border-radius: 0;
-    box-shadow: none;  
+    box-shadow: none;
     &:not(.collapsed) {
       color: #000000;
       background-color: transparent;
       box-shadow: none;
-    } 
+    }
     &:focus {
       box-shadow: none;
     }
@@ -65,7 +64,7 @@ div.DatasetPanel-horizontal {
     &::after {
       margin-left: auto;
       margin-right: 0;
-    }         
+    }
   }
   .accordion-body {
     padding: 0.25rem 0 0.5rem;

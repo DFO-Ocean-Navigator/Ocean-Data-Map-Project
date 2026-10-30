@@ -35,16 +35,16 @@ function deg2rad(deg) {
 }
 
 // CHS S111 standard arrows for quiver layer
-import I0 from "../../images/s111/I0.svg"
-import I1 from "../../images/s111/I1.svg"
-import I2 from "../../images/s111/I2.svg"
-import I3 from "../../images/s111/I3.svg"
-import I4 from "../../images/s111/I4.svg"
-import I5 from "../../images/s111/I5.svg"
-import I6 from "../../images/s111/I6.svg"
-import I7 from "../../images/s111/I7.svg"
-import I8 from "../../images/s111/I8.svg"
-import I9 from "../../images/s111/I9.svg"
+import I0 from "../../images/s111/I0.svg";
+import I1 from "../../images/s111/I1.svg";
+import I2 from "../../images/s111/I2.svg";
+import I3 from "../../images/s111/I3.svg";
+import I4 from "../../images/s111/I4.svg";
+import I5 from "../../images/s111/I5.svg";
+import I6 from "../../images/s111/I6.svg";
+import I7 from "../../images/s111/I7.svg";
+import I8 from "../../images/s111/I8.svg";
+import I9 from "../../images/s111/I9.svg";
 
 const arrowImages = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
@@ -249,7 +249,6 @@ export const createMap = (
       interaction.setActive(false);
     }
   });
-
 
   mapObject.on("pointermove", function (e) {
     var pixel = mapObject.getEventPixel(e.originalEvent);
@@ -749,13 +748,15 @@ export const createPlotData = (selected, projection) => {
       title = "Point - " + title.join(", ");
     } else if (type === "LineString") {
       coordinates = convertCoords(coordinates[0], projection);
-      title = `Line -  ${name && name[0] !== undefined ? name : coordinates.length + " Vertices"
-        }`;
+      title = `Line -  ${
+        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+      }`;
       distance = getLineDistance(coordinates, projection);
     } else if (type === "Polygon") {
       coordinates = convertCoords(coordinates[0][0], projection);
-      title = `Area -  ${name && name[0] !== undefined ? name : coordinates.length + " Vertices"
-        }`;
+      title = `Area -  ${
+        name && name[0] !== undefined ? name : coordinates.length + " Vertices"
+      }`;
     }
   }
 

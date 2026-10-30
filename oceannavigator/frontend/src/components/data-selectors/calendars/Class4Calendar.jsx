@@ -50,8 +50,8 @@ function Class4Calendar(props) {
         ? 29
         : 28
       : months30.includes(month)
-      ? 30
-      : 31;
+        ? 30
+        : 31;
   };
 
   const getPreviousMonth = (month, year) => {
@@ -153,7 +153,7 @@ function Class4Calendar(props) {
   let prevDisabled = true;
   if (
     (earliestDate.getUTCMonth() < month &&
-    earliestDate.getUTCFullYear() === year) ||
+      earliestDate.getUTCFullYear() === year) ||
     earliestDate.getUTCFullYear() < year
   ) {
     prevDisabled = false;
@@ -162,9 +162,8 @@ function Class4Calendar(props) {
   let nextDisabled = true;
   if (
     (latestDate.getUTCMonth() > month &&
-    latestDate.getUTCFullYear() ===
-        year) ||
-        latestDate.getUTCFullYear() > year
+      latestDate.getUTCFullYear() === year) ||
+    latestDate.getUTCFullYear() > year
   ) {
     nextDisabled = false;
   }

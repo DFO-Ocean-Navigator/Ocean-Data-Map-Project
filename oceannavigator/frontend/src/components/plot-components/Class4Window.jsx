@@ -5,21 +5,20 @@ import CheckBox from "../lib/CheckBox.jsx";
 import ImageSize from "../ImageSize.jsx";
 import PlotImage from "./PlotImage.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 import {
   useGetClass4Forecasts,
   useGetClass4Models,
 } from "../../remote/queries.js";
 
-const Class4Window = ({
+export default function Class4Window({
   dataset,
   class4type,
   plotData,
   init = {},
   action,
-  t: _,
-}) => {
+}) {
   const [forecast, setForecast] = useState(init.forecast || "best");
   const [showmap, setShowmap] = useState(init.showmap || false);
   const [climatology, setClimatology] = useState(init.climatology || false);
@@ -30,6 +29,8 @@ const Class4Window = ({
 
   const class4Forecasts = useGetClass4Forecasts(class4type, plotData.id);
   const class4Models = useGetClass4Models(class4type, plotData.id);
+
+  const { t, i18n } = useTranslation();
 
   const handleErrorUpdate = (_, value) => {
     setError(
@@ -158,7 +159,7 @@ const Class4Window = ({
       </Row>
     </div>
   );
-};
+}
 //***********************************************************************
 Class4Window.propTypes = {
   dataset: PropTypes.string.isRequired,
@@ -166,7 +167,4 @@ Class4Window.propTypes = {
   plotData: PropTypes.object.isRequired,
   init: PropTypes.object,
   action: PropTypes.func,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(Class4Window);

@@ -382,7 +382,7 @@ function InfoHelpWindow(props) {
           <iframe
             className="content-iframe"
             src="https://dfo-ocean-navigator.github.io/Ocean-Navigator-Manual/"
-          ></iframe>
+          ></iframe>,
         );
         break;
       case 1:
@@ -390,7 +390,7 @@ function InfoHelpWindow(props) {
           <iframe
             className="content-iframe"
             src="https://dfo-ocean-navigator.github.io/Dataset-Descriptions/"
-          ></iframe>
+          ></iframe>,
         );
         break;
       case 2:
@@ -398,7 +398,7 @@ function InfoHelpWindow(props) {
           <iframe
             className="content-iframe"
             src="./data-help/derived_variables.html"
-          ></iframe>
+          ></iframe>,
         );
         break;
       case 3:
@@ -406,7 +406,7 @@ function InfoHelpWindow(props) {
           <iframe
             className="content-iframe"
             src="./data-help/observation_definitions.html"
-          ></iframe>
+          ></iframe>,
         );
         break;
       case 4:
@@ -414,7 +414,7 @@ function InfoHelpWindow(props) {
           <VideoFrame
             id={INSTRUCTIONAL_VIDEOS[0].id}
             title={INSTRUCTIONAL_VIDEOS[0].title}
-          />
+          />,
         );
         setSelectedItem(INSTRUCTIONAL_VIDEOS[0].id);
         break;
@@ -423,7 +423,7 @@ function InfoHelpWindow(props) {
           <iframe
             className="content-iframe"
             src="https://oceannavigator.ca/docs"
-          ></iframe>
+          ></iframe>,
         );
         break;
     }
@@ -434,7 +434,7 @@ function InfoHelpWindow(props) {
       return link.id === sectionID;
     });
     setContent(
-      <iframe className="content-iframe" src={selected[0].link}></iframe>
+      <iframe className="content-iframe" src={selected[0].link}></iframe>,
     );
   };
 
@@ -443,7 +443,7 @@ function InfoHelpWindow(props) {
       return link.id === sectionID;
     });
     setContent(
-      <iframe className="content-iframe" src={selected[0].link}></iframe>
+      <iframe className="content-iframe" src={selected[0].link}></iframe>,
     );
   };
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const NumberBox = ({state: propState, onUpdate, t: _ }) => {
+export default function NumberBox({ state: propState, onUpdate }) {
   const [value, setValue] = useState(propState);
   const timeoutRef = useRef(null);
 
@@ -34,7 +34,6 @@ const NumberBox = ({state: propState, onUpdate, t: _ }) => {
 
   return (
     <div className="NumberBox">
-
       <table className="numberbox-table">
         <tbody>
           <tr>
@@ -52,7 +51,7 @@ const NumberBox = ({state: propState, onUpdate, t: _ }) => {
       </table>
     </div>
   );
-};
+}
 
 NumberBox.propTypes = {
   id: PropTypes.string,
@@ -60,7 +59,4 @@ NumberBox.propTypes = {
   onUpdate: PropTypes.func,
   state: PropTypes.number,
   children: PropTypes.node,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(NumberBox);

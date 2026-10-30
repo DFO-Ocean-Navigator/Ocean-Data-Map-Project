@@ -12,7 +12,7 @@ import {
   ToggleButton,
   Badge,
 } from "react-bootstrap";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCopy,
@@ -25,7 +25,7 @@ import {
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 
-function FeedbackWindow(props) {
+export default function FeedbackWindow(props) {
   const [formData, setFormData] = useState({
     name: "",
     subject: "",
@@ -34,7 +34,6 @@ function FeedbackWindow(props) {
     description: "",
   });
   const [permalink, setPermalink] = useState("");
-
   const [copied, setCopied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -42,20 +41,22 @@ function FeedbackWindow(props) {
   const [screenshots, setScreenshots] = useState([]);
   const fileInputRef = useRef(null);
 
+  const { t, i18n } = useTranslation();
+
   const __ = props.t;
 
   // Feedback type options
   const feedbackTypes = [
-    { value: "bug", label: __("Bug Report"), icon: faBug, variant: "danger" },
+    { value: "bug", label: t("Bug Report"), icon: faBug, variant: "danger" },
     {
       value: "feature",
-      label: __("Feature Request"),
+      label: t("Feature Request"),
       icon: faLightbulb,
       variant: "primary",
     },
     {
       value: "other",
-      label: __("Other"),
+      label: t("Other"),
       icon: faQuestion,
       variant: "secondary",
     },
@@ -112,13 +113,13 @@ function FeedbackWindow(props) {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = __("Email is required");
+      newErrors.email = t("Email is required");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = __("Please enter a valid email address");
+      newErrors.email = t("Please enter a valid email address");
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = __("Description is required");
+      newErrors.description = t("Description is required");
     }
 
     setErrors(newErrors);
@@ -156,8 +157,8 @@ function FeedbackWindow(props) {
     <div className="FeedbackWindow">
       {submitted ? (
         <Alert variant="success" className="text-center">
-          <h5>{__("Thank you for your feedback!")}</h5>
-          <p>{__("We've received your submission and will review it soon.")}</p>
+          <h5>{t("Thank you for your feedback!")}</h5>
+          <p>{t("We've received your submission and will review it soon.")}</p>
         </Alert>
       ) : (
         <Form onSubmit={handleSubmit} noValidate>
@@ -165,29 +166,29 @@ function FeedbackWindow(props) {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>
-                  {__("Name")}{" "}
-                  <small className="text-muted">({__("Optional")})</small>
+                  {t("Name")}{" "}
+                  <small className="text-muted">({t("Optional")})</small>
                 </Form.Label>
                 <Form.Control
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder={__("Your name")}
+                  placeholder={t("Your name")}
                 />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>
-                  {__("Contact Email")} <span className="text-danger">*</span>
+                  {t("Contact Email")} <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder={__("your.email@example.com")}
+                  placeholder={t("your.email@example.com")}
                   isInvalid={!!errors.email}
                   required
                 />
@@ -199,7 +200,7 @@ function FeedbackWindow(props) {
           </Row>
 
           <Form.Group className="mb-3">
-            <Form.Label>{__("Feedback Type")}</Form.Label>
+            <Form.Label>{t("Feedback Type")}</Form.Label>
             <div>
               <ButtonGroup className="w-100">
                 {feedbackTypes.map((type) => (
@@ -225,8 +226,8 @@ function FeedbackWindow(props) {
 
           <Form.Group className="mb-3">
             <Form.Label>
-              {__("Subject/Title")}{" "}
-              <small className="text-muted">({__("Optional")})</small>
+              {t("Subject/Title")}{" "}
+              <small className="text-muted">({t("Optional")})</small>
             </Form.Label>
             <Form.Control
               type="text"
@@ -235,17 +236,17 @@ function FeedbackWindow(props) {
               onChange={handleInputChange}
               placeholder={
                 formData.feedbackType === "bug"
-                  ? __("Brief description of the issue")
+                  ? t("Brief description of the issue")
                   : formData.feedbackType === "feature"
-                  ? __("Brief description of your suggestion")
-                  : __("Brief subject of your feedback")
+                    ? t("Brief description of your suggestion")
+                    : t("Brief subject of your feedback")
               }
             />
           </Form.Group>
 
           <Form.Group className="mb-3">
             <Form.Label>
-              {__("Description")} <span className="text-danger">*</span>
+              {t("Description")} <span className="text-danger">*</span>
             </Form.Label>
             <Form.Control
               as="textarea"
@@ -255,21 +256,21 @@ function FeedbackWindow(props) {
               onChange={handleInputChange}
               placeholder={
                 formData.feedbackType === "bug"
-                  ? __(
+                  ? t(
                       "Please describe:\n" +
                         "• What you were trying to do\n" +
                         "• What actually happened\n" +
                         "• Any error messages you saw\n" +
-                        "• Steps to reproduce the issue"
+                        "• Steps to reproduce the issue",
                     )
                   : formData.feedbackType === "feature"
-                  ? __(
-                      "Please describe:\n" +
-                        "• What feature would you like to see\n" +
-                        "• How it would help your workflow\n" +
-                        "• Any specific requirements or details"
-                    )
-                  : __("Please provide your feedback or comments")
+                    ? t(
+                        "Please describe:\n" +
+                          "• What feature would you like to see\n" +
+                          "• How it would help your workflow\n" +
+                          "• Any specific requirements or details",
+                      )
+                    : t("Please provide your feedback or comments")
               }
               isInvalid={!!errors.description}
               required
@@ -281,12 +282,12 @@ function FeedbackWindow(props) {
 
           <Card className="mb-3">
             <Card.Header>
-              <strong>{__("Current State Snapshot")}</strong>
+              <strong>{t("Current State Snapshot")}</strong>
             </Card.Header>
             <Card.Body>
               <p className="text-muted small mb-2">
-                {__(
-                  "The following link captures the current state of your map and will be included with your feedback:"
+                {t(
+                  "The following link captures the current state of your map and will be included with your feedback:",
                 )}
               </p>
               <Row>
@@ -306,7 +307,7 @@ function FeedbackWindow(props) {
                     disabled={!permalink}
                   >
                     <FontAwesomeIcon icon={faCopy} />
-                    {copied ? " " + __("Copied!") : " " + __("Copy")}
+                    {copied ? " " + t("Copied!") : " " + t("Copy")}
                   </Button>
                 </Col>
               </Row>
@@ -314,10 +315,10 @@ function FeedbackWindow(props) {
           </Card>
 
           <Alert variant="info" className="small">
-            <strong>{__("Privacy Note:")}</strong>{" "}
-            {__(
+            <strong>{t("Privacy Note:")}</strong>{" "}
+            {t(
               "Your feedback and contact information will be used solely to improve Ocean Navigator. " +
-                "We will only contact you if we need clarification about your submission."
+                "We will only contact you if we need clarification about your submission.",
             )}
           </Alert>
 
@@ -329,18 +330,18 @@ function FeedbackWindow(props) {
               }
               disabled={submitting}
             >
-              {__("Cancel")}
+              {t("Cancel")}
             </Button>
             <Button type="submit" variant="primary" disabled={submitting}>
               {submitting ? (
                 <>
                   <Spinner size="sm" className="me-2" />
-                  {__("Submitting...")}
+                  {t("Submitting...")}
                 </>
               ) : (
                 <>
                   <FontAwesomeIcon icon={faPaperPlane} className="me-2" />
-                  {__("Submit Feedback")}
+                  {t("Submit Feedback")}
                 </>
               )}
             </Button>
@@ -350,5 +351,3 @@ function FeedbackWindow(props) {
     </div>
   );
 }
-
-export default withTranslation()(FeedbackWindow);

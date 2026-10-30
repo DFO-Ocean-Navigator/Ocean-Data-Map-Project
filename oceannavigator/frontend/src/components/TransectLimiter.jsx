@@ -3,17 +3,16 @@ import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import NumberBox from "./NumberBox.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const TransectLimiter = ({
+export default function TransectLimiter({
   id,
   title,
   parameter,
   state: propState,
   onUpdate,
-  t: _,
   children,
-}) => {
+}) {
   const [showHelp, setShowHelp] = useState(false);
   const openHelp = () => setShowHelp(true);
   const closeHelp = () => setShowHelp(false);
@@ -23,6 +22,8 @@ const TransectLimiter = ({
 
   const [limit, setLimit] = useState(initialLimit);
   const [value, setValue] = useState(initialValue);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (isNaN(propState) || propState === false) {
@@ -97,7 +98,7 @@ const TransectLimiter = ({
       </Modal>
     </div>
   );
-};
+}
 
 TransectLimiter.propTypes = {
   id: PropTypes.string.isRequired,
@@ -105,7 +106,4 @@ TransectLimiter.propTypes = {
   parameter: PropTypes.string,
   state: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
   onUpdate: PropTypes.func,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(TransectLimiter);
