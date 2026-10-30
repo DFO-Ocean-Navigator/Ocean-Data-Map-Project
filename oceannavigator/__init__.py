@@ -97,17 +97,9 @@ def create_app() -> FastAPI:
     DatasetConfig._get_dataset_config.cache_clear()
     DatasetConfig._get_dataset_config()
 
-    pathlib.Path("oceannavigator/frontend/public").mkdir(parents=True, exist_ok=True)
+    pathlib.Path("oceannavigator/frontend/dist").mkdir(parents=True, exist_ok=True)
 
-    routes = [
-        Mount(
-            "/public",
-            app=StaticFiles(directory="oceannavigator/frontend/public", html=True),
-            name="public",
-        ),
-    ]
-
-    app = FastAPI(debug=settings.debug, routes=routes)
+    app = FastAPI(debug=settings.debug)
 
     app.add_middleware(GZipMiddleware)
 
@@ -119,11 +111,11 @@ def create_app() -> FastAPI:
 
     add_routes(app)
 
-    # We must mount the root page AFTER adding ALL other routes.
-    # see: https://github.com/encode/starlette/issues/437#issuecomment-473598659
-    # Yes, this function is discouraged but YOLO.
     app.mount(
-        "/", StaticFiles(directory="oceannavigator/frontend/", html=True), name="root"
+        "/assets",
+        app=StaticFiles(directory="oceannavigator/frontend/dist/assets", html=True),
+        name="assets",
     )
+    app.frontend("/", directory="oceannavigator/frontend/dist", fallback="index.html")
 
     return app
