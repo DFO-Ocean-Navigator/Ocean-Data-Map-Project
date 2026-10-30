@@ -3,7 +3,7 @@
 
 var fail;
 
-fail = require("../images/sad-computer.png").default;
+fail = "../images/sad-computer.png";
 // if (process.env.NODE_ENV == "production") {
 //   fail = require("../images/sad-computer.png").default;
 // } 

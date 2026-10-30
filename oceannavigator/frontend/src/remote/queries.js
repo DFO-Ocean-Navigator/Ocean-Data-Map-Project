@@ -11,7 +11,7 @@ import {
   GetPointDepthPromise,
   GetPointDataPromise,
   GetTrackTimeRangePromise,
-  GetComboBoxQuery,
+  GetComboBoxQueryPromise,
   GetClass4ForecastsPromise,
   GetClass4ModelsPromise,
   GetObservationDatatypes,

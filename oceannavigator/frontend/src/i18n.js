@@ -16,10 +16,10 @@ i18n
     },
     resources: {
       fr: {
-        translation: require("../../translations/fr.json"),
+        translation: "../../translations/fr.json",
       },
       en: {
-        translation: require("../../translations/en.json"),
+        translation: "../../translations/en.json",
       },
     },
   });

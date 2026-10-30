@@ -7,29 +7,29 @@ import * as Sentry from "@sentry/react";
 
 import "./i18n";
 
-require("bootstrap/dist/css/bootstrap.css");
-require("./stylesheets/utils/bootstrap.css");
-require("./stylesheets/main.scss");
+import "bootstrap/dist/css/bootstrap.css";
+import "./stylesheets/utils/bootstrap.css";
+import "./stylesheets/main.scss";
 
-if (process.env.NODE_ENV == "production") {
+if (import.meta.env.NODE_ENV == "production") {
   ReactGA.initialize("UA-122671965-2");
 } else {
   ReactGA.initialize("UA-122671965-3");
 }
 
-if (process.env.ONAV_SENTRY_JS_DSN) {
+if (import.meta.env.ONAV_SENTRY_JS_DSN) {
   Sentry.init({
-    dsn: process.env.ONAV_SENTRY_JS_DSN,
-    environment: process.env.ONAV_SENTRY_ENV || "dev",
-    tracesSampleRate: parseFloat(process.env.ONAV_SENTRY_TRACES_RATE) || 0,
+    dsn: import.meta.env.ONAV_SENTRY_JS_DSN,
+    environment: import.meta.env.ONAV_SENTRY_ENV || "dev",
+    tracesSampleRate: parseFloat(import.meta.env.ONAV_SENTRY_TRACES_RATE) || 0,
   });
 }
 
 ReactGA.pageview(window.location.pathname + window.location.search);
 
-const SENTRY_ENV = process.env.ONAV_SENTRY_ENV;
-const SENTRY_DSN = process.env.ONAV_SENTRY_JS_DSN;
-const SENTRY_TRACES_RATE = process.env.ONAV_SENTRY_TRACES_RATE;
+const SENTRY_ENV = import.meta.env.ONAV_SENTRY_ENV;
+const SENTRY_DSN = import.meta.env.ONAV_SENTRY_JS_DSN;
+const SENTRY_TRACES_RATE = import.meta.env.ONAV_SENTRY_TRACES_RATE;
 
 Sentry.init({
   dsn: SENTRY_DSN,

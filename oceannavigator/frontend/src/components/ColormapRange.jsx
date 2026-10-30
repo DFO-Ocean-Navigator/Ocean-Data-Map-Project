@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios" ; 
 import { Button, ButtonToolbar, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 import { withTranslation } from "react-i18next";
 
-const axios = require("axios");
 
 function ColormapRange(props) {
   const [useAuto, setUseAuto] = useState(props.auto);
