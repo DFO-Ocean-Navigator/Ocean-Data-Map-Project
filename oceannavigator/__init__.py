@@ -7,7 +7,6 @@ import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.routing import Mount
 from fastapi.staticfiles import StaticFiles
 from pyinstrument import Profiler
 from pyinstrument.renderers import SpeedscopeRenderer
