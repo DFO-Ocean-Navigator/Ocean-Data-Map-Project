@@ -66,7 +66,7 @@ export default function TransectLimiter({
                 type="button"
                 className="help-btn"
                 onClick={openHelp}
-                aria-label={_("Open help for {{parameter}}", { parameter })}
+                aria-label={t("Open help for {{parameter}}", { parameter })}
               >
                 ?
               </button>
@@ -85,14 +85,14 @@ export default function TransectLimiter({
 
       <Modal show={showHelp} onHide={closeHelp} dialogClassName="helpdialog">
         <Modal.Header closeButton>
-          <Modal.Title>{_("titlehelp", { title })}</Modal.Title>
+          <Modal.Title>{t("titlehelp", { title })}</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>{children}</Modal.Body>
 
         <Modal.Footer>
           <Button onClick={closeHelp}>
-            <Icon icon="close" /> {_(`Close`)}
+            <Icon icon="close" /> {t(`Close`)}
           </Button>
         </Modal.Footer>
       </Modal>

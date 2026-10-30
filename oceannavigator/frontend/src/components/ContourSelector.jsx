@@ -94,7 +94,7 @@ export default function ContourSelector({
           id="hatch"
           checked={state.hatch}
           onUpdate={handleUpdate}
-          title={_("Crosshatch")}
+          title={t("Crosshatch")}
         />
 
         {!state.hatch && (
@@ -104,9 +104,9 @@ export default function ContourSelector({
             selected={state.colormap}
             onChange={handleUpdate}
             options={colormaps.data}
-            label={_("Colourmap")}
+            label={t("Colourmap")}
           >
-            {_(
+            {t(
               "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
             )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
@@ -117,15 +117,15 @@ export default function ContourSelector({
           id="legend"
           checked={state.legend}
           onUpdate={handleUpdate}
-          title={_("Show Legend")}
+          title={t("Show Legend")}
         />
 
-        <h1>{_("Levels")}</h1>
+        <h1>{t("Levels")}</h1>
         <CheckBox
           id="autolevels"
           checked={auto}
           onUpdate={onUpdateAuto}
-          title={_("Auto Levels")}
+          title={t("Auto Levels")}
         />
 
         {!auto && (

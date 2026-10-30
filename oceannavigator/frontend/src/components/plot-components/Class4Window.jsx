@@ -72,9 +72,9 @@ export default function Class4Window({
   };
 
   const error_options = [
-    { id: "none", value: _("None") },
-    { id: "observation", value: _("Value - Observation") },
-    { id: "climatology", value: _("Value - Climatology") },
+    { id: "none", value: t("None") },
+    { id: "observation", value: t("Value - Observation") },
+    { id: "climatology", value: t("Value - Climatology") },
   ];
 
   return (
@@ -82,38 +82,38 @@ export default function Class4Window({
       <Nav variant="tabs" activeKey={1}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            {_("Class4")}
+            {t("Class4")}
           </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
         <Col className="settings-col" lg={2}>
           <Card>
-            <Card.Header>{_("Class 4 Settings")}</Card.Header>
+            <Card.Header>{t("Class 4 Settings")}</Card.Header>
             <Card.Body>
               <ComboBox
                 key="forecast"
                 id="forecast"
                 selected={forecast}
                 options={class4Forecasts.data}
-                label={_("Forecast")}
+                label={t("Forecast")}
                 onChange={(_, value) => setForecast(value)}
               />
               <CheckBox
                 id="showmap"
                 checked={showmap}
                 onUpdate={(_, value) => setShowmap(value)}
-                title={_("Show Location")}
+                title={t("Show Location")}
               >
-                {_("showmap_help")}
+                {t("showmap_help")}
               </CheckBox>
               <CheckBox
                 id="climatology"
                 checked={climatology}
                 onUpdate={(_, value) => setClimatology(value)}
-                title={_("Show Climatology")}
+                title={t("Show Climatology")}
               >
-                {_("climatology_help")}
+                {t("climatology_help")}
               </CheckBox>
               <ComboBox
                 key="models"
@@ -121,7 +121,7 @@ export default function Class4Window({
                 selected={models}
                 onChange={(_, value) => setModels(value)}
                 options={class4Models.data}
-                label={_("Additional Models")}
+                label={t("Additional Models")}
                 multiple={true}
               />
               <ComboBox
@@ -129,16 +129,16 @@ export default function Class4Window({
                 id="error"
                 selected={error}
                 options={error_options}
-                label={_("Show Error")}
+                label={t("Show Error")}
                 onChange={handleErrorUpdate}
               />
               <Accordion>
-                <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+                <Accordion.Header>{t("Plot Options")}</Accordion.Header>
                 <Accordion.Body>
                   <ImageSize
                     id="size"
                     onUpdate={updatePlotSize}
-                    title={_("Saved Image Size")}
+                    title={t("Saved Image Size")}
                   />
                 </Accordion.Body>
               </Accordion>

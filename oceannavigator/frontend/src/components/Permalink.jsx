@@ -28,7 +28,7 @@ export default function Permalink({ generatePermLink, compareDatasets }) {
       try {
         document.execCommand("copy");
       } catch {
-        alert(_("Please manually copy the selected text."));
+        alert(t("Please manually copy the selected text."));
       }
     }
   };
@@ -50,19 +50,19 @@ export default function Permalink({ generatePermLink, compareDatasets }) {
             className="pull-right"
             onClick={copyPermalink}
           >
-            <Icon icon="copy" /> {_("Copy")}
+            <Icon icon="copy" /> {t("Copy")}
           </Button>
         </Row>
         <br />
         <Card variant="warning">
-          <Card.Header>{_("Select which features to share:")}</Card.Header>
+          <Card.Header>{t("Select which features to share:")}</Card.Header>
           <Card.Body>
             <Form.Check
               type="checkbox"
               name="dataset0"
               checked={options.dataset0}
               onChange={handleChange}
-              label={_("Dataset (Primary/Left Map)")}
+              label={t("Dataset (Primary/Left Map)")}
             />
             {compareDatasets && (
               <Form.Check
@@ -70,7 +70,7 @@ export default function Permalink({ generatePermLink, compareDatasets }) {
                 name="dataset1"
                 checked={options.dataset1}
                 onChange={handleChange}
-                label={_("Dataset (Right Map)")}
+                label={t("Dataset (Right Map)")}
               />
             )}
             <Form.Check
@@ -78,21 +78,21 @@ export default function Permalink({ generatePermLink, compareDatasets }) {
               name="mapSettings"
               checked={options.mapSettings}
               onChange={handleChange}
-              label={_("Map Settings")}
+              label={t("Map Settings")}
             />
             <Form.Check
               type="checkbox"
               name="mapView"
               checked={options.mapView}
               onChange={handleChange}
-              label={_("Map View")}
+              label={t("Map View")}
             />
             <Form.Check
               type="checkbox"
               name="features"
               checked={options.features}
               onChange={handleChange}
-              label={_("Features")}
+              label={t("Features")}
             />
           </Card.Body>
         </Card>

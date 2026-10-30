@@ -127,11 +127,11 @@ export default function LineWindow(props) {
       <ImageSize
         id="size"
         onUpdate={updatePlotSize}
-        title={_("Saved Image Size")}
+        title={t("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
-        title={_("Plot Title")}
+        title={t("Plot Title")}
         plotTitle={plotTitles[selected - 1]}
         updatePlotTitle={updatePlotTitle}
       />
@@ -140,14 +140,14 @@ export default function LineWindow(props) {
 
   const globalSettings = (
     <Card id="global_settings" variant="primary">
-      <Card.Header>{_("Global Settings")}</Card.Header>
+      <Card.Header>{t("Global Settings")}</Card.Header>
       <Card.Body>
         {!props.dataset0.variable.data_categories && (
           <CheckBox
             id="dataset_compare"
             checked={props.compareDatasets}
             onUpdate={(_, checked) => props.setCompareDatasets(checked)}
-            title={_("Compare Datasets")}
+            title={t("Compare Datasets")}
           />
         )}
         {/* <Button
@@ -155,7 +155,7 @@ export default function LineWindow(props) {
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
-          {_("Swap Views")}
+          {t("Swap Views")}
         </Button> */}
         {props.compareDatasets && (
           <>
@@ -171,7 +171,7 @@ export default function LineWindow(props) {
                 id="scale_diff"
                 state={scaleDiff}
                 onUpdate={(_, value) => setScaleDiff(value)}
-                title={_("Diff. Variable Range")}
+                title={t("Diff. Variable Range")}
               />
             )}
           </>
@@ -180,12 +180,12 @@ export default function LineWindow(props) {
           id="showmap"
           checked={showMap}
           onUpdate={(_, value) => setShowMap(value)}
-          title={_("Show Location")}
+          title={t("Show Location")}
         >
-          {_("showmap_help")}
+          {t("showmap_help")}
         </CheckBox>
         <Accordion>
-          <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+          <Accordion.Header>{t("Plot Options")}</Accordion.Header>
           <Accordion.Body>{plotOptions}</Accordion.Body>
         </Accordion>
       </Card.Body>
@@ -194,7 +194,7 @@ export default function LineWindow(props) {
 
   const transectSettingsCard = (
     <Card id="transect_settings" variant="primary">
-      <Card.Header>{_("Transect Settings")}</Card.Header>
+      <Card.Header>{t("Transect Settings")}</Card.Header>
       <Card.Body>
         <ComboBox
           key="surfacevariable"
@@ -203,33 +203,33 @@ export default function LineWindow(props) {
           onChange={(_, value) => {
             setSurfaceVariable(value);
           }}
-          label={_("Surface Variable")}
+          label={t("Surface Variable")}
           options={variables.data}
           includeNone={true}
         >
-          {_("surfacevariable_help")}
+          {t("surfacevariable_help")}
         </ComboBox>
         <TransectLimiter
           id="linearthresh"
           state={linearThresh}
           onUpdate={(value) => setLinearThresh(value)}
-          title={_("Exponential Plot")}
-          parameter={_("Linear Threshold")}
+          title={t("Exponential Plot")}
+          parameter={t("Linear Threshold")}
         >
-          {_("linearthresh_help")}
+          {t("linearthresh_help")}
         </TransectLimiter>
         <TransectLimiter
           id="depth_limit"
           state={depthLimit}
           onUpdate={(value) => setDepthLimit(value)}
-          title={_("Limit Depth")}
-          parameter={_("Depth")}
+          title={t("Limit Depth")}
+          parameter={t("Depth")}
         />
         <Form.Check
           id="show_profile"
           checked={showProfile}
           onChange={handleProfileCheck}
-          label={_("Extract Profile Plot")}
+          label={t("Extract Profile Plot")}
           disabled={props.compareDatasets}
         />
         {showProfile && (
@@ -254,10 +254,10 @@ export default function LineWindow(props) {
             id="colormap_diff"
             selected={diffColormap}
             onChange={(_, value) => setDiffColormap(value)}
-            label={_("Diff. Colourmap")}
+            label={t("Diff. Colourmap")}
             options={colormaps.data}
           >
-            {_("colourmap_help")}
+            {t("colourmap_help")}
             <img src="/plot/colormaps.png/" alt="" />
           </ComboBox>
         )}
@@ -268,7 +268,7 @@ export default function LineWindow(props) {
   const leftDataset = (
     <Card id="left_map" variant="primary">
       <Card.Header>
-        {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
+        {props.compareDatasets ? t("Left Map (Anchor)") : t("Main Map")}
       </Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetPanel
@@ -287,10 +287,10 @@ export default function LineWindow(props) {
           id="colormap"
           selected={mainColormap}
           onChange={(_, value) => setMainColormap(value)}
-          label={_("Colourmap")}
+          label={t("Colourmap")}
           options={colormaps.data}
         >
-          {_("colourmap_help")}
+          {t("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />
         </ComboBox>
       </Card.Body>
@@ -299,7 +299,7 @@ export default function LineWindow(props) {
 
   const rightDataset = props.compareDatasets && (
     <Card id="right_map" variant="primary">
-      <Card.Header>{_("Right Map")}</Card.Header>
+      <Card.Header>{t("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="line-window-dataset1-panel"
@@ -317,10 +317,10 @@ export default function LineWindow(props) {
           id="rightColormap"
           selected={rightColormap}
           onChange={(_, value) => setRightColormap(value)}
-          label={_("Colourmap")}
+          label={t("Colourmap")}
           options={colormaps.data}
         >
-          {_("colourmap_help")}
+          {t("colourmap_help")}
           <img src="/plot/colormaps.png/" alt="" />
         </ComboBox>
       </Card.Body>
@@ -409,10 +409,10 @@ export default function LineWindow(props) {
     <div className="LineWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={1}>{_("Transect")}</Nav.Link>
+          <Nav.Link eventKey={1}>{t("Transect")}</Nav.Link>
         </Nav.Item>
         <Nav.Item>
-          <Nav.Link eventKey={2}>{_("Hovmöller Diagram")}</Nav.Link>
+          <Nav.Link eventKey={2}>{t("Hovmöller Diagram")}</Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">

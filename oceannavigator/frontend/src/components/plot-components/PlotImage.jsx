@@ -23,10 +23,11 @@ export default function PlotImage({
   action,
   size,
   dpi,
-  t,
 }) {
   const imagelinkRef = useRef();
   const [showImagelink, setShowImagelink] = useState(false);
+
+  const { t, i18n } = useTranslation();
 
   const image = useGetPlotImage(featureId, plotType, query);
 

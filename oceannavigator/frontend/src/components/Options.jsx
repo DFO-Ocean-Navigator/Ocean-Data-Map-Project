@@ -44,11 +44,11 @@ export default function Options({ options, updateOptions }) {
   return (
     <div>
       <Card defaultExpanded bsStyle="primary">
-        <Card.Header>{_("Colour Interpolation")}</Card.Header>
+        <Card.Header>{t("Colour Interpolation")}</Card.Header>
         <Card.Body>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Method")}</ControlLabel>
+              <ControlLabel>{t("Method")}</ControlLabel>
             </Col>
             <Col md={8}>
               <FormControl
@@ -57,17 +57,17 @@ export default function Options({ options, updateOptions }) {
                 onChange={(e) => setInterpType(e.target.value)}
               >
                 <option value="gaussian">
-                  {_("Gaussian Weighting (Default)")}
+                  {t("Gaussian Weighting (Default)")}
                 </option>
-                <option value="bilinear">{_("Bilinear")}</option>
-                <option value="inverse">{_("Inverse Square")}</option>
-                <option value="nearest">{_("Nearest Neighbour")}</option>
+                <option value="bilinear">{t("Bilinear")}</option>
+                <option value="inverse">{t("Inverse Square")}</option>
+                <option value="nearest">{t("Nearest Neighbour")}</option>
               </FormControl>
             </Col>
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Sampling Radius (km)")}</ControlLabel>
+              <ControlLabel>{t("Sampling Radius (km)")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -81,7 +81,7 @@ export default function Options({ options, updateOptions }) {
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Nearest Neighbours")}</ControlLabel>
+              <ControlLabel>{t("Nearest Neighbours")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -100,14 +100,14 @@ export default function Options({ options, updateOptions }) {
               className="center-block"
               onClick={handleApply}
             >
-              <Icon icon="check" /> {_("Apply")}
+              <Icon icon="check" /> {t("Apply")}
             </Button>
           </Row>
         </Card.Body>
       </Card>
 
       <Card defaultExpanded bsStyle="primary">
-        <Card.Header>{_("Bathymetry")}</Card.Header>
+        <Card.Header>{t("Bathymetry")}</Card.Header>
         <Card.Body>
           <Row>
             <Col md={12}>
@@ -115,13 +115,13 @@ export default function Options({ options, updateOptions }) {
                 id="bathymetry"
                 checked={bathymetry}
                 onUpdate={(_, val) => setBathymetry(val)}
-                title={_("Show Bathymetry Contours")}
+                title={t("Show Bathymetry Contours")}
               />
             </Col>
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Bathymetry Opacity")}</ControlLabel>
+              <ControlLabel>{t("Bathymetry Opacity")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -138,7 +138,7 @@ export default function Options({ options, updateOptions }) {
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Bathymetry Layer")}</ControlLabel>
+              <ControlLabel>{t("Bathymetry Layer")}</ControlLabel>
             </Col>
             <Col md={8}>
               <FormControl
@@ -146,7 +146,7 @@ export default function Options({ options, updateOptions }) {
                 value={bathyContour}
                 onChange={(e) => setBathyContour(e.target.value)}
               >
-                <option value="etopo1">{_("ETOPO1")}</option>
+                <option value="etopo1">{t("ETOPO1")}</option>
               </FormControl>
             </Col>
           </Row>
@@ -156,7 +156,7 @@ export default function Options({ options, updateOptions }) {
                 id="topoShadedRelief"
                 checked={topoShadedRelief}
                 onUpdate={(_, val) => setTopoShadedRelief(val)}
-                title={_("Topography Shaded Relief")}
+                title={t("Topography Shaded Relief")}
               />
             </Col>
           </Row>
@@ -167,7 +167,7 @@ export default function Options({ options, updateOptions }) {
               className="center-block"
               onClick={handleApply}
             >
-              <Icon icon="check" /> {_("Apply")}
+              <Icon icon="check" /> {t("Apply")}
             </Button>
           </Row>
         </Card.Body>

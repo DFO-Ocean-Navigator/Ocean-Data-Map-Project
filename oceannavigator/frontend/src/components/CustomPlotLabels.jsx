@@ -46,13 +46,13 @@ export default function CustomPlotLabels({
             type="text"
             value={userProvidedTitle || ""}
             onChange={handleChange}
-            placeholder={_("Default")}
+            placeholder={t("Default")}
             style={{ width: "83%" }}
           />
           {/* Update Plot Title Button */}
           <OverlayTrigger
             placement="right"
-            overlay={<Tooltip id="tooltip">{_("Apply Title")}</Tooltip>}
+            overlay={<Tooltip id="tooltip">{t("Apply Title")}</Tooltip>}
           >
             <Button onClick={handleSubmit}>Apply</Button>
           </OverlayTrigger>

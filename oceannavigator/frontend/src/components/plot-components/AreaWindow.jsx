@@ -126,11 +126,11 @@ export default function AreaWindow(props) {
       <ImageSize
         id="size"
         onUpdate={updatePlotSize}
-        title={_("Saved Image Size")}
+        title={t("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
-        title={_("Plot Title")}
+        title={t("Plot Title")}
         updatePlotTitle={setPlotTitle}
         plotTitle={plotTitle}
       />
@@ -139,14 +139,14 @@ export default function AreaWindow(props) {
 
   const mapSettingsCard = (
     <Card variant="primary">
-      <Card.Header>{_("Area Settings")}</Card.Header>
+      <Card.Header>{t("Area Settings")}</Card.Header>
       <Card.Body className="global-settings-card">
         {!props.dataset0.variable.data_categories && (
           <CheckBox
             id="dataset_compare"
             checked={props.compareDatasets}
             onUpdate={(_, checked) => compareChanged(checked)}
-            title={_("Compare Datasets")}
+            title={t("Compare Datasets")}
           />
         )}
 
@@ -156,7 +156,7 @@ export default function AreaWindow(props) {
           style={{ display: props.compareDatasets ? "block" : "none" }}
           onClick={props.swapViews}
         >
-          {_("Swap Views")}
+          {t("Swap Views")}
         </Button> */}
         {!props.dataset0.variable.data_categories && (
           <>
@@ -181,10 +181,10 @@ export default function AreaWindow(props) {
             id="colormap_diff"
             selected={diffColormap}
             onChange={(_, value) => setDiffColormap(value)}
-            label={_("Diff. Colourmap")}
+            label={t("Diff. Colourmap")}
             options={colormaps.data}
           >
-            {_("colourmap_help")}
+            {t("colourmap_help")}
             <img src="/api/v2.0/plot/colormaps.png/" alt="" />
           </ComboBox>
         )}
@@ -194,14 +194,14 @@ export default function AreaWindow(props) {
           id="bathymetry"
           checked={bathymetry}
           onUpdate={(_, value) => setBathymetry(value)}
-          title={_("Show Bathymetry Contours")}
+          title={t("Show Bathymetry Contours")}
         />
 
         <CheckBox
           id="showarea"
           checked={showArea}
           onUpdate={(_, value) => setShowArea(value)}
-          title={_("Show Selected Area(s)")}
+          title={t("Show Selected Area(s)")}
         />
         {/* Arrow Selector Drop Down menu */}
         <AreaQuiverSelector
@@ -209,9 +209,9 @@ export default function AreaWindow(props) {
           state={quiver}
           onUpdate={handleQuiverUpdate}
           dataset={props.dataset0}
-          title={_("Arrows")}
+          title={t("Arrows")}
         >
-          {_("arrows_help")}
+          {t("arrows_help")}
         </AreaQuiverSelector>
 
         {/* Contour Selector drop down menu */}
@@ -220,13 +220,13 @@ export default function AreaWindow(props) {
           state={contour}
           onUpdate={handleContourUpdate}
           dataset={props.dataset0}
-          title={_("Additional Contours")}
+          title={t("Additional Contours")}
         >
-          {_("contour_help")}
+          {t("contour_help")}
         </ContourSelector>
 
         <Accordion>
-          <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+          <Accordion.Header>{t("Plot Options")}</Accordion.Header>
           <Accordion.Body>{plotOptions}</Accordion.Body>
         </Accordion>
       </Card.Body>
@@ -244,7 +244,7 @@ export default function AreaWindow(props) {
   const datasetCard = (
     <Card id="left_map" variant="primary">
       <Card.Header>
-        {props.compareDatasets ? _("Left Map (Anchor)") : _("Main Map")}
+        {props.compareDatasets ? t("Left Map (Anchor)") : t("Main Map")}
       </Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetPanel
@@ -263,9 +263,9 @@ export default function AreaWindow(props) {
             placeholder="default"
             onChange={(_, value) => setLeftColormap(value)}
             options={colormaps.data}
-            label={_("Colourmap")}
+            label={t("Colourmap")}
           >
-            {_("colourmap_help")}
+            {t("colourmap_help")}
             <img src="/api/v2.0/plot/colormaps.png/" alt="" />
           </ComboBox>
         )}
@@ -275,7 +275,7 @@ export default function AreaWindow(props) {
 
   const compareDatasetCard = props.compareDatasets && (
     <Card id="right_map" variant="primary">
-      <Card.Header>{_("Right Map")}</Card.Header>
+      <Card.Header>{t("Right Map")}</Card.Header>
       <Card.Body className="global-settings-card">
         <DatasetPanel
           id="area-window-dataset1-panel"
@@ -371,7 +371,7 @@ export default function AreaWindow(props) {
       <Nav variant="tabs" activeKey={currentTab} onSelect={setCurrentTab}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            {_("Map")}
+            {t("Map")}
           </Nav.Link>
         </Nav.Item>
       </Nav>

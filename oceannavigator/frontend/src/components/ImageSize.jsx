@@ -31,7 +31,7 @@ export default function ImageSize({ id, title, onUpdate }) {
         <tbody>
           <tr>
             <td>
-              <label htmlFor={`${id}_width`}>{_("Width:")}</label>
+              <label htmlFor={`${id}_width`}>{t("Width:")}</label>
             </td>
             <td>
               <input
@@ -47,7 +47,7 @@ export default function ImageSize({ id, title, onUpdate }) {
           </tr>
           <tr>
             <td>
-              <label htmlFor={`${id}_height`}>{_("Height:")}</label>
+              <label htmlFor={`${id}_height`}>{t("Height:")}</label>
             </td>
             <td>
               <input
@@ -63,7 +63,7 @@ export default function ImageSize({ id, title, onUpdate }) {
           </tr>
           <tr>
             <td>
-              <label htmlFor={`${id}_dpi`}>{_("DPI:")}</label>
+              <label htmlFor={`${id}_dpi`}>{t("DPI:")}</label>
             </td>
             <td>
               <input

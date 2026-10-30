@@ -2,6 +2,9 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
+import enTranslation from '../../translations/en.json';
+import frTranslation from '../../translations/fr.json';
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -16,10 +19,10 @@ i18n
     },
     resources: {
       fr: {
-        translation: "../../translations/fr.json",
+        translation: frTranslation,
       },
       en: {
-        translation: "../../translations/en.json",
+        translation: enTranslation,
       },
     },
   });
