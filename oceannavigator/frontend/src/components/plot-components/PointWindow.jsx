@@ -112,6 +112,31 @@ const PointWindow = ({
         [dataset.variable.id]: false
       }
     }));
+    if (selected === TabEnum.CTD) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /temp/i.test(v.value)),
+          variables.data.find((v) => /salinity/i.test(v.value)),
+        ],
+      }));
+    }
+    else if (selected === TabEnum.SOUND) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /speed/i.test(v.value)),
+        ],
+      }));
+    }
+    else {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /temp/i.test(v.value)),
+        ],
+      }));
+    }
   }, [selected]);
 
   const handleDatasetUpdate = (key, value) => {
@@ -169,8 +194,9 @@ const PointWindow = ({
     TabEnum.MOORING,
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
-  const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showAxisRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND, TabEnum.MOORING].includes(selected);
   const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
+  const showDepthRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) || (plotDataset.depth === "all" && selected === TabEnum.MOORING);
 
   const plotOptions = (
     <>
@@ -226,6 +252,7 @@ const PointWindow = ({
         showVariableRange={false}
         showUnitSelector={showUnitSelector}
         showAxisRange={showAxisRange}
+        showDepthRange={showDepthRange}
         showTimeRange={showTimeRange}
         disableTimeSelector={selected === TabEnum.OBSERVATION}
         showDepthSelector={showDepthSelector}
@@ -283,6 +310,8 @@ const PointWindow = ({
   const hasSal = variables.data.some((v) => v.id === "vosaline");
   const hasTempSal = hasTemp && hasSal;
 
+
+
   // Construct query for image
   let plotType = "";
   let plotQuery = {
@@ -290,9 +319,10 @@ const PointWindow = ({
     names: names,
   };
 
-  let axisRange = Array.isArray(plotDataset.variable)
-    ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
-    : plotDataset.axisRange[plotDataset.variable.id];
+  let axisRange = Object.fromEntries(
+    Object.entries(plotDataset.axisRange)
+      .filter(([key, value]) => value != null)
+  );
 
   switch (selected) {
     case TabEnum.PROFILE:
@@ -319,6 +349,7 @@ const PointWindow = ({
         unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
+        variable_range: axisRange,
       };
       plotType = "profile";
       break;
@@ -339,6 +370,7 @@ const PointWindow = ({
         showmap: showMap,
         unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
+        variable_range: axisRange,
       };
       plotType = "sound";
       break;

@@ -58,8 +58,15 @@ def get_mimetype(filetype: str):
 
 
 def normalize_scale(data, variable_config):
+    value = data.compressed()
+    if value.size == 0:
+            
+      return variable_config.scale
+    
     vmin = float(np.amin(data))
-    vmax = float(np.amax(data))
+    vmax = float(np.amax(data)) 
+
+   
 
     if variable_config.is_zero_centered:
         vmax = max(abs(vmax), abs(vmin))
@@ -220,12 +227,16 @@ def convert_units(value, from_unit, to_unit="None"):
     value_m = value
     value_imp = ureg.Quantity(value_m, from_unit).to(to_unit).magnitude
 
+    if not np.ma.isMaskedArray(value_m):
+        return value_imp
+
     return np.ma.array(value_imp, mask=value_m.mask)
 
 
 def convert_to_imperial(use_imperial_units, depths, data, variables, variable_units):
     """
-    Converts the depths and data to imperial units if specified in the use_imperial_units list.
+    Converts the depths and data to imperial units if specified in the
+        use_imperial_units list.
         use_imperial_units: list of variable names to convert to imperial units
         depths: list of depth arrays to convert
         data: 3D array of data to convert
@@ -233,7 +244,7 @@ def convert_to_imperial(use_imperial_units, depths, data, variables, variable_un
         variable_units: list of units corresponding to the variables
     Returns the converted depths, data, and variable_units.
     """
-    ureg = pint.UnitRegistry()
+
     if "depth" in use_imperial_units:
         for depth in depths:
             depth = convert_units(depth, "meter", "foot")

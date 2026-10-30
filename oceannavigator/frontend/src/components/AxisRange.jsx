@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Accordion, Button, Form, InputGroup } from "react-bootstrap";
 import PropTypes from "prop-types";
 
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
@@ -73,45 +73,46 @@ function AxisRange(props) {
 
   return (
     <div className="axis-range">
-      <Form.Label className="range-label">{props.title}</Form.Label>
-      <Form.Check
-        type="checkbox"
-        id={props.id + "_auto"}
-        checked={auto}
-        onChange={autoChanged}
-        label={"Auto"}
-      />
-      <table className="range-table">
-        <tbody>
-          <tr>
-            <td>
-              <input
-                className="range-input"
-                type="number"
-                value={min}
-                onChange={(n, s) => changed("min", n)}
-                step={0.1}
-                disabled={auto}
-              />
-            </td>
-            <td>
-              <input
-                className="range-input"
-                type="number"
-                value={max}
-                onChange={(n, s) => changed("max", n)}
-                step={0.1}
-                disabled={auto}
-              />
-            </td>
-            <td className="default-button-container">
-              <Button name="default" size="sm" onClick={handleResetButton}>
-                <FontAwesomeIcon icon={faRotateLeft} />
-              </Button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="axis-range-header">
+        <span className="axis-range-title">{props.title}</span>
+
+        <Form.Check
+          type="checkbox"
+          id={`${props.id}_auto`}
+          label="Auto"
+          checked={auto}
+          onChange={autoChanged}
+          className="axis-range-auto"
+        />
+
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={handleResetButton}
+          title="Reset to default"
+          aria-label={`Reset ${props.title} range`}
+        >
+          <FontAwesomeIcon icon={faRotateLeft} />
+        </Button>
+      </div>
+
+      <div className="axis-range-inputs">
+        <div className="axis-range-inputs">
+          <label className="axis-range-tag" htmlFor={`${props.id}_min`}>Min</label>
+          <Form.Control
+            id={`${props.id}_min`} type="number" size="sm"
+            value={min} step={0.1} disabled={auto}
+            onChange={(n, s) => changed("min", n)}
+          />
+
+          <label className="axis-range-tag" htmlFor={`${props.id}_max`}>Max</label>
+          <Form.Control
+            id={`${props.id}_max`} type="number" size="sm"
+            value={max} step={0.1} disabled={auto}
+            onChange={(n, s) => changed("max", n)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
