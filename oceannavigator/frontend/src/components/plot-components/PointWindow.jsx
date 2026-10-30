@@ -83,7 +83,7 @@ const PointWindow = ({
   const variables = useGetDatasetVariables(plotDataset);
   const observationVariables = useGetObservationVariablesStation(
     plotData.id,
-    plotData.observation && typeof plotData.id === "number",
+    selected == TabEnum.OBSERVATION && typeof plotData.id === "number",
   );
 
   useEffect(() => {
