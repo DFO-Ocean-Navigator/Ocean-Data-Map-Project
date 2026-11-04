@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
+import { isMobile } from "react-device-detect";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import Map from "./Map/Map.jsx";
@@ -55,6 +56,7 @@ function OceanNavigator(props) {
   const [subquery, setSubquery] = useState();
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
+  const [showMobile, setShowMobile] = useState(isMobile);
 
   const queryClient = useQueryClient();
 
@@ -499,6 +501,24 @@ function OceanNavigator(props) {
         <Modal.Footer>
           <Button onClick={() => setShowPermalink(false)}>{__("Close")}</Button>
         </Modal.Footer>
+      </Modal>
+      <Modal show={showMobile} onHide={() => setShowMobile(false)}>
+        <Modal.Header
+          style={{ backgroundColor: "red" }}
+          closeButton
+          closeVariant="white"
+          closeLabel={__("Close")}
+        >
+          <Modal.Title style={{ fontSize: "1.25rem" }}>
+            {__("Mobile Device Warning")}
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          {__(
+            "This application has not be optimized for mobile devices. Please consider using a computer.",
+          )}
+        </Modal.Body>
       </Modal>
     </div>
   );
