@@ -109,12 +109,14 @@ export default function HoverPopup({
           .then(function (response) {
             setFeatureTable(
               <table>
-                {Object.keys(response.data).map((key) => (
-                  <tr key={key}>
-                    <td>{key}</td>
-                    <td>{response.data[key]}</td>
-                  </tr>
-                ))}
+                <tbody>
+                  {Object.keys(response.data).map((key) => (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>{response.data[key]}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>,
             );
           })
