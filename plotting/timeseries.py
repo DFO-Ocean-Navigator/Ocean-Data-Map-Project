@@ -168,7 +168,7 @@ class TimeseriesPlotter(PointPlotter):
                     depths,
                     point_data,
                     self.variables,
-                    self.variable_unit,
+                    self.variable_units,
                 )
             self.times = times
             self.data = point_data
@@ -407,9 +407,12 @@ class TimeseriesPlotter(PointPlotter):
         return super(TimeseriesPlotter, self).netcdf(ds)
 
     def plot(self):
-        if self.scale:
-            vmin = self.scale[0]
-            vmax = self.scale[1]
+        if self.axis_range:
+            for var_ID in self.axis_range:
+                if var_ID == "depth_range":
+                    continue
+                vmin = self.axis_range[var_ID][0]
+                vmax = self.axis_range[var_ID][1]
         else:
             vmin, vmax = utils.normalize_scale(
                 self.data, self.dataset_config.variable[self.variables[0]]
@@ -434,8 +437,13 @@ class TimeseriesPlotter(PointPlotter):
             for idx, p in enumerate(self.points):
                 d = self.data[idx, 0, :]
                 dlim = np.ma.flatnotmasked_edges(d[0, :])
-                maxdepth = self.depths[dlim[1]].max()
-                mindepth = self.depths[dlim[0]].min()
+
+                if self.axis_range and "depth_range" in self.axis_range:
+                    maxdepth = self.axis_range["depth_range"][1]
+                    mindepth = self.axis_range["depth_range"][0]
+                else:
+                    maxdepth = self.depths[dlim[1]].max()
+                    mindepth = self.depths[dlim[0]].min()
 
                 c = ax[idx].pcolormesh(
                     datenum,
@@ -557,8 +565,5 @@ class TimeseriesPlotter(PointPlotter):
                 fontsize=14,
                 transform=ax.transAxes,
             )
-
-            if self.axis_range:
-                plt.gca().set_ylim(self.axis_range[0])
 
         return super(TimeseriesPlotter, self).plot(fig)

@@ -7,7 +7,6 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
 from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -88,7 +87,7 @@ class Plotter(metaclass=ABCMeta):
 
         self.variables = self.__get_variables(query.get("variable"))
 
-        self.axis_range = query.get("variable_range")
+        self.axis_range = query.get("variable_range", [])
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:

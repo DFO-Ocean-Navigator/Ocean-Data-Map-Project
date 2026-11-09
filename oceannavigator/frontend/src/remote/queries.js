@@ -8,6 +8,8 @@ import {
   GetDepthsPromise,
   GetPlotImagePromise,
   GetAllVariablesPromise,
+  GetPointDepthPromise,
+  GetPointDataPromise,
   GetTrackTimeRangePromise,
   GetComboBoxQuery,
   GetClass4ForecastsPromise,
@@ -52,6 +54,44 @@ export function useGetDatasetVariables(
   });
 
   return { data, status };
+}
+
+export function useGetPointDepth(
+  latitude,
+  longitude,
+  zoom,
+) {
+  const { data = [], isSuccess } = useQuery({
+    queryKey: ["point_depth", latitude, longitude, zoom],
+    queryFn: () => GetPointDepthPromise(latitude, longitude, zoom),
+    enabled: Number.isFinite(latitude) && Number.isFinite(longitude) && Number.isFinite(zoom),
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  return { data, isSuccess };
+}
+
+export function useGetPointData(
+  dataset,
+  variable,
+  time,
+  depth,
+  latitude,
+  longitude,
+) {
+  const { data = [], isSuccess } = useQuery({
+    queryKey: ["point_data", dataset, variable, time, depth, latitude, longitude],
+    queryFn: () => GetPointDataPromise(dataset, variable, time, depth, latitude, longitude),
+    enabled:
+      Boolean(dataset && variable && time != null && time >= 0) &&
+      depth != null &&
+      Number.isFinite(latitude) && Number.isFinite(longitude),
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  return { data, isSuccess };
 }
 
 export function useGetDatasetTimestamps(dataset, enabled) {

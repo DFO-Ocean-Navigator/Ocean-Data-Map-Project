@@ -5,6 +5,7 @@ import React, {
   useRef,
   useImperativeHandle,
 } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
@@ -44,6 +45,9 @@ import {
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
+import { useGetPointDepth, useGetPointData } from "../../remote/queries.js";
+
+import HoverPopup from "./HoverPopup.jsx";
 
 import "ol/ol.css";
 
@@ -129,12 +133,14 @@ const Map = forwardRef((props, ref) => {
   const [featureVectorSource, setFeatureVectorSource] = useState();
   const [obsDrawSource, setObsDrawSource] = useState();
   const [drawActions, setDrawActions] = useState({ map0: null, map1: null });
+  const [popupCoordinates, setPopupCoordinates] = useState();
+  const [hoverSelect0, setHoverSelect0] = useState();
+  const [hoverSelect1, setHoverSelect1] = useState();
   const mapRef0 = useRef();
   const mapRef1 = useRef();
   const popupElement0 = useRef(null);
   const popupElement1 = useRef(null);
-  const [hoverSelect0, setHoverSelect0] = useState();
-  const [hoverSelect1, setHoverSelect1] = useState();
+  const hoverTimer = useRef();
 
   useImperativeHandle(ref, () => ({
     getViewInfo: getViewInfo,
@@ -161,13 +167,6 @@ const Map = forwardRef((props, ref) => {
   }));
 
   useEffect(() => {
-    let overlay = new Overlay({
-      element: popupElement0.current,
-      autoPan: false,
-      offset: [0, -10],
-      positioning: "bottom-center",
-    });
-
     let projection = props.mapSettings.projection;
     const newMapView = createMapView(
       DEF_CENTER[projection],
@@ -192,8 +191,6 @@ const Map = forwardRef((props, ref) => {
 
     const newMap = createMap(
       props.mapSettings,
-      overlay,
-      popupElement0,
       newMapView,
       layerData0,
       newLayerFeatureVector,
@@ -227,13 +224,6 @@ const Map = forwardRef((props, ref) => {
   useEffect(() => {
     let newMap, newHoverSelect;
     if (props.compareDatasets) {
-      let overlay = new Overlay({
-        element: popupElement1.current,
-        autoPan: false,
-        offset: [0, -10],
-        positioning: "bottom-center",
-      });
-
       let newLayerFeatureVector = createFeatureVectorLayer(
         featureVectorSource,
         props.mapSettings,
@@ -241,8 +231,6 @@ const Map = forwardRef((props, ref) => {
 
       newMap = createMap(
         props.mapSettings,
-        overlay,
-        popupElement1,
         map0.getView(),
         layerData1,
         newLayerFeatureVector,
@@ -253,6 +241,23 @@ const Map = forwardRef((props, ref) => {
 
       map0.getControls().item(0).setMap(newMap); // change zoom control target
       map0.getControls().item(3).setMap1(newMap);
+
+      newMap.on("pointermove", function (e) {
+        clearTimeout(hoverTimer.current);
+
+        let overlay = newMap.getOverlayById("hoverPopup1");
+        if (overlay) newMap.removeOverlay(overlay);
+
+        setPopupCoordinates(null);
+
+        if (e.dragging) {
+          return;
+        }
+
+        hoverTimer.current = setTimeout(() => {
+          setPopupCoordinates(e.coordinate);
+        }, 500);
+      });
 
       newHoverSelect = createHoverSelect(select1, newLayerFeatureVector);
       newMap.addInteraction(select1);
@@ -489,7 +494,37 @@ const Map = forwardRef((props, ref) => {
       map0.setView(newMapView);
       map1 && map1.setView(newMapView);
     }
-  }, [props.mapSettings.mapView,map1]);
+  }, [props.mapSettings.mapView, map1]);
+
+  const handlePointerMove = (e) => {
+    clearTimeout(hoverTimer.current);
+
+    let overlay0 = map0.getOverlayById("hoverPopup0");
+    if (overlay0) map0.removeOverlay(overlay0);
+    if (map1) {
+      let overlay1 = map1.getOverlayById("hoverPopup1");
+      if (overlay1) map1.removeOverlay(overlay1);
+    }
+    setPopupCoordinates(null);
+
+    if (e.dragging) {
+      return;
+    }
+
+    hoverTimer.current = setTimeout(() => {
+      setPopupCoordinates(e.coordinate);
+    }, 500);
+  };
+  if (map0) {
+    map0.on("pointermove", (e) => {
+      handlePointerMove(e);
+    });
+  }
+  if (map1) {
+    map1.on("pointermove", (e) => {
+      handlePointerMove(e);
+    });
+  }
 
   const createSelect = () => {
     const newSelect = new Select({
@@ -752,7 +787,7 @@ const Map = forwardRef((props, ref) => {
       (feature) =>
         feature.get("type") !== "class4" &&
         feature.get("class") !== "observation" &&
-        feature.getGeometry() === undefined
+        feature.getGeometry() === undefined,
     );
     if (emptyFeatures.length > 0) {
       featureVectorSource.removeFeatures(emptyFeatures);
@@ -831,23 +866,29 @@ const Map = forwardRef((props, ref) => {
     switch (featureType) {
       case "observation_points":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
-        featureVectorSource.removeFeatures(prevFeatures)
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("class") === "observation",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
 
         url = `/api/v2.0/observation/point/` + `${featureId}.json`;
         break;
       case "observation_tracks":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("class") === "observation")
-        featureVectorSource.removeFeatures(prevFeatures)
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("class") === "observation",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
 
         url = `/api/v2.0/observation/track/` + `${featureId}.json`;
         break;
       case "class4":
         prevFeatures = featureVectorSource.getFeatures();
-        prevFeatures = prevFeatures.filter((feature) => feature.get("type") === "class4")
-        featureVectorSource.removeFeatures(prevFeatures)
-      
+        prevFeatures = prevFeatures.filter(
+          (feature) => feature.get("type") === "class4",
+        );
+        featureVectorSource.removeFeatures(prevFeatures);
+
         url =
           `/api/v2.0/class4` +
           `/${props.class4Type}` +
@@ -1279,6 +1320,17 @@ const Map = forwardRef((props, ref) => {
   return (
     <div className="map-container">
       <div className="title ol-popup" ref={popupElement0} />
+      {popupCoordinates &&
+        createPortal(
+          <HoverPopup
+            map={map0}
+            coordinates={popupCoordinates}
+            dataset={props.dataset0}
+            popupElement={popupElement0}
+            overlayId="hoverPopup0"
+          />,
+          popupElement0.current,
+        )}
       <div className="title ol-popup" ref={popupElement1} />
       <div
         style={{
@@ -1291,12 +1343,27 @@ const Map = forwardRef((props, ref) => {
       />
 
       {props.compareDatasets ? (
-        <div
-          style={{ height: "100vh", width: "calc(50% - 1px)" }}
-          ref={mapRef1}
-          id="map1"
-          className="map-container map"
-        />
+        <>
+          <div
+            style={{ height: "100vh", width: "calc(50% - 1px)" }}
+            ref={mapRef1}
+            id="map1"
+            className="map-container map"
+          />
+
+          {popupCoordinates &&
+            map1 &&
+            createPortal(
+              <HoverPopup
+                map={map1}
+                coordinates={popupCoordinates}
+                dataset={props.dataset1}
+                popupElement={popupElement1}
+                overlayId="hoverPopup1"
+              />,
+              popupElement1.current,
+            )}
+        </>
       ) : null}
     </div>
   );
