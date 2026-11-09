@@ -15,6 +15,7 @@ import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
 import DepthSelector from "./data-selectors/DepthSelector.jsx";
 import QuiverSelector from "./data-selectors/QuiverSelector.jsx";
+import EddySelector from "./data-selectors/EddySelector.jsx";
 import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
 import { prefetchAllVariables } from "../remote/queries.js";
@@ -25,6 +26,7 @@ function DatasetPanel({
   hasDepth,
   multipleVariables = false,
   showQuiverSelector = true,
+  showEddySelector = true,
   showTimeRange = false,
   showDepthSelector = true,
   showUnitSelector = false, 
@@ -238,6 +240,16 @@ function DatasetPanel({
     />
   ) : null;
 
+  let eddySelector = showEddySelector ? (
+    <EddySelector
+      id={`${id}-eddy-selector`}
+      dataset={dataset}
+      updateDataset={updateDataset}
+      horizontalLayout
+      enabled
+    />
+  ) : null;  
+
   let depthSelector =
     showDepthSelector && !dataset.variable.two_dimensional ? (
       <DepthSelector
@@ -370,6 +382,7 @@ function DatasetPanel({
         {unitSelector}
         {axisRangeSelectorsAccordion}
         {quiverSelector}
+        {eddySelector}
         {depthSelector}
         {horizontalLayout ? null : timeSelector}
 

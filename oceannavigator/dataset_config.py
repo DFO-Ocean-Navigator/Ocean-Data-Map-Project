@@ -225,6 +225,28 @@ class DatasetConfig:
         return variables
 
     @property
+    def eddy_variables(self) -> dict:
+        """
+        Returns any magnitude variables.
+        """
+        vectors = self._get_attribute("eddy_variables")
+        variables = {}
+        for key, data in self._get_attribute("variables").items():
+            is_hidden = data.get("hide")
+
+            if (
+                (
+                    is_hidden is False
+                    or is_hidden is None
+                    or is_hidden in ["false", "False"]
+                )
+                and vectors
+                and key in vectors
+            ):
+                variables[key] = data
+        return variables
+
+    @property
     def calculated_variables(self) -> dict:
         """
         Returns a dict of the calculated variables for the specified dataset
