@@ -33,7 +33,7 @@ const dateButton = React.forwardRef(
     >
       {children}
     </button>
-  )
+  ),
 );
 
 const DailyCalendar = React.forwardRef((props, ref) => {
@@ -49,7 +49,7 @@ const DailyCalendar = React.forwardRef((props, ref) => {
     const [nextMonth, nextMonthYear] = getNextMonth(month, year);
 
     let availableDates = JSON.parse(JSON.stringify(props.availableDates));
-    availableDates = availableDates.map((date) => new Date(date))
+    availableDates = availableDates.map((date) => new Date(date));
 
     let newDatesEnabled = availableDates.filter((date) => {
       let dateMonth = date.getMonth();
@@ -193,8 +193,7 @@ const DailyCalendar = React.forwardRef((props, ref) => {
   let nextDisabled = true;
   if (
     (latestDate.getUTCMonth() > month &&
-      latestDate.getUTCFullYear() ===
-      year) ||
+      latestDate.getUTCFullYear() === year) ||
     latestDate.getUTCFullYear() > year
   ) {
     nextDisabled = false;

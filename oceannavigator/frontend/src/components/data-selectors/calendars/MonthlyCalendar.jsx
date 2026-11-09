@@ -54,7 +54,7 @@ const MonthlyCalendar = forwardRef((props, ref) => {
       disabled = false;
     } else if (
       monthsEnabled.find(
-        (date) => date.getMonth() === month[1] && date.getFullYear() === year
+        (date) => date.getMonth() === month[1] && date.getFullYear() === year,
       )
     ) {
       style = "date-button-enabled";
@@ -86,7 +86,7 @@ const MonthlyCalendar = forwardRef((props, ref) => {
     nextDisabled = false;
   }
 
-  const headerText = props.climatology ? "1993 - 2019" : year
+  const headerText = props.climatology ? "1993 - 2019" : year;
 
   return (
     <div ref={ref} className="calendar-container">

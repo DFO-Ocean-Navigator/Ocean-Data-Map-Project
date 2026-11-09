@@ -15,7 +15,7 @@ import {
   useGetObservationVariablesStation,
 } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const TabEnum = {
   PROFILE: 1,
@@ -26,7 +26,7 @@ const TabEnum = {
   MOORING: 6,
 };
 
-const PointWindow = ({
+export default function PointWindow({
   plotData,
   dataset,
   mapSettings,
@@ -34,8 +34,7 @@ const PointWindow = ({
   action,
   init,
   updateDataset,
-  t: _,
-}) => {
+}) {
   // UI state
   const [selected, setSelected] = useState(
     init?.selected ??
@@ -73,11 +72,13 @@ const PointWindow = ({
         : {
             all: false,
             depth: false,
-            [dataset.variable.id]: false
+            [dataset.variable.id]: false,
           },
     },
   );
   const [only2d, setOnly2d] = useState(false);
+
+  const { t, i18n } = useTranslation();
 
   const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(plotDataset);
@@ -105,12 +106,12 @@ const PointWindow = ({
 
   useEffect(() => {
     setPlotDataset((prev) => ({
-      ...prev, 
+      ...prev,
       unitSelection: {
         all: false,
         depth: false,
-        [dataset.variable.id]: false
-      }
+        [dataset.variable.id]: false,
+      },
     }));
     if (selected === TabEnum.CTD) {
       setPlotDataset((prev) => ({
@@ -120,21 +121,15 @@ const PointWindow = ({
           variables.data.find((v) => /salinity/i.test(v.value)),
         ],
       }));
-    }
-    else if (selected === TabEnum.SOUND) {
+    } else if (selected === TabEnum.SOUND) {
       setPlotDataset((prev) => ({
         ...prev,
-        variable: [
-          variables.data.find((v) => /speed/i.test(v.value)),
-        ],
+        variable: [variables.data.find((v) => /speed/i.test(v.value))],
       }));
-    }
-    else {
+    } else {
       setPlotDataset((prev) => ({
         ...prev,
-        variable: [
-          variables.data.find((v) => /temp/i.test(v.value)),
-        ],
+        variable: [variables.data.find((v) => /temp/i.test(v.value))],
       }));
     }
   }, [selected]);
@@ -194,20 +189,28 @@ const PointWindow = ({
     TabEnum.MOORING,
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
-  const showAxisRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND, TabEnum.MOORING].includes(selected);
-  const showUnitSelector = (selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND);
-  const showDepthRange = [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) || (plotDataset.depth === "all" && selected === TabEnum.MOORING);
+  const showAxisRange = [
+    TabEnum.PROFILE,
+    TabEnum.CTD,
+    TabEnum.SOUND,
+    TabEnum.MOORING,
+  ].includes(selected);
+  const showUnitSelector =
+    selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND;
+  const showDepthRange =
+    [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) ||
+    (plotDataset.depth === "all" && selected === TabEnum.MOORING);
 
   const plotOptions = (
     <>
       <ImageSize
         id="size"
         onUpdate={updatePlotSize}
-        title={_("Saved Image Size")}
+        title={t("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
-        title={_("Plot Title")}
+        title={t("Plot Title")}
         plotTitle={plotTitles[selected - 1]}
         updatePlotTitle={updatePlotTitle}
       />
@@ -225,7 +228,7 @@ const PointWindow = ({
           }));
     observationInputs = (
       <Card key="obsSettings" variant="primary">
-        <Card.Header>{_("Observation Settings")}</Card.Header>
+        <Card.Header>{t("Observation Settings")}</Card.Header>
         <Card.Body className="global-settings-card">
           <ComboBox
             key="observation_variable"
@@ -233,7 +236,7 @@ const PointWindow = ({
             multiple
             selected={observationVariable}
             options={obsOptions}
-            label={_("Observation Variable")}
+            label={t("Observation Variable")}
             onChange={(_, value) => setObservationVariable(value)}
             alwaysShow={true}
           />
@@ -269,21 +272,21 @@ const PointWindow = ({
           id="showmap"
           checked={showMap}
           onUpdate={(_, value) => setShowMap(value)}
-          title={_("Show Location")}
+          title={t("Show Location")}
         >
-          {_("showmap_help")}
+          {t("showmap_help")}
         </CheckBox>
       )}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
             state={plotData.coordinates}
-            title={_("Location")}
+            title={t("Location")}
             onUpdate={handlePointsUpdate}
           />
         )} */}
       <Accordion key="plot-options">
-        <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+        <Accordion.Header>{t("Plot Options")}</Accordion.Header>
         <Accordion.Body>{plotOptions}</Accordion.Body>
       </Accordion>
       {selected == TabEnum.MOORING && plotDataset.depth === "all" && (
@@ -294,7 +297,7 @@ const PointWindow = ({
           options={colormaps.data}
           onChange={(_, value) => setColormap(value)}
           url="/api/v2.0/plot/colormaps"
-          label={_("Colourmap")}
+          label={t("Colourmap")}
         >
           {" "}
           <img src="/plot/colormaps.png/" alt="" />{" "}
@@ -310,8 +313,6 @@ const PointWindow = ({
   const hasSal = variables.data.some((v) => v.id === "vosaline");
   const hasTempSal = hasTemp && hasSal;
 
-
-
   // Construct query for image
   let plotType = "";
   let plotQuery = {
@@ -320,8 +321,9 @@ const PointWindow = ({
   };
 
   let axisRange = Object.fromEntries(
-    Object.entries(plotDataset.axisRange)
-      .filter(([key, value]) => value != null)
+    Object.entries(plotDataset.axisRange).filter(
+      ([key, value]) => value != null,
+    ),
   );
 
   switch (selected) {
@@ -429,7 +431,7 @@ const PointWindow = ({
             eventKey={TabEnum.PROFILE}
             disabled={plotData.observation || only2d}
           >
-            {_("Profile")}
+            {t("Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -437,7 +439,7 @@ const PointWindow = ({
             eventKey={TabEnum.CTD}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("CTD Profile")}
+            {t("CTD Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -445,7 +447,7 @@ const PointWindow = ({
             eventKey={TabEnum.TS}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("T/S Diagram")}
+            {t("T/S Diagram")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -453,7 +455,7 @@ const PointWindow = ({
             eventKey={TabEnum.SOUND}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("Sound Speed Profile")}
+            {t("Sound Speed Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -461,19 +463,19 @@ const PointWindow = ({
             eventKey={TabEnum.OBSERVATION}
             disabled={!plotData.observation || only2d}
           >
-            {_("Observation")}
+            {t("Observation")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey={TabEnum.MOORING} disabled={plotData.observation}>
-            {_("Virtual Mooring")}
+            {t("Virtual Mooring")}
           </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
           <Card key="globalSettings" variant="primary">
-            <Card.Header>{_("Global Settings")}</Card.Header>
+            <Card.Header>{t("Global Settings")}</Card.Header>
             <Card.Body className="global-settings-card">{inputs}</Card.Body>
           </Card>
           {observationInputs}
@@ -492,7 +494,7 @@ const PointWindow = ({
       </Row>
     </div>
   );
-};
+}
 
 PointWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
@@ -502,7 +504,4 @@ PointWindow.propTypes = {
   init: PropTypes.object,
   updateDataset: PropTypes.func,
   dataset: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(PointWindow);

@@ -6,7 +6,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 
 import Icon from "./lib/Icon.jsx";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const BASEMAPS = [
   {
@@ -34,24 +34,26 @@ const BASEMAPS = [
   },
 ];
 
-function SettingsWindow(props) {
+export default function SettingsWindow(props) {
   const [interpType, setInterpType] = useState(props.mapSettings.interpType);
   const [interpNeighbours, setInterpNeighbours] = useState(
-    props.mapSettings.interpNeighbours
+    props.mapSettings.interpNeighbours,
   );
   const [interpRadius, setInterpRadius] = useState(
-    props.mapSettings.interpRadius
+    props.mapSettings.interpRadius,
   );
   const [showBathy, setShowBathy] = useState(props.mapSettings.bathymetry);
   const [bathyOpacity, setBathyOpacity] = useState(
-    props.mapSettings.mapBathymetryOpacity
+    props.mapSettings.mapBathymetryOpacity,
   );
   const [bathyContour, setBathyContour] = useState(
-    props.mapSettings.bathyContour
+    props.mapSettings.bathyContour,
   );
   const [topoRelief, setTopoRelief] = useState(
-    props.mapSettings.topoShadedRelief
+    props.mapSettings.topoShadedRelief,
   );
+
+  const { t, i18n } = useTranslation();
 
   const basemapOptions = BASEMAPS.map((basemap) => {
     return (
@@ -94,10 +96,10 @@ function SettingsWindow(props) {
   return (
     <>
       <Card>
-        <Card.Header>{__("Map")}</Card.Header>
+        <Card.Header>{t("Map")}</Card.Header>
         <Card.Body className="settings-card">
           <InputGroup>
-            <Form.Label>{__("Projection")}</Form.Label>
+            <Form.Label>{t("Projection")}</Form.Label>
             <Form.Select
               value={props.mapSettings.projection}
               onChange={(e) => {
@@ -110,7 +112,7 @@ function SettingsWindow(props) {
             </Form.Select>
           </InputGroup>
           <InputGroup>
-            <Form.Label>{__("Basemap")}</Form.Label>
+            <Form.Label>{t("Basemap")}</Form.Label>
             <Form.Select
               value={props.mapSettings.basemap}
               onChange={(e) => {
@@ -124,10 +126,10 @@ function SettingsWindow(props) {
       </Card>
 
       <Card>
-        <Card.Header>{__("Colour Interpolation")}</Card.Header>
+        <Card.Header>{t("Colour Interpolation")}</Card.Header>
         <Card.Body className="settings-card">
           <InputGroup>
-            <Form.Label>{__("Method")}</Form.Label>
+            <Form.Label>{t("Method")}</Form.Label>
             <Form.Select
               value={interpType}
               onChange={(e) => setInterpType(e.target.value)}
@@ -140,7 +142,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{__("Sampling Radius (km)")}</Form.Label>
+            <Form.Label>{t("Sampling Radius (km)")}</Form.Label>
             <input
               type="number"
               value={interpRadius}
@@ -151,7 +153,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{__("Nearest Neighbours")}</Form.Label>
+            <Form.Label>{t("Nearest Neighbours")}</Form.Label>
             <input
               type="number"
               min={1}
@@ -167,13 +169,13 @@ function SettingsWindow(props) {
             onClick={handleInterpChange}
           >
             <Icon icon="check" />
-            {__("Apply")}
+            {t("Apply")}
           </Button>
         </Card.Body>
       </Card>
 
       <Card>
-        <Card.Header>{__("Bathymetry")}</Card.Header>
+        <Card.Header>{t("Bathymetry")}</Card.Header>
         <Card.Body className="settings-card">
           <Form.Check
             type="checkbox"
@@ -184,7 +186,7 @@ function SettingsWindow(props) {
           />
 
           <InputGroup>
-            <Form.Label>{__("Bathymetry Opacity")}</Form.Label>
+            <Form.Label>{t("Bathymetry Opacity")}</Form.Label>
             <input
               type="number"
               min={0.0}
@@ -196,7 +198,7 @@ function SettingsWindow(props) {
           </InputGroup>
 
           <InputGroup>
-            <Form.Label>{__("Bathymetry Layer")}</Form.Label>
+            <Form.Label>{t("Bathymetry Layer")}</Form.Label>
             <Form.Select
               onChange={(e) => setBathyContour(e.target.value)}
               value={bathyContour}
@@ -208,7 +210,7 @@ function SettingsWindow(props) {
           <Form.Check
             type="checkbox"
             id="topoShadedRelief"
-            label={__("Topography Shaded Relief")}
+            label={t("Topography Shaded Relief")}
             checked={topoRelief}
             onChange={(e) => setTopoRelief(e.target.checked)}
           />
@@ -218,12 +220,10 @@ function SettingsWindow(props) {
             onClick={handleBathyChange}
           >
             <Icon icon="check" />
-            {__("Apply")}
+            {t("Apply")}
           </Button>
         </Card.Body>
       </Card>
     </>
   );
 }
-
-export default withTranslation()(SettingsWindow);

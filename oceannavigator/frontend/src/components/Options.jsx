@@ -10,23 +10,24 @@ import {
 import Icon from "./lib/Icon.jsx";
 import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const Options = ({ options, updateOptions, t: _ }) => {
-  // Local state mirrors props.options
+export default function Options({ options, updateOptions }) {
   const [interpType, setInterpType] = useState(options.interpType);
   const [interpRadius, setInterpRadius] = useState(options.interpRadius);
   const [interpNeighbours, setInterpNeighbours] = useState(
-    options.interpNeighbours
+    options.interpNeighbours,
   );
   const [bathymetry, setBathymetry] = useState(options.bathymetry);
   const [bathyContour, setBathyContour] = useState(options.bathyContour);
   const [mapBathymetryOpacity, setMapBathymetryOpacity] = useState(
-    options.mapBathymetryOpacity
+    options.mapBathymetryOpacity,
   );
   const [topoShadedRelief, setTopoShadedRelief] = useState(
-    options.topoShadedRelief
+    options.topoShadedRelief,
   );
+
+  const { t, i18n } = useTranslation();
 
   const handleApply = () => {
     updateOptions({
@@ -43,11 +44,11 @@ const Options = ({ options, updateOptions, t: _ }) => {
   return (
     <div>
       <Card defaultExpanded bsStyle="primary">
-        <Card.Header>{_("Colour Interpolation")}</Card.Header>
+        <Card.Header>{t("Colour Interpolation")}</Card.Header>
         <Card.Body>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Method")}</ControlLabel>
+              <ControlLabel>{t("Method")}</ControlLabel>
             </Col>
             <Col md={8}>
               <FormControl
@@ -56,17 +57,17 @@ const Options = ({ options, updateOptions, t: _ }) => {
                 onChange={(e) => setInterpType(e.target.value)}
               >
                 <option value="gaussian">
-                  {_("Gaussian Weighting (Default)")}
+                  {t("Gaussian Weighting (Default)")}
                 </option>
-                <option value="bilinear">{_("Bilinear")}</option>
-                <option value="inverse">{_("Inverse Square")}</option>
-                <option value="nearest">{_("Nearest Neighbour")}</option>
+                <option value="bilinear">{t("Bilinear")}</option>
+                <option value="inverse">{t("Inverse Square")}</option>
+                <option value="nearest">{t("Nearest Neighbour")}</option>
               </FormControl>
             </Col>
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Sampling Radius (km)")}</ControlLabel>
+              <ControlLabel>{t("Sampling Radius (km)")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -80,7 +81,7 @@ const Options = ({ options, updateOptions, t: _ }) => {
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Nearest Neighbours")}</ControlLabel>
+              <ControlLabel>{t("Nearest Neighbours")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -99,14 +100,14 @@ const Options = ({ options, updateOptions, t: _ }) => {
               className="center-block"
               onClick={handleApply}
             >
-              <Icon icon="check" /> {_("Apply")}
+              <Icon icon="check" /> {t("Apply")}
             </Button>
           </Row>
         </Card.Body>
       </Card>
 
       <Card defaultExpanded bsStyle="primary">
-        <Card.Header>{_("Bathymetry")}</Card.Header>
+        <Card.Header>{t("Bathymetry")}</Card.Header>
         <Card.Body>
           <Row>
             <Col md={12}>
@@ -114,13 +115,13 @@ const Options = ({ options, updateOptions, t: _ }) => {
                 id="bathymetry"
                 checked={bathymetry}
                 onUpdate={(_, val) => setBathymetry(val)}
-                title={_("Show Bathymetry Contours")}
+                title={t("Show Bathymetry Contours")}
               />
             </Col>
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Bathymetry Opacity")}</ControlLabel>
+              <ControlLabel>{t("Bathymetry Opacity")}</ControlLabel>
             </Col>
             <Col md={8}>
               <input
@@ -137,7 +138,7 @@ const Options = ({ options, updateOptions, t: _ }) => {
           </Row>
           <Row>
             <Col md={4}>
-              <ControlLabel>{_("Bathymetry Layer")}</ControlLabel>
+              <ControlLabel>{t("Bathymetry Layer")}</ControlLabel>
             </Col>
             <Col md={8}>
               <FormControl
@@ -145,7 +146,7 @@ const Options = ({ options, updateOptions, t: _ }) => {
                 value={bathyContour}
                 onChange={(e) => setBathyContour(e.target.value)}
               >
-                <option value="etopo1">{_("ETOPO1")}</option>
+                <option value="etopo1">{t("ETOPO1")}</option>
               </FormControl>
             </Col>
           </Row>
@@ -155,7 +156,7 @@ const Options = ({ options, updateOptions, t: _ }) => {
                 id="topoShadedRelief"
                 checked={topoShadedRelief}
                 onUpdate={(_, val) => setTopoShadedRelief(val)}
-                title={_("Topography Shaded Relief")}
+                title={t("Topography Shaded Relief")}
               />
             </Col>
           </Row>
@@ -166,14 +167,14 @@ const Options = ({ options, updateOptions, t: _ }) => {
               className="center-block"
               onClick={handleApply}
             >
-              <Icon icon="check" /> {_("Apply")}
+              <Icon icon="check" /> {t("Apply")}
             </Button>
           </Row>
         </Card.Body>
       </Card>
     </div>
   );
-};
+}
 
 Options.propTypes = {
   options: PropTypes.shape({
@@ -186,7 +187,4 @@ Options.propTypes = {
     topoShadedRelief: PropTypes.bool,
   }).isRequired,
   updateOptions: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(Options);

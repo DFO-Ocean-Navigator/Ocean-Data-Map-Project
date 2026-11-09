@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetDepths } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function DepthSelector({
+export default function DepthSelector({
   id,
   dataset,
   updateDataset,
@@ -14,15 +14,13 @@ function DepthSelector({
   showAllDepths,
   horizontalLayout = false,
   enabled = true,
-  t,
 }) {
+  const { t, i18n } = useTranslation();
+
   const depths = useGetDatasetDepths(dataset, enabled);
 
   useEffect(() => {
-    updateQueryStatus(
-      "depths",
-      depths.status
-    );
+    updateQueryStatus("depths", depths.status);
   }, [depths.status]);
 
   const updateDepth = (key, value) => {
@@ -63,7 +61,4 @@ DepthSelector.propTypes = {
   showAllDepths: PropTypes.bool,
   horizontalLayout: PropTypes.bool,
   enabled: PropTypes.bool,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(DepthSelector);

@@ -1,7 +1,8 @@
 const DATASET_DEFAULTS = Object.freeze({
   id: "giops_day",
   model_class: "Mercator",
-  attribution: "The Canadian Centre for Meteorological and Environmental Prediction",
+  attribution:
+    "The Canadian Centre for Meteorological and Environmental Prediction",
   quantum: "hour",
   depth: 0,
   time: { id: -1, value: "" },
@@ -16,7 +17,7 @@ const DATASET_DEFAULTS = Object.freeze({
   },
   quiverVariable: "none",
   quiverDensity: 0,
-  value: "GIOPS 10 Day Daily Mean Forecast 3D - LatLon"
+  value: "GIOPS 10 Day Daily Mean Forecast 3D - LatLon",
 });
 
 const MAP_DEFAULTS = Object.freeze({

@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function variableSelector({
+export default function variableSelector({
   id,
   dataset,
   updateDataset,
@@ -14,9 +14,11 @@ function variableSelector({
   hasDepth = false,
   multipleVariables = false,
   horizontalLayout = false,
-  t,
 }) {
+  const { t, i18n } = useTranslation();
+
   let variables = useGetDatasetVariables(dataset);
+
   if (hasDepth) {
     variables.data = variables.data.filter((v) => {
       return v.two_dimensional === false;
@@ -32,7 +34,7 @@ function variableSelector({
         : [dataset.variable.id];
 
       let nextVariable = variables.data.filter((v) =>
-        variableIds.includes(v.id)
+        variableIds.includes(v.id),
       );
 
       if (nextVariable.length === 0) {
@@ -46,7 +48,7 @@ function variableSelector({
           // overwrite variable with data from new dataset if different
           updateVariable(
             "variable",
-            nextVariable.map((v) => v.id)
+            nextVariable.map((v) => v.id),
           );
         }
       }
@@ -123,7 +125,4 @@ variableSelector.propTypes = {
   axisRange: PropTypes.object,
   updateAxisRange: PropTypes.func,
   horizontalLayout: PropTypes.bool,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(variableSelector);

@@ -14,9 +14,9 @@ import {
   useGetObservationVariablesPlatform,
 } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const TrackWindow = (props) => {
+export default function TrackWindow(props) {
   const [showmap, setShowMap] = useState(true);
   const [plotDataset, setPlotDataset] = useState(props.dataset);
   const [latlon, setLatlon] = useState(false);
@@ -53,8 +53,8 @@ const TrackWindow = (props) => {
     dataset: plotDataset.id,
     name: props.name,
     track: [props.plotData.id],
-    starttime: starttime.toLocaleDateString('en-CA'),
-    endtime: endtime.toLocaleDateString('en-CA'),
+    starttime: starttime.toLocaleDateString("en-CA"),
+    endtime: endtime.toLocaleDateString("en-CA"),
     showmap: showmap,
     variable: plotDataset.variable.id,
     latlon: latlon,
@@ -79,14 +79,14 @@ const TrackWindow = (props) => {
       <Nav variant="tabs" activeKey={1}>
         <Nav.Item>
           <Nav.Link eventKey={1} disabled>
-            {_("Track")}
+            {t("Track")}
           </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row>
         <Col className="settings-col" lg={2}>
           <Card variant="primary" key="map_settings">
-            <Card.Header>{_("Track Settings")}</Card.Header>
+            <Card.Header>{t("Track Settings")}</Card.Header>
             <Card.Body className="global-settings-card">
               <div className="inputs-container">
                 <CheckBox
@@ -94,18 +94,18 @@ const TrackWindow = (props) => {
                   id="showmap"
                   checked={showmap}
                   onUpdate={(_, value) => setShowMap(value)}
-                  title={_("Show Map")}
+                  title={t("Show Map")}
                 >
-                  {_("showmap_help")}
+                  {t("showmap_help")}
                 </CheckBox>
                 <CheckBox
                   key="latlon"
                   id="latlon"
                   checked={latlon}
                   onUpdate={(_, value) => setLatlon(value)}
-                  title={_("Show Latitude/Longitude Plots")}
+                  title={t("Show Latitude/Longitude Plots")}
                 >
-                  {_("latlon_help")}
+                  {t("latlon_help")}
                 </CheckBox>
                 <ComboBox
                   key="trackvariable"
@@ -114,7 +114,7 @@ const TrackWindow = (props) => {
                   selected={trackvariable}
                   onChange={(_, value) => setTrackVariable(value.flat())}
                   options={observationVariables.data}
-                  label={_("Observed Variable")}
+                  label={t("Observed Variable")}
                   alwaysShow={true}
                 >
                   <h1>Track Variable</h1>
@@ -166,7 +166,7 @@ const TrackWindow = (props) => {
                       key="size"
                       id="size"
                       onUpdate={updatePlotSize}
-                      title={_("Saved Image Size")}
+                      title={t("Saved Image Size")}
                     />
                   </Accordion.Body>
                 </Accordion>
@@ -187,7 +187,7 @@ const TrackWindow = (props) => {
         </Col>
         <Col lg={2} className="settings-col">
           <Card id="left_map" variant="primary">
-            <Card.Header>{_("Main Map")}</Card.Header>
+            <Card.Header>{t("Main Map")}</Card.Header>
             <Card.Body className="global-settings-card">
               <DatasetPanel
                 id="track-window-dataset-panel"
@@ -203,7 +203,7 @@ const TrackWindow = (props) => {
       </Row>
     </div>
   );
-};
+}
 
 //***********************************************************************
 TrackWindow.propTypes = {
@@ -214,5 +214,3 @@ TrackWindow.propTypes = {
   action: PropTypes.func,
   observationQuery: PropTypes.object,
 };
-
-export default withTranslation()(TrackWindow);

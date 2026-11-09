@@ -5,9 +5,9 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import { X } from "react-bootstrap-icons";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function FeatureCard(props) {
+export default function FeatureCard(props) {
   const [timer, setTimer] = useState(null);
   const [coordinates, setCoordinates] = useState(props.feature.coords);
   const [featureType, setFeatureType] = useState(props.feature.type);
@@ -54,8 +54,8 @@ function FeatureCard(props) {
     setTimer(
       setTimeout(
         updateCoordinate(parseInt(e.target.id), 1, e.target.value),
-        1000
-      )
+        1000,
+      ),
     );
   };
 
@@ -64,8 +64,8 @@ function FeatureCard(props) {
     setTimer(
       setTimeout(
         updateCoordinate(parseInt(e.target.id), 0, e.target.value),
-        1000
-      )
+        1000,
+      ),
     );
   };
 
@@ -92,20 +92,20 @@ function FeatureCard(props) {
         newCoordAlerts.push(
           <Alert variant="warning" key="invCoordAlert">
             Invalid coordinate(s).
-          </Alert>
+          </Alert>,
         );
       }
       if ((coord[1] > 90) | (coord[1] < -90)) {
         newCoordAlerts.push(
           <Alert variant="warning" key="invLatAlert">
             Latitude outside of expected range (-90°, 90°).
-          </Alert>
+          </Alert>,
         );
       } else if ((coord[0] > 360) | (coord[0] < -360)) {
         newCoordAlerts.push(
           <Alert variant="warning" key="invLonAlert">
             Longitude outside of expected range (-360°, 360°).
-          </Alert>
+          </Alert>,
         );
       }
     }
@@ -117,14 +117,14 @@ function FeatureCard(props) {
       newCoordAlerts.push(
         <Alert variant="warning" key="insufPtsAlert">
           Insufficient points for feature type.
-        </Alert>
+        </Alert>,
       );
     }
     if (newType === "Point" && newCoordinates.length > 1) {
       newCoordAlerts.push(
         <Alert variant="warning" key="tooManyPtsAlert">
           Too many points for feature type.
-        </Alert>
+        </Alert>,
       );
     }
 
@@ -134,7 +134,7 @@ function FeatureCard(props) {
       props.mapRef.current.updateFeatureGeometry(
         props.feature.id,
         newType,
-        newCoordinates
+        newCoordinates,
       );
     }
   };
@@ -185,7 +185,11 @@ function FeatureCard(props) {
     <div className="feature-card">
       <div className="card-header">
         <Form.Check
-          disabled={coordinateAlerts != 0 || coordinates[0][0] === "" || coordinates[0][1] === ""}
+          disabled={
+            coordinateAlerts != 0 ||
+            coordinates[0][0] === "" ||
+            coordinates[0][1] === ""
+          }
           onChange={(e) => {
             props.setSelected(props.feature.id, featureType, e.target.checked);
           }}
@@ -231,5 +235,3 @@ function FeatureCard(props) {
     </div>
   );
 }
-
-export default withTranslation()(FeatureCard);

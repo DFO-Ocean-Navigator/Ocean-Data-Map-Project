@@ -1,9 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const CheckBox = ({ id, title, checked, onUpdate, t: _ }) => {
+export default function CheckBox({ id, title, checked, onUpdate }) {
+  const { t, i18n } = useTranslation();
+
   const handleChange = (e) => {
     onUpdate(id, e.target.checked);
   };
@@ -17,14 +19,11 @@ const CheckBox = ({ id, title, checked, onUpdate, t: _ }) => {
       label={title}
     />
   );
-};
+}
 
 CheckBox.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   checked: PropTypes.bool,
   onUpdate: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(CheckBox);

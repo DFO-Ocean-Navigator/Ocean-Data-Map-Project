@@ -16,7 +16,7 @@ import {
   useGetObservationMetaValues,
 } from "../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const STD_DEPTHS = {
   0: "0m",
@@ -50,7 +50,7 @@ const PLATFORMS = [
   { id: "glider", value: "Glider" },
 ];
 
-function ObservationSelector(props) {
+export default function ObservationSelector(props) {
   const [startDate, setStartDate] = useState(
     new Date(new Date().setDate(new Date().getDate() - 30)),
   );
@@ -65,6 +65,8 @@ function ObservationSelector(props) {
   const [points, setPoints] = useState(true);
   const [quantum, setQuantum] = useState("day");
   const [radius, setRadius] = useState(50);
+
+  const { t, i18n } = useTranslation();
 
   const timerange = useGetObservationTimeRange();
   const datatypes = useGetObservationDatatypes();
@@ -94,8 +96,8 @@ function ObservationSelector(props) {
 
   const getSelection = () => {
     const newSelection = {
-      start_date: startDate.toLocaleDateString('en-CA'),
-      end_date: endDate.toLocaleDateString('en-CA'),
+      start_date: startDate.toLocaleDateString("en-CA"),
+      end_date: endDate.toLocaleDateString("en-CA"),
       type: points ? "points" : "track",
     };
 
@@ -291,7 +293,7 @@ function ObservationSelector(props) {
             key="platformType"
             id="platformType"
             selected={platformType}
-            label={__("Platform Type")}
+            label={t("Platform Type")}
             onChange={(key, value) => setPlatformType(value)}
             options={PLATFORMS}
             multiple
@@ -360,5 +362,3 @@ ObservationSelector.propTypes = {
   area: PropTypes.array,
   action: PropTypes.func,
 };
-
-export default withTranslation()(ObservationSelector);

@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 const MinimizedPlotBar = ({ plotData, action }) => {
   const handleRestore = (plot) => {
     let plots = plotData.map((p) =>
-      p.id === plot.id ? { ...p, active: true } : { ...p, active: false }
+      p.id === plot.id ? { ...p, active: true } : { ...p, active: false },
     );
     action("updatePlots", plots);
   };

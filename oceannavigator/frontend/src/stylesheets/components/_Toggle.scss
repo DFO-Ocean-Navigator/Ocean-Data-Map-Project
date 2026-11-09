@@ -10,7 +10,6 @@
   max-width: 100%;
 
   .imperial-units-accordion {
-
     .accordion-item {
       border: 0;
       background: transparent;
@@ -52,8 +51,8 @@
     .unit-table {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 4.5rem 4.5rem;
-      align-items: stretch;   
-      column-gap: 0;        
+      align-items: stretch;
+      column-gap: 0;
       row-gap: 0;
     }
 
@@ -79,9 +78,9 @@
 
     .unit-option-label {
       display: flex;
-      align-items: center;   
+      align-items: center;
       font-size: 10pt;
-      padding: 0.4rem 0.5rem 0.4rem 0;  
+      padding: 0.4rem 0.5rem 0.4rem 0;
       border-bottom: 1px solid #f0f0f0;
       text-overflow: ellipsis;
       overflow: hidden;

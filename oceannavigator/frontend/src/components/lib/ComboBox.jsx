@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import Icon from "./Icon.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function ComboBox({
+export default function ComboBox({
   id,
   label,
   options = [],
@@ -16,12 +16,13 @@ function ComboBox({
   alwaysShow = false,
   horizontalLayout = false,
   children,
-  t: _,
 }) {
   const [showHelp, setShowHelp] = useState(false);
 
+  const { t, i18n } = useTranslation();
+
   let optionsData = [...options];
-  includeNone && optionsData.unshift({ id: "", value: _("None") });
+  includeNone && optionsData.unshift({ id: "", value: t("None") });
 
   const handleChange = (e) => {
     let nextSelected = e.target.value;
@@ -67,9 +68,9 @@ function ComboBox({
               variant="link"
               className="combobox-help-button"
               onClick={() => setShowHelp(true)}
-              aria-label={_("Open help for {{label}}", { label })}
+              aria-label={t("Open help for {{label}}", { label })}
             >
-              {_("?")}
+              {t("?")}
             </Button>
           )}
         </div>
@@ -80,7 +81,7 @@ function ComboBox({
           dialogClassName="helpdialog"
         >
           <Modal.Header closeButton>
-            <Modal.Title>{_("titlehelp", { title: label })}</Modal.Title>
+            <Modal.Title>{t("titlehelp", { title: label })}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {children}
@@ -88,7 +89,7 @@ function ComboBox({
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={() => setShowHelp(false)}>
-              <Icon icon="close" /> {_("Close")}
+              <Icon icon="close" /> {t("Close")}
             </Button>
           </Modal.Footer>
         </Modal>
@@ -124,7 +125,4 @@ ComboBox.propTypes = {
   horizontalLayout: PropTypes.bool,
   placeholder: PropTypes.string,
   children: PropTypes.node,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(ComboBox);

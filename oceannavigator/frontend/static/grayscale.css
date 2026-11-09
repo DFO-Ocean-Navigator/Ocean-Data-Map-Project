@@ -93,11 +93,17 @@ a:hover {
   #mainNav {
     padding-top: 20px;
     padding-bottom: 20px;
-    -webkit-transition: background 0.3s ease-in-out,
-      padding-top 0.3s ease-in-out, padding-bottom 0.3s;
-    -moz-transition: background 0.3s ease-in-out, padding-top 0.3s ease-in-out,
+    -webkit-transition:
+      background 0.3s ease-in-out,
+      padding-top 0.3s ease-in-out,
       padding-bottom 0.3s;
-    transition: background 0.3s ease-in-out, padding-top 0.3s ease-in-out,
+    -moz-transition:
+      background 0.3s ease-in-out,
+      padding-top 0.3s ease-in-out,
+      padding-bottom 0.3s;
+    transition:
+      background 0.3s ease-in-out,
+      padding-top 0.3s ease-in-out,
       padding-bottom 0.3s;
     letter-spacing: 1px;
     border-bottom: none;
