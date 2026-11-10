@@ -731,7 +731,10 @@ def point_depth(
         topo_ds = ds.sel(lat=latitude, lon=longitude, method="nearest")
         depth = topo_ds["z"]
 
-        depth = -float(depth) if depth < 0 else 0
+        depth = -float(depth) if depth < 0 else 0.0
+
+    if np.isnan(depth) or np.abs(depth) > 11000:
+        return None
 
     return depth
 
@@ -754,7 +757,7 @@ def point_data(
     with open_dataset(config, variable=variable, timestamp=time) as ds:
         point_data = ds.get_point(latitude, longitude, depth, variable, time)
 
-    if np.isnan(point_data) or np.isnan(point_data.data):
+    if np.isnan(point_data) or np.isnan(point_data.data) or not np.isfinite(point_data.data) or np.abs(point_data.data) > 10000:
         return None
 
     return round(float(point_data.data), 2)

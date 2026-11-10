@@ -61,10 +61,11 @@ export function useGetPointDepth(
   longitude,
   zoom,
 ) {
+  const roundedZoom = Math.round(zoom);
   const { data = [], isSuccess } = useQuery({
-    queryKey: ["point_depth", latitude, longitude, zoom],
-    queryFn: () => GetPointDepthPromise(latitude, longitude, zoom),
-    enabled: Number.isFinite(latitude) && Number.isFinite(longitude) && Number.isFinite(zoom),
+    queryKey: ["point_depth", latitude, longitude, roundedZoom],
+    queryFn: () => GetPointDepthPromise(latitude, longitude, roundedZoom),
+    enabled: Number.isFinite(latitude) && Number.isFinite(longitude) && Number.isFinite(roundedZoom),
     refetchOnWindowFocus: false,
     retry: false,
   });
