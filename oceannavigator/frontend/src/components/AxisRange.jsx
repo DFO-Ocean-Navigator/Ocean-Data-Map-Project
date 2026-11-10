@@ -14,9 +14,9 @@ function AxisRange(props) {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    setMin(props.is_imperial?props.variable.imperial_scale[0]:props.variable.scale[0])
-    setMax(props.is_imperial?props.variable.imperial_scale[1]:props.variable.scale[1])
-  }, [props.is_imperial])
+    setMin(props.isImperial?props.variable.imperial_scale[0]:props.variable.scale[0])
+    setMax(props.isImperial?props.variable.imperial_scale[1]:props.variable.scale[1])
+  }, [props.isImperial])
 
   useEffect(() => {
     let newMin = parseFloat(min);
@@ -58,7 +58,7 @@ function AxisRange(props) {
 
     let scale = props.variable.scale
 
-    if (props.is_imperial){
+    if (props.isImperial){
       scale = props.variable.imperial_scale
     }
 
@@ -122,7 +122,7 @@ AxisRange.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   variable: PropTypes.object,
-  is_imperial: PropTypes.bool,
+  isImperial: PropTypes.bool,
   range: PropTypes.array,
   onUpdate: PropTypes.func,
 };
