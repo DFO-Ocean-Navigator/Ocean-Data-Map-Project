@@ -407,7 +407,7 @@ function OceanNavigator(props) {
             <ScaleViewer
               dataset={dataset1}
               mapSettings={mapSettings}
-              onUpdate={updateDataset0}
+              onUpdate={updateDataset1}
               mapRef={mapRef}
               className="right"
             />
