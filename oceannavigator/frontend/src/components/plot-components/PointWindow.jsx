@@ -104,6 +104,7 @@ const PointWindow = ({
   }, [plotDataset]);
 
   useEffect(() => {
+    // Reset dataset when tab is changed
     setPlotDataset((prev) => ({
       ...prev,
       unitSelection: {
@@ -111,6 +112,9 @@ const PointWindow = ({
         depth: false,
         [dataset.variable.id]: false,
       },
+      axisRange: Object.fromEntries(
+        Object.keys(dataset.variable).map((key) => [key, null])
+      ),
     }));
     if (selected === TabEnum.CTD) {
       setPlotDataset((prev) => ({
