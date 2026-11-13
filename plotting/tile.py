@@ -186,19 +186,19 @@ def scale(args):
     if len(variable) > 1:
         variable_unit = config.variable[",".join(variable)].unit
         variable_name = config.variable[",".join(variable)].name
+        categorical = False
     else:
         variable_unit = config.variable[variable[0]].unit
         variable_name = config.variable[variable[0]].name
+        categorical = config.variable[variable[0]].is_categorical
 
     cmap = colormap.find_colormap(variable_name)
 
     if len(variable) == 2:
         cmap = colormap.colormaps.get("speed")
 
-    data_categories = config.variable[args.get("variable")].data_categories
-
     fig = plt.figure(figsize=(2, 5), dpi=75)
-    if data_categories is None:
+    if not categorical:
         ax = fig.add_axes([0.05, 0.05, 0.25, 0.9])
         norm = matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1])
         formatter = ScalarFormatter()
@@ -214,7 +214,7 @@ def scale(args):
     else:
         legend_categories = [
             Patch(facecolor=color, edgecolor="k", label=label)
-            for color, label in zip(cmap.colors, data_categories)
+            for color, label in zip(cmap["colors"], cmap["labels"])
         ]
         fig.legend(handles=legend_categories, fontsize=12, frameon=False)
 
@@ -256,7 +256,8 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     data = []
     with open_dataset(config, variable=variable, timestamp=time) as dataset:
         for v in variable:
-            if config.variable[v].data_categories is not None:
+            categorical = config.variable[v].is_categorical
+            if categorical:
                 args["interp"] = InterpolationType.nearest
                 args["radius"] = 25000
                 args["neighbours"] = 10
@@ -275,7 +276,11 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
 
         vc = config.variable[dataset.variables[variable[0]]]
         variable_name = vc.name
-        cmap = colormap.find_colormap(variable_name)
+        if categorical:
+            cmap_data = colormap.find_colormap(variable_name)
+            cmap = matplotlib.colors.ListedColormap(cmap_data["colors"])
+        else:
+            cmap = colormap.find_colormap(variable_name)
 
         if depth != "bottom":
             depthm = dataset.depths[depth]
