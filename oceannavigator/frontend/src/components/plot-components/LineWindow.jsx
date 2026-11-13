@@ -141,7 +141,7 @@ const LineWindow = (props) => {
     <Card id="global_settings" variant="primary">
       <Card.Header>{_("Global Settings")}</Card.Header>
       <Card.Body>
-        {!props.dataset0.variable.data_categories && (
+        {!props.dataset0.variable.is_categorical && (
           <CheckBox
             id="dataset_compare"
             checked={props.compareDatasets}
