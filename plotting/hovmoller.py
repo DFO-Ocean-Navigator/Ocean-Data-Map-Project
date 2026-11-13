@@ -2,6 +2,7 @@ import re
 
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 import numpy as np
 
@@ -206,9 +207,9 @@ class HovmollerPlotter(LinePlotter):
             + get_depth_label(
                 self.depth_value, self.depth_unit
             ),  # gettext(get_depth_label(self.depth_value, self.depth_unit)),
-            data_categories=self.dataset_config.variable[
+            is_categorical=self.dataset_config.variable[
                 self.variables[0]
-            ].data_categories,
+            ].is_categorical,
         )
 
         # If in compare mode
@@ -232,10 +233,10 @@ class HovmollerPlotter(LinePlotter):
             if len(self.compare["variables"]) > 1:
                 vmin = 0
 
-            compare_data_categories = (
+            compare_categorical = (
                 DatasetConfig(self.compare["dataset"])
                 .variable[self.compare["variables"][0]]
-                .data_categories
+                .is_categorical
             )
             self._hovmoller_plot(
                 gs,
@@ -257,7 +258,7 @@ class HovmollerPlotter(LinePlotter):
                 #  gettext(
                 #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),
-                data_categories=compare_data_categories,
+                is_categorical=compare_categorical,
             )
 
             # Difference plot
@@ -342,19 +343,26 @@ class HovmollerPlotter(LinePlotter):
         cmap,
         unit,
         title,
-        data_categories=None,
+        is_categorical=False,
     ):
         if self.showmap:
             plt.subplot(subplot[map_subplot[0], map_subplot[1]])
         else:
             plt.subplot(subplot[nomap_subplot[0], nomap_subplot[1]])
 
+        if is_categorical:
+            legend_patches = [
+                Patch(facecolor=color, edgecolor="k", label=label)
+                for color, label in zip(cmap["colors"], cmap["labels"])
+            ]            
+            cmap = ListedColormap(cmap["colors"])
+
         c = plt.pcolormesh(
             self.distance,
             times,
             data,
             cmap=cmap,
-            shading="nearest" if data_categories else "gouraud",
+            shading="nearest" if is_categorical else "gouraud",
             vmin=vmin,
             vmax=vmax,
         )
@@ -381,18 +389,11 @@ class HovmollerPlotter(LinePlotter):
         plt.xlabel("Distance (km)")  # plt.xlabel(gettext("Distance (km)"))
         plt.xlim([self.distance[0], self.distance[-1]])
 
-        if data_categories:
-            legend_patches = [
-                Patch(facecolor=color, edgecolor="k", label=label)
-                for color, label in zip(cmap.colors, data_categories)
-            ]
+        if is_categorical:
             ax.legend(
                 handles=legend_patches,
                 fontsize=9,
                 frameon=False,
-                title=f"{name} ({math_unit})",
-                title_fontsize=12,
-                loc="upper left",
                 bbox_to_anchor=(1.01, 1),
             )
         else:
