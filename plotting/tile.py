@@ -1,4 +1,4 @@
-import io
+import gzip
 import math
 import sqlite3
 from io import BytesIO
@@ -299,7 +299,8 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     selector.execute(sqlite)
     land_mask_tile = selector.fetchone()
     if land_mask_tile is not None:
-        land_mask = np.frombuffer(land_mask_tile[0], dtype=np.uint8).reshape(256, 256)
+        decompressed_tile = gzip.decompress(land_mask_tile[0])
+        land_mask = np.frombuffer(decompressed_tile, dtype=np.uint8).reshape(256, 256)
         data[land_mask == 1] = np.ma.masked
 
     # # Mask out any topography if we're below the vector-tile threshold
