@@ -1247,22 +1247,7 @@ def bathy_mbt(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    # if (zoom < 7) or (projection != "EPSG:3857"):
-    #     return blank_response
-
-    # if (zoom > 11) and (tiletype == "bath"):
-    #     return blank_response
-
-    # # Send file if cached or select data in SQLite file
-    # if requestf.is_file():
-    #     return FileResponse(
-    #         requestf.as_posix(),
-    #         media_type="image/png",
-    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    #     )
-
-    # y = (2**zoom - 1) - y
-    connection = sqlite3.connect("/data/misc/shapes/onav_bathy.mbtiles")
+    connection = sqlite3.connect(f"/data/misc/shapes/onav_bathy_{projection}.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
     selector.execute(sqlite)
@@ -1282,6 +1267,7 @@ def bathy_mbt(
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
+
 
 @router.get("/mbt/lands/{zoom}/{x}/{y}")
 def land_mbt(
@@ -1319,9 +1305,7 @@ def land_mbt(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    # y = (2**zoom - 1) - y
-    # connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
-    connection = sqlite3.connect("/data/misc/shapes/onav_basemap.mbtiles")
+    connection = sqlite3.connect(f"/data/misc/shapes/onav_basemap_{projection}.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)

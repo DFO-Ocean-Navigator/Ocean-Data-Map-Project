@@ -30,7 +30,7 @@ import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
 import * as olTilegrid from "ol/tilegrid";
 import { isMobile } from "react-device-detect";
-import {Projection} from 'ol/proj';
+import { Projection } from 'ol/proj';
 
 function deg2rad(deg) {
   return (deg * Math.PI) / 180.0;
@@ -83,16 +83,12 @@ export const getBasemap = (
   source,
   projection,
   attribution,
-  topoShadedRelief,
 ) => {
   switch (source) {
     case "topo":
-      const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
-        preload: 1,
-        maxZoom: 9 - 1e-10,
         source: new XYZ({
-          url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
+          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${projection}`,
           projection: projection,
         }),
       });
@@ -134,44 +130,11 @@ export const createMap = (
   maxZoom,
   mapRef,
 ) => {
-  // const newLayerBasemap = getBasemap(
-  //   mapSettings.basemap,
-  //   mapSettings.projection,
-  //   mapSettings.basemap_attribution,
-  //   mapSettings.topoShadedRelief,
-  // );
-
-  const vectorTileGrid = new olTilegrid.createXYZ({
-    tileSize: 256,
-    maxZoom: maxZoom,
-  });
-
-  const newLayerLandShapes = new TileLayer({
-    source: new XYZ({
-      tileGrid: vectorTileGrid,
-      url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${mapSettings.projection}`,
-      projection: mapSettings.projection,
-    }),
-  });
-
-  // Your Mapbox Style JSON object
-
-  // const newLayerBath = new TileLayer({
-  //   source: new XYZ({
-  //     tileGrid: vectorTileGrid,
-  //     url: `/api/v2.0/mbt_old/lands/{z}/{x}/{y}?projection=${mapSettings.projection}`,
-  //     projection: mapSettings.projection,
-  //   }),
-  //   opacity: mapSettings.mapBathymetryOpacity,
-  //   visible: mapSettings.bathymetry,
-  //   preload: 1,
-  // });
-
-  const tilePixelProjection = new Projection({
-  code: 'TILE_PIXELS',
-  units: 'tile-pixels',
-  extent: [0, 0, 256, 256], // Common for Mapbox Vector Tiles
-});
+  const newLayerBasemap = getBasemap(
+    mapSettings.basemap,
+    mapSettings.projection,
+    mapSettings.basemap_attribution
+  );
 
   const newLayerBathShapes = new VectorTileLayer({
     opacity: mapSettings.mapBathymetryOpacity,
@@ -182,10 +145,8 @@ export const createMap = (
       }),
     }),
     source: new VectorTile({
-      format: new MVT({dataProjection: tilePixelProjection}),
-      tileGrid: createXYZ({ tileSize: 256, maxZoom: 14 }),
-      // tileGrid: vectorTileGrid,
-      // tilePixelRatio: 8,
+      format: new MVT(),
+      tileGrid: createXYZ({ tileSize: 256, maxZoom: maxZoom }),
       tileSize: 256,
       url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
       projection: mapSettings.projection,
@@ -221,15 +182,12 @@ export const createMap = (
   let options = {
     view: mapView,
     layers: [
-      // newLayerBasemap,
-      newLayerLandShapes,
+      newLayerBasemap,
       layerData,
-      
-      // newLayerBath,
       newLayerBathShapes,
-      // layerFeatureVector,
-      // newLayerObsDraw,
-      // newLayerQuiver,
+      layerFeatureVector,
+      newLayerObsDraw,
+      newLayerQuiver,
     ],
     controls: defaultControls({
       rotate: false,
@@ -265,12 +223,10 @@ export const createMap = (
   });
   mapObject.addInteraction(dragBox);
 
-  // newLayerBasemap.setZIndex(0);
-  newLayerLandShapes.setZIndex(2);
-  // newLayerBath.setZIndex(3);
-  newLayerBathShapes.setZIndex(4);
-  layerFeatureVector.setZIndex(5);
-  newLayerObsDraw.setZIndex(6);
+  newLayerBasemap.setZIndex(0);
+  newLayerBathShapes.setZIndex(2);
+  layerFeatureVector.setZIndex(3);
+  newLayerObsDraw.setZIndex(4);
   newLayerQuiver.setZIndex(100);
 
   return mapObject;
