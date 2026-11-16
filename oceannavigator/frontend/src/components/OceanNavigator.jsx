@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 import { isMobile } from "react-device-detect";
+import Collapse from "react-bootstrap/Collapse";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import Map from "./Map/Map.jsx";
@@ -25,6 +26,7 @@ import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
+import HideOverlaysToggle from "./HideOverlaysButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -57,6 +59,7 @@ function OceanNavigator(props) {
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
   const [showMobile, setShowMobile] = useState(isMobile);
+  const [showOverlays, setShowOverlays] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -396,29 +399,35 @@ function OceanNavigator(props) {
   return (
     <div className="OceanNavigator">
       <div className="top-panel-components">
-        <div className="scale-viewer-container">
-          <ScaleViewer
-            dataset={dataset0}
-            mapSettings={mapSettings}
-            onUpdate={updateDataset0}
-            mapRef={mapRef}
-          />
-          {compareDatasets && (
+        <Collapse in={showOverlays} dimension="width">
+          <div className="scale-viewer-container">
             <ScaleViewer
-              dataset={dataset1}
+              dataset={dataset0}
               mapSettings={mapSettings}
-              onUpdate={updateDataset1}
+              onUpdate={updateDataset0}
               mapRef={mapRef}
-              className="right"
             />
-          )}
-        </div>
+            {compareDatasets && (
+              <ScaleViewer
+                dataset={dataset1}
+                mapSettings={mapSettings}
+                onUpdate={updateDataset1}
+                mapRef={mapRef}
+                className="right"
+              />
+            )}
+          </div>
+        </Collapse>
 
         <MinimizedPlotBar plotData={plotData} action={action} />
         <AnnotationButton
           uiSettings={uiSettings}
           updateUI={updateUI}
           action={action}
+        />
+        <HideOverlaysToggle
+          showOverlays={showOverlays}
+          onChange={setShowOverlays}
         />
         <LinkButton action={action} />
         <BugReportButton action={action} updateUI={updateUI} />
@@ -437,6 +446,7 @@ function OceanNavigator(props) {
         updateUI={updateUI}
         compareDatasets={compareDatasets}
       />
+
       <MapInputs
         dataset0={dataset0}
         dataset1={dataset1}
@@ -450,8 +460,16 @@ function OceanNavigator(props) {
         action={action}
         showCompare={true}
         featureType={featureType}
+        show={showOverlays}
       />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+        show={showOverlays}
+      />
+
       <ActivePlotsContainer
         plotData={plotData}
         dataset0={dataset0}
