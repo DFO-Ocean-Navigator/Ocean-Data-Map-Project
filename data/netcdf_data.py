@@ -16,6 +16,7 @@ import xarray.core.variable
 from babel.dates import format_date
 from cachetools import TTLCache
 from icechunk import local_filesystem_storage, Repository, s3_storage
+from icechunk.credentials import LocalFileSystemAccess
 
 import data.calculated
 import data.utils
@@ -151,7 +152,7 @@ class NetCDFData(Data):
             )
 
         return Repository.open(
-            storage_config, authorize_virtual_chunk_access={"file:///data/": None}
+            storage_config, authorize_virtual_chunk_access={"file:///data/": LocalFileSystemAccess}
         )
 
     def __find_variable(self, candidates: list):
@@ -499,6 +500,11 @@ class NetCDFData(Data):
         subset[variable].attrs = {
             key: str(value) for key, value in subset[variable].attrs.items()
         }
+
+        # Remove incompatable interpolation attributes
+        for var in subset.data_vars:
+            if "interpolation" in subset[var].attrs.keys():
+                del subset[var].attrs["interpolation"]
 
         # convert longitude values to -180 to 180 range
         subset = subset.assign_coords(

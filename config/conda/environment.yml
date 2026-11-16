@@ -44,13 +44,13 @@ dependencies:
   - bzip2=1.0.8=h4bc722e_7
   - c-ares=1.34.5=hb9d3cd8_0
   - c-blosc2=2.19.1=h4cfbee9_0
-  - ca-certificates=2026.2.25=hbd8a1cb_0
+  - ca-certificates=2026.7.22=hbd8a1cb_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
   - cachetools=6.1.0=pyhd8ed1ab_0
   - cairo=1.18.4=h3394656_0
   - cartopy=0.24.0=py313ha87cce1_0
-  - certifi=2026.2.25=pyhd8ed1ab_0
+  - certifi=2026.7.22=pyhd8ed1ab_0
   - cffi=1.17.1=py313hfab6e84_0
   - cfgrib=0.9.15.1=pyhd8ed1ab_0
   - cftime=1.6.4=py313ha014f3b_1
@@ -128,7 +128,7 @@ dependencies:
   - httpx=0.28.1=pyhd8ed1ab_0
   - hypercorn=0.17.3=pyhd8ed1ab_1
   - hyperframe=6.1.0=pyhd8ed1ab_0
-  - icechunk=1.1.18=py313h5c7d99a_0
+  - icechunk=2.2.2=hadfa14c_0
   - icu=75.1=he02047a_0
   - idna=3.10=pyhd8ed1ab_1
   - imagecodecs=2025.3.30=py313h8b391ee_2
@@ -272,7 +272,7 @@ dependencies:
   - numpy=2.3.1=py313hf6604e3_1
   - openjpeg=2.5.3=h5fbd93e_0
   - openldap=2.6.10=he970967_0
-  - openssl=3.6.1=h35e630c_1
+  - openssl=3.6.4=h781a0a9_0
   - orc=2.1.3=h61e0c1e_0
   - packaging=25.0=pyh29332c3_1
   - pandas=2.3.1=py313h08cd8bf_0

@@ -7,7 +7,6 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
 from babel.dates import format_date, format_datetime
 
 import plotting.colormap as colormap
@@ -88,7 +87,7 @@ class Plotter(metaclass=ABCMeta):
 
         self.variables = self.__get_variables(query.get("variable"))
 
-        self.axis_range = query.get("variable_range")
+        self.axis_range = query.get("variable_range", [])
 
         # Parse right-view if in compare mode
         if query.get("compare_to") is not None:
@@ -118,6 +117,8 @@ class Plotter(metaclass=ABCMeta):
         self.depth = self.__get_depth(query.get("depth"))
 
         self.showmap = self.__get_showmap(query.get("showmap"))
+
+        self.unit_selection = self.__get_unit_selection(query.get("unitSelection"))
 
     def __get_date_formatter(self, quantum: str):
         """
@@ -212,6 +213,17 @@ class Plotter(metaclass=ABCMeta):
 
     def __get_showmap(self, showmap: str):
         return showmap is None or bool(showmap)
+
+    def __get_unit_selection(self, imperial_units: list[dict]):
+        if imperial_units is not None:
+            checked_keys = [key for key, item in imperial_units.items() if item]
+
+            if checked_keys and checked_keys[0] == "all":
+                checked_keys.remove("all")
+
+            return checked_keys
+
+        return []
 
     @abstractmethod
     def load_data(self):

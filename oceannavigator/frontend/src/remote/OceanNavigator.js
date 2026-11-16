@@ -11,8 +11,7 @@ export async function GetDatasetsPromise() {
 
 export async function GetVariablesPromise(dataset, vectorsOnly) {
   const response = await instance.get(
-    `/api/v2.0/dataset/${dataset}/variables${
-      vectorsOnly ? "?vectors_only=True" : ""
+    `/api/v2.0/dataset/${dataset}/variables${vectorsOnly ? "?vectors_only=True" : ""
     }`,
   );
   return response.data;
@@ -39,6 +38,18 @@ export async function GetDepthsPromise(dataset, variable) {
 //returns a complete list of variables for users to select
 export async function GetAllVariablesPromise() {
   const response = await instance.get("/api/v2.0/datasets/variables/all");
+  return response.data;
+}
+
+//Returns the depth for a given point.
+export async function GetPointDepthPromise(latitude, longitude, zoom) {
+  const response = await instance.get(`/api/v2.0/point_depth?latitude=${latitude}&longitude=${longitude}&zoom=${zoom}`);
+  return response.data;
+}
+
+//Returns the data in a dataset for a given point.
+export async function GetPointDataPromise(dataset, variable, time, depth, latitude, longitude) {
+  const response = await instance.get(`/api/v2.0/dataset/${dataset}/${variable}/${time}/point_data?depth=${depth}&latitude=${latitude}&longitude=${longitude}`);
   return response.data;
 }
 

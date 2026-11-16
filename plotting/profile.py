@@ -71,14 +71,13 @@ class ProfilePlotter(PointPlotter):
         columns = ["Latitude", "Longitude", "Depth"]
         variable_order = []
 
-
         priority_vars = {
             "Potential Temperature": "Potential Temperature (Celsius)",
             "Salinity": "Salinity (PSU)",
             "Speed of Sound": "Speed of Sound (m/s)",
         }
 
-        #Arranging column labels and order in which variables are to be displayed
+        # Arranging column labels and order in which variables are to be displayed
         for var in ["Potential Temperature", "Salinity", "Speed of Sound"]:
             if var in self.variable_names:
                 columns.append(priority_vars[var])
@@ -88,7 +87,6 @@ class ProfilePlotter(PointPlotter):
             if name not in priority_vars:
                 columns.append(f"{name} ({unit})")
                 variable_order.append(name)
-
 
         data = []
 
@@ -106,13 +104,14 @@ class ProfilePlotter(PointPlotter):
                     "%0.1f" % self.depths[p, 0, d],
                 ]
 
-                ## Append values for each variable in order, formatted to one decimal place
+                # Append values for each variable in order,
+                # formatted to 1 decimal place
                 for var_name in variable_order:
                     i = self.variable_names.index(var_name)
                     value = self.data[p, i, d]
                     entry.append("%0.1f" % value)
                 data.append(entry)
-               
+
         return super(ProfilePlotter, self).csv(header, columns, data)
 
     def stats_csv(self):
@@ -123,7 +122,9 @@ class ProfilePlotter(PointPlotter):
 
         columns = [
             "Statistic",
-        ] + ["%s (%s)" % x for x in zip(self.variable_names, self.variable_units)]
+        ] + [
+            "%s (%s)" % x for x in zip(self.variable_names, self.variable_units)
+        ]
 
         data = [["Min", "Max", "Mean", "Standard Deviation"]]
 
@@ -183,6 +184,16 @@ class ProfilePlotter(PointPlotter):
         else:
             width_ratios = None
 
+        # Convert to imperial units
+        if self.unit_selection:
+            self.depths, self.data, self.variable_units = utils.convert_to_imperial(
+                self.unit_selection,
+                self.depths,
+                self.data,
+                self.variables,
+                self.variable_units,
+            )
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
         subplot = 0
@@ -203,7 +214,7 @@ class ProfilePlotter(PointPlotter):
         is_y_label_plotted = False
         # Create a subplot for each variable selected
         # Each subplot has all points plotted
-        for idx, _ in enumerate(self.variables):
+        for idx, var in enumerate(self.variables):
             plt.subplot(gs[:, subplot])
 
             plt.plot(
@@ -214,6 +225,10 @@ class ProfilePlotter(PointPlotter):
             current_axis = plt.gca()
             current_axis.xaxis.set_label_position("top")
             current_axis.xaxis.set_ticks_position("top")
+
+            if "depth_range" in self.axis_range:
+                plt.gca().set_ylim(self.axis_range["depth_range"])
+
             current_axis.invert_yaxis()
             current_axis.grid(True)
             current_axis.set_xlabel(
@@ -233,15 +248,18 @@ class ProfilePlotter(PointPlotter):
 
             # Put y-axis label on left-most graph (but after the point location)
             if not is_y_label_plotted and (subplot == 0 or subplot == 1):
-                current_axis.set_ylabel("Depth (m)", fontsize=14)
+                if "depth" in self.unit_selection:
+                    current_axis.set_ylabel("Depth (ft)", fontsize=14)
+                else:
+                    current_axis.set_ylabel("Depth (m)", fontsize=14)
                 # current_axis.set_ylabel(gettext("Depth (m)"), fontsize=14)
                 is_y_label_plotted = True
 
             if self.compare:
                 xlim = np.abs(plt.gca().get_xlim()).max()
                 plt.gca().set_xlim([-xlim, xlim])
-            elif self.axis_range:
-                plt.gca().set_xlim(self.axis_range[idx])
+            elif var in self.axis_range:
+                plt.gca().set_xlim(self.axis_range[var])
 
             subplot += 1
 

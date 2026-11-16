@@ -28,7 +28,6 @@ class TestUtil:
                 "model_class": "my_model_class",
                 "time_dim_units": "my_time_units",
                 "attribution": "my_<b>attribution</b>",
-                "cache": "123",
                 "lat_var_key": "my_lat",
                 "lon_var_key": "my_lon",
                 "variables": {
@@ -58,7 +57,6 @@ class TestUtil:
         assert result.lat_var_key == "my_lat"
         assert result.lon_var_key == "my_lon"
         assert result.attribution == "my_attribution"
-        assert result.cache == 123
 
         assert not result.variable[Mock(key="var")].is_hidden
 
@@ -135,17 +133,14 @@ class TestUtil:
                 "url": "the_url",
                 "attribution": "My attribution <b>bold</b>",
                 "climatology": "climatology_url",
-                "cache": 5,
             }
         }
 
         assert DatasetConfig("dataset").url == "the_url"
         assert DatasetConfig("dataset").climatology == "climatology_url"
         assert DatasetConfig("dataset").attribution == "My attribution bold"
-        assert DatasetConfig("dataset").cache == 5
 
         m.return_value = {"dataset2": {}}
-        assert DatasetConfig("dataset2").cache is None
 
     @patch.object(DatasetConfig, "_get_dataset_config")
     def test_get_variables(self, m):
@@ -181,7 +176,6 @@ class TestUtil:
                 "url": "the_url",
                 "attribution": "My attribution <b>bold</b>",
                 "climatology": "climatology_url",
-                "cache": 5,
                 "variables": {
                     "var": {
                         "name": "the_name",

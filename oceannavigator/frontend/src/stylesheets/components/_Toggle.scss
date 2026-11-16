@@ -1,0 +1,113 @@
+.unit-toggle-label {
+  margin: 0.625rem 0 0.25rem;
+  font-size: small;
+  font-weight: bold;
+  width: max-content;
+}
+
+.units-options {
+  width: 100%;
+  max-width: 100%;
+
+  .imperial-units-accordion {
+
+    .accordion-item {
+      border: 0;
+      background: transparent;
+    }
+
+    .accordion-header {
+      margin: 0;
+    }
+
+    .accordion-button {
+      padding: 0.5rem 0;
+      font-size: small;
+      font-weight: bold;
+      background-color: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+
+      &:not(.collapsed) {
+        color: #000;
+        background-color: transparent;
+        box-shadow: none;
+      }
+
+      &:focus {
+        box-shadow: none;
+      }
+
+      &::after {
+        margin-left: auto;
+        margin-right: 0;
+      }
+    }
+
+    .accordion-body {
+      padding: 0.25rem 0 0.5rem;
+    }
+
+    .unit-table {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 4.5rem 4.5rem;
+      align-items: stretch;   
+      column-gap: 0;        
+      row-gap: 0;
+    }
+
+    .unit-table-header,
+    .unit-table-row {
+      display: contents;
+    }
+
+    .unit-table-header-spacer,
+    .unit-table-header-col {
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .unit-table-header-col {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #6f6f6f;
+      text-align: center;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .unit-option-label {
+      display: flex;
+      align-items: center;   
+      font-size: 10pt;
+      padding: 0.4rem 0.5rem 0.4rem 0;  
+      border-bottom: 1px solid #f0f0f0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .unit-radio-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      .form-check {
+        margin: 0;
+        padding-left: 0;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .form-check-input {
+        margin: 0;
+        float: none;
+        width: 0.9em;
+        height: 0.9em;
+      }
+    }
+  }
+}

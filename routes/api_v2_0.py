@@ -27,6 +27,8 @@ import data.observational.queries as ob_queries
 import plotting.colormap
 import routes.enums as e
 import utils.misc
+import pint
+from plotting.utils import get_imperial_unit
 from data import open_dataset
 from data.observational import (
     Base,
@@ -212,6 +214,7 @@ def variables(
     """
 
     config = DatasetConfig(dataset)
+    ureg = pint.UnitRegistry()
 
     data = []
     with open_dataset(config) as ds:
@@ -225,11 +228,40 @@ def variables(
             if (vectors_only) and v.key not in config.vector_variables:
                 continue
 
+            # Define imperial_scale
+            unit = config.variable[v].unit
+            if unit == "Celsius":
+                unit = "°C"
+
+            imperial_unit = get_imperial_unit(unit)
+
+            if imperial_unit == unit:
+                imperial_scale = config.variable[v].scale
+            else:
+                imperial_scale = [
+                    round(
+                        float(
+                            ureg.Quantity(config.variable[v].scale[0], unit)
+                            .to(imperial_unit)
+                            .magnitude
+                        )
+                    ),
+                    round(
+                        float(
+                            ureg.Quantity(config.variable[v].scale[1], unit)
+                            .to(imperial_unit)
+                            .magnitude
+                        )
+                    ),
+                ]
+
             data.append(
                 {
                     "id": v.key,
                     "value": config.variable[v].name,
                     "scale": config.variable[v].scale,
+                    "imperial_scale": imperial_scale,
+                    "units": unit,
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
                     "vector_variable": v.key in config.vector_variables,
@@ -669,6 +701,66 @@ def colormaps_png():
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
+
+
+@router.get("/point_depth")
+def point_depth(
+    latitude: float = Query(
+        title="Latitude",
+        examples=[49.25],
+    ),
+    longitude: float = Query(
+        title="Longitude",
+        examples=[-127.45],
+    ),
+    zoom: int = Query(
+        title="Zoom",
+        examples=[4],
+    ),
+):
+    """
+    Returns the depth for a given point.
+    """
+
+    settings = get_settings()
+
+    if zoom > 8:
+        zoom = 8
+
+    with xr.open_dataset(settings.etopo_file % ("EPSG:3857", zoom)) as ds:
+        topo_ds = ds.sel(lat=latitude, lon=longitude, method="nearest")
+        depth = topo_ds["z"]
+
+        depth = -float(depth) if depth < 0 else 0.0
+
+    if np.isnan(depth) or np.abs(depth) > 11000:
+        return None
+
+    return depth
+
+
+@router.get("/dataset/{dataset}/{variable}/{time}/point_data")
+def point_data(
+    dataset: str = Path(title="The key of the dataset.", examples=["giops_day"]),
+    variable: str = Path(title="The variable key.", examples=["votemper"]),
+    time: int = Path(title="NetCDF timestamp", examples=[2422094400]),
+    depth: str = Query(title="Depth Index", examples=["0", "bottom"]),
+    latitude: float = Query(title="Latitude", examples=[49.25]),
+    longitude: float = Query(title="Longitude", examples=[-127.45]),
+):
+    """
+    Returns the data value for a dataset at a given point.
+    """
+
+    config = DatasetConfig(dataset)
+
+    with open_dataset(config, variable=variable, timestamp=time) as ds:
+        point_data = ds.get_point(latitude, longitude, depth, variable, time)
+
+    if np.isnan(point_data) or np.isnan(point_data.data) or not np.isfinite(point_data.data) or np.abs(point_data.data) > 10000:
+        return None
+
+    return round(float(point_data.data), 2)
 
 
 @router.get("/plot/{plot_type}")

@@ -232,9 +232,11 @@ class HovmollerPlotter(LinePlotter):
             if len(self.compare["variables"]) > 1:
                 vmin = 0
 
-            compare_data_categories = DatasetConfig(
-                self.compare["dataset"]
-            ).variable[self.compare["variables"][0]].data_categories
+            compare_data_categories = (
+                DatasetConfig(self.compare["dataset"])
+                .variable[self.compare["variables"][0]]
+                .data_categories
+            )
             self._hovmoller_plot(
                 gs,
                 [1, 1],
@@ -249,7 +251,9 @@ class HovmollerPlotter(LinePlotter):
                 self.compare["colormap"],
                 self.compare["variable_unit"],
                 self.compare["variable_name"]  # gettext(self.compare["variable_name"])
-                + get_depth_label(self.compare["depth_value"], self.compare["depth_unit"]),
+                + get_depth_label(
+                    self.compare["depth_value"], self.compare["depth_unit"]
+                ),
                 #  gettext(
                 #     get_depth_label(self.compare["depth_value"], self.compare["depth_unit"])
                 # ),

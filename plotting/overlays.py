@@ -47,8 +47,16 @@ def bathymetry(target_lat, target_lon, blur=None):
                 minlat = lat_index(np.amin(target_lat))
                 maxlat = lat_index(np.amax(target_lat))
 
+                if maxlat - minlat < 2:
+                   minlat = max(0, minlat - 1)
+                   maxlat = min(len(lat), maxlat + 2)
+
                 minlon = lon_index(target_lon.ravel()[lon_idx_min])
                 maxlon = lon_index(target_lon.ravel()[lon_idx_max])
+
+                if maxlon - minlon < 2:
+                   minlon = max(0, minlon - 1)
+                   maxlon = min(len(lon), maxlon + 2)
 
                 if minlon > maxlon:
                     in_lon = np.concatenate((lon[minlon:], lon[0:maxlon]))

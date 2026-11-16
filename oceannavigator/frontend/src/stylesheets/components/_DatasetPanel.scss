@@ -32,3 +32,42 @@ div.DatasetPanel-horizontal {
     transform: translateX(-25%);
   }
 }
+
+.axis-range-accordion {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  .accordion-item {
+    border: 0;
+    background: transparent;
+  }
+  .accordion-header {
+    margin: 0;
+  }
+  .accordion-button {
+    padding: 0.5rem 0;
+    font-size: small;
+    font-weight: bold;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;  
+    &:not(.collapsed) {
+      color: #000000;
+      background-color: transparent;
+      box-shadow: none;
+    } 
+    &:focus {
+      box-shadow: none;
+    }
+
+    &::after {
+      margin-left: auto;
+      margin-right: 0;
+    }         
+  }
+  .accordion-body {
+    padding: 0.25rem 0 0.5rem;
+  }
+}

@@ -68,6 +68,13 @@ const PointWindow = ({
       axisRange: dataset.hasOwnProperty("axisRange")
         ? dataset.axisRange
         : { [dataset.variable.id]: null },
+      unitSelection: dataset.hasOwnProperty("unitSelection")
+        ? dataset.unitSelection
+        : {
+            all: false,
+            depth: false,
+            [dataset.variable.id]: false,
+          },
     },
   );
   const [only2d, setOnly2d] = useState(false);
@@ -76,7 +83,7 @@ const PointWindow = ({
   const variables = useGetDatasetVariables(plotDataset);
   const observationVariables = useGetObservationVariablesStation(
     plotData.id,
-    plotData.observation && typeof plotData.id === "number",
+    selected == TabEnum.OBSERVATION && typeof plotData.id === "number",
   );
 
   useEffect(() => {
@@ -95,6 +102,45 @@ const PointWindow = ({
     }
     setOnly2d(dataset2D);
   }, [plotDataset]);
+
+  useEffect(() => {
+    // Reset dataset when tab is changed
+    setPlotDataset((prev) => ({
+      ...prev,
+      unitSelection: {
+        all: false,
+        depth: false,
+        [dataset.variable.id]: false,
+      },
+      axisRange: Object.fromEntries(
+        Object.keys(dataset.variable).map((key) => [key, null])
+      ),
+    }));
+    if (selected === TabEnum.CTD) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [
+          variables.data.find((v) => /temp/i.test(v.value)),
+          variables.data.find((v) => /salinity/i.test(v.value)),
+        ],
+      }));
+    } else if (selected === TabEnum.SOUND) {
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [variables.data.find((v) => /speed/i.test(v.value))],
+      }));
+    } else {
+      let nextVariable = variables.data.find((v) => /temp/i.test(v.value));
+      if (!nextVariable) {
+        nextVariable = variables.data[0];
+      }
+
+      setPlotDataset((prev) => ({
+        ...prev,
+        variable: [nextVariable],
+      }));
+    }
+  }, [selected]);
 
   const handleDatasetUpdate = (key, value) => {
     setPlotDataset((prev) => ({ ...prev, ...value }));
@@ -151,7 +197,17 @@ const PointWindow = ({
     TabEnum.MOORING,
   ].includes(selected);
   const multipleVariables = selected === TabEnum.PROFILE;
-  const showAxisRange = [TabEnum.PROFILE, TabEnum.MOORING].includes(selected);
+  const showAxisRange = [
+    TabEnum.PROFILE,
+    TabEnum.CTD,
+    TabEnum.SOUND,
+    TabEnum.MOORING,
+  ].includes(selected);
+  const showUnitSelector =
+    selected !== TabEnum.OBSERVATION && selected !== TabEnum.SOUND;
+  const showDepthRange =
+    [TabEnum.PROFILE, TabEnum.CTD, TabEnum.SOUND].includes(selected) ||
+    (plotDataset.depth === "all" && selected === TabEnum.MOORING);
 
   const plotOptions = (
     <>
@@ -205,7 +261,9 @@ const PointWindow = ({
         onUpdate={handleDatasetUpdate}
         showQuiverSelector={false}
         showVariableRange={false}
+        showUnitSelector={showUnitSelector}
         showAxisRange={showAxisRange}
+        showDepthRange={showDepthRange}
         showTimeRange={showTimeRange}
         disableTimeSelector={selected === TabEnum.OBSERVATION}
         showDepthSelector={showDepthSelector}
@@ -269,9 +327,12 @@ const PointWindow = ({
     dataset: plotDataset.id,
     names: names,
   };
-  let axisRange = Array.isArray(plotDataset.variable)
-    ? plotDataset.variable.map((v) => plotDataset.axisRange[v.id])
-    : plotDataset.axisRange[plotDataset.variable.id];
+
+  let axisRange = Object.fromEntries(
+    Object.entries(plotDataset.axisRange).filter(
+      ([key, value]) => value != null,
+    ),
+  );
 
   switch (selected) {
     case TabEnum.PROFILE:
@@ -279,6 +340,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: Array.isArray(plotDataset.variable)
           ? plotDataset.variable.map((v) => v.id)
@@ -294,8 +356,10 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
         variable: `${hasTemp ? `${tempId},` : ""}${hasSal ? `${salId}` : ""}`,
+        variable_range: axisRange,
       };
       plotType = "profile";
       break;
@@ -304,6 +368,7 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
       };
       plotType = "ts";
@@ -313,7 +378,9 @@ const PointWindow = ({
         ...plotQuery,
         station: plotData.coordinates,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         time: plotDataset.time.id,
+        variable_range: axisRange,
       };
       plotType = "sound";
       break;
@@ -336,6 +403,7 @@ const PointWindow = ({
           : plotDataset.variable.id,
         variable_range: axisRange,
         showmap: showMap,
+        unitSelection: plotDataset.unitSelection,
         station: plotData.coordinates,
         depth: plotDataset.depth,
         starttime: plotDataset.starttime.id,

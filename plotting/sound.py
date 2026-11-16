@@ -50,6 +50,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         # Scale TS Diagram to be double the size of location map
         width_ratios = [1, 3] if self.showmap else None
 
+        if self.unit_selection:
+            self.variable_units = ["ft/s"]
+        else:
+            self.variable_units = ["m/s"]
+
         # Create layout helper
         gs = gridspec.GridSpec(1, width, width_ratios=width_ratios)
 
@@ -80,8 +85,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
             ]
         )
+        if "depth_range" in self.axis_range:
+            min_depth, max_depth = self.axis_range["depth_range"]
+            ax.set_ylim([float(min_depth), float(max_depth)])
         ax.set_xlabel(
-            "Sound Speed (m/s)", fontsize=14
+            f"Sound Speed {self.variable_units[0]}", fontsize=14
         )  # ax.set_xlabel(gettext("Sound Speed (m/s)"), fontsize=14)
         ax.set_ylabel(
             "Depth (m)", fontsize=14
@@ -108,13 +116,16 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         self.plot_legend(fig, self.names)
 
         ylim = ax.get_ylim()
-        ax.set_xlim([1410, 1560])
+        if "sspeed" in self.axis_range:
+            ax.set_xlim(self.axis_range["sspeed"])
+        else:
+            ax.set_xlim([1410, 1560])
         ax2 = ax.twinx()
         ureg = pint.UnitRegistry()
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
         ax2.set_ylabel(
             "Depth (ft)", fontsize=14
-        )  # ax2.set_ylabel(gettext("Depth (ft)"), fontsize=14)
+        )
 
         ax.text(
             0,
