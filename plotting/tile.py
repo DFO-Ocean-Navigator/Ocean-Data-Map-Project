@@ -11,11 +11,9 @@ import xarray as xr
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.patches import Patch
 from matplotlib.ticker import ScalarFormatter
-from netCDF4 import Dataset
 from PIL import Image
 from pyproj import Proj
 from pyproj.transformer import Transformer
-from skimage import measure
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -380,108 +378,3 @@ async def quiver(
 
             return d
     return {"type": "FeatureCollection", "features": []}
-
-
-def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
-    settings = get_settings()
-
-    lat, lon = get_latlon_coords(projection, x, y, z)
-    if len(lat.shape) == 1:
-        lat, lon = np.meshgrid(lat, lon)
-
-    xpx = x * 256
-    ypx = y * 256
-
-    scale = [-4000, 1000]
-    cmap = "BrBG_r"
-
-    land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
-    colors = np.vstack((water_colors, land_colors))
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
-
-    data = None
-    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
-
-    shade = 0
-    if shaded_relief:
-        x, y = np.gradient(data)
-        slope = np.pi / 2.0 - np.arctan(np.sqrt(x * x + y * y))
-        aspect = np.arctan2(-x, y)
-        altitude = np.pi / 4.0
-        azimuth = np.pi / 2.0
-
-        shaded = np.sin(altitude) * np.sin(slope) + np.cos(altitude) * np.cos(
-            slope
-        ) * np.cos((azimuth - np.pi / 2.0) - aspect)
-        shade = (shaded + 1) / 8
-        shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
-        shade[:, :, 3] = 0
-
-    sm = matplotlib.cm.ScalarMappable(
-        matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
-        cmap=cmap,
-    )
-    img = sm.to_rgba(np.squeeze(data))
-
-    img += shade
-    img = np.clip(img, 0, 1)
-
-    im = Image.fromarray((img * 255.0).astype(np.uint8))
-
-    buf = BytesIO()
-    im.save(buf, format="PNG", optimize=True)
-    buf.seek(0)
-
-    return buf
-
-
-async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
-    settings = get_settings()
-
-    lat, lon = get_latlon_coords(projection, x, y, z)
-    if len(lat.shape) == 1:
-        lat, lon = np.meshgrid(lat, lon)
-
-    xpx = x * 256
-    ypx = y * 256
-
-    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
-        data = data[::-1, :]
-
-    LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
-
-    normalized = matplotlib.colors.LogNorm(vmin=1, vmax=6000)(LEVELS)
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
-        "transparent_gray", [(0, 0, 0, 1), (0, 0, 0, 0.5)]
-    )
-    colors = cmap(normalized)
-
-    fig = plt.figure()
-    fig.set_size_inches(4, 4)
-    ax = plt.Axes(fig, [0, 0, 1, 1])
-    ax.set_axis_off()
-    fig.add_axes(ax)
-
-    for i, l in enumerate(LEVELS):
-        contours = measure.find_contours(data, l)
-
-        for _, contour in enumerate(contours):
-            ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
-
-    plt.xlim([0, 255])
-    plt.ylim([0, 255])
-
-    buf = BytesIO()
-    plt.savefig(
-        buf,
-        format="png",
-        dpi=64,
-        transparent=True,
-    )
-    plt.close(fig)
-    buf.seek(0)
-
-    return buf

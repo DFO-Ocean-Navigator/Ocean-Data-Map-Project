@@ -54,9 +54,7 @@ from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.sound import SoundSpeedPlotter
 from plotting.stick import StickPlotter
-from plotting.tile import bathymetry as plot_bathymetry
 from plotting.tile import scale as plot_scale
-from plotting.tile import topo as plot_topography
 from plotting.timeseries import TimeseriesPlotter
 from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
@@ -1028,12 +1026,12 @@ async def data_tile(
         str(x),
         f"{y}.png",
     )
-    # if os.path.isfile(f):
-    #     return FileResponse(
-    #         f,
-    #         media_type="image/png",
-    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    #     )
+    if os.path.isfile(f):
+        return FileResponse(
+            f,
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
 
     if depth != "bottom" and depth != "all":
         depth = int(depth)
