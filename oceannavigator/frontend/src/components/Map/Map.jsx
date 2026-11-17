@@ -9,7 +9,6 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
-import TileGrid from "ol/tilegrid/TileGrid.js";
 import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
@@ -75,6 +74,18 @@ const MAX_ZOOM = {
   "EPSG:3031": 8,
 };
 
+const MAP_EXTENT = {
+  "EPSG:3857": [-40075016.68, -20048966.1, 40075016.68, 20048966.1],
+  "EPSG:32661": [
+    -10637318.498257402, -10637318.498257402, 14637318.498257402,
+    14637318.498257402,
+  ],
+  "EPSG:3031": [
+    -12367396.21845986, -12367396.21845986, 12367396.21845986,
+    12367396.21845986,
+  ],
+};
+
 proj4.defs(
   "EPSG:32661",
   "+proj=stere +lat_0=90 +lat_ts=90 +lon_0=0 +k=0.994 +x_0=2000000 +y_0=2000000 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
@@ -87,16 +98,11 @@ olProj4.register(proj4);
 
 var proj32661 = olProj.get("EPSG:32661");
 proj32661.setWorldExtent([-180.0, 0.0, 180.0, 90.0]);
-proj32661.setExtent([
-  -10637318.498257402, -10637318.498257402, 14637318.498257402,
-  14637318.498257402,
-]);
+proj32661.setExtent(MAP_EXTENT["EPSG:32661"]);
 
 var proj3031 = olProj.get("EPSG:3031");
 proj3031.setWorldExtent([-180.0, -90.0, 180.0, 0.0]);
-proj3031.setExtent([
-  -12367396.21845986, -12367396.21845986, 12367396.21845986, 12367396.21845986,
-]);
+proj3031.setExtent(MAP_EXTENT["EPSG:3031"]);
 
 /*******************
 Map layers:
@@ -171,6 +177,7 @@ const Map = forwardRef((props, ref) => {
       DEF_ZOOM[projection],
       MIN_ZOOM[projection],
       MAX_ZOOM[projection],
+      MAP_EXTENT[props.mapSettings.projection]
     );
 
     let newFeatureVectorSource = new VectorSource({
@@ -304,6 +311,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection]
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -326,6 +334,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection]
       );
       map0.setView(newMapView);
       map1.setView(newMapView);
@@ -470,6 +479,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection]
       );
       map0.setView(newMapView);
       map1 && map1.setView(newMapView);
@@ -1148,6 +1158,7 @@ const Map = forwardRef((props, ref) => {
       DEF_ZOOM[props.mapSettings.projection],
       MIN_ZOOM[props.mapSettings.projection],
       MAX_ZOOM[props.mapSettings.projection],
+      MAP_EXTENT[props.mapSettings.projection]
     );
 
     map.setView(newMapView);

@@ -67,13 +67,14 @@ const COLORS = [
 
 var drifter_color = {};
 
-export const createMapView = (center, projection, zoom, minZoom, maxZoom) => {
+export const createMapView = (center, projection, zoom, minZoom, maxZoom, extent) => {
   const newMapView = new View({
     center: olProj.transform(center, "EPSG:4326", projection),
     projection: projection,
     zoom: zoom,
     maxZoom: maxZoom,
     minZoom: minZoom,
+    extent: extent
   });
 
   return newMapView;
