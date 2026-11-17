@@ -177,7 +177,7 @@ const Map = forwardRef((props, ref) => {
       DEF_ZOOM[projection],
       MIN_ZOOM[projection],
       MAX_ZOOM[projection],
-      MAP_EXTENT[props.mapSettings.projection]
+      MAP_EXTENT[props.mapSettings.projection],
     );
 
     let newFeatureVectorSource = new VectorSource({
@@ -311,7 +311,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
-        MAP_EXTENT[props.mapSettings.projection]
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -334,7 +334,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
-        MAP_EXTENT[props.mapSettings.projection]
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       map1.setView(newMapView);
@@ -479,7 +479,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
-        MAP_EXTENT[props.mapSettings.projection]
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       map1 && map1.setView(newMapView);
@@ -1158,7 +1158,7 @@ const Map = forwardRef((props, ref) => {
       DEF_ZOOM[props.mapSettings.projection],
       MIN_ZOOM[props.mapSettings.projection],
       MAX_ZOOM[props.mapSettings.projection],
-      MAP_EXTENT[props.mapSettings.projection]
+      MAP_EXTENT[props.mapSettings.projection],
     );
 
     map.setView(newMapView);
@@ -1171,19 +1171,9 @@ const Map = forwardRef((props, ref) => {
       minZoom: MIN_ZOOM[props.mapSettings.projection],
       maxZoom: MAX_ZOOM[props.mapSettings.projection],
     };
-    switch (props.mapSettings.projection) {
-      case "EPSG:32661":
-        tileGridOptions["extent"] = [
-          -10637318.498257402, -10637318.498257402, 14637318.498257402,
-          14637318.498257402,
-        ];
-        break;
-      case "EPSG:3031":
-        tileGridOptions["extent"] = [
-          -12367396.21845986, -12367396.21845986, 12367396.21845986,
-          12367396.21845986,
-        ];
-        break;
+
+    if (props.mapSettings.projection !== "EPSG:3857") {
+      tileGridOptions["extent"] = MAP_EXTENT[props.mapSettings.projection];
     }
 
     const tileGrid = createXYZ(tileGridOptions);
