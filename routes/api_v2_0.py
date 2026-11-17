@@ -757,7 +757,12 @@ def point_data(
     with open_dataset(config, variable=variable, timestamp=time) as ds:
         point_data = ds.get_point(latitude, longitude, depth, variable, time)
 
-    if np.isnan(point_data) or np.isnan(point_data.data) or not np.isfinite(point_data.data) or np.abs(point_data.data) > 10000:
+    if (
+        np.isnan(point_data)
+        or np.isnan(point_data.data)
+        or not np.isfinite(point_data.data)
+        or np.abs(point_data.data) > 10000
+    ):
         return None
 
     return round(float(point_data.data), 2)
@@ -1120,99 +1125,8 @@ async def quiver_tile(
     return data
 
 
-@router.get("/tiles/topo/{zoom}/{x}/{y}")
-def topography_tiles(
-    zoom: int = Path(examples=[4]),
-    x: int = Path(examples=[0]),
-    y: int = Path(examples=[1]),
-    shaded_relief: bool = Query(default=False),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
-):
-    """
-    Generates topographical tiles
-    """
-
-    settings = get_settings()
-
-    if zoom > 8:
-        return FileResponse(
-            os.path.join(settings.shape_file_dir, "blank.png"),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    f = os.path.join(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "topo",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
-
-    # if os.path.isfile(f):
-    #     return FileResponse(
-    #         f,
-    #         media_type="image/png",
-    #         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    #     )
-
-    img = plot_topography(projection, x, y, zoom, shaded_relief)
-    return _cache_and_send_img(img, f)
-
-
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_tiles(
-    zoom: int = Path(examples=[4]),
-    x: int = Path(examples=[0]),
-    y: int = Path(examples=[1]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
-):
-    """
-    Generates bathymetry tiles
-    """
-
-    settings = get_settings()
-
-    if zoom > 7:
-        return FileResponse(
-            os.path.join(settings.shape_file_dir, "blank.png"),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    f = os.path.join(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "bath",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
-
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    img = await plot_bathymetry(projection, x, y, zoom)
-    return _cache_and_send_img(img, f)
-
-
-@router.get("/mbt/bath/{zoom}/{x}/{y}")
-def bathy_mbt(
     zoom: int = Path(examples=[8]),
     x: int = Path(examples=[88]),
     y: int = Path(examples=[85]),
@@ -1269,8 +1183,8 @@ def bathy_mbt(
     )
 
 
-@router.get("/mbt/lands/{zoom}/{x}/{y}")
-def land_mbt(
+@router.get("/tiles/topo/{zoom}/{x}/{y}")
+def topography_tiles(
     zoom: int = Path(examples=[8]),
     x: int = Path(examples=[88]),
     y: int = Path(examples=[85]),

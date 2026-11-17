@@ -365,7 +365,7 @@ class TestAPIv2:
 
     @unittest.skip("Dependent on local resources - fails in GitHub actions.")
     def test_mbt_endpoint(self):
-        response = self.client.get("/api/v2.0/mbt/lands/7/105/77?projection=EPSG:3857")
+        response = self.client.get("/api/v2.0/tiles/topo/7/105/77?projection=EPSG:3857")
 
         assert response.status_code == 200
 

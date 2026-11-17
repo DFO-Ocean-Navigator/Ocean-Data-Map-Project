@@ -1179,13 +1179,13 @@ const Map = forwardRef((props, ref) => {
 
     let bathySource = null;
     switch (props.mapSettings.bathyContour) {
-      case "etopo1":
+      case "etopo":
       default:
         bathySource = new VectorTile({
           format: new MVT(),
           tileGrid: tileGrid,
           tileSize: 256,
-          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
+          url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
           projection: props.mapSettings.projection,
         });
         break;
@@ -1236,25 +1236,6 @@ const Map = forwardRef((props, ref) => {
         tileSize: 256,
         maxZoom: MAX_ZOOM[props.mapSettings.projection],
       });
-
-      // mapLayers[1].setSource(
-      //   new VectorTile({
-      //     format: new MVT(),
-      //     tileGrid: vectorTileGrid,
-      //     tilePixelRatio: 8,
-      //     url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-      //     projection: props.mapSettings.projection,
-      //   }),
-      // );
-
-      // mapLayers[2].setSource(
-      //   new VectorTile({
-      //     format: new MVT(),
-      //     tileGrid: vectorTileGrid,
-      //     url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-      //     projection: props.mapSettings.projection,
-      //   }),
-      // );
     }
   };
 

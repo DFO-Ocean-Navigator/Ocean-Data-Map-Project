@@ -88,7 +88,7 @@ export const getBasemap = (
     case "topo":
       return new TileLayer({
         source: new XYZ({
-          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${projection}`,
+          url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?projection=${projection}`,
           projection: projection,
         }),
       });
@@ -148,7 +148,7 @@ export const createMap = (
       format: new MVT(),
       tileGrid: createXYZ({ tileSize: 256, maxZoom: maxZoom }),
       tileSize: 256,
-      url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
+      url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
       projection: mapSettings.projection,
     }),
   });
