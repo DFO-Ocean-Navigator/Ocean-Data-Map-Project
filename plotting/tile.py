@@ -224,6 +224,7 @@ def scale(args):
 
 async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     settings = get_settings()
+    shape_file_dir = settings.shape_file_dir
 
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
@@ -278,7 +279,7 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
         data = np.fliplr(data)
 
     connection = sqlite3.connect(
-        f"/data/misc/shapes/onav_land_mask_{projection}.mbtiles"
+        f"{shape_file_dir}/onav_land_mask_{projection}.mbtiles"
     )
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {z} AND tile_column = {x} AND tile_row = {y}"

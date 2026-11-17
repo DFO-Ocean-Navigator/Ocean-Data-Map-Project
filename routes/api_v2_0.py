@@ -1161,7 +1161,14 @@ async def bathymetry_tiles(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    connection = sqlite3.connect(f"/data/misc/shapes/onav_bathy_{projection}.mbtiles")
+    if requestf.is_file():
+        return FileResponse(
+            requestf.as_posix(),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
+
+    connection = sqlite3.connect(f"{shape_file_dir}/onav_bathy_{projection}.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
     selector.execute(sqlite)
@@ -1219,7 +1226,14 @@ def topography_tiles(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    connection = sqlite3.connect(f"/data/misc/shapes/onav_basemap_{projection}.mbtiles")
+    if requestf.is_file():
+        return FileResponse(
+            requestf.as_posix(),
+            media_type="image/png",
+            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        )
+
+    connection = sqlite3.connect(f"{shape_file_dir}/onav_basemap_{projection}.mbtiles")
     selector = connection.cursor()
     sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
     selector.execute(sqlite)
