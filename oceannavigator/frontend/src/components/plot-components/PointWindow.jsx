@@ -113,7 +113,7 @@ const PointWindow = ({
         [dataset.variable.id]: false,
       },
       axisRange: Object.fromEntries(
-        Object.keys(dataset.variable).map((key) => [key, null])
+        Object.keys(dataset.variable).map((key) => [key, null]),
       ),
     }));
     if (selected === TabEnum.CTD) {
@@ -326,6 +326,7 @@ const PointWindow = ({
   let plotQuery = {
     dataset: plotDataset.id,
     names: names,
+    plotTitle: plotTitles[selected - 1],
   };
 
   let axisRange = Object.fromEntries(
