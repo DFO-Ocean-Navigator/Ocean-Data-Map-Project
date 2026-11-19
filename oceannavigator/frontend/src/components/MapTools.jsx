@@ -15,7 +15,7 @@ import {
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-import Collapse from "react-bootstrap/Collapse";
+import Fade from "react-bootstrap/Fade";
 
 import { withTranslation } from "react-i18next";
 
@@ -61,7 +61,7 @@ function MapTools(props) {
   };
 
   return (
-    <Collapse in={props.show} dimension="width">
+    <Fade in={props.show}>
       <div className="MapTools">
         <OverlayTrigger
           key="draw-overlay"
@@ -181,7 +181,7 @@ function MapTools(props) {
           </Button>
         </OverlayTrigger>
       </div>
-    </Collapse>
+    </Fade>
   );
 }
 

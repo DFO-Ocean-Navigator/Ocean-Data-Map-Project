@@ -4,7 +4,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import ReactGA from "react-ga";
 import { isMobile } from "react-device-detect";
-import Collapse from "react-bootstrap/Collapse";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
 import Map from "./Map/Map.jsx";
@@ -399,25 +398,25 @@ function OceanNavigator(props) {
   return (
     <div className="OceanNavigator">
       <div className="top-panel-components">
-        <Collapse in={showOverlays} dimension="width">
-          <div className="scale-viewer-container">
+        <div className="scale-viewer-container">
+          <ScaleViewer
+            dataset={dataset0}
+            mapSettings={mapSettings}
+            onUpdate={updateDataset0}
+            mapRef={mapRef}
+            show={showOverlays}
+          />
+          {compareDatasets && (
             <ScaleViewer
-              dataset={dataset0}
+              dataset={dataset1}
               mapSettings={mapSettings}
-              onUpdate={updateDataset0}
+              onUpdate={updateDataset1}
               mapRef={mapRef}
+              show={showOverlays}
+              className="right"
             />
-            {compareDatasets && (
-              <ScaleViewer
-                dataset={dataset1}
-                mapSettings={mapSettings}
-                onUpdate={updateDataset1}
-                mapRef={mapRef}
-                className="right"
-              />
-            )}
-          </div>
-        </Collapse>
+          )}
+        </div>
 
         <MinimizedPlotBar plotData={plotData} action={action} />
         <AnnotationButton

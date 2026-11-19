@@ -2,7 +2,7 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-import Collapse from "react-bootstrap/Collapse";
+import Fade from "react-bootstrap/Fade";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
@@ -50,9 +50,8 @@ function MapInputs(props) {
   ) : null;
 
   return (
-    <Collapse in={props.show} dimension="height">
+    <Fade in={props.show}>
         <div className="map-inputs-container">
-          <div className="map-inputs-container">
           {drawingTools}
           {observationTools}
           <div className="dataset-selector-container">
@@ -89,8 +88,7 @@ function MapInputs(props) {
             ) : null}
           </div>
         </div>
-        </div>
-     </Collapse>
+     </Fade>
   );
 }
 
