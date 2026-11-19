@@ -11,6 +11,15 @@ Div.MapTools {
   justify-content: space-between;
 }
 
+.MapTools.fade {
+  transition: opacity 0.6s;
+}
+
+.MapTools.fade:not(.show) {
+  opacity: 0;
+  pointer-events: none;
+}
+
 Div.MapTools:hover {
   opacity: 1;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
-
+import Fade from "react-bootstrap/Fade";
 import ColormapRange from "./ColormapRange.jsx";
 
 function ScaleViewer(props) {
@@ -59,11 +59,13 @@ function ScaleViewer(props) {
   );
 
   return (
-    <div className={`ScaleViewer ${props.right ? "right" : ""}`}>
-      {scaleImage}
-      {rangeControl}
-      {expandIcon}
-    </div>
+    <Fade in={props.show}>
+      <div className={`ScaleViewer ${props.right ? "right" : ""}`}>
+        {scaleImage}
+        {rangeControl}
+        {expandIcon}
+      </div>
+    </Fade>
   );
 }
 
