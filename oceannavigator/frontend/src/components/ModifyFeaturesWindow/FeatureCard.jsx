@@ -90,7 +90,7 @@ export default function FeatureCard(props) {
         (coord[1].length === 0)
       ) {
         newCoordAlerts.push(
-          <Alert variant="warning" key="invCoordAlert">
+          <Alert variant="warning" key={`invCoordAlert${newCoordAlerts.length}`}>
             Invalid coordinate(s).
           </Alert>,
         );

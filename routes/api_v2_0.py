@@ -537,13 +537,28 @@ def filter_datasets_by_date(
 
     for dataset_id in dataset_id_list:
         config = DatasetConfig(dataset_id)
+        url = config.url if not isinstance(config.url, list) else config.url[0]
         try:
-            with open_dataset(config) as ds:
-                vals = ds.nc_data.time_variable.values
-                time_range = time_index_to_datetime(
-                    [vals.min(), vals.max()], config.time_dim_units
-                )
-                if time_range[0] <= parsed_date and time_range[1] >= parsed_date:
+            if url.endswith(".sqlite3"):
+                with SQLiteDatabase(url) as db:
+                    vals = np.array(db.get_all_timestamps())
+                    time_dim_units = config.time_dim_units
+                    converted_times = time_index_to_datetime(
+                        [np.min(vals), np.max(vals)], time_dim_units
+                    )
+                if (
+                    converted_times[0] <= parsed_date
+                    and converted_times[1] >= parsed_date
+                ):
+                    matching_dataset_ids.append(dataset_id)
+            else:
+                parsed_date = np.datetime64(parsed_date)
+                if not isinstance(config.url, list):
+                    data = xr.open_mfdataset([config.url])
+                else:
+                    data = xr.open_mfdataset(config.url)
+                time_vals = data.time.values
+                if time_vals.min() <= parsed_date and time_vals.max() >= parsed_date:
                     matching_dataset_ids.append(dataset_id)
         except Exception:
             continue
@@ -731,7 +746,10 @@ def point_depth(
         topo_ds = ds.sel(lat=latitude, lon=longitude, method="nearest")
         depth = topo_ds["z"]
 
-        depth = -float(depth) if depth < 0 else 0
+        depth = -float(depth) if depth < 0 else 0.0
+
+    if np.isnan(depth) or np.abs(depth) > 11000:
+        return None
 
     return depth
 
@@ -754,7 +772,12 @@ def point_data(
     with open_dataset(config, variable=variable, timestamp=time) as ds:
         point_data = ds.get_point(latitude, longitude, depth, variable, time)
 
-    if np.isnan(point_data) or np.isnan(point_data.data):
+    if (
+        np.isnan(point_data)
+        or np.isnan(point_data.data)
+        or not np.isfinite(point_data.data)
+        or np.abs(point_data.data) > 10000
+    ):
         return None
 
     return round(float(point_data.data), 2)

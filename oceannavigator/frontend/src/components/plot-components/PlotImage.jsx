@@ -120,6 +120,7 @@ export default function PlotImage({
               key={fmt}
               eventKey={fmt}
               disabled={
+                (fmt === "stats" && plotType === "hovmoller") ||
                 (fmt === "csv" && plotType === "hovmoller") ||
                 (fmt === "odv" &&
                   !["profile", "observation", "transect", "map"].includes(

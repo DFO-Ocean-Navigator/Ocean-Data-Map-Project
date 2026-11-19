@@ -336,6 +336,7 @@ export default function LineWindow(props) {
     path: props.plotData.coordinates,
     colormap: mainColormap.toString(),
     showmap: showMap,
+    plotTitle: plotTitles[selected - 1],
   };
 
   if (selected === 1) {

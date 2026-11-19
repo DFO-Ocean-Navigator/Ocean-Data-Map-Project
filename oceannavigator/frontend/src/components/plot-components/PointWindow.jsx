@@ -84,7 +84,7 @@ export default function PointWindow({
   const variables = useGetDatasetVariables(plotDataset);
   const observationVariables = useGetObservationVariablesStation(
     plotData.id,
-    plotData.observation && typeof plotData.id === "number",
+    selected == TabEnum.OBSERVATION && typeof plotData.id === "number",
   );
 
   useEffect(() => {
@@ -105,6 +105,7 @@ export default function PointWindow({
   }, [plotDataset]);
 
   useEffect(() => {
+    // Reset dataset when tab is changed
     setPlotDataset((prev) => ({
       ...prev,
       unitSelection: {
@@ -112,6 +113,9 @@ export default function PointWindow({
         depth: false,
         [dataset.variable.id]: false,
       },
+      axisRange: Object.fromEntries(
+        Object.keys(dataset.variable).map((key) => [key, null]),
+      ),
     }));
     if (selected === TabEnum.CTD) {
       setPlotDataset((prev) => ({
@@ -127,9 +131,14 @@ export default function PointWindow({
         variable: [variables.data.find((v) => /speed/i.test(v.value))],
       }));
     } else {
+      let nextVariable = variables.data.find((v) => /temp/i.test(v.value));
+      if (!nextVariable) {
+        nextVariable = variables.data[0];
+      }
+
       setPlotDataset((prev) => ({
         ...prev,
-        variable: [variables.data.find((v) => /temp/i.test(v.value))],
+        variable: [nextVariable],
       }));
     }
   }, [selected]);
@@ -318,6 +327,7 @@ export default function PointWindow({
   let plotQuery = {
     dataset: plotDataset.id,
     names: names,
+    plotTitle: plotTitles[selected - 1],
   };
 
   let axisRange = Object.fromEntries(

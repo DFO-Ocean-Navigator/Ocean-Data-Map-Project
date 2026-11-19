@@ -197,7 +197,7 @@ export default function DatasetPanel({
         id={"depth_axis_range"}
         title={depth_variable.value + " Range"}
         variable={depth_variable}
-        is_imperial={dataset.unitSelection["depth"]}
+        isImperial={dataset.unitSelection["depth"]}
         range={dataset.axisRange[depth_variable.id]}
         onUpdate={updateDataset}
       />
@@ -215,7 +215,7 @@ export default function DatasetPanel({
           id={variable.id + "_axis_range"}
           title={variable.value + " Range"}
           variable={variable}
-          is_imperial={dataset.unitSelection[variable.id]}
+          isImperial={dataset.unitSelection[variable.id]}
           range={dataset.axisRange[variable.id]}
           onUpdate={updateDataset}
         />

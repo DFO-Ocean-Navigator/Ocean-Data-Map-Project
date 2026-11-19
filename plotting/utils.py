@@ -246,8 +246,7 @@ def convert_to_imperial(use_imperial_units, depths, data, variables, variable_un
     """
 
     if "depth" in use_imperial_units:
-        for depth in depths:
-            depth = convert_units(depth, "meter", "foot")
+        depths = convert_units(depths, "m", "ft")
 
     for idx, var in enumerate(variables):
         if var in use_imperial_units and var == "votemper":
