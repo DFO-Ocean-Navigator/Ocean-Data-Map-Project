@@ -91,5 +91,5 @@ ENV/
 data/calculated_parser/parsetab.py
 
 node_modules/
-oceannavigator/frontend/dist/assets/
+oceannavigator/frontend/dist/
 
