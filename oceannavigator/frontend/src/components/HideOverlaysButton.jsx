@@ -1,24 +1,23 @@
-import ToggleButton from "react-bootstrap/ToggleButton";
-import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
+import { useTranslation } from "react-i18next";
 
 function HideOverlaysToggle({ showOverlays, onChange }) {
+  const { t, _ } = useTranslation();
+
   return (
-    <ToggleButtonGroup
-      type="checkbox"
-      value={showOverlays ? "overlays" : null}
-      onChange={(values) => onChange(values.includes("overlays"))}
-      className="toggle-group"
+    <OverlayTrigger
+      placement="bottom"
+      overlay={<Tooltip id="overlays-tooltip">{t("Display Overlays")}</Tooltip>}
     >
-      <ToggleButton
+      <Button
         id="overlays-toggle"
-        value="overlays"
-        title={showOverlays ? "Hide overlays" : "Show overlays"}
-        className="toggle-btn"
+        className="hide-overlays-button"
+        onClick={() => onChange(!showOverlays)}
       >
-        {showOverlays ? <EyeSlash /> : <Eye />}
-      </ToggleButton>
-    </ToggleButtonGroup>
+        {showOverlays ? <Eye /> : <EyeSlash />}
+      </Button>
+    </OverlayTrigger>
   );
 }
 

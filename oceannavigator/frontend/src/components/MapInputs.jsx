@@ -33,7 +33,7 @@ function MapInputs(props) {
   const hideDataSwitch = props.showCompare ? (
     <OverlayTrigger
       placement="top"
-      overlay={<Tooltip id="tooltip">{"Hide Data Layer"}</Tooltip>}
+      overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
     >
       <Button
         className="hide-data-button"
