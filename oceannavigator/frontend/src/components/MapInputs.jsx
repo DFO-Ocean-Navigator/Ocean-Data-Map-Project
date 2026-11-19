@@ -2,6 +2,7 @@ import React from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import Fade from "react-bootstrap/Fade";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
@@ -39,7 +40,7 @@ function MapInputs(props) {
         onClick={() => {
           props.updateMapSettings(
             "hideDataLayer",
-            !props.mapSettings.hideDataLayer
+            !props.mapSettings.hideDataLayer,
           );
         }}
       >
@@ -49,43 +50,45 @@ function MapInputs(props) {
   ) : null;
 
   return (
-    <div className="map-inputs-container">
-      {drawingTools}
-      {observationTools}
-      <div className="dataset-selector-container">
-        <div className={"map-inputs"}>
-          <DatasetPanel
-            key="map-inputs-dataset0-panel"
-            id="map-inputs-dataset0-panel"
-            mountedDataset={props.dataset0}
-            onUpdate={props.updateDataset0}
-            mapSettings={props.mapSettings}
-            action={props.action}
-            horizontalLayout={true}
-            showTimeSlider={!props.compareDatasets}
-            showCompare={props.showCompare}
-            compareDatasets={props.compareDatasets}
-            datasetSearch={true}
-          />
-          {props.showCompare ? hideDataSwitch : null}
-        </div>
-        {props.compareDatasets ? (
-          <div className={"map-inputs"}>
-            <DatasetPanel
-              key="map-inputs-dataset1-panel"
-              id="map-inputs-dataset1-panel"
-              mountedDataset={props.dataset1}
-              onUpdate={props.updateDataset1}
-              mapSettings={props.mapSettings}
-              action={props.action}
-              horizontalLayout={true}
-              showTimeSlider={!props.compareDatasets}
-              showSearchBtn={true}
-            />
+    <Fade in={props.show}>
+        <div className="map-inputs-container">
+          {drawingTools}
+          {observationTools}
+          <div className="dataset-selector-container">
+            <div className={"map-inputs"}>
+              <DatasetPanel
+                key="map-inputs-dataset0-panel"
+                id="map-inputs-dataset0-panel"
+                mountedDataset={props.dataset0}
+                onUpdate={props.updateDataset0}
+                mapSettings={props.mapSettings}
+                action={props.action}
+                horizontalLayout={true}
+                showTimeSlider={!props.compareDatasets}
+                showCompare={props.showCompare}
+                compareDatasets={props.compareDatasets}
+                datasetSearch={true}
+              />
+              {props.showCompare ? hideDataSwitch : null}
+            </div>
+            {props.compareDatasets ? (
+              <div className={"map-inputs"}>
+                <DatasetPanel
+                  key="map-inputs-dataset1-panel"
+                  id="map-inputs-dataset1-panel"
+                  mountedDataset={props.dataset1}
+                  onUpdate={props.updateDataset1}
+                  mapSettings={props.mapSettings}
+                  action={props.action}
+                  horizontalLayout={true}
+                  showTimeSlider={!props.compareDatasets}
+                  showSearchBtn={true}
+                />
+              </div>
+            ) : null}
           </div>
-        ) : null}
-      </div>
-    </div>
+        </div>
+     </Fade>
   );
 }
 

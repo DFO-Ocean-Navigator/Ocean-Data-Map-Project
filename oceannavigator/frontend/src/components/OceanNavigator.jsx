@@ -25,6 +25,7 @@ import ToggleLanguage from "./ToggleLanguage.jsx";
 import LinkButton from "./LinkButton.jsx";
 import BugReportButton from "./BugReportButton.jsx";
 import ReportWindow from "./Reportwindow.jsx";
+import HideOverlaysToggle from "./HideOverlaysButton.jsx";
 
 import { withTranslation } from "react-i18next";
 
@@ -57,6 +58,7 @@ function OceanNavigator(props) {
   const [showPermalink, setShowPermalink] = useState(false);
   const [mapView, setMapView] = useState();
   const [showMobile, setShowMobile] = useState(isMobile);
+  const [showOverlays, setShowOverlays] = useState(true);
 
   const queryClient = useQueryClient();
 
@@ -402,6 +404,7 @@ function OceanNavigator(props) {
             mapSettings={mapSettings}
             onUpdate={updateDataset0}
             mapRef={mapRef}
+            show={showOverlays}
           />
           {compareDatasets && (
             <ScaleViewer
@@ -409,6 +412,7 @@ function OceanNavigator(props) {
               mapSettings={mapSettings}
               onUpdate={updateDataset1}
               mapRef={mapRef}
+              show={showOverlays}
               className="right"
             />
           )}
@@ -419,6 +423,10 @@ function OceanNavigator(props) {
           uiSettings={uiSettings}
           updateUI={updateUI}
           action={action}
+        />
+        <HideOverlaysToggle
+          showOverlays={showOverlays}
+          onChange={setShowOverlays}
         />
         <LinkButton action={action} />
         <BugReportButton action={action} updateUI={updateUI} />
@@ -437,6 +445,7 @@ function OceanNavigator(props) {
         updateUI={updateUI}
         compareDatasets={compareDatasets}
       />
+
       <MapInputs
         dataset0={dataset0}
         dataset1={dataset1}
@@ -450,8 +459,16 @@ function OceanNavigator(props) {
         action={action}
         showCompare={true}
         featureType={featureType}
+        show={showOverlays}
       />
-      <MapTools uiSettings={uiSettings} updateUI={updateUI} action={action} />
+
+      <MapTools
+        uiSettings={uiSettings}
+        updateUI={updateUI}
+        action={action}
+        show={showOverlays}
+      />
+
       <ActivePlotsContainer
         plotData={plotData}
         dataset0={dataset0}
