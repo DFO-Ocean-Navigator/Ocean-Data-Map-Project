@@ -509,15 +509,15 @@ export default function OceanNavigator(props) {
           style={{ backgroundColor: "red" }}
           closeButton
           closeVariant="white"
-          closeLabel={__("Close")}
+          closeLabel={t("Close")}
         >
           <Modal.Title style={{ fontSize: "1.25rem" }}>
-            {__("Mobile Device Warning")}
+            {t("Mobile Device Warning")}
           </Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
-          {__(
+          {t(
             "This application has not be optimized for mobile devices. Please consider using a computer.",
           )}
         </Modal.Body>
