@@ -8,5 +8,6 @@ export default defineConfig({
     proxy: {
       "/api/v2.0": "http://localhost:8443",
     },
+    allowedHosts: [".oceannavigator.ca"],
   },
 });
