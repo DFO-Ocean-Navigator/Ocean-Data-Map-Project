@@ -92,7 +92,7 @@ def find_nearest_grid_point(lat, lon, latvar, lonvar, n=1):
     if n > 1:
         return iy, ix, dist_sq
     else:
-        return int(iy), int(ix), dist_sq
+        return int(iy[0]), int(ix[0]), dist_sq
 
 
 def _find_index(lat0, lon0, kdt, shape, n=1):
