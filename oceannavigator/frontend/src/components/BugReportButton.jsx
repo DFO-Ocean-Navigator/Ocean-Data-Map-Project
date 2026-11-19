@@ -4,9 +4,11 @@ import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { faBug } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function BugReportButton(props) {
+export default function BugReportButton(props) {
+  const { t, i18n } = useTranslation();
+
   const handleClick = () => {
     props.action("generatePermalink");
     props.updateUI({
@@ -19,7 +21,7 @@ function BugReportButton(props) {
     <OverlayTrigger
       key="report-overlay"
       placement="bottom"
-      overlay={<Tooltip id={"report-tooltip"}>{__("Report Bug")}</Tooltip>}
+      overlay={<Tooltip id={"report-tooltip"}>{t("Report Bug")}</Tooltip>}
     >
       <Button onClick={handleClick} className="bug-report-button">
         <FontAwesomeIcon icon={faBug} />
@@ -27,5 +29,3 @@ function BugReportButton(props) {
     </OverlayTrigger>
   );
 }
-
-export default withTranslation()(BugReportButton);

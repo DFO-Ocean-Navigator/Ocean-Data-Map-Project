@@ -16,19 +16,19 @@ function Class4Selector(props) {
             let date = new Date(obj.name);
             map[date.toISOString()] = obj.id;
             return map;
-          }, {})
+          }, {}),
         );
         setClass4RAOFiles(
           result.data.riops_obs.reduce(function (map, obj) {
             let date = new Date(obj.name);
             map[date.toISOString()] = obj.id;
             return map;
-          }, {})
+          }, {}),
         );
       },
       (error) => {
         console.error(error);
-      }
+      },
     );
   }, []);
 
@@ -39,20 +39,20 @@ function Class4Selector(props) {
         "loadFeatures",
         "class4",
         class4OPFiles[dateString],
-        props.class4Type
+        props.class4Type,
       );
     } else if (props.class4Type === "riops_obs") {
       props.action(
         "loadFeatures",
         "class4",
         class4RAOFiles[dateString],
-        props.class4Type
+        props.class4Type,
       );
     }
   };
 
   let timestamps = Object.keys(
-    props.class4Type === "ocean_predict" ? class4OPFiles : class4RAOFiles
+    props.class4Type === "ocean_predict" ? class4OPFiles : class4RAOFiles,
   );
   let dates = timestamps.map((ts) => {
     return new Date(ts);

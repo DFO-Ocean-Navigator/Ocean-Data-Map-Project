@@ -240,7 +240,7 @@ class Plotter(metaclass=ABCMeta):
 
         fig.text(
             1.0,
-            0.015,
+            0.025,
             self.dataset_config.attribution,
             ha="right",
             size="small",

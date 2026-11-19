@@ -4,21 +4,21 @@ import CheckBox from "./lib/CheckBox.jsx";
 import PropTypes from "prop-types";
 
 import { useGetColormaps, useGetDatasetVariables } from "../remote/queries.js";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const ContourSelector = ({
+export default function ContourSelector({
   state,
   dataset,
   id,
   title,
   children,
   onUpdate,
-  t: _,
-}) => {
-  // Internal levels state
+}) {
   const [levels, setLevels] = useState(state.levels || "-10,0,10");
   const auto = state.levels === "auto";
   const [typingTimeout, setTypingTimeout] = useState(null);
+
+  const { t, i18n } = useTranslation();
 
   const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(dataset);
@@ -94,7 +94,7 @@ const ContourSelector = ({
           id="hatch"
           checked={state.hatch}
           onUpdate={handleUpdate}
-          title={_("Crosshatch")}
+          title={t("Crosshatch")}
         />
 
         {!state.hatch && (
@@ -104,9 +104,9 @@ const ContourSelector = ({
             selected={state.colormap}
             onChange={handleUpdate}
             options={colormaps.data}
-            label={_("Colourmap")}
+            label={t("Colourmap")}
           >
-            {_(
+            {t(
               "There are several colourmaps available. This tool tries to pick an appropriate default based on the variable type (Default For Variable). If you want to use any of the others, they are all selectable.",
             )}
             <img src="/api/v2.0/plot/colormaps.png/" alt="colormaps" />
@@ -117,15 +117,15 @@ const ContourSelector = ({
           id="legend"
           checked={state.legend}
           onUpdate={handleUpdate}
-          title={_("Show Legend")}
+          title={t("Show Legend")}
         />
 
-        <h1>{_("Levels")}</h1>
+        <h1>{t("Levels")}</h1>
         <CheckBox
           id="autolevels"
           checked={auto}
           onUpdate={onUpdateAuto}
-          title={_("Auto Levels")}
+          title={t("Auto Levels")}
         />
 
         {!auto && (
@@ -139,7 +139,7 @@ const ContourSelector = ({
       </div>
     </div>
   );
-};
+}
 
 ContourSelector.propTypes = {
   state: PropTypes.object.isRequired,
@@ -148,7 +148,4 @@ ContourSelector.propTypes = {
   title: PropTypes.string,
   children: PropTypes.node,
   onUpdate: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(ContourSelector);
