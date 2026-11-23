@@ -8,6 +8,7 @@ import pickle
 import shutil
 import sqlite3
 from io import BytesIO
+from typing import Annotated, Literal
 
 import geojson
 import numpy as np
@@ -63,6 +64,7 @@ from utils.errors import ClientError
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
+PROJECTIONS = Literal["EPSG:3857", "EPSG:3031", "EPSG:32661"]
 
 try:
     Base.metadata.create_all(bind=engine)
@@ -401,7 +403,10 @@ def range(
         description="The max number of nearest neighbours to search for.",
         examples=[10],
     ),
-    projection: str = Path(
+    projection: Annotated[
+        PROJECTIONS,
+        str,
+    ] = Path(
         description="EPSG code of the desired projection.",
         examples=["EPSG:3857"],
     ),
@@ -589,9 +594,9 @@ def class4_file(
     class4_type: str = Path(
         title="The type of the desired class4 product.", examples=["ocean_predict"]
     ),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
     resolution: int = Query(description="The map resolution.", examples=["9784"]),
     extent: str = Query(
         description="The extent of the area bounding the data.",
@@ -892,11 +897,14 @@ def kml_points():
 @router.get("/kml/point/{id}")
 def kml_point(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     view_bounds: str = Query(
         None,
         description="Used to exclude KML points that aren't visible. Useful for \
@@ -927,11 +935,14 @@ def kml_lines():
 @router.get("/kml/line/{id}")
 def kml_line(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     view_bounds: str = Query(
         None,
         description="Used to exclude KML points that aren't visible. Useful for \
@@ -961,11 +972,14 @@ def kml_areas():
 @router.get("/kml/area/{id}")
 def kml_area(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     resolution: int = Query(
         description="Used to exclude KML points that aren't visible. Useful for \
             filtering large KML groups.",
@@ -994,9 +1008,9 @@ async def data_tile(
     zoom: int = Path(examples=[4]),
     x: int = Path(examples=[0]),
     y: int = Path(examples=[1]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
     interp: e.InterpolationType = Query(default="gaussian"),
     radius: int = Query(default=25, examples=[25]),
     neighbours: int = Query(default=10, examples=[10]),
@@ -1072,7 +1086,7 @@ async def quiver_tile(
     zoom: int = Path(examples=[4]),
     x: int = Path(examples=[0]),
     y: int = Path(examples=[1]),
-    projection: str = Query(
+    projection: Annotated[PROJECTIONS, str] = Query(
         default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
     ),
 ):
@@ -1128,9 +1142,9 @@ async def bathymetry_tiles(
     zoom: int = Path(examples=[8]),
     x: int = Path(examples=[88]),
     y: int = Path(examples=[85]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
 ):
     """
     Serves mbt files
@@ -1183,8 +1197,8 @@ async def bathymetry_tiles(
             shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
         requestf,
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
-    selector.execute(sqlite, (zoom, x, y))
+        media_type="image/png",
+        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
 
@@ -1193,9 +1207,9 @@ def topography_tiles(
     zoom: int = Path(examples=[8]),
     x: int = Path(examples=[88]),
     y: int = Path(examples=[85]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
 ):
     """
     Serves mbt files
