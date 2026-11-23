@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const ImageSize = ({ id, title, onUpdate, t: _ }) => {
+export default function ImageSize({ id, title, onUpdate }) {
   const [width, setWidth] = useState(10);
   const [height, setHeight] = useState(7);
   const [dpi, setDpi] = useState(144);
-  
+
+  const { t, i18n } = useTranslation();
+
   const changed = (key, value) => {
     const num = parseFloat(value);
     if (isNaN(num)) return;
@@ -29,7 +31,7 @@ const ImageSize = ({ id, title, onUpdate, t: _ }) => {
         <tbody>
           <tr>
             <td>
-              <label htmlFor={`${id}_width`}>{_("Width:")}</label>
+              <label htmlFor={`${id}_width`}>{t("Width:")}</label>
             </td>
             <td>
               <input
@@ -45,7 +47,7 @@ const ImageSize = ({ id, title, onUpdate, t: _ }) => {
           </tr>
           <tr>
             <td>
-              <label htmlFor={`${id}_height`}>{_("Height:")}</label>
+              <label htmlFor={`${id}_height`}>{t("Height:")}</label>
             </td>
             <td>
               <input
@@ -61,7 +63,7 @@ const ImageSize = ({ id, title, onUpdate, t: _ }) => {
           </tr>
           <tr>
             <td>
-              <label htmlFor={`${id}_dpi`}>{_("DPI:")}</label>
+              <label htmlFor={`${id}_dpi`}>{t("DPI:")}</label>
             </td>
             <td>
               <input
@@ -79,13 +81,10 @@ const ImageSize = ({ id, title, onUpdate, t: _ }) => {
       </table>
     </div>
   );
-};
+}
 //***********************************************************************
 ImageSize.propTypes = {
   id: PropTypes.string,
   title: PropTypes.string,
   onUpdate: PropTypes.func,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(ImageSize);

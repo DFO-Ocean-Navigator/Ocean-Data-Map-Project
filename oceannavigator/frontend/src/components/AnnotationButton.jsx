@@ -4,9 +4,11 @@ import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function AnnotationButton(props) {
+export default function AnnotationButton(props) {
+  const { t, i18n } = useTranslation();
+
   const handleClick = () => {
     props.updateUI({
       modalType: "annotation",
@@ -19,7 +21,7 @@ function AnnotationButton(props) {
       key="annotation-overlay"
       placement="bottom"
       overlay={
-        <Tooltip id={"annotation-tooltip"}>{__("Add Map Annotation")}</Tooltip>
+        <Tooltip id={"annotation-tooltip"}>{t("Add Map Annotation")}</Tooltip>
       }
     >
       <Button onClick={handleClick} className="annotation-button">
@@ -28,5 +30,3 @@ function AnnotationButton(props) {
     </OverlayTrigger>
   );
 }
-
-export default withTranslation()(AnnotationButton);

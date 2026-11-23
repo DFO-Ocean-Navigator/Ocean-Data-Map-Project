@@ -23,13 +23,13 @@ export class AnnotationOverlay extends Overlay {
     this.text = text;
     this.linkedOverlay = linkedOverlay;
     this.arrowDirection = 0;
-    
+
     // Cache DOM elements
     this.box = element.querySelector(".annotation-box");
     this.arrow = element.querySelector(".annotation-arrow");
     this.closeBtn = element.querySelector(".annotation-close");
-    
-    // Single event listener 
+
+    // Single event listener
     this.handleEvents = this.handleEvents.bind(this);
     element.addEventListener("mousedown", this.handleEvents);
     element.addEventListener("click", this.handleEvents);
@@ -37,7 +37,7 @@ export class AnnotationOverlay extends Overlay {
 
   handleEvents(e) {
     const { type, target, clientX, clientY } = e;
-    
+
     if (target === this.closeBtn) {
       if (type === "click") this.delete();
       return;
@@ -53,12 +53,12 @@ export class AnnotationOverlay extends Overlay {
   rotateArrow() {
     this.arrowDirection = (this.arrowDirection + 1) % 4;
     this.updateArrow(this.arrow, this.arrowDirection);
-    
+
     if (this.linkedOverlay?.getElement) {
       this.linkedOverlay.arrowDirection = this.arrowDirection;
       this.updateArrow(
         this.linkedOverlay.getElement().querySelector(".annotation-arrow"),
-        this.arrowDirection
+        this.arrowDirection,
       );
     }
   }
@@ -74,20 +74,23 @@ export class AnnotationOverlay extends Overlay {
 
     const handleMove = (e) => {
       const [dx, dy] = [e.clientX - start[0], e.clientY - start[1]];
-      
+
       if (!this.isDragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
         this.isDragging = true;
       }
-      
+
       if (this.isDragging) {
         const map = this.getMap();
         const pixel = map.getPixelFromCoordinate(this.getPosition());
-        const newPos = map.getCoordinateFromPixel([pixel[0] + dx, pixel[1] + dy]);
-        
+        const newPos = map.getCoordinateFromPixel([
+          pixel[0] + dx,
+          pixel[1] + dy,
+        ]);
+
         this.setPosition(newPos);
         this.linkedOverlay?.setPosition(newPos);
       }
-      
+
       start = [e.clientX, e.clientY];
     };
 
@@ -95,7 +98,7 @@ export class AnnotationOverlay extends Overlay {
       this.getElement().style.cursor = "";
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseup", handleUp);
-      setTimeout(() => this.isDragging = false, 10);
+      setTimeout(() => (this.isDragging = false), 10);
     };
 
     window.addEventListener("mousemove", handleMove);
@@ -103,11 +106,15 @@ export class AnnotationOverlay extends Overlay {
   }
 
   linkOverlay(map) {
-    this.linkedOverlay = new AnnotationOverlay(this.text, this.getPosition(), this);
+    this.linkedOverlay = new AnnotationOverlay(
+      this.text,
+      this.getPosition(),
+      this,
+    );
     this.linkedOverlay.arrowDirection = this.arrowDirection;
     this.updateArrow(
       this.linkedOverlay.getElement().querySelector(".annotation-arrow"),
-      this.arrowDirection
+      this.arrowDirection,
     );
     map.addOverlay(this.linkedOverlay);
   }
@@ -127,7 +134,7 @@ export class AnnotationOverlay extends Overlay {
     if (this.linkedOverlay) {
       this.linkedOverlay.getMap()?.removeOverlay(this.linkedOverlay);
     }
-    
+
     this.cleanup();
   }
 

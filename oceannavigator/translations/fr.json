@@ -335,6 +335,9 @@
     "titlehelp": "{{title}} Aide",
     "variable_name": "nom_variable",
     "Mobile Device Warning": "Avertissement de l'appareil mobile",
-    "This application has not be optimized for mobile devices. Please consider using a computer.":"Cette application n'a pas été optimisée pour les appareils mobiles. Veuillez envisager d'utiliser un ordinateur."
+    "This application has not be optimized for mobile devices. Please consider using a computer.":"Cette application n'a pas été optimisée pour les appareils mobiles. Veuillez envisager d'utiliser un ordinateur.",
+    "Display Overlays" : "Masquer les superpositions",
+    "Add Map Annotation" : "Ajouter une annotation à la carte",
+    "Report Bug" : "Rapport de bogue"
 
 }

@@ -9,7 +9,7 @@ import DailyCalendar from "./calendars/DailyCalendar.jsx";
 import MonthlyCalendar from "./calendars/MonthlyCalendar.jsx";
 import SeasonalCalendar from "./calendars/SeasonalCalendar.jsx";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const CustomToggle = forwardRef(({ children, onClick }, ref) => (
   <div
@@ -24,12 +24,14 @@ const CustomToggle = forwardRef(({ children, onClick }, ref) => (
   </div>
 ));
 
-function TimePicker(props) {
+export default function TimePicker(props) {
   const [data, setData] = useState([]);
   const [map, setMap] = useState({});
   const [revMap, setRevMap] = useState({});
   const [dateHours, setDateHours] = useState([]);
   const [climatology, setClimatology] = useState(false);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (props.dataset.id && props.dataset.id.includes("climatology")) {
@@ -106,13 +108,13 @@ function TimePicker(props) {
     // assumes timestamp is not on boundary
     let year = time.getFullYear();
     if (new Date(year - 1, 10, 30) <= time && time <= new Date(year, 1, 29)) {
-      return climatology ? __("Winter") : `${__("Winter")} ${year - 1}`;
+      return climatology ? t("Winter") : `${t("Winter")} ${year - 1}`;
     } else if (new Date(year, 1, 29) <= time && time <= new Date(year, 3, 31)) {
-      return climatology ? __("Spring") : `${__("Spring")} ${year}`;
+      return climatology ? t("Spring") : `${t("Spring")} ${year}`;
     } else if (new Date(year, 4, 1) <= time && time <= new Date(year, 7, 31)) {
-      return climatology ? __("Summer") : `${__("Summer")} ${year}`;
+      return climatology ? t("Summer") : `${t("Summer")} ${year}`;
     } else {
-      return climatology ? __("Fall") : `${__("Fall")} ${year}`;
+      return climatology ? t("Fall") : `${t("Fall")} ${year}`;
     }
   };
 
@@ -299,5 +301,3 @@ function TimePicker(props) {
     </div>
   );
 }
-
-export default withTranslation()(TimePicker);

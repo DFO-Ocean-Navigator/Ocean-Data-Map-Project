@@ -1,5 +1,7 @@
+@use "../utils/variables";
+
 body {
-  font-family: $font-family;
+  font-family: variables.$font-family;
   overflow: hidden;
 
   input,
@@ -48,7 +50,7 @@ body {
 
 // Moves content to the right to fit sidebar
 .content.open {
-  left: $sidebar-width;
+  left: variables.$sidebar-width;
 }
 
 .permalink-modal {
