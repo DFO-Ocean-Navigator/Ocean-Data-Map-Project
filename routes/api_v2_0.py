@@ -1154,9 +1154,9 @@ async def quiver_tile(
 
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_tiles(
-    zoom: int = Path(examples=[8]),
-    x: int = Path(examples=[88]),
-    y: int = Path(examples=[85]),
+    zoom: Annotated[int, Path(examples=[8])],
+    x: Annotated[int, Path(examples=[88])],
+    y: Annotated[int, Path(examples=[85])],
     projection: Annotated[
         PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
     ] = "EPSG:3857",
@@ -1172,12 +1172,12 @@ async def bathymetry_tiles(
         settings.cache_dir,
         "api",
         "v2.0",
-        "mbt",
-        projection,
+        "tiles",
         "bath",
+        projection,
         str(zoom),
         str(x),
-        str(y),
+        f"{y}.png",
     )
     basedir = requestf.parents[0]
 
@@ -1219,9 +1219,9 @@ async def bathymetry_tiles(
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
 def topography_tiles(
-    zoom: int = Path(examples=[8]),
-    x: int = Path(examples=[88]),
-    y: int = Path(examples=[85]),
+    zoom: Annotated[int, Path(examples=[8])],
+    x: Annotated[int, Path(examples=[88])],
+    y: Annotated[int, Path(examples=[85])],
     projection: Annotated[
         PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
     ] = "EPSG:3857",
@@ -1237,12 +1237,12 @@ def topography_tiles(
         settings.cache_dir,
         "api",
         "v2.0",
-        "mbt",
+        "tiles",
+        "topo",
         projection,
-        "lands",
         str(zoom),
         str(x),
-        str(y),
+        f"{y}.png",
     )
     basedir = requestf.parents[0]
 
