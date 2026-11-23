@@ -24,10 +24,10 @@ function filterDatasets(datasets, variables, filters) {
     const variableData = variables.data[filters.vectorVariable];
     const datasetIds = variableData.reduce(
       (ids, ds) => (ds.vector_variables ? ids.concat([ds.dataset_id]) : ids),
-      []
+      [],
     );
     filteredDatasetIds = filteredDatasetIds.filter((id) =>
-      datasetIds.includes(id)
+      datasetIds.includes(id),
     );
   }
 
@@ -45,7 +45,7 @@ function filterDatasets(datasets, variables, filters) {
     filteredDatasetIds = filteredDatasetIds.filter((id) =>
       filters.depth === "3D"
         ? datasetIds.includes(id)
-        : !datasetIds.includes(id)
+        : !datasetIds.includes(id),
     );
   }
 
@@ -54,7 +54,7 @@ function filterDatasets(datasets, variables, filters) {
   const dateFiltered = useDateFilter(
     filteredDatasetIds,
     filters.date,
-    dateFilterEnabled
+    dateFilterEnabled,
   );
   dateFiltered.data && (filteredDatasetIds = dateFiltered.data);
 
@@ -64,7 +64,7 @@ function filterDatasets(datasets, variables, filters) {
   const locationFiltered = useLocationFilter(
     filteredDatasetIds,
     filters.location,
-    locationFilterEnabled
+    locationFilterEnabled,
   );
   locationFiltered.data && (filteredDatasetIds = locationFiltered.data);
 
@@ -202,11 +202,11 @@ const DatasetSearchWindow = ({
     };
 
     let variable = variables.data[filters.variable]?.filter(
-      (ds) => ds.dataset_id === datasetId
+      (ds) => ds.dataset_id === datasetId,
     )[0];
 
     let vectorVariable = variables.data[filters.vectorVariable]?.filter(
-      (ds) => ds.dataset_id === datasetId
+      (ds) => ds.dataset_id === datasetId,
     )[0];
 
     variable &&
@@ -259,7 +259,7 @@ const DatasetSearchWindow = ({
         vars.push(
           <option key={name} value={name}>
             {name}
-          </option>
+          </option>,
         );
       }
       return vars;
@@ -268,7 +268,7 @@ const DatasetSearchWindow = ({
       <option key="none" value="none">
         None
       </option>,
-    ]
+    ],
   );
 
   let datasetCards = filteredDatasets.ids.map((id) => {

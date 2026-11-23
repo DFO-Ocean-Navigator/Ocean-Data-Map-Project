@@ -2,12 +2,11 @@ import React, { useState, useRef } from "react";
 import { Button, Card, Form, Row, Col } from "react-bootstrap";
 import Icon from "./lib/Icon.jsx";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
+export default function Permalink({ generatePermLink, compareDatasets }) {
   const textareaRef = useRef(null);
 
-  // Default options
   const [options, setOptions] = useState({
     dataset0: true,
     dataset1: !!compareDatasets,
@@ -15,6 +14,8 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
     mapView: true,
     features: true,
   });
+
+  const { t, i18n } = useTranslation();
 
   const handleChange = (e) => {
     const { name, checked } = e.target;
@@ -27,7 +28,7 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
       try {
         document.execCommand("copy");
       } catch {
-        alert(_("Please manually copy the selected text."));
+        alert(t("Please manually copy the selected text."));
       }
     }
   };
@@ -49,19 +50,19 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
             className="pull-right"
             onClick={copyPermalink}
           >
-            <Icon icon="copy" /> {_("Copy")}
+            <Icon icon="copy" /> {t("Copy")}
           </Button>
         </Row>
         <br />
         <Card variant="warning">
-          <Card.Header>{_("Select which features to share:")}</Card.Header>
+          <Card.Header>{t("Select which features to share:")}</Card.Header>
           <Card.Body>
             <Form.Check
               type="checkbox"
               name="dataset0"
               checked={options.dataset0}
               onChange={handleChange}
-              label={_("Dataset (Primary/Left Map)")}
+              label={t("Dataset (Primary/Left Map)")}
             />
             {compareDatasets && (
               <Form.Check
@@ -69,7 +70,7 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
                 name="dataset1"
                 checked={options.dataset1}
                 onChange={handleChange}
-                label={_("Dataset (Right Map)")}
+                label={t("Dataset (Right Map)")}
               />
             )}
             <Form.Check
@@ -77,33 +78,30 @@ const Permalink = ({ generatePermLink, compareDatasets, t: _ }) => {
               name="mapSettings"
               checked={options.mapSettings}
               onChange={handleChange}
-              label={_("Map Settings")}
+              label={t("Map Settings")}
             />
             <Form.Check
               type="checkbox"
               name="mapView"
               checked={options.mapView}
               onChange={handleChange}
-              label={_("Map View")}
+              label={t("Map View")}
             />
             <Form.Check
               type="checkbox"
               name="features"
               checked={options.features}
               onChange={handleChange}
-              label={_("Features")}
+              label={t("Features")}
             />
           </Card.Body>
         </Card>
       </Col>
     </div>
   );
-};
+}
 
 Permalink.propTypes = {
   generatePermLink: PropTypes.func.isRequired,
   compareDatasets: PropTypes.bool,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(Permalink);

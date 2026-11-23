@@ -96,7 +96,7 @@ const SeasonalCalendar = forwardRef((props, ref) => {
     nextDisabled = false;
   }
 
-  const headerText = props.climatology ? "1993 - 2019" : year
+  const headerText = props.climatology ? "1993 - 2019" : year;
 
   return (
     <div ref={ref} className="calendar-container">

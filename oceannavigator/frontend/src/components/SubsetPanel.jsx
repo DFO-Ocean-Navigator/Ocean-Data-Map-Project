@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Card, Dropdown, DropdownButton, Form } from "react-bootstrap";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import PropTypes from "prop-types";
 
 import CheckBox from "./lib/CheckBox.jsx";
@@ -9,7 +9,7 @@ import VariableSelector from "./data-selectors/VariableSelector.jsx";
 import TimeSelector from "./data-selectors/TimeSelector.jsx";
 import DepthSelector from "./data-selectors/DepthSelector.jsx";
 
-function SubsetPanel(props) {
+export default function SubsetPanel(props) {
   const [subsetDataset, setSubsetDataset] = useState({
     ...props.dataset,
     variable: [props.dataset.variable],
@@ -20,6 +20,8 @@ function SubsetPanel(props) {
   const [outputTimerange, setOutputTimerange] = useState(false);
   const [outputFormat, setOutputFormat] = useState("NETCDF4");
   const [zip, setZip] = useState(false);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     setSubsetDataset({
@@ -119,13 +121,13 @@ function SubsetPanel(props) {
   };
 
   const showDepthSelector = subsetDataset.variable.some(
-    (v) => v.two_dimensional === false
+    (v) => v.two_dimensional === false,
   );
 
   return (
     <div>
       <Card key="subset" variant="primary">
-        <Card.Header>{__("Subset")}</Card.Header>
+        <Card.Header>{t("Subset")}</Card.Header>
         <Card.Body>
           <VariableSelector
             id="subset-panel-variable-selector"
@@ -151,7 +153,7 @@ function SubsetPanel(props) {
             onUpdate={(_, value) => {
               setOutputTimerange(value);
             }}
-            title={__("Select Time Range")}
+            title={t("Select Time Range")}
           />
           <TimeSelector
             id={"subset-panel-time-selector"}
@@ -162,16 +164,16 @@ function SubsetPanel(props) {
             enabled={queryStatus.variables !== "pending"}
           />
           <Form.Group controlId="outputFormat">
-            <Form.Label>{__("Output Format")}</Form.Label>
+            <Form.Label>{t("Output Format")}</Form.Label>
             <Form.Select
               onChange={(e) => {
                 setOutputFormat(e.target.value);
               }}
               value={outputFormat}
             >
-              <option value="NETCDF4">{__("NetCDF-4")}</option>
-              <option value="NETCDF3_CLASSIC">{__("NetCDF-3 Classic")}</option>
-              <option value="NETCDF3_64BIT">{__("NetCDF-3 64-bit")}</option>
+              <option value="NETCDF4">{t("NetCDF-4")}</option>
+              <option value="NETCDF3_CLASSIC">{t("NetCDF-3 Classic")}</option>
+              <option value="NETCDF3_64BIT">{t("NetCDF-3 64-bit")}</option>
               <option
                 value="NETCDF3_NC"
                 disabled={
@@ -181,7 +183,7 @@ function SubsetPanel(props) {
               >
                 {"NetCDF-3 NC"}
               </option>
-              <option value="NETCDF4_CLASSIC">{__("NetCDF-4 Classic")}</option>
+              <option value="NETCDF4_CLASSIC">{t("NetCDF-4 Classic")}</option>
             </Form.Select>
           </Form.Group>
           <CheckBox
@@ -191,7 +193,7 @@ function SubsetPanel(props) {
             onUpdate={(_, checked) => {
               setZip(checked);
             }}
-            title={__("Compress as *.zip")}
+            title={t("Compress as *.zip")}
           />
           <Button
             variant="default"
@@ -200,13 +202,13 @@ function SubsetPanel(props) {
             onClick={subsetArea}
             disabled={subsetDataset.variable.length === 0}
           >
-            <Icon icon="save" /> {__("Save")}
+            <Icon icon="save" /> {t("Save")}
           </Button>
           <DropdownButton
             id="script"
             title={
               <span>
-                <Icon icon="file-code-o" /> {__("API Scripts")}
+                <Icon icon="file-code-o" /> {t("API Scripts")}
               </span>
             }
             variant={"default"}
@@ -215,10 +217,10 @@ function SubsetPanel(props) {
             drop={"up"}
           >
             <Dropdown.Item eventKey="python">
-              <Icon icon="code" /> {__("Python 3")}
+              <Icon icon="code" /> {t("Python 3")}
             </Dropdown.Item>
             <Dropdown.Item eventKey="r">
-              <Icon icon="code" /> {__("R")}
+              <Icon icon="code" /> {t("R")}
             </Dropdown.Item>
           </DropdownButton>
         </Card.Body>
@@ -234,5 +236,3 @@ SubsetPanel.propTypes = {
   dataset: PropTypes.object.isRequired,
   area: PropTypes.array.isRequired,
 };
-
-export default withTranslation()(SubsetPanel);

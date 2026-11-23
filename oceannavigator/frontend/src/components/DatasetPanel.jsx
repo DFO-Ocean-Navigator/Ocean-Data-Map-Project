@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Accordion, Modal, ProgressBar, Button, Form } from "react-bootstrap";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import "rc-slider/assets/index.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
@@ -19,7 +19,7 @@ import DatasetSearchWindow from "./DatasetSearchWindow.jsx";
 import { DATASET_FILTER_DEFAULTS } from "./Defaults.js";
 import { prefetchAllVariables } from "../remote/queries.js";
 
-function DatasetPanel({
+export default function DatasetPanel({
   onUpdate,
   id,
   hasDepth,
@@ -27,7 +27,7 @@ function DatasetPanel({
   showQuiverSelector = true,
   showTimeRange = false,
   showDepthSelector = true,
-  showUnitSelector = false, 
+  showUnitSelector = false,
   showAxisRange = false,
   showDepthRange = false,
   showVariableSelector = true,
@@ -40,7 +40,6 @@ function DatasetPanel({
   compareDatasets,
   showCompare,
   action,
-  t,
 }) {
   const [dataset, setDataset] = useState(mountedDataset);
   const [loading, setLoading] = useState(true);
@@ -54,6 +53,8 @@ function DatasetPanel({
   );
 
   const datasetRef = useRef(dataset);
+
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     // update timestamps on initial app load
@@ -184,7 +185,12 @@ function DatasetPanel({
 
   let axisRangeSelectors = [];
   if (showDepthRange) {
-    const depth_variable = {value: "Depth", id: "depth_range", scale: [0, 10000], imperial_scale: [0, 32808.4]};
+    const depth_variable = {
+      value: "Depth",
+      id: "depth_range",
+      scale: [0, 10000],
+      imperial_scale: [0, 32808.4],
+    };
     let depthRangeSelector = (
       <AxisRange
         key={"depth_axis_range"}
@@ -217,16 +223,15 @@ function DatasetPanel({
       axisRangeSelectors.push(rangeSelector);
     }
   }
-  const axisRangeSelectorsAccordion = axisRangeSelectors.length > 0 ? (
-    <Accordion className="axis-range-accordion">
-      <Accordion.Item eventKey="0">
-        <Accordion.Header>{"Data Ranges"}</Accordion.Header>
-        <Accordion.Body>
-          {axisRangeSelectors}
-        </Accordion.Body>
-      </Accordion.Item>
-    </Accordion>
-  ) : null;
+  const axisRangeSelectorsAccordion =
+    axisRangeSelectors.length > 0 ? (
+      <Accordion className="axis-range-accordion">
+        <Accordion.Item eventKey="0">
+          <Accordion.Header>{"Data Ranges"}</Accordion.Header>
+          <Accordion.Body>{axisRangeSelectors}</Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
+    ) : null;
 
   let quiverSelector = showQuiverSelector ? (
     <QuiverSelector
@@ -416,7 +421,4 @@ DatasetPanel.propTypes = {
   showSearchBtn: PropTypes.bool,
   showCompare: PropTypes.bool,
   action: PropTypes.func,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(DatasetPanel);

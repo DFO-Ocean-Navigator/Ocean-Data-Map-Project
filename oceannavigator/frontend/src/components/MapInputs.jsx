@@ -10,9 +10,11 @@ import DatasetPanel from "./DatasetPanel.jsx";
 import DrawingTools from "./DrawingTools.jsx";
 import ObservationTools from "./ObservationTools.jsx";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function MapInputs(props) {
+export default function MapInputs(props) {
+  const { t, i18n } = useTranslation();
+
   const drawingTools = props.uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={props.uiSettings}
@@ -33,7 +35,7 @@ function MapInputs(props) {
   const hideDataSwitch = props.showCompare ? (
     <OverlayTrigger
       placement="top"
-      overlay={<Tooltip id="tooltip">{__("Hide Data Layer")}</Tooltip>}
+      overlay={<Tooltip id="tooltip">{t("Hide Data Layer")}</Tooltip>}
     >
       <Button
         className="hide-data-button"
@@ -91,5 +93,3 @@ function MapInputs(props) {
      </Fade>
   );
 }
-
-export default withTranslation()(MapInputs);

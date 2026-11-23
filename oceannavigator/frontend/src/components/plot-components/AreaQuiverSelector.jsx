@@ -3,17 +3,17 @@ import ComboBox from "../lib/ComboBox.jsx";
 import PropTypes from "prop-types";
 
 import { useGetDatasetVariables } from "../../remote/queries.js";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const AreaQuiverSelector = ({
+export default function AreaQuiverSelector({
   state,
   dataset,
   id,
   title,
   children,
   onUpdate,
-  t: _,
-}) => {
+}) {
+  const { t, i18n } = useTranslation();
 
   const variables = useGetDatasetVariables(dataset, true, true);
 
@@ -63,7 +63,7 @@ const AreaQuiverSelector = ({
       </div>
     </div>
   );
-};
+}
 
 //***********************************************************************
 AreaQuiverSelector.propTypes = {
@@ -77,7 +77,4 @@ AreaQuiverSelector.propTypes = {
   }).isRequired,
   onUpdate: PropTypes.func.isRequired,
   children: PropTypes.node,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(AreaQuiverSelector);

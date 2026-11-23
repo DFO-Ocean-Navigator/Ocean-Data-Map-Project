@@ -1,3 +1,5 @@
+@use "variables";
+
 html,
 body {
   height: 100%;
@@ -14,7 +16,7 @@ body {
 // Pop up windows
 .full-screen-modal {
   .modal-content {
-    min-height: calc(100% - 2 * #{$modal-margin});
+    min-height: calc(100% - 2 * #{variables.$modal-margin});
     display: flex;
     flex-direction: column;
     width: 100%;
