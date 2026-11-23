@@ -1,11 +1,15 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function LocationInput(props) {
-  const [latitude, setLatitude] = useState(parseFloat(props.state[0][0]).toFixed(4));
-  const [longitude, setLongitude] = useState(parseFloat(props.state[0][1]).toFixed(4));
+export default function LocationInput(props) {
+  const [latitude, setLatitude] = useState(
+    parseFloat(props.state[0][0]).toFixed(4),
+  );
+  const [longitude, setLongitude] = useState(
+    parseFloat(props.state[0][1]).toFixed(4),
+  );
 
   useEffect(() => {
     let newLat = parseFloat(latitude).toFixed(4);
@@ -87,5 +91,3 @@ LocationInput.propTypes = {
   onUpdate: PropTypes.func,
   state: PropTypes.array,
 };
-
-export default withTranslation()(LocationInput);

@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function AnnotationTextWindow(props) {
+export default function AnnotationTextWindow(props) {
   const [inputText, setInputText] = useState("");
+
+  const { t, i18n } = useTranslation();
 
   const onSubmit = () => {
     props.mapRef.current.addAnnotationLabel(inputText.trim());
-    props.updateUI({modalType: "", showModal: false });
+    props.updateUI({ modalType: "", showModal: false });
   };
 
   const onUndo = () => {
@@ -36,17 +38,15 @@ function AnnotationTextWindow(props) {
           variant="primary"
           className="me-2"
         >
-          {__("Add")}
+          {t("Add")}
         </Button>
         <Button onClick={onUndo} variant="secondary" className="me-2">
-          {__("Undo")}
+          {t("Undo")}
         </Button>
         <Button onClick={onClear} variant="outline-danger">
-          {__("Clear")}
+          {t("Clear")}
         </Button>
       </div>
     </div>
   );
 }
-
-export default withTranslation()(AnnotationTextWindow);

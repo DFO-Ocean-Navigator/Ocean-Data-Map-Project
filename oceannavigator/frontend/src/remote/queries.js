@@ -11,7 +11,7 @@ import {
   GetPointDepthPromise,
   GetPointDataPromise,
   GetTrackTimeRangePromise,
-  GetComboBoxQuery,
+  GetComboBoxQueryPromise,
   GetClass4ForecastsPromise,
   GetClass4ModelsPromise,
   GetObservationDatatypes,
@@ -82,12 +82,22 @@ export function useGetPointData(
   longitude,
 ) {
   const { data = [], isSuccess } = useQuery({
-    queryKey: ["point_data", dataset, variable, time, depth, latitude, longitude],
-    queryFn: () => GetPointDataPromise(dataset, variable, time, depth, latitude, longitude),
+    queryKey: [
+      "point_data",
+      dataset,
+      variable,
+      time,
+      depth,
+      latitude,
+      longitude,
+    ],
+    queryFn: () =>
+      GetPointDataPromise(dataset, variable, time, depth, latitude, longitude),
     enabled:
       Boolean(dataset && variable && time != null && time >= 0) &&
       depth != null &&
-      Number.isFinite(latitude) && Number.isFinite(longitude),
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude),
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -211,7 +221,7 @@ export function useGetObservationMetaValues(platformType, metaKey, enabled) {
   const { data = [], status } = useQuery({
     queryKey: ["observation", "metaValues", platformType, metaKey],
     queryFn: () => GetObservationMetaValues(platformType, metaKey),
-    enabled
+    enabled,
   });
 
   return { data, status };

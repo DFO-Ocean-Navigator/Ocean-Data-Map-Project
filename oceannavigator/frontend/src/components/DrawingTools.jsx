@@ -3,13 +3,15 @@ import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function DrawingTools(props) {
+export default function DrawingTools(props) {
+  const { t, i18n } = useTranslation();
+
   const radios = [
-    { name: __("Point"), value: "Point" },
-    { name: __("Line"), value: "LineString" },
-    { name: __("Area"), value: "Polygon" },
+    { name: t("Point"), value: "Point" },
+    { name: t("Line"), value: "LineString" },
+    { name: t("Area"), value: "Polygon" },
   ];
 
   const handleRadio = (e) => {
@@ -49,16 +51,14 @@ function DrawingTools(props) {
         ))}
       </div>
       <Button className="plot-button" onClick={handleClear}>
-        {__("Clear")}
+        {t("Clear")}
       </Button>
       <Button className="undo-button" onClick={handleUndo}>
         <FontAwesomeIcon icon={faRotateLeft} />
       </Button>
       <Button className="close-button" onClick={handleClose}>
-        {__("Close")}
+        {t("Close")}
       </Button>
     </div>
   );
 }
-
-export default withTranslation()(DrawingTools);

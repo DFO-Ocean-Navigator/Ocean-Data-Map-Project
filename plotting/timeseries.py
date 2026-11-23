@@ -465,8 +465,8 @@ class TimeseriesPlotter(PointPlotter):
                     ax[idx].set_yticks(list(ax[idx].get_yticks()) + [maxdepth, LINEAR])
                 else:
                     ax[idx].set_ylim(maxdepth, mindepth)
-                    
-                if isinstance(self.depth_unit, (list, np.ndarray)): 
+
+                if isinstance(self.depth_unit, (list, np.ndarray)):
                     self.depth_unit = self.depth_unit[0]
                 ax[idx].set_ylabel("Depth (%s)" % utils.mathtext(self.depth_unit))
 
@@ -526,12 +526,10 @@ class TimeseriesPlotter(PointPlotter):
 
             plt.subplot(gs[:, subplot])
             for idx, _ in enumerate(self.points):
-                plt.plot_date(
-                    datenum,
+                plt.plot(
+                    self.times,
                     np.squeeze(self.data[idx, :, :]),
-                    fmt="-",
                     figure=fig,
-                    xdate=True,
                 )
             plt.ylabel(
                 f"{self.variable_name.title()} ({var_unit})",
