@@ -280,8 +280,11 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
         f"{shape_file_dir}/onav_land_mask_{projection}.mbtiles"
     )
     selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {z} AND tile_column = {x} AND tile_row = {y}"
-    selector.execute(sqlite)
+    sqlite = (
+        "SELECT tile_data FROM tiles "
+        "WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+    )
+    selector.execute(sqlite, (z, x, y))
     land_mask_tile = selector.fetchone()
     if land_mask_tile is not None:
         decompressed_tile = gzip.decompress(land_mask_tile[0])
