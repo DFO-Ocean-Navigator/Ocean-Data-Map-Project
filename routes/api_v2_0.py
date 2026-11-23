@@ -85,6 +85,27 @@ def get_db():
         db.close()
 
 
+def get_cached_tile_path(path_str: str) -> Path:
+    """
+    Generates path to cached tile and sanitizes user input values.
+    """
+
+    settings = get_settings()
+
+    base_dir = pathlib.Path(settings.cache_dir, "api", "v2.0", "tiles")
+
+    target_path = (base_dir / path_str).resolve()
+
+    if (
+        "\x00" in path_str
+        or not target_path.is_relative_to(base_dir)
+        or target_path == base_dir
+    ):
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    return target_path
+
+
 @router.get("/git_info")
 def git_info():
     """
@@ -1167,19 +1188,9 @@ async def bathymetry_tiles(
 
     settings = get_settings()
 
+    requestf = get_cached_tile_path(f"bath/{projection}/{zoom}/{x}/{y}.pbf")
+
     shape_file_dir = settings.shape_file_dir
-    requestf = pathlib.Path(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "bath",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
-    basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
     blank_response = FileResponse(
@@ -1204,10 +1215,10 @@ async def bathymetry_tiles(
         return blank_response
 
     # Write tile to cache and send file
-    basedir.mkdir(parents=True, exist_ok=True)
-    with open(requestf.as_posix() + ".pbf", "wb") as f:
+    requestf.parent.mkdir(parents=True, exist_ok=True)
+    with open(requestf.as_posix(), "wb") as f:
         f.write(tile[0])
-    with gzip.open(requestf.as_posix() + ".pbf", "rb") as gzipped:
+    with gzip.open(requestf.as_posix(), "rb") as gzipped:
         with open(requestf, "wb") as tileout:
             shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
@@ -1232,19 +1243,9 @@ def topography_tiles(
 
     settings = get_settings()
 
+    requestf = get_cached_tile_path(f"topo/{projection}/{zoom}/{x}/{y}.png")
+
     shape_file_dir = settings.shape_file_dir
-    requestf = pathlib.Path(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "topo",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
-    basedir = requestf.parents[0]
 
     # Send blank tile if conditions aren't met
     blank_response = FileResponse(
@@ -1270,12 +1271,12 @@ def topography_tiles(
         return blank_response
 
     # Write tile to cache and send file
-    basedir.mkdir(parents=True, exist_ok=True)
-    with open(requestf.as_posix() + ".pbf", "wb") as f:
+    requestf.parent.mkdir(parents=True, exist_ok=True)
+    with open(requestf.as_posix(), "wb") as f:
         f.write(tile[0])
 
     return FileResponse(
-        requestf.as_posix() + ".pbf",
+        requestf.as_posix(),
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
