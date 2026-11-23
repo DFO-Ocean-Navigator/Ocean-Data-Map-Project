@@ -1168,8 +1168,8 @@ async def bathymetry_tiles(
 
     connection = sqlite3.connect(f"{shape_file_dir}/onav_bathy_{projection}.mbtiles")
     selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
-    selector.execute(sqlite)
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+    selector.execute(sqlite, (zoom, x, y))
     tile = selector.fetchone()
     if tile is None:
         return blank_response
@@ -1233,8 +1233,8 @@ def topography_tiles(
 
     connection = sqlite3.connect(f"{shape_file_dir}/onav_basemap_{projection}.mbtiles")
     selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"
-    selector.execute(sqlite)
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+    selector.execute(sqlite, (zoom, x, y))
     tile = selector.fetchone()
 
     if tile is None:
