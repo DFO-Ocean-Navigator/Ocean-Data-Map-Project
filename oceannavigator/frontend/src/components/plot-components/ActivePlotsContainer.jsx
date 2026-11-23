@@ -26,7 +26,6 @@ const ActivePlotsContainer = ({
   class4Type,
   swapViews,
 }) => {
-
   const handleMinimize = (plot) => {
     let plots = [...plotData];
     const idx = plots.findIndex((prevPlot) => plot.id === prevPlot.id);

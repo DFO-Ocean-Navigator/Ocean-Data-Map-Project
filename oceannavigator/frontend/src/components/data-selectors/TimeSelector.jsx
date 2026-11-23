@@ -6,9 +6,9 @@ import TimePicker from "./TimePicker.jsx";
 
 import { useGetDatasetTimestamps } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function TimeSelector({
+export default function TimeSelector({
   id,
   dataset,
   updateDataset,
@@ -16,8 +16,9 @@ function TimeSelector({
   selectorType,
   horizontalLayout,
   enabled = true,
-  t,
 }) {
+  const { t, i18n } = useTranslation();
+
   const timestamps = useGetDatasetTimestamps(dataset, enabled);
 
   useEffect(() => {
@@ -176,7 +177,4 @@ TimeSelector.propTypes = {
   selectorType: PropTypes.string,
   horizontalLayout: PropTypes.bool,
   enabled: PropTypes.bool,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(TimeSelector);
