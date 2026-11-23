@@ -95,8 +95,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             "Depth (m)", fontsize=14
         )  # ax.set_ylabel(gettext("Depth (m)"), fontsize=14)
         ax.invert_yaxis()
-        ax.xaxis.set_ticks_position("top")
-        ax.xaxis.set_label_position("top")
         x_format = tkr.FuncFormatter(lambda x, pos: "%d" % x)
         ax.xaxis.set_major_formatter(x_format)
 
@@ -105,9 +103,10 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
                 "Sound Speed Profile for (%s)\n%s"  # gettext("Sound Speed Profile for (%s)\n%s")
                 % (", ".join(self.names), self.date_formatter(self.iso_timestamp)),
                 fontsize=15,
+                pad=10
             )
         else:
-            ax.set_title(self.plotTitle, fontsize=15)
+            ax.set_title(self.plotTitle, fontsize=15, pad=10)
 
         ax.title.set_position([0.5, 1.10])
         plt.subplots_adjust(top=0.85)
@@ -120,6 +119,7 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             ax.set_xlim(self.axis_range["sspeed"])
         else:
             ax.set_xlim([1410, 1560])
+
         ax2 = ax.twinx()
         ureg = pint.UnitRegistry()
         ax2.set_ylim((ylim * ureg.meters).to(ureg.feet).magnitude)
@@ -127,9 +127,24 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
             "Depth (ft)", fontsize=14
         )
 
+        ax3 = ax.twiny()
+        xlim = ax.get_xlim()
+        ax3.set_xlim((xlim * ureg.meter_per_second).to(ureg.foot_per_second).magnitude)
+        ax3.set_xlabel(
+            "Sound Speed (ft/s)", fontsize=14
+        )
+        ax3.xaxis.set_ticks_position("bottom")
+        ax3.xaxis.set_label_position("bottom")
+
+        ax.xaxis.set_ticks_position("top")
+        ax.xaxis.set_label_position("top")
+
+        # fig = ax.figure
+        # fig.subplots_adjust(top=0.2)
+
         ax.text(
             0,
-            -0.05,
+            -0.12,
             self.get_stats_str(self.sspeed, "m/s"),
             fontsize=14,
             transform=ax.transAxes,
