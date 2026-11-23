@@ -1285,7 +1285,6 @@ const Map = forwardRef((props, ref) => {
       layerBasemap.setZIndex(0);
       layerData0.setZIndex(1);
     }
-    console.log(map0.getView().getZoom());
   }
 
   layerData0.setVisible(!props.mapSettings.hideDataLayer);
