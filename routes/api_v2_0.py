@@ -92,15 +92,18 @@ def get_cached_tile_path(path_str: str) -> Path:
 
     settings = get_settings()
 
-    base_dir = pathlib.Path(settings.cache_dir, "api", "v2.0", "tiles")
+    base_dir = pathlib.Path(settings.cache_dir, "api", "v2.0", "tiles").resolve()
 
-    target_path = (base_dir / path_str).resolve()
+    if "\x00" in path_str:
+        raise HTTPException(status_code=400, detail="Invalid path")
 
-    if (
-        "\x00" in path_str
-        or not target_path.is_relative_to(base_dir)
-        or target_path == base_dir
-    ):
+    pure_path = pathlib.PurePosixPath(path_str)
+    if pure_path.is_absolute() or ".." in pure_path.parts:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    target_path = (base_dir / pure_path).resolve()
+
+    if not target_path.is_relative_to(base_dir) or target_path == base_dir:
         raise HTTPException(status_code=400, detail="Invalid path")
 
     return target_path
