@@ -139,9 +139,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         ax.xaxis.set_ticks_position("top")
         ax.xaxis.set_label_position("top")
 
-        # fig = ax.figure
-        # fig.subplots_adjust(top=0.2)
-
         ax.text(
             0,
             -0.12,
