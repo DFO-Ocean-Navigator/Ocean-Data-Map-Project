@@ -15,7 +15,7 @@ import {
   useGetObservationVariablesStation,
 } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const TabEnum = {
   PROFILE: 1,
@@ -26,7 +26,7 @@ const TabEnum = {
   MOORING: 6,
 };
 
-const PointWindow = ({
+export default function PointWindow({
   plotData,
   dataset,
   mapSettings,
@@ -34,8 +34,7 @@ const PointWindow = ({
   action,
   init,
   updateDataset,
-  t: _,
-}) => {
+}) {
   // UI state
   const [selected, setSelected] = useState(
     init?.selected ??
@@ -79,6 +78,8 @@ const PointWindow = ({
   );
   const [only2d, setOnly2d] = useState(false);
 
+  const { t, i18n } = useTranslation();
+
   const colormaps = useGetColormaps();
   const variables = useGetDatasetVariables(plotDataset);
   const observationVariables = useGetObservationVariablesStation(
@@ -113,7 +114,7 @@ const PointWindow = ({
         [dataset.variable.id]: false,
       },
       axisRange: Object.fromEntries(
-        Object.keys(dataset.variable).map((key) => [key, null])
+        Object.keys(dataset.variable).map((key) => [key, null]),
       ),
     }));
     if (selected === TabEnum.CTD) {
@@ -214,11 +215,11 @@ const PointWindow = ({
       <ImageSize
         id="size"
         onUpdate={updatePlotSize}
-        title={_("Saved Image Size")}
+        title={t("Saved Image Size")}
       />
       <CustomPlotLabels
         id="title"
-        title={_("Plot Title")}
+        title={t("Plot Title")}
         plotTitle={plotTitles[selected - 1]}
         updatePlotTitle={updatePlotTitle}
       />
@@ -236,7 +237,7 @@ const PointWindow = ({
           }));
     observationInputs = (
       <Card key="obsSettings" variant="primary">
-        <Card.Header>{_("Observation Settings")}</Card.Header>
+        <Card.Header>{t("Observation Settings")}</Card.Header>
         <Card.Body className="global-settings-card">
           <ComboBox
             key="observation_variable"
@@ -244,7 +245,7 @@ const PointWindow = ({
             multiple
             selected={observationVariable}
             options={obsOptions}
-            label={_("Observation Variable")}
+            label={t("Observation Variable")}
             onChange={(_, value) => setObservationVariable(value)}
             alwaysShow={true}
           />
@@ -280,21 +281,21 @@ const PointWindow = ({
           id="showmap"
           checked={showMap}
           onUpdate={(_, value) => setShowMap(value)}
-          title={_("Show Location")}
+          title={t("Show Location")}
         >
-          {_("showmap_help")}
+          {t("showmap_help")}
         </CheckBox>
       )}
       {/* {plotData.coordinates.length === 1 && (
           <LocationInput
             id="points"
             state={plotData.coordinates}
-            title={_("Location")}
+            title={t("Location")}
             onUpdate={handlePointsUpdate}
           />
         )} */}
       <Accordion key="plot-options">
-        <Accordion.Header>{_("Plot Options")}</Accordion.Header>
+        <Accordion.Header>{t("Plot Options")}</Accordion.Header>
         <Accordion.Body>{plotOptions}</Accordion.Body>
       </Accordion>
       {selected == TabEnum.MOORING && plotDataset.depth === "all" && (
@@ -305,7 +306,7 @@ const PointWindow = ({
           options={colormaps.data}
           onChange={(_, value) => setColormap(value)}
           url="/api/v2.0/plot/colormaps"
-          label={_("Colourmap")}
+          label={t("Colourmap")}
         >
           {" "}
           <img src="/plot/colormaps.png/" alt="" />{" "}
@@ -326,6 +327,7 @@ const PointWindow = ({
   let plotQuery = {
     dataset: plotDataset.id,
     names: names,
+    plotTitle: plotTitles[selected - 1],
   };
 
   let axisRange = Object.fromEntries(
@@ -439,7 +441,7 @@ const PointWindow = ({
             eventKey={TabEnum.PROFILE}
             disabled={plotData.observation || only2d}
           >
-            {_("Profile")}
+            {t("Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -447,7 +449,7 @@ const PointWindow = ({
             eventKey={TabEnum.CTD}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("CTD Profile")}
+            {t("CTD Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -455,7 +457,7 @@ const PointWindow = ({
             eventKey={TabEnum.TS}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("T/S Diagram")}
+            {t("T/S Diagram")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -463,7 +465,7 @@ const PointWindow = ({
             eventKey={TabEnum.SOUND}
             disabled={plotData.observation || !hasTempSal || only2d}
           >
-            {_("Sound Speed Profile")}
+            {t("Sound Speed Profile")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -471,19 +473,19 @@ const PointWindow = ({
             eventKey={TabEnum.OBSERVATION}
             disabled={!plotData.observation || only2d}
           >
-            {_("Observation")}
+            {t("Observation")}
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey={TabEnum.MOORING} disabled={plotData.observation}>
-            {_("Virtual Mooring")}
+            {t("Virtual Mooring")}
           </Nav.Link>
         </Nav.Item>
       </Nav>
       <Row className="plot-window-container">
         <Col lg={2} className="settings-col">
           <Card key="globalSettings" variant="primary">
-            <Card.Header>{_("Global Settings")}</Card.Header>
+            <Card.Header>{t("Global Settings")}</Card.Header>
             <Card.Body className="global-settings-card">{inputs}</Card.Body>
           </Card>
           {observationInputs}
@@ -502,7 +504,7 @@ const PointWindow = ({
       </Row>
     </div>
   );
-};
+}
 
 PointWindow.propTypes = {
   plotData: PropTypes.object.isRequired,
@@ -512,7 +514,4 @@ PointWindow.propTypes = {
   init: PropTypes.object,
   updateDataset: PropTypes.func,
   dataset: PropTypes.object.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(PointWindow);

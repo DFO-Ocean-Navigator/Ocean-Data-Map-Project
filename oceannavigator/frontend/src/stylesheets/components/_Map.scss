@@ -1,3 +1,5 @@
+@use "../utils/variables";
+
 .map-container {
   display: flex;
   justify-content: space-between;
@@ -122,7 +124,7 @@
     &.title {
       position: relative;
       background-color: #fff;
-      min-height: $tooltip-height;
+      min-height: variables.$tooltip-height;
       text-align: center;
 
       span {
@@ -138,11 +140,11 @@
         height: 0;
         position: absolute;
 
-        border-left: $tooltip-arrow-size solid transparent;
-        border-right: $tooltip-arrow-size solid transparent;
-        border-top: $tooltip-arrow-size solid #fff;
-        bottom: -$tooltip-arrow-size;
-        right: calc(50% - #{$tooltip-arrow-size});
+        border-left: variables.$tooltip-arrow-size solid transparent;
+        border-right: variables.$tooltip-arrow-size solid transparent;
+        border-top: variables.$tooltip-arrow-size solid #fff;
+        bottom: -(variables.$tooltip-arrow-size);
+        right: calc(50% - #{variables.$tooltip-arrow-size});
       }
     }
 

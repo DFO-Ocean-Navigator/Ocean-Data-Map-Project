@@ -4,7 +4,7 @@ import { Accordion, Dropdown } from "react-bootstrap";
 
 import { useGetDatasets } from "../../remote/queries";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const CustomToggle = React.forwardRef(
   ({ children, className, onClick }, ref) => (
@@ -36,7 +36,13 @@ const DropdownButton = forwardRef(({ children, onClick }, ref) => (
   </button>
 ));
 
-function DatasetSelector({ updateDataset, selected, horizontalLayout, t }) {
+export default function DatasetSelector({
+  updateDataset,
+  selected,
+  horizontalLayout,
+}) {
+  const { t, i18n } = useTranslation();
+
   const datasets = useGetDatasets();
 
   const selectHandler = (dataset) => {
@@ -128,5 +134,3 @@ DatasetSelector.propTypes = {
   selected: PropTypes.string.isRequired,
   horizontalLayout: PropTypes.bool,
 };
-
-export default withTranslation()(DatasetSelector);

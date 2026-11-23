@@ -5,12 +5,16 @@ import PropTypes from "prop-types";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-function AxisRange(props) {
-  const [auto, setAuto] = useState(props.range?false:true)
-  const [min, setMin] = useState(props.range?props.range[0]:props.variable.scale[0]);
-  const [max, setMax] = useState(props.range?props.range[1]:props.variable.scale[1]);
+export default function AxisRange(props) {
+  const [auto, setAuto] = useState(props.range ? false : true);
+  const [min, setMin] = useState(
+    props.range ? props.range[0] : props.variable.scale[0],
+  );
+  const [max, setMax] = useState(
+    props.range ? props.range[1] : props.variable.scale[1],
+  );
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -56,7 +60,7 @@ function AxisRange(props) {
   const handleResetButton = () => {
     clearTimeout(timerRef.current);
 
-    let scale = props.variable.scale
+    let scale = props.variable.scale;
 
     if (props.isImperial){
       scale = props.variable.imperial_scale
@@ -65,10 +69,7 @@ function AxisRange(props) {
     setMin(scale[0]);
     setMax(scale[1]);
 
-    timerRef.current = setTimeout(
-      updateParent([scale[0], scale[1]]),
-      500,
-    );
+    timerRef.current = setTimeout(updateParent([scale[0], scale[1]]), 500);
   };
 
   return (
@@ -98,17 +99,29 @@ function AxisRange(props) {
 
       <div className="axis-range-inputs">
         <div className="axis-range-inputs">
-          <label className="axis-range-tag" htmlFor={`${props.id}_min`}>Min</label>
+          <label className="axis-range-tag" htmlFor={`${props.id}_min`}>
+            Min
+          </label>
           <Form.Control
-            id={`${props.id}_min`} type="number" size="sm"
-            value={min} step={0.1} disabled={auto}
+            id={`${props.id}_min`}
+            type="number"
+            size="sm"
+            value={min}
+            step={0.1}
+            disabled={auto}
             onChange={(n, s) => changed("min", n)}
           />
 
-          <label className="axis-range-tag" htmlFor={`${props.id}_max`}>Max</label>
+          <label className="axis-range-tag" htmlFor={`${props.id}_max`}>
+            Max
+          </label>
           <Form.Control
-            id={`${props.id}_max`} type="number" size="sm"
-            value={max} step={0.1} disabled={auto}
+            id={`${props.id}_max`}
+            type="number"
+            size="sm"
+            value={max}
+            step={0.1}
+            disabled={auto}
             onChange={(n, s) => changed("max", n)}
           />
         </div>
@@ -126,5 +139,3 @@ AxisRange.propTypes = {
   range: PropTypes.array,
   onUpdate: PropTypes.func,
 };
-
-export default withTranslation()(AxisRange);

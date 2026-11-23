@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Row, Button, OverlayTrigger, Tooltip, Form } from "react-bootstrap";
 import PropTypes from "prop-types";
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle, t: _ }) => {
+export default function CustomPlotLabels({
+  id,
+  title,
+  plotTitle,
+  updatePlotTitle,
+}) {
   const [userProvidedTitle, setUserProvidedTitle] = useState(plotTitle);
+
+  const { t, i18n } = useTranslation();
 
   // Sync state when plotTitle prop changes
   useEffect(() => {
@@ -39,13 +46,13 @@ const CustomPlotLabels = ({ id, title, plotTitle, updatePlotTitle, t: _ }) => {
             type="text"
             value={userProvidedTitle || ""}
             onChange={handleChange}
-            placeholder={_("Default")}
+            placeholder={t("Default")}
             style={{ width: "83%" }}
           />
           {/* Update Plot Title Button */}
           <OverlayTrigger
             placement="right"
-            overlay={<Tooltip id="tooltip">{_("Apply Title")}</Tooltip>}
+            overlay={<Tooltip id="tooltip">{t("Apply Title")}</Tooltip>}
           >
             <Button onClick={handleSubmit}>Apply</Button>
           </OverlayTrigger>
@@ -61,7 +68,4 @@ CustomPlotLabels.propTypes = {
   title: PropTypes.string,
   plotTitle: PropTypes.string,
   updatePlotTitle: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(CustomPlotLabels);

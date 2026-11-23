@@ -1,3 +1,2 @@
-@import 'utils/all';
-@import 'components/all';
-
+@use "utils/all";
+@use "components/all" as components;

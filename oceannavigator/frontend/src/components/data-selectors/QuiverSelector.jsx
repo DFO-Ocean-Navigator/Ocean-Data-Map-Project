@@ -6,18 +6,19 @@ import Slider from "rc-slider";
 import ComboBox from "../lib/ComboBox.jsx";
 import { useGetDatasetVariables } from "../../remote/queries.js";
 
-import { withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const MODEL_CLASSES_WITH_QUIVER = Object.freeze(["Mercator"]);
 
-function QuiverSelector({
+export default function QuiverSelector({
   id,
   dataset,
   updateDataset,
   horizontalLayout,
   enabled = true,
-  t,
 }) {
+  const { t, i18n } = useTranslation();
+
   const quiverVariables = useGetDatasetVariables(dataset, enabled, true);
 
   useEffect(() => {
@@ -79,7 +80,4 @@ function QuiverSelector({
 QuiverSelector.propTypes = {
   dataset: PropTypes.object.isRequired,
   updateDataset: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
-
-export default withTranslation()(QuiverSelector);
