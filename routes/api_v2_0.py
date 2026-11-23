@@ -1183,8 +1183,8 @@ async def bathymetry_tiles(
             shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
         requestf,
-        media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+    selector.execute(sqlite, (zoom, x, y))
     )
 
 
