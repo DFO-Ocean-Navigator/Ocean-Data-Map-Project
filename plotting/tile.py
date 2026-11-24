@@ -1,4 +1,6 @@
+import gzip
 import math
+import sqlite3
 from io import BytesIO
 
 import matplotlib.cm
@@ -9,12 +11,9 @@ import xarray as xr
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.patches import Patch
 from matplotlib.ticker import ScalarFormatter
-from netCDF4 import Dataset
 from PIL import Image
 from pyproj import Proj
 from pyproj.transformer import Transformer
-from scipy.ndimage import gaussian_filter
-from skimage import measure
 
 import plotting.colormap as colormap
 import plotting.utils as utils
@@ -53,44 +52,32 @@ def get_m_coords(projection, x, y, z):
         transformer = Transformer.from_crs("EPSG:4326", projection, always_xy=True)
         x1, y1 = transformer.transform(nw[1], nw[0])
         x2, y2 = transformer.transform(se[1], se[0])
+
     elif projection == "EPSG:32661" or projection == "EPSG:3031":
         if projection == "EPSG:32661":
-            boundinglat = 60.0
-            lon_0 = 0
-            llcrnr_lon = -45
-            urcrnr_lon = 135
+            extent_min = -10637318.498257402
+            extent_max = 14637318.498257402
+
         elif projection == "EPSG:3031":
-            boundinglat = -60.0
-            lon_0 = 0
-            llcrnr_lon = -135
-            urcrnr_lon = 45
-
-        proj = Proj(projection)
-
-        xx, yy = proj(lon_0, boundinglat)
-        lon, llcrnr_lat = proj(math.sqrt(2.0) * yy, 0.0, inverse=True)
-        urcrnr_lat = llcrnr_lat
-
-        urcrnrx, urcrnry = proj(urcrnr_lon, urcrnr_lat)
-        llcrnrx, llcrnry = proj(llcrnr_lon, llcrnr_lat)
+            extent_min = -12367396.21845986
+            extent_max = 12367396.21845986
 
         n = 2**z
-        x_tile = (urcrnrx - llcrnrx) / n
-        y_tile = (urcrnry - llcrnry) / n
+        extent = extent_max - extent_min
+        tile_size = extent / n
 
-        dx = x_tile / 256
-        dy = y_tile / 256
+        llcrnrx = x * extent / n + extent_min
+        urcrnrx = llcrnrx + tile_size
 
-        x = llcrnrx + x * x_tile + dx * np.indices((256, 256), np.float32)[0, :, :]
-        y = (
-            llcrnry
-            + (n - y - 1) * y_tile
-            + dy * np.indices((256, 256), np.float32)[1, :, :]
-        )
-        x = x[:, ::-1]
-        y = y[:, ::-1]
+        urcrnry = extent_max - y * extent / n
+        llcrnry = urcrnry - tile_size
 
-        return x, y
+        x_vals = np.linspace(llcrnrx, urcrnrx, 256)
+        y_vals = np.linspace(urcrnry, llcrnry, 256)
+
+        y, x = np.meshgrid(y_vals, x_vals)
+
+        return x[::-1], y
 
     x0 = np.linspace(x1, x2, 256)
     y0 = np.linspace(y1, y2, 256)
@@ -235,6 +222,7 @@ def scale(args):
 
 async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
     settings = get_settings()
+    shape_file_dir = settings.shape_file_dir
 
     lat, lon = get_latlon_coords(projection, x, y, z)
     if len(lat.shape) == 1:
@@ -277,11 +265,6 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
         variable_name = vc.name
         cmap = colormap.find_colormap(variable_name)
 
-        if depth != "bottom":
-            depthm = dataset.depths[depth]
-        else:
-            depthm = 0
-
     if len(data) == 1:
         data = data[0]
 
@@ -290,17 +273,23 @@ async def plot(projection: str, x: int, y: int, z: int, args: dict) -> BytesIO:
         cmap = colormap.colormaps.get("speed")
 
     data = data.transpose()
-    xpx = x * 256
-    ypx = y * 256
+    if projection != "EPSG:3857":
+        data = np.fliplr(data)
 
-    # Mask out any topography if we're below the vector-tile threshold
-    if z < 8:
-        with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-            bathymetry = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
-
-        bathymetry = gaussian_filter(bathymetry, 0.5)
-
-        data[np.where(bathymetry > -depthm)] = np.ma.masked
+    connection = sqlite3.connect(
+        f"{shape_file_dir}/onav_land_mask_{projection}.mbtiles"
+    )
+    selector = connection.cursor()
+    sqlite = (
+        "SELECT tile_data FROM tiles "
+        "WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+    )
+    selector.execute(sqlite, (z, x, y))
+    land_mask_tile = selector.fetchone()
+    if land_mask_tile is not None:
+        decompressed_tile = gzip.decompress(land_mask_tile[0])
+        land_mask = np.frombuffer(decompressed_tile, dtype=np.uint8).reshape(256, 256)
+        data[land_mask == 1] = np.ma.masked
 
     sm = matplotlib.cm.ScalarMappable(
         matplotlib.colors.Normalize(vmin=scale[0], vmax=scale[1]), cmap=cmap
@@ -392,108 +381,3 @@ async def quiver(
 
             return d
     return {"type": "FeatureCollection", "features": []}
-
-
-def topo(projection: str, x: int, y: int, z: int, shaded_relief: bool) -> BytesIO:
-    settings = get_settings()
-
-    lat, lon = get_latlon_coords(projection, x, y, z)
-    if len(lat.shape) == 1:
-        lat, lon = np.meshgrid(lat, lon)
-
-    xpx = x * 256
-    ypx = y * 256
-
-    scale = [-4000, 1000]
-    cmap = "BrBG_r"
-
-    land_colors = plt.cm.BrBG_r(np.linspace(0.6, 1, 128))
-    water_colors = colormap.colormaps["bathymetry"](np.linspace(0.25, 1, 196))
-    colors = np.vstack((water_colors, land_colors))
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("topo", colors)
-
-    data = None
-    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)]
-
-    shade = 0
-    if shaded_relief:
-        x, y = np.gradient(data)
-        slope = np.pi / 2.0 - np.arctan(np.sqrt(x * x + y * y))
-        aspect = np.arctan2(-x, y)
-        altitude = np.pi / 4.0
-        azimuth = np.pi / 2.0
-
-        shaded = np.sin(altitude) * np.sin(slope) + np.cos(altitude) * np.cos(
-            slope
-        ) * np.cos((azimuth - np.pi / 2.0) - aspect)
-        shade = (shaded + 1) / 8
-        shade = np.repeat(np.expand_dims(shade, 2), 4, axis=2)
-        shade[:, :, 3] = 0
-
-    sm = matplotlib.cm.ScalarMappable(
-        matplotlib.colors.SymLogNorm(linthresh=0.1, vmin=scale[0], vmax=scale[1]),
-        cmap=cmap,
-    )
-    img = sm.to_rgba(np.squeeze(data))
-
-    img += shade
-    img = np.clip(img, 0, 1)
-
-    im = Image.fromarray((img * 255.0).astype(np.uint8))
-
-    buf = BytesIO()
-    im.save(buf, format="PNG", optimize=True)
-    buf.seek(0)
-
-    return buf
-
-
-async def bathymetry(projection: str, x: int, y: int, z: int) -> BytesIO:
-    settings = get_settings()
-
-    lat, lon = get_latlon_coords(projection, x, y, z)
-    if len(lat.shape) == 1:
-        lat, lon = np.meshgrid(lat, lon)
-
-    xpx = x * 256
-    ypx = y * 256
-
-    with Dataset(settings.etopo_file % (projection, z), "r") as dataset:
-        data = dataset["z"][ypx : (ypx + 256), xpx : (xpx + 256)] * -1
-        data = data[::-1, :]
-
-    LEVELS = [100, 200, 500, 1000, 2000, 3000, 4000, 5000, 6000]
-
-    normalized = matplotlib.colors.LogNorm(vmin=1, vmax=6000)(LEVELS)
-    cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
-        "transparent_gray", [(0, 0, 0, 1), (0, 0, 0, 0.5)]
-    )
-    colors = cmap(normalized)
-
-    fig = plt.figure()
-    fig.set_size_inches(4, 4)
-    ax = plt.Axes(fig, [0, 0, 1, 1])
-    ax.set_axis_off()
-    fig.add_axes(ax)
-
-    for i, l in enumerate(LEVELS):
-        contours = measure.find_contours(data, l)
-
-        for _, contour in enumerate(contours):
-            ax.plot(contour[:, 1], contour[:, 0], color=colors[i], linewidth=1)
-
-    plt.xlim([0, 255])
-    plt.ylim([0, 255])
-
-    buf = BytesIO()
-    plt.savefig(
-        buf,
-        format="png",
-        dpi=64,
-        transparent=True,
-    )
-    plt.close(fig)
-    buf.seek(0)
-
-    return buf

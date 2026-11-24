@@ -9,7 +9,6 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import proj4 from "proj4";
 import TileLayer from "ol/layer/Tile";
-import Overlay from "ol/Overlay.js";
 import { Style, Circle, Stroke, Fill } from "ol/style";
 import VectorTile from "ol/source/VectorTile";
 import VectorSource from "ol/source/Vector";
@@ -22,6 +21,7 @@ import LineString from "ol/geom/LineString.js";
 import Polygon from "ol/geom/Polygon.js";
 import Select from "ol/interaction/Select.js";
 import { pointerMove } from "ol/events/condition";
+import { createXYZ } from "ol/tilegrid";
 import * as olLoadingstrategy from "ol/loadingstrategy";
 import * as olProj from "ol/proj";
 import * as olProj4 from "ol/proj/proj4";
@@ -45,7 +45,6 @@ import {
   obsPointDrawAction,
   obsAreaDrawAction,
 } from "./drawing";
-import { useGetPointDepth, useGetPointData } from "../../remote/queries.js";
 
 import HoverPopup from "./HoverPopup.jsx";
 
@@ -70,9 +69,21 @@ const MIN_ZOOM = {
 };
 
 const MAX_ZOOM = {
-  "EPSG:3857": 16,
-  "EPSG:32661": 5,
-  "EPSG:3031": 5,
+  "EPSG:3857": 12,
+  "EPSG:32661": 8,
+  "EPSG:3031": 8,
+};
+
+const MAP_EXTENT = {
+  "EPSG:3857": [-40075016.68, -20048966.1, 40075016.68, 20048966.1],
+  "EPSG:32661": [
+    -10637318.498257402, -10637318.498257402, 14637318.498257402,
+    14637318.498257402,
+  ],
+  "EPSG:3031": [
+    -12367396.21845986, -12367396.21845986, 12367396.21845986,
+    12367396.21845986,
+  ],
 };
 
 proj4.defs(
@@ -86,29 +97,21 @@ proj4.defs(
 olProj4.register(proj4);
 
 var proj32661 = olProj.get("EPSG:32661");
-proj32661.setWorldExtent([-180.0, 60.0, 180.0, 90.0]);
-proj32661.setExtent([
-  -1154826.7379766018, -1154826.7379766018, 5154826.737976602,
-  5154826.737976601,
-]);
+proj32661.setWorldExtent([-180.0, 0.0, 180.0, 90.0]);
+proj32661.setExtent(MAP_EXTENT["EPSG:32661"]);
 
 var proj3031 = olProj.get("EPSG:3031");
-proj3031.setWorldExtent([-180.0, -90.0, 180.0, -60.0]);
-proj3031.setExtent([
-  -3087442.3458218463, -3087442.3458218463, 3087442.345821846,
-  3087442.345821846,
-]);
+proj3031.setWorldExtent([-180.0, -90.0, 180.0, 0.0]);
+proj3031.setExtent(MAP_EXTENT["EPSG:3031"]);
 
 /*******************
 Map layers:
 basemap: 0
 data tiles: 1
-land shapes (mbt tiles): 2
-bathy lines: 3
-bathy shapes: 4
-vector features: 5
-observation drawing: 6
-quivers: 7
+bathy lines: 2
+vector features: 3
+observation drawing: 4
+quivers: 5
 *****************/
 
 const Map = forwardRef((props, ref) => {
@@ -171,9 +174,10 @@ const Map = forwardRef((props, ref) => {
     const newMapView = createMapView(
       DEF_CENTER[projection],
       projection,
-      4,
+      DEF_ZOOM[projection],
       MIN_ZOOM[projection],
       MAX_ZOOM[projection],
+      MAP_EXTENT[props.mapSettings.projection],
     );
 
     let newFeatureVectorSource = new VectorSource({
@@ -307,6 +311,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       props.updateMapSettings("projection", "EPSG:3857");
@@ -329,6 +334,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       map1.setView(newMapView);
@@ -366,7 +372,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0 && props.dataset0.time.id >= 0) {
-      let quiverLayer = map0.getLayers().getArray()[7];
+      let quiverLayer = map0.getLayers().getArray()[5];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
@@ -382,7 +388,7 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1 && props.dataset1.time.id >= 0) {
-      let quiverLayer = map1.getLayers().getArray()[7];
+      let quiverLayer = map1.getLayers().getArray()[5];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
@@ -473,6 +479,7 @@ const Map = forwardRef((props, ref) => {
         newZoom,
         MIN_ZOOM[props.mapSettings.projection],
         MAX_ZOOM[props.mapSettings.projection],
+        MAP_EXTENT[props.mapSettings.projection],
       );
       map0.setView(newMapView);
       map1 && map1.setView(newMapView);
@@ -985,19 +992,19 @@ const Map = forwardRef((props, ref) => {
       strategy: olLoadingstrategy.bbox,
       format: new GeoJSON(),
     });
-    map0Layers[5].setSource(newFeatureVectorSource);
+    map0Layers[3].setSource(newFeatureVectorSource);
     setFeatureVectorSource(newFeatureVectorSource);
 
     let newObsDrawSource = new VectorSource({
       features: [],
     });
-    map0Layers[6].setSource(newObsDrawSource);
+    map0Layers[4].setSource(newObsDrawSource);
     setObsDrawSource(newObsDrawSource);
 
     if (props.compareDatasets) {
       let map1layers = map1.getLayers().getArray();
-      map1layers[5].setSource(newFeatureVectorSource);
-      map1layers[6].setSource(newObsDrawSource);
+      map1layers[3].setSource(newFeatureVectorSource);
+      map1layers[4].setSource(newObsDrawSource);
     }
     clearAnnotationLabels();
   };
@@ -1134,7 +1141,6 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -1152,6 +1158,7 @@ const Map = forwardRef((props, ref) => {
       DEF_ZOOM[props.mapSettings.projection],
       MIN_ZOOM[props.mapSettings.projection],
       MAX_ZOOM[props.mapSettings.projection],
+      MAP_EXTENT[props.mapSettings.projection],
     );
 
     map.setView(newMapView);
@@ -1159,48 +1166,38 @@ const Map = forwardRef((props, ref) => {
       setMapView(newMapView);
     }
 
-    const vectorTileGrid = new olTilegrid.createXYZ({
+    let tileGridOptions = {
       tileSize: 256,
+      minZoom: MIN_ZOOM[props.mapSettings.projection],
       maxZoom: MAX_ZOOM[props.mapSettings.projection],
-    });
+    };
 
-    mapLayers[2].setSource(
-      new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    );
+    if (props.mapSettings.projection !== "EPSG:3857") {
+      tileGridOptions["extent"] = MAP_EXTENT[props.mapSettings.projection];
+    }
 
-    mapLayers[4].setSource(
-      new VectorTile({
-        format: new MVT(),
-        tileGrid: vectorTileGrid,
-        tilePixelRatio: 8,
-        url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-        projection: props.mapSettings.projection,
-      }),
-    );
+    const tileGrid = createXYZ(tileGridOptions);
 
     let bathySource = null;
     switch (props.mapSettings.bathyContour) {
-      case "etopo1":
+      case "etopo":
       default:
-        bathySource = new XYZ({
+        bathySource = new VectorTile({
+          format: new MVT(),
+          tileGrid: tileGrid,
+          tileSize: 256,
           url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
           projection: props.mapSettings.projection,
         });
         break;
     }
 
-    mapLayers[3].setSource(bathySource);
+    mapLayers[2].setSource(bathySource);
 
     featureVectorSource.refresh();
 
-    if (mapLayers[7].getSource()) {
-      mapLayers[7].setSource(getQuiverSource(dataset, props.mapSettings));
+    if (mapLayers[5].getSource()) {
+      mapLayers[5].setSource(getQuiverSource(dataset, props.mapSettings));
     }
   };
 
@@ -1226,7 +1223,6 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {
@@ -1241,25 +1237,6 @@ const Map = forwardRef((props, ref) => {
         tileSize: 256,
         maxZoom: MAX_ZOOM[props.mapSettings.projection],
       });
-
-      mapLayers[4].setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          tilePixelRatio: 8,
-          url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        }),
-      );
-
-      mapLayers[2].setSource(
-        new VectorTile({
-          format: new MVT(),
-          tileGrid: vectorTileGrid,
-          url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${props.mapSettings.projection}`,
-          projection: props.mapSettings.projection,
-        }),
-      );
     }
   };
 
@@ -1287,7 +1264,6 @@ const Map = forwardRef((props, ref) => {
       props.mapSettings.basemap,
       props.mapSettings.projection,
       props.mapSettings.basemap_attribution,
-      props.mapSettings.topoShadedRelief,
     );
     map.getLayers().setAt(0, newLayerBasemap);
     if (map === map0) {

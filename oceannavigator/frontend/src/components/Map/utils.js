@@ -18,6 +18,7 @@ import VectorLayer from "ol/layer/Vector.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ";
+import { createXYZ } from "ol/tilegrid";
 import { defaults as defaultControls } from "ol/control/defaults";
 import DoubleClickZoom from "ol/interaction/DoubleClickZoom.js";
 import Graticule from "ol/layer/Graticule.js";
@@ -29,6 +30,7 @@ import * as olgeom from "ol/geom";
 import * as olProj from "ol/proj";
 import * as olTilegrid from "ol/tilegrid";
 import { isMobile } from "react-device-detect";
+import { Projection } from 'ol/proj';
 
 function deg2rad(deg) {
   return (deg * Math.PI) / 180.0;
@@ -65,13 +67,14 @@ const COLORS = [
 
 var drifter_color = {};
 
-export const createMapView = (center, projection, zoom, minZoom, maxZoom) => {
+export const createMapView = (center, projection, zoom, minZoom, maxZoom, extent) => {
   const newMapView = new View({
     center: olProj.transform(center, "EPSG:4326", projection),
     projection: projection,
     zoom: zoom,
     maxZoom: maxZoom,
     minZoom: minZoom,
+    extent: extent
   });
 
   return newMapView;
@@ -81,16 +84,12 @@ export const getBasemap = (
   source,
   projection,
   attribution,
-  topoShadedRelief,
 ) => {
   switch (source) {
     case "topo":
-      const shadedRelief = topoShadedRelief ? "true" : "false";
       return new TileLayer({
-        preload: 1,
-        maxZoom: 7 - 1e-10,
         source: new XYZ({
-          url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?shaded_relief=${shadedRelief}&projection=${projection}`,
+          url: `/api/v2.0/tiles/topo/{z}/{x}/{y}?projection=${projection}`,
           projection: projection,
         }),
       });
@@ -135,43 +134,8 @@ export const createMap = (
   const newLayerBasemap = getBasemap(
     mapSettings.basemap,
     mapSettings.projection,
-    mapSettings.basemap_attribution,
-    mapSettings.topoShadedRelief,
+    mapSettings.basemap_attribution
   );
-
-  const vectorTileGrid = new olTilegrid.createXYZ({
-    tileSize: 256,
-    maxZoom: maxZoom,
-  });
-
-  const newLayerLandShapes = new VectorTileLayer({
-    opacity: 1,
-    style: new Style({
-      stroke: new Stroke({
-        color: "rgba(0, 0, 0, 1)",
-      }),
-      fill: new Fill({
-        color: "white",
-      }),
-    }),
-    source: new VectorTile({
-      format: new MVT(),
-      tileGrid: vectorTileGrid,
-      tilePixelRatio: 8,
-      url: `/api/v2.0/mbt/lands/{z}/{x}/{y}?projection=${mapSettings.projection}`,
-      projection: mapSettings.projection,
-    }),
-  });
-
-  const newLayerBath = new TileLayer({
-    source: new XYZ({
-      url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
-      projection: mapSettings.projection,
-    }),
-    opacity: mapSettings.mapBathymetryOpacity,
-    visible: mapSettings.bathymetry,
-    preload: 1,
-  });
 
   const newLayerBathShapes = new VectorTileLayer({
     opacity: mapSettings.mapBathymetryOpacity,
@@ -183,9 +147,9 @@ export const createMap = (
     }),
     source: new VectorTile({
       format: new MVT(),
-      tileGrid: vectorTileGrid,
-      tilePixelRatio: 8,
-      url: `/api/v2.0/mbt/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
+      tileGrid: createXYZ({ tileSize: 256, maxZoom: maxZoom }),
+      tileSize: 256,
+      url: `/api/v2.0/tiles/bath/{z}/{x}/{y}?projection=${mapSettings.projection}`,
       projection: mapSettings.projection,
     }),
   });
@@ -221,8 +185,6 @@ export const createMap = (
     layers: [
       newLayerBasemap,
       layerData,
-      newLayerLandShapes,
-      newLayerBath,
       newLayerBathShapes,
       layerFeatureVector,
       newLayerObsDraw,
@@ -262,11 +224,9 @@ export const createMap = (
   mapObject.addInteraction(dragBox);
 
   newLayerBasemap.setZIndex(0);
-  newLayerLandShapes.setZIndex(2);
-  newLayerBath.setZIndex(3);
-  newLayerBathShapes.setZIndex(4);
-  layerFeatureVector.setZIndex(5);
-  newLayerObsDraw.setZIndex(6);
+  newLayerBathShapes.setZIndex(2);
+  layerFeatureVector.setZIndex(3);
+  newLayerObsDraw.setZIndex(4);
   newLayerQuiver.setZIndex(100);
 
   return mapObject;
