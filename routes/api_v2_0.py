@@ -6,6 +6,8 @@ import os
 import pathlib
 import pickle
 import sqlite3
+import tempfile
+from contextlib import closing
 from io import BytesIO
 from typing import Annotated, Literal
 
@@ -1177,9 +1179,9 @@ async def quiver_tile(
 
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_tiles(
-    zoom: Annotated[int, Path(examples=[8])],
-    x: Annotated[int, Path(examples=[88])],
-    y: Annotated[int, Path(examples=[85])],
+    zoom: Annotated[int, Path(ge=0, le=12, examples=[8])],
+    x: Annotated[int, Path(ge=0, examples=[88])],
+    y: Annotated[int, Path(ge=0, examples=[85])],
     projection: Annotated[
         PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
     ] = "EPSG:3857",
@@ -1188,46 +1190,55 @@ async def bathymetry_tiles(
     Generates bathymetry vector tiles
     """
 
+    if zoom < 0 or zoom > 22 or x < 0 or y < 0 or x >= (1 << zoom) or y >= (1 << zoom):
+        raise HTTPException(status_code=400, detail="Tile coordinates out of bounds")
+
     settings = get_settings()
-
     requestf = get_cached_tile_path(f"bath/{projection}/{zoom}/{x}/{y}.pbf")
-
-    shape_file_dir = settings.shape_file_dir
-
-    # Send blank tile if conditions aren't met
-    blank_response = FileResponse(
-        shape_file_dir + "/blank.mbt",
-        media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
+    shape_file_dir = pathlib.Path(settings.shape_file_dir)
+    cache_headers = {"Cache-Control": f"max-age={MAX_CACHE}"}
 
     if not requestf.is_file():
-        connection = sqlite3.connect(f"{shape_file_dir}/onav_bathy_{projection}.mbtiles")
-        selector = connection.cursor()
-        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
-        selector.execute(sqlite, (zoom, x, y))
-        tile = selector.fetchone()
-        if tile is None:
-            return blank_response
+        tile_db_path = shape_file_dir / f"onav_bathy_{projection}.mbtiles"
 
-        # Write tile to cache and send file
+        if not tile_db_path.is_file():
+            raise HTTPException(status_code=404, detail="Tile database not found.")
+
+        db_uri = f"{tile_db_path.resolve().as_uri()}?mode=ro"
+        with closing(sqlite3.connect(db_uri, uri=True)) as connection:
+            selector = connection.cursor()
+            selector.execute(
+                "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
+                (zoom, x, y),
+            )
+            tile = selector.fetchone()
+
+        if tile is None:
+            return FileResponse(
+                shape_file_dir / "blank.mbt",
+                media_type="image/png",
+                headers=cache_headers,
+            )
+
         requestf.parent.mkdir(parents=True, exist_ok=True)
         decompressed_tile = gzip.decompress(tile[0])
-        with open(requestf.as_posix(), "wb") as f:
-            f.write(decompressed_tile)
+        with tempfile.NamedTemporaryFile(dir=requestf.parent, delete=False) as tmp_file:
+            tmp_file.write(decompressed_tile)
+            tmp_name = tmp_file.name
+        os.replace(tmp_name, requestf)
 
     return FileResponse(
         requestf,
         media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        headers=cache_headers,
     )
 
 
 @router.get("/tiles/topo/{zoom}/{x}/{y}")
 def topography_tiles(
-    zoom: Annotated[int, Path(examples=[8])],
-    x: Annotated[int, Path(examples=[88])],
-    y: Annotated[int, Path(examples=[85])],
+    zoom: Annotated[int, Path(ge=0, le=12, examples=[8])],
+    x: Annotated[int, Path(ge=0, examples=[88])],
+    y: Annotated[int, Path(ge=0, examples=[85])],
     projection: Annotated[
         PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
     ] = "EPSG:3857",
@@ -1236,38 +1247,46 @@ def topography_tiles(
     Generates topographical raster tiles
     """
 
+    if zoom < 0 or zoom > 22 or x < 0 or y < 0 or x >= (1 << zoom) or y >= (1 << zoom):
+        raise HTTPException(status_code=400, detail="Tile coordinates out of bounds")
+
     settings = get_settings()
-
     requestf = get_cached_tile_path(f"topo/{projection}/{zoom}/{x}/{y}.png")
-
-    shape_file_dir = settings.shape_file_dir
-
-    # Send blank tile if conditions aren't met
-    blank_response = FileResponse(
-        shape_file_dir + "/blank.mbt",
-        media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
+    shape_file_dir = pathlib.Path(settings.shape_file_dir)
+    cache_headers = {"Cache-Control": f"max-age={MAX_CACHE}"}
 
     if not requestf.is_file():
-        connection = sqlite3.connect(f"{shape_file_dir}/onav_basemap_{projection}.mbtiles")
-        selector = connection.cursor()
-        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
-        selector.execute(sqlite, (zoom, x, y))
-        tile = selector.fetchone()
+        tile_db_path = shape_file_dir / f"onav_basemap_{projection}.mbtiles"
+
+        if not tile_db_path.is_file():
+            raise HTTPException(status_code=404, detail="Tile database not found.")
+
+        db_uri = f"{tile_db_path.resolve().as_uri()}?mode=ro"
+        with closing(sqlite3.connect(db_uri, uri=True)) as connection:
+            selector = connection.cursor()
+            selector.execute(
+                "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
+                (zoom, x, y),
+            )
+            tile = selector.fetchone()
 
         if tile is None:
-            return blank_response
+            return FileResponse(
+                shape_file_dir / "blank.mbt",
+                media_type="image/png",
+                headers=cache_headers,
+            )
 
-        # Write tile to cache and send file
         requestf.parent.mkdir(parents=True, exist_ok=True)
-        with open(requestf.as_posix(), "wb") as f:
-            f.write(tile[0])
+        with tempfile.NamedTemporaryFile(dir=requestf.parent, delete=False) as tmp_file:
+            tmp_file.write(tile[0])
+            tmp_name = tmp_file.name
+        os.replace(tmp_name, requestf)
 
     return FileResponse(
         requestf,
         media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        headers=cache_headers,
     )
 
 
