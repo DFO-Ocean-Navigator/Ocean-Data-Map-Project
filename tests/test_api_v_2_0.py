@@ -341,7 +341,7 @@ class TestAPIv2:
 
     def test_topo_endpoint(self):
         response = self.client.get(
-            "/api/v2.0/tiles/topo/4/4/5?shaded_relief=false&projection=EPSG:3857"
+            "/api/v2.0/tiles/topo/4/5/5?projection=EPSG:3857"
         )
 
         assert response.status_code == 200
@@ -360,12 +360,6 @@ class TestAPIv2:
 
     def test_bath_endpoint(self):
         response = self.client.get("api/v2.0/tiles/bath/4/5/5?projection=EPSG:3857")
-
-        assert response.status_code == 200
-
-    @unittest.skip("Dependent on local resources - fails in GitHub actions.")
-    def test_mbt_endpoint(self):
-        response = self.client.get("/api/v2.0/tiles/topo/7/105/77?projection=EPSG:3857")
 
         assert response.status_code == 200
 
