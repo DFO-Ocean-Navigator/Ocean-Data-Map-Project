@@ -20,11 +20,13 @@ export default function variableSelector({
   let variables = useGetDatasetVariables(dataset);
 
   if (hasDepth) {
-    variables.data = variables.data.filter((v) => {
-      return v.two_dimensional === false;
-    });
+    const depthVariables = variables.data.filter(
+      (v) => v.two_dimensional === false,
+    );
+    if (depthVariables.length > 0) {
+      variables.data = depthVariables;
+    }
   }
-
   useEffect(() => {
     if (variables.data.length > 0) {
       const variableIds = Array.isArray(dataset.variable)
@@ -51,6 +53,11 @@ export default function variableSelector({
             nextVariable.map((v) => v.id),
           );
         }
+      }
+
+      const only2d = variables.data.every((v) => v.two_dimensional === true);
+      if (dataset?.twoDimensional !== only2d) {
+        updateDataset("only2d", only2d);
       }
     }
     updateQueryStatus("variables", variables.status);
