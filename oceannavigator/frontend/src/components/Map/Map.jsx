@@ -372,12 +372,12 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map0 && props.dataset0.time.id >= 0) {
-      let quiverLayer = map0.getLayers().getArray()[7];
+      let quiverLayer = map0.getLayers().getArray()[5];
       let source = null;
       if (props.dataset0.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset0, props.mapSettings);
       }
-      // quiverLayer.setSource(source);
+      quiverLayer.setSource(source);
     }
   }, [
     props.dataset0.id,
@@ -388,12 +388,12 @@ const Map = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (map1 && props.dataset1.time.id >= 0) {
-      let quiverLayer = map1.getLayers().getArray()[7];
+      let quiverLayer = map1.getLayers().getArray()[5];
       let source = null;
       if (props.dataset1.quiverVariable.toLowerCase() !== "none") {
         source = getQuiverSource(props.dataset1, props.mapSettings);
       }
-      // quiverLayer.setSource(source);
+      quiverLayer.setSource(source);
     }
   }, [
     props.dataset1.id,
