@@ -5,7 +5,6 @@ import json
 import os
 import pathlib
 import pickle
-import shutil
 import sqlite3
 from io import BytesIO
 from typing import Annotated, Literal
@@ -1186,7 +1185,7 @@ async def bathymetry_tiles(
     ] = "EPSG:3857",
 ):
     """
-    Serves mbt files
+    Generates bathymetry vector tiles
     """
 
     settings = get_settings()
@@ -1202,28 +1201,21 @@ async def bathymetry_tiles(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    if requestf.is_file():
-        return FileResponse(
-            requestf.as_posix(),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    if not requestf.is_file():
+        connection = sqlite3.connect(f"{shape_file_dir}/onav_bathy_{projection}.mbtiles")
+        selector = connection.cursor()
+        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+        selector.execute(sqlite, (zoom, x, y))
+        tile = selector.fetchone()
+        if tile is None:
+            return blank_response
 
-    connection = sqlite3.connect(f"{shape_file_dir}/onav_bathy_{projection}.mbtiles")
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
-    selector.execute(sqlite, (zoom, x, y))
-    tile = selector.fetchone()
-    if tile is None:
-        return blank_response
+        # Write tile to cache and send file
+        requestf.parent.mkdir(parents=True, exist_ok=True)
+        decompressed_tile = gzip.decompress(tile[0])
+        with open(requestf.as_posix(), "wb") as f:
+            f.write(decompressed_tile)
 
-    # Write tile to cache and send file
-    requestf.parent.mkdir(parents=True, exist_ok=True)
-    with open(requestf.as_posix(), "wb") as f:
-        f.write(tile[0])
-    with gzip.open(requestf.as_posix(), "rb") as gzipped:
-        with open(requestf, "wb") as tileout:
-            shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
         requestf,
         media_type="image/png",
@@ -1241,7 +1233,7 @@ def topography_tiles(
     ] = "EPSG:3857",
 ):
     """
-    Serves mbt files
+    Generates topographical raster tiles
     """
 
     settings = get_settings()
@@ -1257,29 +1249,23 @@ def topography_tiles(
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
 
-    if requestf.is_file():
-        return FileResponse(
-            requestf.as_posix(),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    if not requestf.is_file():
+        connection = sqlite3.connect(f"{shape_file_dir}/onav_basemap_{projection}.mbtiles")
+        selector = connection.cursor()
+        sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
+        selector.execute(sqlite, (zoom, x, y))
+        tile = selector.fetchone()
 
-    connection = sqlite3.connect(f"{shape_file_dir}/onav_basemap_{projection}.mbtiles")
-    selector = connection.cursor()
-    sqlite = "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?"
-    selector.execute(sqlite, (zoom, x, y))
-    tile = selector.fetchone()
+        if tile is None:
+            return blank_response
 
-    if tile is None:
-        return blank_response
-
-    # Write tile to cache and send file
-    requestf.parent.mkdir(parents=True, exist_ok=True)
-    with open(requestf.as_posix(), "wb") as f:
-        f.write(tile[0])
+        # Write tile to cache and send file
+        requestf.parent.mkdir(parents=True, exist_ok=True)
+        with open(requestf.as_posix(), "wb") as f:
+            f.write(tile[0])
 
     return FileResponse(
-        requestf.as_posix(),
+        requestf,
         media_type="image/png",
         headers={"Cache-Control": f"max-age={MAX_CACHE}"},
     )
