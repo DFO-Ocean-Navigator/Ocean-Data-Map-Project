@@ -176,21 +176,25 @@ def scale(args):
     """
 
     dataset_name = args.get("dataset")
-    config = DatasetConfig(dataset_name)
-    scale = args.get("scale")
-    scale = [float(component) for component in scale.split(",")]
-
     variable = args.get("variable")
-    variable = variable.split(",")
 
-    if len(variable) > 1:
-        variable_unit = config.variable[",".join(variable)].unit
-        variable_name = config.variable[",".join(variable)].name
-        categorical = False
+    if dataset_name != "basemap":
+        variable = variable.split(",")
+        config = DatasetConfig(dataset_name)
+        scale = args.get("scale")
+        scale = [float(component) for component in scale.split(",")]
+
+        if len(variable) > 1:
+            variable_unit = config.variable[",".join(variable)].unit
+            variable_name = config.variable[",".join(variable)].name
+            categorical = False
+        else:
+            variable_unit = config.variable[variable[0]].unit
+            variable_name = config.variable[variable[0]].name
+            categorical = config.variable[variable[0]].is_categorical
     else:
-        variable_unit = config.variable[variable[0]].unit
-        variable_name = config.variable[variable[0]].name
-        categorical = config.variable[variable[0]].is_categorical
+        variable_name = variable
+        categorical = True
 
     cmap = colormap.find_colormap(variable_name)
 

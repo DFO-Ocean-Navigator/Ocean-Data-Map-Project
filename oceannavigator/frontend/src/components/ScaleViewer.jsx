@@ -3,48 +3,73 @@ import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import Fade from "react-bootstrap/Fade";
 import ColormapRange from "./ColormapRange.jsx";
 
-function ScaleViewer(props) {
-  const [source, setSource] = useState(
-    `/api/v2.0/scale/${props.dataset.id}/${props.dataset.variable.id}` +
-      `/${props.dataset.variable.scale[0]},${props.dataset.variable.scale[1]}`,
-  );
-  const [scale, setScale] = useState(props.dataset.variable.scale);
+import { useGetScaleImage } from "../remote/queries.js";
+
+function ScaleViewer({
+  dataset,
+  mapSettings,
+  onUpdate,
+  mapRef,
+  show,
+  rightMap = false,
+}) {
   const [defaultScale, setDefaultScale] = useState(
-    props.dataset.variable.scale,
+    dataset.variable.scale,
   );
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    setDefaultScale(props.dataset.variable.scale);
-  }, [props.dataset.id, props.dataset.variable.id]);
+  let isCategorical = dataset.variable.is_categorical;
+  let datasetId,
+    variable,
+    scale = null;
+
+  if (mapSettings.hideDataLayer && mapSettings.basemap == "topo") {
+    datasetId = "basemap";
+    variable = "onav_topo";
+    isCategorical = true;
+  } else if (mapSettings.hideDataLayer && mapSettings.basemap == "lithology") {
+    datasetId = "seafloor_lithology";
+    variable = "lithology";
+    scale = "1,13";
+    isCategorical = true;
+  } else {
+    datasetId = dataset.id;
+    variable = dataset.variable.id;
+    scale = `${dataset.variable.scale[0]},${dataset.variable.scale[1]}`;
+  }
+
+  const scaleImage = useGetScaleImage(datasetId, variable, scale);
 
   useEffect(() => {
-    setScale(props.dataset.variable.scale);
-    setSource(
-      `/api/v2.0/scale/${props.dataset.id}/${props.dataset.variable.id}` +
-        `/${props.dataset.variable.scale[0]},${props.dataset.variable.scale[1]}`,
-    );
-  }, [props.dataset.variable.scale]);
+    setDefaultScale(dataset.variable.scale);
+  }, [dataset.id, dataset.variable.id]);
+
+  useEffect(() => {
+    return () => {
+      if (scaleImage.data) {
+        URL.revokeObjectURL(scaleImage.data);
+      }
+    };
+  }, [scaleImage.data]);
 
   const handleExpand = () => {
     setExpanded(!expanded);
   };
 
-  const isCategorical = props.dataset.variable.is_categorical;
-
-  const rangeControl = expanded ? (
-    <ColormapRange
-      id="variable_scale"
-      state={scale}
-      title="Colormap Range"
-      onUpdate={props.onUpdate}
-      default_scale={defaultScale}
-      showAuto={true}
-      dataset={props.dataset}
-      mapSettings={props.mapSettings}
-      mapRef={props.mapRef}
-    />
-  ) : null;
+  const rangeControl =
+    !isCategorical && expanded ? (
+      <ColormapRange
+        id="variable_scale"
+        state={dataset.variable.scale}
+        title="Colormap Range"
+        onUpdate={onUpdate}
+        default_scale={defaultScale}
+        showAuto={true}
+        dataset={dataset}
+        mapSettings={mapSettings}
+        mapRef={mapRef}
+      />
+    ) : null;
 
   const expandIcon = !isCategorical ? (
     expanded ? (
@@ -54,14 +79,14 @@ function ScaleViewer(props) {
     )
   ) : null;
 
-  const scaleImage = (
-    <img className="scale-image" src={source} onClick={isCategorical ? null : handleExpand} />
-  );
-
   return (
-    <Fade in={props.show}>
-      <div className={`ScaleViewer ${props.right ? "right" : ""}`}>
-        {scaleImage}
+    <Fade in={show}>
+      <div className={`ScaleViewer ${rightMap ? "right" : ""}`}>
+        <img
+          className="scale-image"
+          src={scaleImage.data}
+          onClick={isCategorical ? null : handleExpand}
+        />
         {rangeControl}
         {expandIcon}
       </div>

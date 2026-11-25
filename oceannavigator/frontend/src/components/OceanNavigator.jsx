@@ -415,7 +415,7 @@ export default function OceanNavigator(props) {
               onUpdate={updateDataset1}
               mapRef={mapRef}
               show={showOverlays}
-              className="right"
+              rightMap
             />
           )}
         </div>
