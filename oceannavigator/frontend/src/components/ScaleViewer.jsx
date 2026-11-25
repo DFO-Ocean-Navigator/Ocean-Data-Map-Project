@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 import Fade from "react-bootstrap/Fade";
-import ColormapRange from "./ColormapRange.jsx";
+import { Spinner } from "react-bootstrap";
 
+import ColormapRange from "./ColormapRange.jsx";
 import { useGetScaleImage } from "../remote/queries.js";
 
 function ScaleViewer({
@@ -13,9 +14,7 @@ function ScaleViewer({
   show,
   rightMap = false,
 }) {
-  const [defaultScale, setDefaultScale] = useState(
-    dataset.variable.scale,
-  );
+  const [defaultScale, setDefaultScale] = useState(dataset.variable.scale);
   const [expanded, setExpanded] = useState(false);
 
   let isCategorical = dataset.variable.is_categorical;
@@ -79,14 +78,21 @@ function ScaleViewer({
     )
   ) : null;
 
+  const img =
+    scaleImage.status === "success" ? (
+      <img
+        className="scale-image"
+        src={scaleImage.data}
+        onClick={isCategorical ? null : handleExpand}
+      />
+    ) : (
+      <Spinner animation="border" variant="primary" />
+    );
+
   return (
     <Fade in={show}>
       <div className={`ScaleViewer ${rightMap ? "right" : ""}`}>
-        <img
-          className="scale-image"
-          src={scaleImage.data}
-          onClick={isCategorical ? null : handleExpand}
-        />
+        {img}
         {rangeControl}
         {expandIcon}
       </div>
