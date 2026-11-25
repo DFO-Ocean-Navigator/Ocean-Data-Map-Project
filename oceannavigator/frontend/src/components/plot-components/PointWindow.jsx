@@ -88,7 +88,7 @@ export default function PointWindow({
   );
 
   useEffect(() => {
-    const dataset2D = dataset?.only2d ? true : false
+    const dataset2D = dataset?.only2d ? true : false;
 
     if (dataset2D && selected !== TabEnum.MOORING) {
       setSelected(TabEnum.MOORING);
