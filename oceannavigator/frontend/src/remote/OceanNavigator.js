@@ -139,6 +139,20 @@ export async function GetPlotImagePromise(plotType, query) {
   return response.data;
 }
 
+export async function GetScaleImagePromise(dataset, variable=null, scale=null) {
+  const queryConfig = {
+    method: "get",
+    responseType: "blob",
+    url: `/api/v2.0/scale/${dataset}`,
+    params: {
+      variable: variable,
+      scale: scale,
+    },
+  };
+  const response = await axios.request(queryConfig);
+  return URL.createObjectURL(response.data);
+}
+
 export async function GetComboBoxQueryPromise(url) {
   const queryConfig = {
     method: "get",

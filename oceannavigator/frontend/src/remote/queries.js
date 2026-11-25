@@ -7,6 +7,7 @@ import {
   GetTimestampsPromise,
   GetDepthsPromise,
   GetPlotImagePromise,
+  GetScaleImagePromise,
   GetAllVariablesPromise,
   GetPointDepthPromise,
   GetPointDataPromise,
@@ -135,6 +136,15 @@ export function useGetPlotImage(feature, plotType, query) {
   const { data, status } = useQuery({
     queryKey: ["plotImage", { feature, plotType, query }],
     queryFn: () => GetPlotImagePromise(plotType, query),
+  });
+
+  return { data, status };
+}
+
+export function useGetScaleImage(dataset, variable, scale) {
+  const { data, status} = useQuery({
+    queryKey: ["scaleImage", { dataset, variable, scale }],
+    queryFn: () => GetScaleImagePromise(dataset, variable, scale),
   });
 
   return { data, status };
