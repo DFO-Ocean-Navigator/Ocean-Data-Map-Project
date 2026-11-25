@@ -367,14 +367,14 @@ class VariableConfig:
             return [0, 100]
 
     @property
-    def data_categories(self) -> list | None:
+    def is_categorical(self) -> bool:
         """
-        Returns ordered category labels for discrete/categorical variables.
+        Is the given variable categorical data - i.e. has discrete values.
         """
         try:
-            return self.__get_attribute("data_categories")
+            return self.__get_attribute("categorical")
         except KeyError:
-            return None
+            return False
 
     @property
     def is_hidden(self) -> bool:

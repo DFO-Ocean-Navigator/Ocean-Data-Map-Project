@@ -141,7 +141,7 @@ export default function AreaWindow(props) {
     <Card variant="primary">
       <Card.Header>{t("Area Settings")}</Card.Header>
       <Card.Body className="global-settings-card">
-        {!props.dataset0.variable.data_categories && (
+        {!props.dataset0.variable.is_categorical && (
           <CheckBox
             id="dataset_compare"
             checked={props.compareDatasets}
@@ -158,7 +158,7 @@ export default function AreaWindow(props) {
         >
           {t("Swap Views")}
         </Button> */}
-        {!props.dataset0.variable.data_categories && (
+        {!props.dataset0.variable.is_categorical && (
           <>
             <Form.Check
               type="checkbox"

@@ -94,6 +94,14 @@ export const getBasemap = (
           projection: projection,
         }),
       });
+    case "lithology":
+      return new TileLayer({
+        preload: 1,
+        source: new XYZ({
+          url: `/api/v2.0/tiles/seafloor_lithology/lithology/2051222400/0/{z}/{x}/{y}?projection=${projection}&scale=1,13&interp=gaussian&radius=25&neighbours=10`,
+          projection: projection,
+        }),
+      });
     case "ocean":
       return new TileLayer({
         preload: 1,

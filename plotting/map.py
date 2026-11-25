@@ -12,7 +12,7 @@ import cartopy.feature as cfeature
 import cartopy.img_transform as cimg_transform
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import FuncNorm
+from matplotlib.colors import FuncNorm, ListedColormap
 from matplotlib.patches import Patch, PathPatch, Polygon
 from matplotlib.path import Path
 from osgeo import gdal, osr
@@ -337,8 +337,19 @@ class MapPlotter(Plotter):
             self.variable_unit = self.get_variable_units(dataset, self.variables)[0]
             self.variable_name = self.get_variable_names(dataset, self.variables)[0]
 
+            self.categorical = self.dataset_config.variable[
+                self.variables[0]
+            ].is_categorical
+
             if self.cmap is None:
-                self.cmap = colormap.find_colormap(self.variable_name)
+                cmap = colormap.find_colormap(self.variable_name)
+                self.cmap_labels = self.cmap_colors = []
+                if self.categorical:
+                    self.cmap_colors = cmap["colors"]
+                    self.cmap_labels = cmap["labels"]
+                    self.cmap = ListedColormap(cmap["colors"])
+                else:
+                    self.cmap = cmap
 
             if self.depth == "bottom":
                 depth_value_map = "Bottom"
@@ -349,7 +360,7 @@ class MapPlotter(Plotter):
 
             data = []
             var = dataset.variables[self.variables[0]]
-            if self.dataset_config.variable[self.variables[0]].data_categories:
+            if self.categorical:
                 self.interp = "nearest"
             if self.filetype in ["csv", "odv", "txt"]:
                 d, depth_value_map = dataset.get_area(
@@ -797,9 +808,6 @@ class MapPlotter(Plotter):
                 self.data, self.dataset_config.variable[f"{self.variables[0]}"]
             )
 
-        data_categories = self.dataset_config.variable[
-            self.variables[0]
-        ].data_categories
         c = ax.imshow(
             self.data,
             vmin=vmin,
@@ -1106,18 +1114,15 @@ class MapPlotter(Plotter):
             )
         plt.title(title.strip())
         axpos = ax.get_position()
-        if data_categories:
+        if self.categorical:
             legend_patches = [
                 Patch(facecolor=color, edgecolor="k", label=label)
-                for color, label in zip(self.cmap.colors, data_categories)
+                for color, label in zip(self.cmap_colors, self.cmap_labels)
             ]
             ax.legend(
                 handles=legend_patches,
                 fontsize=9,
                 frameon=False,
-                title=f"{self.variable_name.title()} ({var_unit})",
-                title_fontsize=14,
-                loc="upper left",
                 bbox_to_anchor=(1.01, 1),
             )
         else:

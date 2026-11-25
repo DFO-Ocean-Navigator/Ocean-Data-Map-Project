@@ -265,7 +265,7 @@ def variables(
                     "interp": config.variable[v].interpolation,
                     "two_dimensional": v.is_surface_only(),
                     "vector_variable": v.key in config.vector_variables,
-                    "data_categories": config.variable[v].data_categories is not None,
+                    "is_categorical": config.variable[v].is_categorical,
                 }
             )
 
@@ -365,11 +365,11 @@ def depths(
     return data
 
 
-@router.get("/scale/{dataset}/{variable}/{scale}")
+@router.get("/scale/{dataset}")
 def scale(
     dataset: str = Path(description="The key of the dataset.", examples=["giops_day"]),
-    variable: str = Path(description="The key of the variable.", examples=["votemper"]),
-    scale: str = Path(description="Min/max values for scale image", examples=["-5,30"]),
+    variable: str = Query(None, description="The key of the variable.", examples=["votemper"]),
+    scale: str = Query(None, description="Min/max values for scale image", examples=["-5,30"]),
 ):
     """
     Returns a scale bar png
