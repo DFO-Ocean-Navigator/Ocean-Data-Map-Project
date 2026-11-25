@@ -16,6 +16,12 @@ const BASEMAPS = [
       "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce.",
   },
   {
+    id: "lithology",
+    value: "EarthByte Seafloor Lithology v1.0",
+    attribution:
+      "EarthByte Group, School of Geosciences, University of Sydney.",
+  },  
+  {
     id: "ocean",
     value: "Esri Ocean Basemap",
     attribution:
