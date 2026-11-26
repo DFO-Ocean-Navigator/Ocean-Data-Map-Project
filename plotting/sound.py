@@ -120,7 +120,11 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
 
         ax3 = ax.twiny()
         xlim = ax.get_xlim()
+        x_ticks = ax.get_xticks()
         ax3.set_xlim((xlim * ureg.meter_per_second).to(ureg.foot_per_second).magnitude)
+        ax3.set_xticks(
+            (x_ticks[1:] * ureg.meter_per_second).to(ureg.foot_per_second).magnitude
+        )
         ax3.set_xlabel(
             "Sound Speed (ft/s)", fontsize=14
         )
