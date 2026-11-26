@@ -76,15 +76,6 @@ class SoundSpeedPlotter(TemperatureSalinityPlotter):
         for i, ss in enumerate(self.sspeed):
             ax.plot(ss, self.temperature_depths[i], "-")
 
-        minspeed = np.amin(self.sspeed)
-        maxspeed = np.amax(self.sspeed)
-
-        ax.set_xlim(
-            [
-                np.amin(self.sspeed) - (maxspeed - minspeed) * 0.1,
-                np.amax(self.sspeed) + (maxspeed - minspeed) * 0.1,
-            ]
-        )
         if "depth_range" in self.axis_range:
             min_depth, max_depth = self.axis_range["depth_range"]
             ax.set_ylim([float(min_depth), float(max_depth)])
