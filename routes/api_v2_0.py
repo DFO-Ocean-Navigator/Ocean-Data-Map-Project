@@ -5,9 +5,11 @@ import json
 import os
 import pathlib
 import pickle
-import shutil
 import sqlite3
+import tempfile
+from contextlib import closing
 from io import BytesIO
+from typing import Annotated, Literal
 
 import geojson
 import numpy as np
@@ -54,9 +56,7 @@ from plotting.scale import get_scale
 from plotting.scriptGenerator import generatePython, generateR
 from plotting.sound import SoundSpeedPlotter
 from plotting.stick import StickPlotter
-from plotting.tile import bathymetry as plot_bathymetry
 from plotting.tile import scale as plot_scale
-from plotting.tile import topo as plot_topography
 from plotting.timeseries import TimeseriesPlotter
 from plotting.track import TrackPlotter
 from plotting.transect import TransectPlotter
@@ -65,6 +65,7 @@ from utils.errors import ClientError
 
 FAILURE = ClientError("Bad API usage")
 MAX_CACHE = 315360000
+PROJECTIONS = Literal["EPSG:3857", "EPSG:3031", "EPSG:32661"]
 
 try:
     Base.metadata.create_all(bind=engine)
@@ -83,6 +84,30 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_cached_tile_path(path_str: str) -> Path:
+    """
+    Generates path to cached tile and sanitizes user input values.
+    """
+
+    settings = get_settings()
+
+    base_dir = pathlib.Path(settings.cache_dir, "api", "v2.0", "tiles").resolve()
+
+    if "\x00" in path_str:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    pure_path = pathlib.PurePosixPath(path_str)
+    if pure_path.is_absolute() or ".." in pure_path.parts:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    target_path = (base_dir / pure_path).resolve()
+
+    if not target_path.is_relative_to(base_dir) or target_path == base_dir:
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    return target_path
 
 
 @router.get("/git_info")
@@ -403,7 +428,10 @@ def range(
         description="The max number of nearest neighbours to search for.",
         examples=[10],
     ),
-    projection: str = Path(
+    projection: Annotated[
+        PROJECTIONS,
+        str,
+    ] = Path(
         description="EPSG code of the desired projection.",
         examples=["EPSG:3857"],
     ),
@@ -606,9 +634,9 @@ def class4_file(
     class4_type: str = Path(
         title="The type of the desired class4 product.", examples=["ocean_predict"]
     ),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
     resolution: int = Query(description="The map resolution.", examples=["9784"]),
     extent: str = Query(
         description="The extent of the area bounding the data.",
@@ -909,11 +937,14 @@ def kml_points():
 @router.get("/kml/point/{id}")
 def kml_point(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     view_bounds: str = Query(
         None,
         description="Used to exclude KML points that aren't visible. Useful for \
@@ -944,11 +975,14 @@ def kml_lines():
 @router.get("/kml/line/{id}")
 def kml_line(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     view_bounds: str = Query(
         None,
         description="Used to exclude KML points that aren't visible. Useful for \
@@ -978,11 +1012,14 @@ def kml_areas():
 @router.get("/kml/area/{id}")
 def kml_area(
     id: str = Path(examples=["NL-AZMP_Stations"]),
-    projection: str = Query(
-        description="EPSG code for desired projection. Used to map resulting KML \
+    projection: Annotated[
+        PROJECTIONS,
+        Query(
+            description="EPSG code for desired projection. Used to map resulting KML \
             coords",
-        examples=["EPSG:3857"],
-    ),
+            examples=["EPSG:3857"],
+        ),
+    ] = "EPSG:3857",
     resolution: int = Query(
         description="Used to exclude KML points that aren't visible. Useful for \
             filtering large KML groups.",
@@ -1011,9 +1048,9 @@ async def data_tile(
     zoom: int = Path(examples=[4]),
     x: int = Path(examples=[0]),
     y: int = Path(examples=[1]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
     interp: e.InterpolationType = Query(default="gaussian"),
     radius: int = Query(default=25, examples=[25]),
     neighbours: int = Query(default=10, examples=[10]),
@@ -1089,7 +1126,7 @@ async def quiver_tile(
     zoom: int = Path(examples=[4]),
     x: int = Path(examples=[0]),
     y: int = Path(examples=[1]),
-    projection: str = Query(
+    projection: Annotated[PROJECTIONS, str] = Query(
         default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
     ),
 ):
@@ -1140,168 +1177,116 @@ async def quiver_tile(
     return data
 
 
-@router.get("/tiles/topo/{zoom}/{x}/{y}")
-def topography_tiles(
-    zoom: int = Path(examples=[4]),
-    x: int = Path(examples=[0]),
-    y: int = Path(examples=[1]),
-    shaded_relief: bool = Query(default=False),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
-):
-    """
-    Generates topographical tiles
-    """
-
-    settings = get_settings()
-
-    if zoom > 7:
-        return FileResponse(
-            os.path.join(settings.shape_file_dir, "blank.png"),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    f = os.path.join(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "topo",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
-
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    img = plot_topography(projection, x, y, zoom, shaded_relief)
-    return _cache_and_send_img(img, f)
-
-
 @router.get("/tiles/bath/{zoom}/{x}/{y}")
 async def bathymetry_tiles(
-    zoom: int = Path(examples=[4]),
-    x: int = Path(examples=[0]),
-    y: int = Path(examples=[1]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
+    zoom: Annotated[int, Path(ge=0, le=12, examples=[8])],
+    x: Annotated[int, Path(ge=0, examples=[88])],
+    y: Annotated[int, Path(ge=0, examples=[85])],
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
 ):
     """
-    Generates bathymetry tiles
+    Generates bathymetry vector tiles
     """
+
+    if zoom < 0 or zoom > 22 or x < 0 or y < 0 or x >= (1 << zoom) or y >= (1 << zoom):
+        raise HTTPException(status_code=400, detail="Tile coordinates out of bounds")
 
     settings = get_settings()
+    requestf = get_cached_tile_path(f"bath/{projection}/{zoom}/{x}/{y}.pbf")
+    shape_file_dir = pathlib.Path(settings.shape_file_dir)
+    cache_headers = {"Cache-Control": f"max-age={MAX_CACHE}"}
 
-    if zoom > 7:
-        return FileResponse(
-            os.path.join(settings.shape_file_dir, "blank.png"),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+    if not requestf.is_file():
+        tile_db_path = shape_file_dir / f"onav_bathy_{projection}.mbtiles"
 
-    f = os.path.join(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "tiles",
-        "bath",
-        projection,
-        str(zoom),
-        str(x),
-        f"{y}.png",
-    )
+        if not tile_db_path.is_file():
+            raise HTTPException(status_code=404, detail="Tile database not found.")
 
-    if os.path.isfile(f):
-        return FileResponse(
-            f,
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
+        db_uri = f"{tile_db_path.resolve().as_uri()}?mode=ro"
+        with closing(sqlite3.connect(db_uri, uri=True)) as connection:
+            selector = connection.cursor()
+            selector.execute(
+                "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
+                (zoom, x, y),
+            )
+            tile = selector.fetchone()
 
-    img = await plot_bathymetry(projection, x, y, zoom)
-    return _cache_and_send_img(img, f)
+        if tile is None:
+            return FileResponse(
+                shape_file_dir / "blank.mbt",
+                media_type="image/png",
+                headers=cache_headers,
+            )
 
+        requestf.parent.mkdir(parents=True, exist_ok=True)
+        decompressed_tile = gzip.decompress(tile[0])
+        with tempfile.NamedTemporaryFile(dir=requestf.parent, delete=False) as tmp_file:
+            tmp_file.write(decompressed_tile)
+            tmp_name = tmp_file.name
+        os.replace(tmp_name, requestf)
 
-@router.get("/mbt/{tiletype}/{zoom}/{x}/{y}")
-def mbt(
-    tiletype: str = Path(examples=["bath"]),
-    zoom: int = Path(examples=[8]),
-    x: int = Path(examples=[88]),
-    y: int = Path(examples=[85]),
-    projection: str = Query(
-        default="EPSG:3857", description="EPSG projection code.", examples=["EPSG:3857"]
-    ),
-):
-    """
-    Serves mbt files
-    """
-
-    settings = get_settings()
-
-    shape_file_dir = settings.shape_file_dir
-    requestf = pathlib.Path(
-        settings.cache_dir,
-        "api",
-        "v2.0",
-        "mbt",
-        projection,
-        tiletype,
-        str(zoom),
-        str(x),
-        str(y),
-    )
-    basedir = requestf.parents[0]
-
-    # Send blank tile if conditions aren't met
-    blank_response = FileResponse(
-        shape_file_dir + "/blank.mbt",
-        media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-    )
-
-    if (zoom < 7) or (projection != "EPSG:3857"):
-        return blank_response
-
-    if (zoom > 11) and (tiletype == "bath"):
-        return blank_response
-
-    # Send file if cached or select data in SQLite file
-    if requestf.is_file():
-        return FileResponse(
-            requestf.as_posix(),
-            media_type="image/png",
-            headers={"Cache-Control": f"max-age={MAX_CACHE}"},
-        )
-
-    y = (2**zoom - 1) - y
-    connection = sqlite3.connect(shape_file_dir + "/{}.mbtiles".format(tiletype))
-    selector = connection.cursor()
-    sqlite = f"SELECT tile_data FROM tiles WHERE zoom_level = {zoom} AND tile_column = {x} AND tile_row = {y}"  # noqa: E501
-    selector.execute(sqlite)
-    tile = selector.fetchone()
-    if tile is None:
-        return blank_response
-
-    # Write tile to cache and send file
-    basedir.mkdir(parents=True, exist_ok=True)
-    with open(requestf.as_posix() + ".pbf", "wb") as f:
-        f.write(tile[0])
-    with gzip.open(requestf.as_posix() + ".pbf", "rb") as gzipped:
-        with open(requestf, "wb") as tileout:
-            shutil.copyfileobj(gzipped, tileout)
     return FileResponse(
         requestf,
         media_type="image/png",
-        headers={"Cache-Control": f"max-age={MAX_CACHE}"},
+        headers=cache_headers,
+    )
+
+
+@router.get("/tiles/topo/{zoom}/{x}/{y}")
+def topography_tiles(
+    zoom: Annotated[int, Path(ge=0, le=12, examples=[8])],
+    x: Annotated[int, Path(ge=0, examples=[88])],
+    y: Annotated[int, Path(ge=0, examples=[85])],
+    projection: Annotated[
+        PROJECTIONS, Query(description="EPSG projection code.", examples=["EPSG:3857"])
+    ] = "EPSG:3857",
+):
+    """
+    Generates topographical raster tiles
+    """
+
+    if zoom < 0 or zoom > 22 or x < 0 or y < 0 or x >= (1 << zoom) or y >= (1 << zoom):
+        raise HTTPException(status_code=400, detail="Tile coordinates out of bounds")
+
+    settings = get_settings()
+    requestf = get_cached_tile_path(f"topo/{projection}/{zoom}/{x}/{y}.png")
+    shape_file_dir = pathlib.Path(settings.shape_file_dir)
+    cache_headers = {"Cache-Control": f"max-age={MAX_CACHE}"}
+
+    if not requestf.is_file():
+        tile_db_path = shape_file_dir / f"onav_basemap_{projection}.mbtiles"
+
+        if not tile_db_path.is_file():
+            raise HTTPException(status_code=404, detail="Tile database not found.")
+
+        db_uri = f"{tile_db_path.resolve().as_uri()}?mode=ro"
+        with closing(sqlite3.connect(db_uri, uri=True)) as connection:
+            selector = connection.cursor()
+            selector.execute(
+                "SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?",
+                (zoom, x, y),
+            )
+            tile = selector.fetchone()
+
+        if tile is None:
+            return FileResponse(
+                shape_file_dir / "blank.mbt",
+                media_type="image/png",
+                headers=cache_headers,
+            )
+
+        requestf.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=requestf.parent, delete=False) as tmp_file:
+            tmp_file.write(tile[0])
+            tmp_name = tmp_file.name
+        os.replace(tmp_name, requestf)
+
+    return FileResponse(
+        requestf,
+        media_type="image/png",
+        headers=cache_headers,
     )
 
 

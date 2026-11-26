@@ -6,7 +6,7 @@ import ReactGA from "react-ga";
 import { isMobile } from "react-device-detect";
 
 import { DATASET_DEFAULTS, MAP_DEFAULTS } from "./Defaults.js";
-import Map from "./Map/Map.jsx";
+import MapContainer from "./Map/MapContainer.jsx";
 import MapInputs from "./MapInputs.jsx";
 import MapTools from "./MapTools.jsx";
 import ScaleViewer from "./ScaleViewer.jsx";
@@ -435,8 +435,8 @@ export default function OceanNavigator(props) {
         <ToggleLanguage />
       </div>
 
-      <Map
-        ref={mapRef}
+      <MapContainer
+        // ref={mapRef}
         mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}

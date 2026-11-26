@@ -11,9 +11,9 @@ import { useTranslation } from "react-i18next";
 const BASEMAPS = [
   {
     id: "topo",
-    value: "ETOPO1 Topography",
+    value: "Default Topography",
     attribution:
-      "Topographical Data from ETOPO1 1 Arc-Minute Global Relief Model. NCEI, NESDIR, NOAA, U.S. Department of Commerce.",
+      "Combined OpenStreetMap natural feature boundaries and from ETOPO 2024 15 Arc-Second Global Relief Model topographical Data. NCEI, NESDIR, NOAA, U.S. Department of Commerce.",
   },
   {
     id: "ocean",
@@ -48,9 +48,6 @@ export default function SettingsWindow(props) {
   );
   const [bathyContour, setBathyContour] = useState(
     props.mapSettings.bathyContour,
-  );
-  const [topoRelief, setTopoRelief] = useState(
-    props.mapSettings.topoShadedRelief,
   );
 
   const { t, i18n } = useTranslation();
@@ -88,7 +85,6 @@ export default function SettingsWindow(props) {
     props.updateMapSettings("bathymetry", showBathy);
     props.updateMapSettings("mapBathymetryOpacity", newOpacity);
     props.updateMapSettings("bathyContour", bathyContour);
-    props.updateMapSettings("topoShadedRelief", topoRelief);
 
     setBathyOpacity(newOpacity);
   };
@@ -203,17 +199,10 @@ export default function SettingsWindow(props) {
               onChange={(e) => setBathyContour(e.target.value)}
               value={bathyContour}
             >
-              <option value="etopo1">{"ETOPO1"}</option>
+              <option value="etopo">{"ETOPO"}</option>
             </Form.Select>
           </InputGroup>
 
-          <Form.Check
-            type="checkbox"
-            id="topoShadedRelief"
-            label={t("Topography Shaded Relief")}
-            checked={topoRelief}
-            onChange={(e) => setTopoRelief(e.target.checked)}
-          />
           <Button
             variant="primary"
             className="center-block"
