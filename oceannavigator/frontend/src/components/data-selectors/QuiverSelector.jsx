@@ -55,6 +55,7 @@ export default function QuiverSelector({
         onChange={updateQuiver}
         selected={dataset.quiverVariable}
         horizontalLayout={horizontalLayout}
+        alwaysShow
       />
 
       <Form.Label className="quiver-slider-label">Quiver Density</Form.Label>
