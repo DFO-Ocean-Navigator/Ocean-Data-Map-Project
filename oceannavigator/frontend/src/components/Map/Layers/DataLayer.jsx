@@ -62,5 +62,12 @@ export default function DataLayer({ name, map, dataset, mapSettings, zIndex }) {
     }
   }, [layerRef.current, zIndex]);
 
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+
+    layer.setVisible(!mapSettings.hideDataLayer);
+  }, [layerRef.current, mapSettings.hideDataLayer]);
+
   return null;
 }

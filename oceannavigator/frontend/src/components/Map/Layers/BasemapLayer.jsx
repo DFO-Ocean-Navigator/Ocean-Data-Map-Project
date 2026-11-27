@@ -38,10 +38,10 @@ export function BasemapLayer({ name, map, source, zIndex }) {
     if (!map) return;
 
     if (!layerRef.current) {
-      layerRef.current = new OlTileLayer({ preload: 1, zIndex: zIndex  });
+      layerRef.current = new OlTileLayer({ preload: 1, zIndex: zIndex });
     }
 
-    const layer = layerRef.current;    
+    const layer = layerRef.current;
 
     if (name) {
       layer.set("name", name);
@@ -62,7 +62,6 @@ export function BasemapLayer({ name, map, source, zIndex }) {
     if (source !== undefined) {
       layer.setSource(source);
     }
-
   }, [layerRef.current, source]);
 
   useEffect(() => {

@@ -19,16 +19,16 @@ const DRIFTER_COLORS = [
 ];
 
 // CHS S111 standard arrows for quiver layer
-import I0 from "../../../images/s111/I0.svg";
-import I1 from "../../../images/s111/I1.svg";
-import I2 from "../../../images/s111/I2.svg";
-import I3 from "../../../images/s111/I3.svg";
-import I4 from "../../../images/s111/I4.svg";
-import I5 from "../../../images/s111/I5.svg";
-import I6 from "../../../images/s111/I6.svg";
-import I7 from "../../../images/s111/I7.svg";
-import I8 from "../../../images/s111/I8.svg";
-import I9 from "../../../images/s111/I9.svg";
+import I0 from "../../images/s111/I0.svg";
+import I1 from "../../images/s111/I1.svg";
+import I2 from "../../images/s111/I2.svg";
+import I3 from "../../images/s111/I3.svg";
+import I4 from "../../images/s111/I4.svg";
+import I5 from "../../images/s111/I5.svg";
+import I6 from "../../images/s111/I6.svg";
+import I7 from "../../images/s111/I7.svg";
+import I8 from "../../images/s111/I8.svg";
+import I9 from "../../images/s111/I9.svg";
 
 const QUIVER_IMAGES = [I0, I1, I2, I3, I4, I5, I6, I7, I8, I9];
 
@@ -290,7 +290,7 @@ export function class4Style(feature) {
   });
 }
 
-function featureTextStyle(
+export function featureTextStyle(
   feature,
   textColor = "#000",
   strokeColor = "#ffffff",
@@ -351,4 +351,26 @@ export function quiverStyle(feature, res) {
       rotation: rotation,
     }),
   });
+}
+
+export function selectStyle(feat, res) {
+  const styles = [
+    new Style({
+      stroke: new Stroke({ color: "#0099ff", width: 4 }),
+      image: new Circle({
+        radius: 4,
+        fill: new Fill({ color: "#0099ff" }),
+        stroke: new Stroke({ color: "#ffffff", width: 1 }),
+      }),
+    }),
+  ];
+  const textStyle = featureTextStyle(
+    feat,
+    "#000",
+    "#ffffff",
+    props.mapSettings,
+  );
+  if (textStyle && feat.get("type") !== "class4") styles.push(textStyle);
+
+  return styles;
 }

@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button, ToggleButton } from "react-bootstrap";
 import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { useTranslation } from "react-i18next";
 
+import { MapToolsContext } from "../contexts/MapContext";
+
 export default function DrawingTools(props) {
-  const { t, i18n } = useTranslation();
+  const { setDrawActive, drawFeatureType, setDrawFeatureType } =
+    useContext(MapToolsContext);
+  const { t } = useTranslation();
 
   const radios = [
     { name: t("Point"), value: "Point" },
@@ -16,7 +20,7 @@ export default function DrawingTools(props) {
 
   const handleRadio = (e) => {
     let type = e.currentTarget.value;
-    props.action("featureType", type);
+    setDrawFeatureType(type);
   };
 
   const handleClear = () => {
@@ -29,7 +33,7 @@ export default function DrawingTools(props) {
 
   const handleClose = () => {
     props.updateUI({ showDrawingTools: false });
-    props.action("stopFeatureDraw");
+    setDrawActive(false);
   };
 
   return (
@@ -43,7 +47,7 @@ export default function DrawingTools(props) {
             type="radio"
             name="radio"
             value={radio.value}
-            checked={props.featureType === radio.value}
+            checked={drawFeatureType === radio.value}
             onChange={handleRadio}
           >
             {radio.name}

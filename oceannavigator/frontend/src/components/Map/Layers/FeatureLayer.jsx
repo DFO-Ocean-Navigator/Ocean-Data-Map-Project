@@ -4,7 +4,7 @@ import VectorSource from "ol/source/Vector.js";
 import { bbox } from "ol/loadingstrategy";
 import GeoJSON from "ol/format/GeoJSON.js";
 
-import * as featureStyle from "./featureStyles";
+import * as featureStyle from "../styles";
 
 export function createFeatureLayerSource() {
   return new VectorSource({
@@ -44,17 +44,17 @@ export function FeatureLayer({ name, source, map, projection }) {
     if (source !== undefined) {
       layer.setSource(source);
     }
-  }, [source]);
+  }, [layerRef.current, source]);
 
   useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
 
     const layerStyle = (feature, res) => {
-      if (feat.get("class") == "observation") {
+      if (feature.get("class") == "observation") {
         return featureStyle.observationStyle(feature);
       } else {
-        switch (feat.get("type")) {
+        switch (feature.get("type")) {
           case "Polygon":
             return featureStyle.polygonStyle(feature, projection);
           case "LineString":
@@ -71,7 +71,7 @@ export function FeatureLayer({ name, source, map, projection }) {
       }
     };
     layer.setStyle(layerStyle);
-  }, [projection]);
+  }, [layerRef.current, projection]);
 
   return null;
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -12,15 +12,17 @@ import ObservationTools from "./ObservationTools.jsx";
 
 import { useTranslation } from "react-i18next";
 
+import { MapSettingsContext } from "../contexts/MapContext.jsx";
+
 export default function MapInputs(props) {
-  const { t, i18n } = useTranslation();
+  const { mapSettings, setMapSettings } = useContext(MapSettingsContext);
+  const { t } = useTranslation();
 
   const drawingTools = props.uiSettings.showDrawingTools ? (
     <DrawingTools
       uiSettings={props.uiSettings}
       updateUI={props.updateUI}
       action={props.action}
-      featureType={props.featureType}
     />
   ) : null;
 
@@ -40,10 +42,10 @@ export default function MapInputs(props) {
       <Button
         className="hide-data-button"
         onClick={() => {
-          props.updateMapSettings(
-            "hideDataLayer",
-            !props.mapSettings.hideDataLayer,
-          );
+          setMapSettings((prevMapSettings) => ({
+            ...prevMapSettings,
+            hideDataLayer: !mapSettings.hideDataLayer,
+          }));
         }}
       >
         <FontAwesomeIcon icon={faEyeSlash} size="2xs" />
@@ -53,43 +55,43 @@ export default function MapInputs(props) {
 
   return (
     <Fade in={props.show}>
-        <div className="map-inputs-container">
-          {drawingTools}
-          {observationTools}
-          <div className="dataset-selector-container">
+      <div className="map-inputs-container">
+        {drawingTools}
+        {observationTools}
+        <div className="dataset-selector-container">
+          <div className={"map-inputs"}>
+            <DatasetPanel
+              key="map-inputs-dataset0-panel"
+              id="map-inputs-dataset0-panel"
+              mountedDataset={props.dataset0}
+              onUpdate={props.updateDataset0}
+              mapSettings={props.mapSettings}
+              action={props.action}
+              horizontalLayout={true}
+              showTimeSlider={!props.compareDatasets}
+              showCompare={props.showCompare}
+              compareDatasets={props.compareDatasets}
+              datasetSearch={true}
+            />
+            {props.showCompare ? hideDataSwitch : null}
+          </div>
+          {props.compareDatasets ? (
             <div className={"map-inputs"}>
               <DatasetPanel
-                key="map-inputs-dataset0-panel"
-                id="map-inputs-dataset0-panel"
-                mountedDataset={props.dataset0}
-                onUpdate={props.updateDataset0}
+                key="map-inputs-dataset1-panel"
+                id="map-inputs-dataset1-panel"
+                mountedDataset={props.dataset1}
+                onUpdate={props.updateDataset1}
                 mapSettings={props.mapSettings}
                 action={props.action}
                 horizontalLayout={true}
                 showTimeSlider={!props.compareDatasets}
-                showCompare={props.showCompare}
-                compareDatasets={props.compareDatasets}
-                datasetSearch={true}
+                showSearchBtn={true}
               />
-              {props.showCompare ? hideDataSwitch : null}
             </div>
-            {props.compareDatasets ? (
-              <div className={"map-inputs"}>
-                <DatasetPanel
-                  key="map-inputs-dataset1-panel"
-                  id="map-inputs-dataset1-panel"
-                  mountedDataset={props.dataset1}
-                  onUpdate={props.updateDataset1}
-                  mapSettings={props.mapSettings}
-                  action={props.action}
-                  horizontalLayout={true}
-                  showTimeSlider={!props.compareDatasets}
-                  showSearchBtn={true}
-                />
-              </div>
-            ) : null}
-          </div>
+          ) : null}
         </div>
-     </Fade>
+      </div>
+    </Fade>
   );
 }

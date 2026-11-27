@@ -29,7 +29,7 @@ import HideOverlaysToggle from "./HideOverlaysButton.jsx";
 
 import { useTranslation } from "react-i18next";
 
-export default function OceanNavigator(props) {
+export default function OceanNavigator({}) {
   const mapRef = useRef();
   const [dataset0, setDataset0] = useState(DATASET_DEFAULTS);
   const [dataset1, setDataset1] = useState(DATASET_DEFAULTS);
@@ -50,7 +50,6 @@ export default function OceanNavigator(props) {
   });
   const [plotData, setPlotData] = useState([]);
   const [class4Type, setClass4Type] = useState("ocean_predict");
-  const [featureType, setFeatureType] = useState("Point");
   const [names, setNames] = useState([undefined]);
   const [observationArea, setObservationArea] = useState([]);
   const [observationQuery, setObservationQuery] = useState({});
@@ -60,7 +59,7 @@ export default function OceanNavigator(props) {
   const [showMobile, setShowMobile] = useState(isMobile);
   const [showOverlays, setShowOverlays] = useState(true);
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const queryClient = useQueryClient();
 
@@ -122,15 +121,6 @@ export default function OceanNavigator(props) {
 
   const action = (name, arg, arg2) => {
     switch (name) {
-      case "startFeatureDraw":
-        mapRef.current.startFeatureDraw();
-        break;
-      case "stopFeatureDraw":
-        mapRef.current.stopFeatureDraw();
-        break;
-      case "featureType":
-        setFeatureType(arg);
-        break;
       case "undoMapFeature":
         mapRef.current.undoFeature();
         break;
@@ -436,14 +426,10 @@ export default function OceanNavigator(props) {
       </div>
 
       <MapContainer
-        // ref={mapRef}
-        mapSettings={mapSettings}
         dataset0={dataset0}
         dataset1={dataset1}
-        featureType={featureType}
         class4Type={class4Type}
         action={action}
-        updateMapSettings={updateMapSettings}
         updateUI={updateUI}
         compareDatasets={compareDatasets}
       />
@@ -460,7 +446,6 @@ export default function OceanNavigator(props) {
         compareDatasets={compareDatasets}
         action={action}
         showCompare={true}
-        featureType={featureType}
         show={showOverlays}
       />
 

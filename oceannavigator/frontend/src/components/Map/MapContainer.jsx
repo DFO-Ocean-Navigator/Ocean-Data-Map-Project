@@ -4,6 +4,7 @@ import View from "ol/View.js";
 import { transform } from "ol/proj";
 
 import Map from "./Map.jsx";
+import MultiMapMousePosition from "./MultiMapMousePosition.js";
 import { createBasemapLayerSource, BasemapLayer } from "./Layers/BasemapLayer";
 import DataLayer from "./Layers/DataLayer";
 import {
@@ -19,8 +20,12 @@ import {
   ObsDrawLayer,
 } from "./Layers/ObsDrawLayer.jsx";
 import QuiverLayer from "./Layers/QuiverLayer.jsx";
-import MultiMapMousePosition from "./MultiMapMousePosition.js";
-import { MapContext } from "../../contexts/MapContext";
+import { DrawFeatures } from "./Interactions/DrawFeatures.jsx";
+import { SelectFeatures } from "./Interactions/SelectFeatures.jsx";
+import {
+  MapInstancesContext,
+  MapSettingsContext,
+} from "../../contexts/MapContext";
 
 const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
@@ -49,13 +54,12 @@ const MAX_ZOOM = {
 export default function MapContainer({
   dataset0,
   dataset1,
-  featureType,
   class4Type,
-  action,
   updateUI,
   compareDatasets,
 }) {
-  const { map0, map1, mapSettings } = useContext(MapContext);
+  const { map0, map1 } = useContext(MapInstancesContext);
+  const { mapSettings } = useContext(MapSettingsContext);
 
   const [view, setView] = useState(
     new View({
@@ -72,17 +76,18 @@ export default function MapContainer({
   );
 
   useEffect(() => {
-    if (compareDatasets && map1) {
-      map0.getControls().item(0).setMap(map1);
-      map0.getControls().item(3).setMap1(map1);
-    } else if (map0) {
-      map0.getControls().item(0).setMap(map0);
-      map0.getControls().item(3).setMap1(map0);
-    }
-  }, [compareDatasets]);
+    if (!map0) return;
+
+    const targetMap = compareDatasets && map1 ? map1 : map0;
+    map0.getControls().item(0)?.setMap(targetMap);
+    map0.getControls().item(3)?.setMap1(targetMap);
+  }, [map0, map1, compareDatasets]);
 
   const basemapLayerSource = useMemo(() => {
-    return createBasemapLayerSource(mapSettings.basemap, mapSettings.projection);
+    return createBasemapLayerSource(
+      mapSettings.basemap,
+      mapSettings.projection,
+    );
   }, [mapSettings.basemap, mapSettings.projection]);
 
   const bathyLayerSource = useMemo(() => {
@@ -101,20 +106,21 @@ export default function MapContainer({
     return createObsDrawLayerSource();
   }, []);
 
+  const map0Controls = useMemo(() => [new MultiMapMousePosition()], []);
+
   return (
     <div className="map-container">
       <Map
         className="map"
         mapId={0}
         view={view}
-        controls={[new MultiMapMousePosition()]}
+        controls={map0Controls}
         compareDatasets={compareDatasets}
       >
         <BasemapLayer
           name="basemap0"
           map={map0}
           source={basemapLayerSource}
-          mapSettings={mapSettings}
           zIndex={0}
         />
         <DataLayer
@@ -147,26 +153,30 @@ export default function MapContainer({
           dataset={dataset0}
           projection={mapSettings.projection}
         />
+        <SelectFeatures map={map0} projection={mapSettings.projection} />
+        <DrawFeatures
+          map={map0}
+          source={featureLayerSource}
+        />
       </Map>
       {compareDatasets ? (
         <Map
           className="map"
           mapId={1}
           view={view}
-          controls={[]}
           compareDatasets={compareDatasets}
         >
           <BasemapLayer
             name="basemap1"
             map={map1}
             source={basemapLayerSource}
-            mapSettings={mapSettings}
+            hideLayer={mapSettings.hideDataLayer}
             zIndex={0}
           />
           <DataLayer
             name="dataLayer1"
             map={map1}
-            dataset={dataset0}
+            dataset={dataset1}
             mapSettings={mapSettings}
             zIndex={1}
           />
@@ -192,6 +202,11 @@ export default function MapContainer({
             map={map1}
             dataset={dataset1}
             projection={mapSettings.projection}
+          />
+          <SelectFeatures map={map1} projection={mapSettings.projection} />
+          <DrawFeatures
+            map={map1}
+            source={featureLayerSource}
           />
         </Map>
       ) : null}

@@ -4,7 +4,7 @@ import VectorTileSource from "ol/source/VectorTile.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import { get as getProj } from "ol/proj";
 
-import { quiverStyle } from "./featureStyles";
+import { quiverStyle } from "../styles";
 
 export default function QuiverLayer({ name, map, dataset, projection }) {
   const layerRef = useRef(null);

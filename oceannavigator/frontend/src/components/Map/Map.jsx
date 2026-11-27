@@ -4,7 +4,6 @@ import {
   useImperativeHandle,
   useRef,
   useEffect,
-  useState,
 } from "react";
 import { Map as OlMap } from "ol";
 import { defaults as defaultControls } from "ol/control/defaults.js";
@@ -14,22 +13,13 @@ import { Stroke } from "ol/style";
 import DragBox from "ol/interaction/DragBox.js";
 import { platformModifierKeyOnly } from "ol/events/condition";
 
-import { MapContext } from "../../contexts/MapContext";
+import { MapInstancesContext } from "../../contexts/MapContext";
 
 import "ol/ol.css";
 
 const Map = forwardRef(
-  (
-    {
-      mapId,
-      view,
-      controls = [],
-      compareDatasets = false,
-      children,
-    },
-    ref,
-  ) => {
-    const { map0, setMap0, map1, setMap1 } = useContext(MapContext);
+  ({ mapId, view, controls = [], compareDatasets = false, children }, ref) => {
+    const { map0, setMap0, map1, setMap1 } = useContext(MapInstancesContext);
     const mapRef = useRef(null);
 
     const map = mapId == 0 ? map0 : map1;
@@ -39,7 +29,7 @@ const Map = forwardRef(
 
     useEffect(() => {
       if (!mapRef.current) return;
-      // Always create a new map instance on mount
+
       const mapConfig = {
         target: mapRef.current,
         controls: defaultControls({
@@ -86,11 +76,11 @@ const Map = forwardRef(
 
         setMap(undefined);
       };
-    }, [mapRef, mapId]);
+    }, [mapRef]);
 
     useEffect(() => {
       if (map) map.setView(view);
-    }, [map, mapId, view]);
+    }, [map, view]);
 
     return (
       <div ref={mapRef} className={compareDatasets ? "map compare" : "map"}>

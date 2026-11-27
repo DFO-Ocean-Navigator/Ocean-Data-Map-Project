@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,54 +16,54 @@ import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Fade from "react-bootstrap/Fade";
-
 import { useTranslation } from "react-i18next";
 
-export default function MapTools(props) {
-  const { t, i18n } = useTranslation();
+import { MapToolsContext } from "../contexts/MapContext";
+
+export default function MapTools({ uiSettings, updateUI, action, show }) {
+  const { setDrawActive } = useContext(MapToolsContext);
+  const { t } = useTranslation();
 
   const handleDrawing = () => {
-    if (!props.uiSettings.showDrawingTools) {
-      props.updateUI({
+    if (!uiSettings.showDrawingTools) {
+      updateUI({
         showAnnotationTools: false,
         showDrawingTools: true,
         showObservationTools: false,
       });
-      props.action("startFeatureDraw");
+      setDrawActive(true)
     } else {
-      props.updateUI({
+      updateUI({
         showAnnotationTools: false,
         showDrawingTools: false,
         showObservationTools: false,
       });
-      props.action("stopFeatureDraw");
+       setDrawActive(false)
     }
   };
 
   const handleObservations = () => {
-    if (!props.uiSettings.showObservationTools) {
-      props.updateUI({
+    if (!uiSettings.showObservationTools) {
+      updateUI({
         showAnnotationTools: false,
         showDrawingTools: false,
         showObservationTools: true,
       });
-      props.action("stopFeatureDraw");
     } else {
-      props.updateUI({
+      updateUI({
         showAnnotationTools: false,
         showDrawingTools: false,
         showObservationTools: false,
       });
-      props.action("stopFeatureDraw");
     }
   };
 
   const handleShowModal = (type) => {
-    props.updateUI({ modalType: type, showModal: true });
+    updateUI({ modalType: type, showModal: true });
   };
 
   return (
-    <Fade in={props.show}>
+    <Fade in={show}>
       <div className="MapTools">
         <OverlayTrigger
           key="draw-overlay"
@@ -135,7 +135,7 @@ export default function MapTools(props) {
           <Button
             key="plot-button"
             className="tool-button"
-            onClick={() => props.action("plot")}
+            onClick={() => action("plot")}
           >
             <FontAwesomeIcon icon={faChartLine} />
           </Button>
@@ -149,7 +149,7 @@ export default function MapTools(props) {
           <Button
             key="reset-button"
             className="tool-button"
-            onClick={() => props.action("resetMap")}
+            onClick={() => action("resetMap")}
           >
             <FontAwesomeIcon icon={faRotateLeft} />
           </Button>
