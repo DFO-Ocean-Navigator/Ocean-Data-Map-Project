@@ -92,6 +92,14 @@ export default function HoverPopup({
               <td>Feature ID</td>
               <td>{feature.get("name")}</td>
             </tr>
+            <tr>
+                <td>RMS Error</td>
+                <td>{feature.get("error")}</td>
+            </tr>
+            <tr>
+              <td>Normalised Error</td>
+              <td>{feature.get("error_norm")}</td>
+            </tr>
           </table>,
         );
       }

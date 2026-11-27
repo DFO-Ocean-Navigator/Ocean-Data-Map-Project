@@ -941,14 +941,9 @@ const Map = forwardRef((props, ref) => {
             var id = feat.get("name");
             feat.setId(id);
             if (feat.get("error") != null) {
-              feat.set(
-                "name",
-                feat.get("name") +
-                  "<span>" +
-                  "RMS Error: " +
-                  feat.get("error").toPrecision(3) +
-                  "</span>",
-              );
+              feat.set("name", feat.get("name"));
+              feat.set("error", feat.get("error").toPrecision(3));
+              feat.set("error_norm",feat.get("error_norm").toPrecision(3));
             }
             if (id) {
               var oldfeat = featureVectorSource.getFeatureById(id);
