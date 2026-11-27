@@ -1,19 +1,34 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import OlTileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 
-export default function DataLayer({ name, mapContext, dataset, mapSettings, zIndex }) {
-  const map = useContext(mapContext);
-
-  const layerRef = useRef(new OlTileLayer({ preload: 1 }));
+export default function DataLayer({ name, map, dataset, mapSettings, zIndex }) {
+  const layerRef = useRef(null);
 
   useEffect(() => {
-    if (!map || dataset.time.id < 0) return;
+    if (!map) return;
 
-    const layer = layerRef.current; // same instance every time
+    if (!layerRef.current) {
+      layerRef.current = new OlTileLayer({ preload: 1, zIndex: zIndex });
+    }
+
+    const layer = layerRef.current;
+
     if (name) {
       layer.set("name", name);
     }
+
+    const hasLayer = map.getLayers().getArray().includes(layer);
+    if (!hasLayer) map.addLayer(layer);
+
+    return () => {
+      map.removeLayer(layer);
+    };
+  }, [map, name]);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer || dataset.time.id < 0) return;
 
     let scale = dataset.variable.scale;
     if (Array.isArray(scale)) {
@@ -36,15 +51,16 @@ export default function DataLayer({ name, mapContext, dataset, mapSettings, zInd
     dataSource.projection = mapSettings.projection;
 
     layer.setSource(new XYZ(dataSource));
-    layer.setZIndex(zIndex);
-    map.addLayer(layer);
+  }, [layerRef.current, dataset, mapSettings]);
 
-    return () => {
-      if (map) {
-        map.removeLayer(layer);
-      }
-    };
-  }, [map, name, dataset, mapSettings, zIndex]);
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+
+    if (zIndex !== undefined) {
+      layer.setZIndex(zIndex);
+    }
+  }, [layerRef.current, zIndex]);
 
   return null;
 }

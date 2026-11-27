@@ -1,30 +1,54 @@
 import React, { useEffect, useRef } from "react";
 import VectorLayer from "ol/layer/Vector.js";
-import VectorSource from 'ol/source/Vector.js';
-import {bbox} from "ol/loadingstrategy";
+import VectorSource from "ol/source/Vector.js";
+import { bbox } from "ol/loadingstrategy";
 import GeoJSON from "ol/format/GeoJSON.js";
 
-import { useMap0, useMap1 } from '../MapContext';
 import * as featureStyle from "./featureStyles";
 
-export default function FeatureLayer({ name, projection, zIndex }) {
-  const map0 = useMap0();
-  const map1 = useMap1();
-  const layerRef = useRef(new VectorLayer());
+export function createFeatureLayerSource() {
+  return new VectorSource({
+    features: [],
+    strategy: bbox,
+    format: new GeoJSON(),
+  });
+}
+
+export function FeatureLayer({ name, source, map, projection }) {
+  const layerRef = useRef();
 
   useEffect(() => {
-    if (!map0 && !map1) return;
+    if (!map) return;
 
-    const layer = layerRef.current; // same instance every time
+    if (!layerRef.current) {
+      layerRef.current = new VectorLayer({ zIndex: 3 });
+    }
+
+    const layer = layerRef.current;
+
     if (name) {
       layer.set("name", name);
     }
 
-    const featureSource = new VectorSource({
-      features: [],
-      strategy: bbox,
-      format: new GeoJSON(),
-    });
+    map.addLayer(layer);
+
+    return () => {
+      map.removeLayer(layer);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+
+    if (source !== undefined) {
+      layer.setSource(source);
+    }
+  }, [source]);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
 
     const layerStyle = (feature, res) => {
       if (feat.get("class") == "observation") {
@@ -46,19 +70,8 @@ export default function FeatureLayer({ name, projection, zIndex }) {
         }
       }
     };
-
-    layer.setSource(featureSource);
     layer.setStyle(layerStyle);
-    layer.setZIndex(zIndex);
-
-    if (map0) map0.addLayer(layer);
-    if (map1) map1.addLayer(layer);
-
-    return () => {
-      if (map0) map0.removeLayer(layer);
-      if (map1) map1.removeLayer(layer);
-    };
-  }, [map0, map1, name, projection, zIndex]);
+  }, [projection]);
 
   return null;
 }

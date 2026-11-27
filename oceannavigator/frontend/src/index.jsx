@@ -1,9 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import OceanNavigator from "./components/OceanNavigator.jsx";
 import ReactGA from "react-ga";
 import * as Sentry from "@sentry/react";
+
+import OceanNavigator from "./components/OceanNavigator.jsx";
+import { MapProvider } from "./contexts/MapContext.jsx";
 
 import "./i18n";
 
@@ -43,6 +45,8 @@ document.title = "Ocean Navigator";
 const root = createRoot(document.getElementById("app"));
 root.render(
   <QueryClientProvider client={queryClient}>
-    <OceanNavigator />
+    <MapProvider>
+      <OceanNavigator />
+    </MapProvider>
   </QueryClientProvider>,
 );

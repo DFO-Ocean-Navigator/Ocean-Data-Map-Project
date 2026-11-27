@@ -4,27 +4,39 @@ import VectorTileSource from "ol/source/VectorTile.js";
 import GeoJSON from "ol/format/GeoJSON.js";
 import { get as getProj } from "ol/proj";
 
-import { useMap0, useMap1 } from "../MapContext";
 import { quiverStyle } from "./featureStyles";
 
-export default function QuiverLayer({ name, dataset, projection, zIndex }) {
-  const map0 = useMap0();
-  const map1 = useMap1();
-  const layerRef = useRef(
-    new VectorTileLayer({
-      source: null,
-      style: quiverStyle,
-      zIndex: zIndex,
-    }),
-  );
+export default function QuiverLayer({ name, map, dataset, projection }) {
+  const layerRef = useRef(null);
 
   useEffect(() => {
-    if (!map0 && !map1) return;
+    if (!map) return;
+
+    if (!layerRef.current) {
+      layerRef.current = new VectorTileLayer({
+        source: null,
+        style: quiverStyle,
+        zIndex: 4,
+      });
+    }
 
     const layer = layerRef.current;
+
     if (name) {
       layer.set("name", name);
     }
+
+    const hasLayer = map.getLayers().getArray().includes(layer);
+    if (!hasLayer) map.addLayer(layer);
+
+    return () => {
+      map.removeLayer(layer);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer || dataset.time.id < 0) return;
 
     let quiverSource = null;
     if (dataset.quiverVariable.toLowerCase() !== "none") {
@@ -44,24 +56,9 @@ export default function QuiverLayer({ name, dataset, projection, zIndex }) {
           dataProjection: getProj("EPSG:4326"),
         }),
       });
-      layer.setSource(quiverSource);
     }
-
-    if (map0) map0.addLayer(layer);
-    if (map1) map1.addLayer(layer);
-
-    return () => {
-      if (map0) map0.removeLayer(layer);
-      if (map1) map1.removeLayer(layer);
-    };
-  }, [
-    map0,
-    map1,
-    name,
-    dataset.quiverVariable,
-    dataset.quiverDensity,
-    projection,
-  ]);
+    layer.setSource(quiverSource);
+  }, [layerRef.current, dataset, projection]);
 
   return null;
 }

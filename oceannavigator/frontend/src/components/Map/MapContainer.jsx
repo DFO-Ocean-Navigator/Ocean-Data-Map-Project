@@ -1,16 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 
-import * as olProj from "ol/proj";
+import View from "ol/View.js";
+import { transform } from "ol/proj";
 
 import Map from "./Map.jsx";
-import MapView from "./View.jsx";
-import BasemapLayer from "./Layers/BasemapLayer";
+import { createBasemapLayerSource, BasemapLayer } from "./Layers/BasemapLayer";
 import DataLayer from "./Layers/DataLayer";
-import BathymetryLayer from "./Layers/BathymetryLayer";
-import FeatureLayer from "./Layers/FeatureLayer.jsx";
-import ObsDrawLayer from "./Layers/ObsDrawLayer.jsx";
+import {
+  createBathyLayerSource,
+  BathymetryLayer,
+} from "./Layers/BathymetryLayer";
+import {
+  createFeatureLayerSource,
+  FeatureLayer,
+} from "./Layers/FeatureLayer.jsx";
+import {
+  createObsDrawLayerSource,
+  ObsDrawLayer,
+} from "./Layers/ObsDrawLayer.jsx";
 import QuiverLayer from "./Layers/QuiverLayer.jsx";
-import { MapContext0, MapContext1 } from "./MapContext";
+import MultiMapMousePosition from "./MultiMapMousePosition.js";
+import { MapContext } from "../../contexts/MapContext";
 
 const DEF_CENTER = {
   "EPSG:3857": [-50, 53],
@@ -37,120 +47,152 @@ const MAX_ZOOM = {
 };
 
 export default function MapContainer({
-  mapSettings,
   dataset0,
   dataset1,
   featureType,
   class4Type,
   action,
-  updateMapSettings,
   updateUI,
   compareDatasets,
 }) {
+  const { map0, map1, mapSettings } = useContext(MapContext);
+
   const [view, setView] = useState(
-    MapView(
-      olProj.transform(
+    new View({
+      center: transform(
         DEF_CENTER[mapSettings.projection],
         "EPSG:4326",
         mapSettings.projection,
       ),
+      projection: mapSettings.projection,
+      zoom: DEF_ZOOM[mapSettings.projection],
+      minZoom: MIN_ZOOM[mapSettings.projection],
+      maxZoom: MAX_ZOOM[mapSettings.projection],
+    }),
+  );
+
+  useEffect(() => {
+    if (compareDatasets && map1) {
+      map0.getControls().item(0).setMap(map1);
+      map0.getControls().item(3).setMap1(map1);
+    } else if (map0) {
+      map0.getControls().item(0).setMap(map0);
+      map0.getControls().item(3).setMap1(map0);
+    }
+  }, [compareDatasets]);
+
+  const basemapLayerSource = useMemo(() => {
+    return createBasemapLayerSource(mapSettings.basemap, mapSettings.projection);
+  }, [mapSettings.basemap, mapSettings.projection]);
+
+  const bathyLayerSource = useMemo(() => {
+    return createBathyLayerSource(
       mapSettings.projection,
-      DEF_ZOOM[mapSettings.projection],
       MIN_ZOOM[mapSettings.projection],
       MAX_ZOOM[mapSettings.projection],
-    ),
-  );
+    );
+  }, [mapSettings.projection]);
 
-  const basemapLayer = (
-    <BasemapLayer name="basemap" mapSettings={mapSettings} zIndez={0} />
-  );
+  const featureLayerSource = useMemo(() => {
+    return createFeatureLayerSource();
+  }, []);
 
-  const dataLayer0 = (
-    <DataLayer
-      name="dataLayer0"
-      mapContext={MapContext0}
-      dataset={dataset0}
-      mapSettings={mapSettings}
-      zIndez={1}
-    />
-  );
-
-  const dataLayer1 = compareDatasets ? (
-    <DataLayer
-      name="dataLayer1"
-      mapContext={MapContext1}
-      dataset={dataset1}
-      mapSettings={mapSettings}
-      zIndez={1}
-    />
-  ) : null;
-
-  const bathymetryLayer = (
-    <BathymetryLayer
-      name="bathymetryLayer"
-      mapSettings={mapSettings}
-      minZoom={MIN_ZOOM[mapSettings.projection]}
-      maxZoom={MAX_ZOOM[mapSettings.projection]}
-      zIndex={2}
-    />
-  );
-
-  const featureLayer = (
-    <FeatureLayer
-      name="featureLayer"
-      projection={mapSettings.projection}
-      zIndex={3}
-    />
-  );
-
-  const obsDrawLayer = <ObsDrawLayer name="ObsDrawLayer" zIndex={4} />;
-
-  const quiverLayer0 = (
-    <QuiverLayer
-      name="quiverLayer0"
-      dataset={dataset0}
-      projection={mapSettings.projection}
-      zIndex={4}
-    />
-  );
-
-  const quiverLayer1 = compareDatasets ? (
-    <QuiverLayer
-      name="quiverLayer1"
-      dataset={dataset1}
-      projection={mapSettings.projection}
-      zIndex={4}
-    />
-  ) : null;
+  const obsDrawLayerSource = useMemo(() => {
+    return createObsDrawLayerSource();
+  }, []);
 
   return (
     <div className="map-container">
       <Map
         className="map"
-        context={MapContext0}
+        mapId={0}
         view={view}
+        controls={[new MultiMapMousePosition()]}
         compareDatasets={compareDatasets}
       >
-        {basemapLayer}
-        {dataLayer0}
-        {bathymetryLayer}
-        {featureLayer}
-        {obsDrawLayer}
-        {quiverLayer0}
+        <BasemapLayer
+          name="basemap0"
+          map={map0}
+          source={basemapLayerSource}
+          mapSettings={mapSettings}
+          zIndex={0}
+        />
+        <DataLayer
+          name="dataLayer0"
+          map={map0}
+          dataset={dataset0}
+          mapSettings={mapSettings}
+          zIndex={1}
+        />
+        <BathymetryLayer
+          name="bathymetryLayer0"
+          map={map0}
+          source={bathyLayerSource}
+          mapSettings={mapSettings}
+        />
+        <FeatureLayer
+          name="featureLayer0"
+          source={featureLayerSource}
+          map={map0}
+          projection={mapSettings.projection}
+        />
+        <ObsDrawLayer
+          name="ObsDrawLayer0"
+          source={obsDrawLayerSource}
+          map={map0}
+        />
+        <QuiverLayer
+          name="quiverLayer0"
+          map={map0}
+          dataset={dataset0}
+          projection={mapSettings.projection}
+        />
       </Map>
       {compareDatasets ? (
         <Map
           className="map"
-          context={MapContext1}
+          mapId={1}
           view={view}
+          controls={[]}
           compareDatasets={compareDatasets}
         >
-          {basemapLayer}
-          {dataLayer1}
-          {bathymetryLayer}
-          {featureLayer}
-          {obsDrawLayer}
-          {quiverLayer1}
+          <BasemapLayer
+            name="basemap1"
+            map={map1}
+            source={basemapLayerSource}
+            mapSettings={mapSettings}
+            zIndex={0}
+          />
+          <DataLayer
+            name="dataLayer1"
+            map={map1}
+            dataset={dataset0}
+            mapSettings={mapSettings}
+            zIndex={1}
+          />
+          <BathymetryLayer
+            name="bathymetryLayer"
+            map={map1}
+            source={bathyLayerSource}
+            mapSettings={mapSettings}
+          />
+          <FeatureLayer
+            name="featureLayer"
+            source={featureLayerSource}
+            map={map1}
+            projection={mapSettings.projection}
+          />
+          <ObsDrawLayer
+            name="ObsDrawLayer1"
+            source={obsDrawLayerSource}
+            map={map1}
+          />
+          <QuiverLayer
+            name="quiverLayer1"
+            map={map1}
+            dataset={dataset1}
+            projection={mapSettings.projection}
+          />
         </Map>
       ) : null}
     </div>

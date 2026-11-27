@@ -1,35 +1,43 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import VectorLayer from "ol/layer/Vector.js";
 import VectorSource from "ol/source/Vector.js";
 
-import { useMap0, useMap1 } from "../MapContext";
+export function createObsDrawLayerSource() {
+  return new VectorSource({ features: [] });
+}
 
-export default function ObsDrawLayer({ name, zIndex }) {
-  const map0 = useMap0();
-  const map1 = useMap1();
-  const layerRef = useRef(new VectorLayer());
+export function ObsDrawLayer({ name, map, source }) {
+  const layerRef = useRef(null);
 
   useEffect(() => {
-    if (!map0 && !map1) return;
+    if (!map) return;
 
-    const layer = layerRef.current; // same instance every time
+    if (!layerRef.current) {
+      layerRef.current = new VectorLayer({ zIndex: 4 });
+    }
+
+    const layer = layerRef.current;
+
     if (name) {
       layer.set("name", name);
     }
 
-    const newObsDrawSource = new VectorSource({ features: [] });
-
-    layer.setSource(newObsDrawSource);
-    layer.setZIndex(zIndex);
-
-    if (map0) map0.addLayer(layer);
-    if (map1) map1.addLayer(layer);
+    const hasLayer = map.getLayers().getArray().includes(layer);
+    if (!hasLayer) map.addLayer(layer);
 
     return () => {
-      if (map0) map0.removeLayer(layer);
-      if (map1) map1.removeLayer(layer);
+      map.removeLayer(layer);
     };
-  }, [map0, map1, name, zIndex]);
+  }, [map]);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    if (!layer) return;
+
+    if (source !== undefined) {
+      layer.setSource(source);
+    }
+  }, [layerRef.current, source]);
 
   return null;
 }
