@@ -21,7 +21,11 @@ import { useTranslation } from "react-i18next";
 
 export default function LineWindow(props) {
   // UI state
-  const [selected, setSelected] = useState(props.init?.selected || 1);
+
+  const only2d = props.dataset0?.only2d || props.dataset1?.only2d;
+  const [selected, setSelected] = useState(
+    props.init?.selected || only2d ? 2 : 1,
+  );
 
   // Scale settings
   const [autoScale, setAutoScale] = useState(props.init?.autoScale ?? true);
@@ -121,7 +125,6 @@ export default function LineWindow(props) {
     setProfileDistance((x / 100) * props.plotData.distance);
   };
 
-  // UI segments
   const plotOptions = (
     <>
       <ImageSize
@@ -410,7 +413,9 @@ export default function LineWindow(props) {
     <div className="LineWindow Window">
       <Nav variant="tabs" activeKey={selected} onSelect={onSelect}>
         <Nav.Item>
-          <Nav.Link eventKey={1}>{t("Transect")}</Nav.Link>
+          <Nav.Link eventKey={1} disabled={only2d}>
+            {t("Transect")}
+          </Nav.Link>
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey={2}>{t("Hovmöller Diagram")}</Nav.Link>
